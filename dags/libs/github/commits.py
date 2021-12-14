@@ -18,7 +18,7 @@ def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, 
         ssl_show_warn=False
     )
     all_github_commits = []
-    for page in range(3):
+    for page in range(9999):
         url = "https://api.github.com/repos/{owner}/{repo}/commits".format(
             owner=owner, repo=repo)
         headers = {'Authorization': 'token %s' % next(github_tokens_iter)}
@@ -37,6 +37,8 @@ def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, 
         if (now_github_commits is not None) and len(now_github_commits) == 0:
             break
         all_github_commits = all_github_commits + now_github_commits
+
+        print("success get github {owner}/{repo}/{page}:".format(owner=owner, repo=repo, page=page))
 
     client.delete_by_query(index="github_commits",
                            body={

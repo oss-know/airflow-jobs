@@ -11,46 +11,46 @@ with DAG(
         catchup=False,
         tags=['github'],
 ) as dag:
-    # [START howto_operator_python]
-    def do_init_sync_github_commit(ds, **kwargs):
+    def scheduler_init_sync_github_commit(ds, **kwargs):
+        return 'Start scheduler init sync github_commit'
+
+
+    op_scheduler_init_sync_github_commit = PythonOperator(
+        task_id='scheduler_init_sync_github_commit',
+        python_callable=scheduler_init_sync_github_commit
+    )
+
+
+    def do_init_sync_github_commit(params):
         from airflow.models import Variable
         from libs.github import commits
 
         github_tokens = Variable.get("github_infos", deserialize_json=True)
         opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
 
-        sync_params = kwargs.get("params")
-        owner = sync_params["owner"]
-        repo = sync_params["repo"]
-        since = sync_params["since"]
-        until = sync_params["until"]
+        owner = params["owner"]
+        repo = params["repo"]
+        since = params["since"]
+        until = params["until"]
 
-        load_info = commits.init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, since, until)
+        do_init_sync_info = commits.init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, since, until)
 
-        return '完成制定的repo初始化'
-
-
-    do_sync_github_commit = PythonOperator(
-        task_id='do_init_sync_github_commit',
-        python_callable=do_init_sync_github_commit,
-    )
+        print(do_init_sync_info)
+        return "do_init_sync_github_commit-end"
 
 
-    # [END howto_operator_python]
+    need_do_inti_sync_ops = []
 
-    # [START howto_operator_python_kwargs]
-    def my_sleeping_function(random_base):
-        """This is a function that will run within the DAG execution"""
-        time.sleep(random_base)
+    from airflow.models import Variable
 
+    need_init_sync_github_commits_list = Variable.get("need_init_sync_github_commits_list", deserialize_json=True)
 
-    # Generate 5 sleeping tasks, sleeping from 0.0 to 0.4 seconds respectively
-    for i in range(5):
-        task = PythonOperator(
-            task_id='sleep_for_' + str(i),
-            python_callable=my_sleeping_function,
-            op_kwargs={'random_base': float(i) / 10},
+    for now_need_init_sync_github_commits in need_init_sync_github_commits_list:
+        op_do_init_sync_github_commit = PythonOperator(
+            task_id='do_init_sync_github_commit_{owner}_{repo}'.format(
+                owner=now_need_init_sync_github_commits["owner"],
+                repo=now_need_init_sync_github_commits["repo"]),
+            python_callable=do_init_sync_github_commit,
+            op_kwargs={'params': now_need_init_sync_github_commits},
         )
-
-        do_sync_github_commit >> task
-    # [END howto_operator_python_kwargs]
+        op_scheduler_init_sync_github_commit >> op_do_init_sync_github_commit
