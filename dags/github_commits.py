@@ -12,12 +12,12 @@ with DAG(
         tags=['github'],
 ) as dag:
     # [START howto_operator_python]
-    def do_sync_github_commit(ds, **kwargs):
+    def do_init_sync_github_commit(ds, **kwargs):
         from airflow.models import Variable
         from libs.github import commits
 
         github_tokens = Variable.get("github_infos", deserialize_json=True)
-        opensearch_conn_infos = Variable.get("opensearch_conn_infos", deserialize_json=True)
+        opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
 
         sync_params = kwargs.get("params")
         owner = sync_params["owner"]
@@ -25,16 +25,14 @@ with DAG(
         since = sync_params["since"]
         until = sync_params["until"]
 
-        load_info = commits.sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, since, until)
+        load_info = commits.init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, since, until)
 
-        # print(load_info)
-
-        return 'Whatever you return gets printed in the logs'
+        return '完成制定的repo初始化'
 
 
     do_sync_github_commit = PythonOperator(
-        task_id='do_sync_github_commit',
-        python_callable=do_sync_github_commit,
+        task_id='do_init_sync_github_commit',
+        python_callable=do_init_sync_github_commit,
     )
 
 
