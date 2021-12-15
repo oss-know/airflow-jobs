@@ -1,0 +1,44 @@
+[
+  {
+    "owner": {
+      "name": "apache"
+    },
+    "repo": {
+      "name": "spark"
+    },
+    "git": {
+      "http_url": "https://github.com/apache/arrow.git",
+      "ssh_url": "git@github.com:apache/arrow.git",
+      "sync_timestamp": "1609430400",
+      "sync_datetime": "2021-01-01T00:00:00+00:00"
+    },
+    "github": {
+      "issues": {
+        "sync_timestamp": "1609430400",
+        "sync_datetime": "2021-01-01T00:00:00+00:00"
+      },
+      "pr": {
+        "sync_timestamp": "1609430400",
+        "sync_datetime": "2021-01-01T00:00:00+00:00"
+      },
+      "commits": {
+        "sync_timestamp": "1609430400",
+        "sync_datetime": "2021-01-01T00:00:00+00:00"
+      }
+    },
+    "gitee": {
+      "issues": {
+        "sync_timestamp": "1609430400",
+        "sync_datetime": "2021-01-01T00:00:00+00:00"
+      },
+      "pr": {
+        "sync_timestamp": "1609430400",
+        "sync_datetime": "2021-01-01T00:00:00+00:00"
+      },
+      "commits": {
+        "sync_timestamp": "1609430400",
+        "sync_datetime": "2021-01-01T00:00:00+00:00"
+      }
+    }
+  }
+]
