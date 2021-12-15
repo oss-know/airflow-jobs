@@ -1,10 +1,6 @@
-import requests
-import json
-import itertools
+import requests, itertools, json, datetime, time, copy
 from opensearchpy import OpenSearch
 from opensearchpy import helpers as OpenSearchHelpers
-import datetime
-import time
 
 
 def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, since=None, until=None):
@@ -59,8 +55,9 @@ def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, 
                                }
                            })
 
+    bulk_all_github_commits = list()
     if (all_github_commits is not None) and (len(all_github_commits) > 0):
-        bulk_all_github_commits = []
+
         template = {"_index": "github_commits",
                     "_source": {"search_key": {"owner": owner, "repo": repo},
                                 "raw_data": None}}
@@ -71,12 +68,13 @@ def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, 
             now_commit["commit"]["committer"]["date_timestamp"] = int(datetime.datetime(
                 *time.strptime(now_commit["commit"]["committer"]["date"], "%Y-%m-%dT%H:%M:%SZ")[:7]).timestamp())
 
-            commit_item = template.copy()
+            commit_item = copy.deepcopy(template)
             commit_item["_source"]["raw_data"] = now_commit
             bulk_all_github_commits.append(commit_item)
 
         # 批量插入数据
-        success, failed = OpenSearchHelpers.bulk(client=client, actions=bulk_all_github_commits)
+
+        success, failed = OpenSearchHelpers.bulk(client=client, actions=iter(bulk_all_github_commits))
 
         print("init_sync_github_commits_success", success)
         print("init_sync_github_commits_failed", failed)

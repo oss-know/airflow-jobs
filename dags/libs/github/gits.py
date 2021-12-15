@@ -19,27 +19,27 @@ def init_sync_git_datas(git_url, owner, repo, opensearch_conn_datas, site="githu
 
     template = {"_index": "git_raw",
                 "_source": {
-                            "owner": owner,
-                            "repo": repo,
-                            "origin": None,
-                            "message": None,
-                            "hexsha": None,
-                            "category": None,
-                            "name_rev": None,
-                            "parents": None,
-                            "author_tz": None,
-                            "commiter_tz": None,
-                            "author_name": None,
-                            "author_email": None,
-                            "committer_name": None,
-                            "committer_email": None,
-                            "authored_date": None,
-                            "authored_timestamp": None,
-                            "committed_date": None,
-                            "committed_timestamp": None,
-                            "files": None,
-                            "total": None
-                            }}
+                    "owner": owner,
+                    "repo": repo,
+                    "origin": None,
+                    "message": None,
+                    "hexsha": None,
+                    "category": None,
+                    "name_rev": None,
+                    "parents": None,
+                    "author_tz": None,
+                    "commiter_tz": None,
+                    "author_name": None,
+                    "author_email": None,
+                    "committer_name": None,
+                    "committer_email": None,
+                    "authored_date": None,
+                    "authored_timestamp": None,
+                    "committed_date": None,
+                    "committed_timestamp": None,
+                    "files": None,
+                    "total": None
+                }}
     all_git_list = []
     for commit in repo_info.iter_commits():
         template_copy = template.copy()

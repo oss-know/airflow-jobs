@@ -5,23 +5,23 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 
 with DAG(
-    dag_id='git_sync_v1',
-    schedule_interval=None,
-    start_date=datetime(2021, 1, 1),
-    catchup=False,
-    tags=['github'],
+        dag_id='git_sync_v1',
+        schedule_interval=None,
+        start_date=datetime(2021, 1, 1),
+        catchup=False,
+        tags=['github'],
 ) as dag:
-    # [START howto_operator_python]
+
     def init_sync_git_info(ds, **kwargs):
         return 'Start init_sync_git_info'
+
 
     op_init_sync_git_info = PythonOperator(
         task_id='init_sync_git_info',
         python_callable=init_sync_git_info,
     )
-    # [END howto_operator_python]
 
-    # [START howto_operator_python_kwargs]
+
     def do_sync_git_info(params):
         from airflow.models import Variable
         from libs.github import gits
@@ -31,14 +31,15 @@ with DAG(
         opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
 
         init_sync_git_info = gits.init_sync_git_datas(url,
-                                             owner,
-                                             repo,
-                                             opensearch_conn_datas,)
+                                                      owner,
+                                                      repo,
+                                                      opensearch_conn_datas, )
         print(init_sync_git_info)
         return 'do_sync_git_info:::end'
 
 
     from airflow.models import Variable
+
     git_info_list = Variable.get("git_info_list", deserialize_json=True)
     for git_info in git_info_list:
         op_do_init_sync_git_info = PythonOperator(
@@ -50,6 +51,3 @@ with DAG(
         )
 
         op_init_sync_git_info >> op_do_init_sync_git_info
-    # [END howto_operator_python_kwargs]
-
-
