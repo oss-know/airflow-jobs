@@ -3,6 +3,8 @@ import json
 import itertools
 from opensearchpy import OpenSearch
 from opensearchpy import helpers as OpenSearchHelpers
+import datetime
+import time
 
 
 def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, since=None, until=None):
@@ -18,7 +20,7 @@ def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, 
         ssl_show_warn=False
     )
     all_github_commits = []
-    for page in range(9999):
+    for page in range(1):
         url = "https://api.github.com/repos/{owner}/{repo}/commits".format(
             owner=owner, repo=repo)
         headers = {'Authorization': 'token %s' % next(github_tokens_iter)}
@@ -63,6 +65,11 @@ def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, 
                     "_source": {"search_key": {"owner": owner, "repo": repo},
                                 "raw_data": None}}
         for now_commit in all_github_commits:
+
+            now_commit["commit"]["author"]["date_timestamp"] = int(datetime.datetime(
+                *time.strptime(now_commit["commit"]["author"]["date"], "%Y-%m-%dT%H:%M:%SZ")[:7]).timestamp())
+            now_commit["commit"]["committer"]["date_timestamp"] = int(datetime.datetime(
+                *time.strptime(now_commit["commit"]["committer"]["date"], "%Y-%m-%dT%H:%M:%SZ")[:7]).timestamp())
 
             commit_item = template.copy()
             commit_item["_source"]["raw_data"] = now_commit
