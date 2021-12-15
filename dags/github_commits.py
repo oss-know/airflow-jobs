@@ -33,7 +33,8 @@ with DAG(
         since = params["since"]
         until = params["until"]
 
-        do_init_sync_info = commits.init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, since, until)
+        do_init_sync_info = commits.init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, since,
+                                                             until)
         # do_init_sync_info = test.init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, since,
         #                                                      until)
 

@@ -63,7 +63,6 @@ def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, 
                     "_source": {"search_key": {"owner": owner, "repo": repo},
                                 "raw_data": None}}
         for now_commit in all_github_commits:
-
             commit_item = template.copy()
             commit_item["_source"]["raw_data"] = now_commit
             bulk_all_github_commits.append(commit_item)

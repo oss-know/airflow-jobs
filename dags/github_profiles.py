@@ -5,15 +5,14 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 
 with DAG(
-    dag_id='github_profile_v1',
-    schedule_interval=None,
-    start_date=datetime(2021, 1, 1),
-    catchup=False,
-    tags=['github'],
+        dag_id='github_profile_v1',
+        schedule_interval=None,
+        start_date=datetime(2021, 1, 1),
+        catchup=False,
+        tags=['github'],
 ) as dag:
     # [START howto_operator_python]
     def do_load_github_profile_info(ds, **kwargs):
-
         from airflow.models import Variable
         from libs.github import profiles
 
@@ -26,16 +25,20 @@ with DAG(
 
         return 'do_load_github_profile_info-end'
 
+
     op_do_load_github_profile_info = PythonOperator(
         task_id='load_github_profile_info',
         python_callable=do_load_github_profile_info,
     )
+
+
     # [END howto_operator_python]
 
     # [START howto_operator_python_kwargs]
     def my_sleeping_function(random_base):
         """This is a function that will run within the DAG execution"""
         time.sleep(random_base)
+
 
     # Generate 5 sleeping tasks, sleeping from 0.0 to 0.4 seconds respectively
     for i in range(5):
@@ -47,5 +50,3 @@ with DAG(
 
         op_do_load_github_profile_info >> task
     # [END howto_operator_python_kwargs]
-
-

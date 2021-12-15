@@ -62,7 +62,6 @@ def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, 
                     "_source": {"search_key": {"owner": owner, "repo": repo},
                                 "raw_data": None}}
         for now_commit in all_github_commits:
-
             now_commit["commit"]["author"]["date_timestamp"] = int(datetime.datetime(
                 *time.strptime(now_commit["commit"]["author"]["date"], "%Y-%m-%dT%H:%M:%SZ")[:7]).timestamp())
             now_commit["commit"]["committer"]["date_timestamp"] = int(datetime.datetime(

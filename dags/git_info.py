@@ -11,7 +11,6 @@ with DAG(
         catchup=False,
         tags=['github'],
 ) as dag:
-
     def init_sync_git_info(ds, **kwargs):
         return 'Start init_sync_git_info'
 
