@@ -13,17 +13,7 @@ with DAG(
 ) as dag:
     # [START howto_operator_python]
     def init_sync_git_info(ds, **kwargs):
-        from airflow.models import Variable
-        from libs.github import gits
-
-        opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
-
-        init_sync_git_info = gits.init_sync_git_datas("https://github.com/gitpython-developers/GitPython.git",
-                                             "gitpython-developers",
-                                             "GitPython",
-                                             opensearch_conn_datas,)
-        print(init_sync_git_info)
-        return 'init_sync_git_info:::end'
+        return 'Start init_sync_git_info'
 
     op_init_sync_git_info = PythonOperator(
         task_id='init_sync_git_info',
@@ -32,19 +22,34 @@ with DAG(
     # [END howto_operator_python]
 
     # [START howto_operator_python_kwargs]
-    def my_sleeping_function(random_base):
-        """This is a function that will run within the DAG execution"""
-        time.sleep(random_base)
+    def do_sync_git_info(params):
+        from airflow.models import Variable
+        from libs.github import gits
+        owner = params["owner"]
+        repo = params["repo"]
+        url = params["url"]
+        opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
 
-    # Generate 5 sleeping tasks, sleeping from 0.0 to 0.4 seconds respectively
-    for i in range(5):
-        task = PythonOperator(
-            task_id='sleep_for_' + str(i),
-            python_callable=my_sleeping_function,
-            op_kwargs={'random_base': float(i) / 10},
+        init_sync_git_info = gits.init_sync_git_datas(url,
+                                             owner,
+                                             repo,
+                                             opensearch_conn_datas,)
+        print(init_sync_git_info)
+        return 'do_sync_git_info:::end'
+
+
+    from airflow.models import Variable
+    git_info_list = Variable.get("git_info_list", deserialize_json=True)
+    for git_info in git_info_list:
+        op_do_init_sync_git_info = PythonOperator(
+            task_id='do_sync_git_info_{owner}_{repo}'.format(
+                owner=git_info["owner"],
+                repo=git_info["repo"]),
+            python_callable=do_sync_git_info,
+            op_kwargs={'params': git_info},
         )
 
-        op_init_sync_git_info >> task
+        op_init_sync_git_info >> op_do_init_sync_git_info
     # [END howto_operator_python_kwargs]
 
 
