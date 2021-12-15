@@ -13,37 +13,20 @@ with DAG(
 ) as dag:
     # [START howto_operator_python]
     def do_load_github_profile_info(ds, **kwargs):
-        """Print the Airflow context and ds variable from the context."""
-        pprint("===============kwargs===============")
-        pprint(kwargs)
-        pprint("====================================")
-
-        print("*****************kwargs*****************")
-        print(kwargs)
-        print("*****************ds*****************")
-        print(ds)
 
         from airflow.models import Variable
         from libs.github import profiles
 
         github_tokens = Variable.get("github_infos", deserialize_json=True)
-        opensearch_conn_infos = Variable.get("opensearch_conn_infos", deserialize_json=True)
-
-        # print("*****************github_tokens*****************")
-        # for token in github_tokens:
-        #     print(token)
+        opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
 
         load_info = profiles.load_github_profile(github_tokens, opensearch_conn_infos)
 
-
         print(load_info)
 
+        return 'do_load_github_profile_info-end'
 
-        # print(opensearch_conn_infos["HOST"])
-
-        return 'Whatever you return gets printed in the logs'
-
-    run_this = PythonOperator(
+    op_do_load_github_profile_info = PythonOperator(
         task_id='load_github_profile_info',
         python_callable=do_load_github_profile_info,
     )
@@ -62,7 +45,7 @@ with DAG(
             op_kwargs={'random_base': float(i) / 10},
         )
 
-        run_this >> task
+        op_do_load_github_profile_info >> task
     # [END howto_operator_python_kwargs]
 
 
