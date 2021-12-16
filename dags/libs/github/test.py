@@ -61,8 +61,8 @@ def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, 
                                }
                            })
 
-    info_json = json.dumps(all_github_commits,sort_keys=False, indent=4, separators=(',', ': '))
-    f = open('{owner}-{repo}-{info.json', 'w')
+    info_json = json.dumps(all_github_commits, sort_keys=False, indent=4, separators=(',', ': '))
+    f = open('{owner}-{repo}-info.json'.format(owner=owner, repo=repo), 'w')
     f.write(info_json)
     f.close()
 
