@@ -78,9 +78,6 @@ def load_github_profile(github_tokens, opensearch_conn_infos, owner, repo):
                                                         }
                                                         )
 
-            print('has_user_profile["hits"]["hits"]+++++++++++===================')
-            print(has_user_profile["hits"]["hits"])
-
             if len(has_user_profile["hits"]["hits"]) == 0:
                 opensearch_client.index(index="github_profile",
                                         body=now_github_profile,

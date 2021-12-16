@@ -4,6 +4,8 @@ from pprint import pprint
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 
+# v0.0.1
+
 with DAG(
         dag_id='github_commits_v1',
         schedule_interval=None,

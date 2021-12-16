@@ -19,7 +19,9 @@ def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, 
         ssl_assert_hostname=False,
         ssl_show_warn=False
     )
-    all_github_commits = []
+    if not client.indices.exists("github_commits_{owner}_{repo}".format(owner=owner, repo=repo)):
+        client.indices.create("github_commits_{owner}_{repo}".format(owner=owner, repo=repo))
+
     for page in range(9999):
         url = "https://api.github.com/repos/{owner}/{repo}/commits".format(
             owner=owner, repo=repo)
@@ -40,42 +42,37 @@ def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, 
         now_github_commits = r.json()
         if (now_github_commits is not None) and len(now_github_commits) == 0:
             break
-        all_github_commits = all_github_commits + now_github_commits
 
-        print("success get github {owner}/{repo}/{page}:".format(owner=owner, repo=repo, page=page))
-        time.sleep(1)
-
-    client.delete_by_query(index="github_commits",
-                           body={
-                               "query": {
-                                   "bool": {"must": [
-                                       {"term": {
-                                           "search_key.owner.keyword": {
-                                               "value": owner
-                                           }
-                                       }}, {"term": {
-                                           "search_key.repo.keyword": {
-                                               "value": repo
-                                           }
-                                       }}
-                                   ]}
-                               }
-                           })
-
-    if (all_github_commits is not None) and (len(all_github_commits) > 0):
         bulk_all_github_commits = []
-        template = {"_index": "github_commits",
-                    "_source": {"search_key": {"owner": owner, "repo": repo},
-                                "raw_data": None}}
-        for now_commit in all_github_commits:
-            commit_item = copy.deepcopy(template)
-            commit_item["_source"]["raw_data"] = now_commit
-            bulk_all_github_commits.append(commit_item)
+        for now_commit in now_github_commits:
+            has_commit = client.search(index="github_commits_{owner}_{repo}".format(owner=owner, repo=repo),
+                                       body={
+                                           "query": {
+                                               "term": {
+                                                   "raw_data.sha.keyword": {
+                                                       "value": now_commit["sha"]
+                                                   }
+                                               }
+                                           }
+                                       }
+                                       )
+            if len(has_commit["hits"]["hits"]) == 0:
+                template = {"_index": "github_commits_{owner}_{repo}".format(owner=owner, repo=repo),
+                            "_source": {"search_key": {"owner": owner, "repo": repo},
+                                        "raw_data": None}}
+                commit_item = copy.deepcopy(template)
+                commit_item["_source"]["raw_data"] = now_commit
+                bulk_all_github_commits.append(commit_item)
+                print("insert github commit sha:{sha}".format(sha=now_commit["sha"]))
 
-        # 批量插入数据
+        print("current page insert count：", len(bulk_all_github_commits))
         success, failed = OpenSearchHelpers.bulk(client=client, actions=bulk_all_github_commits)
 
-        print("init_sync_github_commits_success", success)
-        print("init_sync_github_commits_failed", failed)
+        print("current page insert githubcommits success", success)
+        print("current page insert githubcommits failed", failed)
 
-    return
+        print("success get github:: {owner}/{repo} page_index:{page}".format(owner=owner, repo=repo, page=page))
+
+        time.sleep(1)
+
+    return "init_sync_github_commits END"
