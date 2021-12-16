@@ -1,5 +1,6 @@
 import requests
 import json
+import time
 import itertools
 from opensearchpy import OpenSearch
 from opensearchpy import helpers as OpenSearchHelpers
@@ -22,7 +23,9 @@ def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, 
         url = "https://api.github.com/repos/{owner}/{repo}/commits".format(
             owner=owner, repo=repo)
         headers = {'Authorization': 'token %s' % next(github_tokens_iter)}
-        params = {'per_page': 100, 'page': page, 'since': since, 'until': until}
+        params = {'per_page': 100, 'page': page, 'since': since, 'until': until,
+                  'Connection': 'keep-alive', 'Accept-Encoding': 'gzip, deflate, br', 'Accept': '*/*',
+                  'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36', }
         r = requests.get(url, headers=headers, params=params)
 
         if r.status_code != 200:
@@ -39,6 +42,7 @@ def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, 
         all_github_commits = all_github_commits + now_github_commits
 
         print("success get github {owner}/{repo}/{page}:".format(owner=owner, repo=repo, page=page))
+        time.sleep(1)
 
     client.delete_by_query(index="github_commits",
                            body={
