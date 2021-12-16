@@ -1,4 +1,7 @@
-import requests, itertools, json, datetime, time, copy
+import requests
+import json
+import time
+import itertools
 from opensearchpy import OpenSearch
 from opensearchpy import helpers as OpenSearchHelpers
 
@@ -16,11 +19,13 @@ def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, 
         ssl_show_warn=False
     )
     all_github_commits = []
-    for page in range(1):
+    for page in range(9999):
         url = "https://api.github.com/repos/{owner}/{repo}/commits".format(
             owner=owner, repo=repo)
         headers = {'Authorization': 'token %s' % next(github_tokens_iter)}
-        params = {'per_page': 100, 'page': page, 'since': since, 'until': until}
+        params = {'per_page': 100, 'page': page, 'since': since, 'until': until,
+                  'Connection': 'keep-alive', 'Accept-Encoding': 'gzip, deflate, br', 'Accept': '*/*',
+                  'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36', }
         r = requests.get(url, headers=headers, params=params)
 
         if r.status_code != 200:
@@ -37,6 +42,7 @@ def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, 
         all_github_commits = all_github_commits + now_github_commits
 
         print("success get github {owner}/{repo}/{page}:".format(owner=owner, repo=repo, page=page))
+        time.sleep(1)
 
     client.delete_by_query(index="github_commits",
                            body={
@@ -55,27 +61,25 @@ def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, 
                                }
                            })
 
-    bulk_all_github_commits = list()
-    if (all_github_commits is not None) and (len(all_github_commits) > 0):
+    info_json = json.dumps(all_github_commits,sort_keys=False, indent=4, separators=(',', ': '))
+    f = open('{owner}-{repo}-{info.json', 'w')
+    f.write(info_json)
+    f.close()
 
-        template = {"_index": "github_commits",
-                    "_source": {"search_key": {"owner": owner, "repo": repo},
-                                "raw_data": None}}
-        for now_commit in all_github_commits:
-            now_commit["commit"]["author"]["date_timestamp"] = int(datetime.datetime(
-                *time.strptime(now_commit["commit"]["author"]["date"], "%Y-%m-%dT%H:%M:%SZ")[:7]).timestamp())
-            now_commit["commit"]["committer"]["date_timestamp"] = int(datetime.datetime(
-                *time.strptime(now_commit["commit"]["committer"]["date"], "%Y-%m-%dT%H:%M:%SZ")[:7]).timestamp())
-
-            commit_item = copy.deepcopy(template)
-            commit_item["_source"]["raw_data"] = now_commit
-            bulk_all_github_commits.append(commit_item)
-
-        # 批量插入数据
-
-        success, failed = OpenSearchHelpers.bulk(client=client, actions=iter(bulk_all_github_commits))
-
-        print("init_sync_github_commits_success", success)
-        print("init_sync_github_commits_failed", failed)
+    # if (all_github_commits is not None) and (len(all_github_commits) > 0):
+    #     bulk_all_github_commits = []
+    #     template = {"_index": "github_commits",
+    #                 "_source": {"search_key": {"owner": owner, "repo": repo},
+    #                             "raw_data": None}}
+    #     for now_commit in all_github_commits:
+    #         commit_item = template.copy()
+    #         commit_item["_source"]["raw_data"] = now_commit
+    #         bulk_all_github_commits.append(commit_item)
+    #
+    #     # 批量插入数据
+    #     success, failed = OpenSearchHelpers.bulk(client=client, actions=bulk_all_github_commits)
+    #
+    #     print("init_sync_github_commits_success", success)
+    #     print("init_sync_github_commits_failed", failed)
 
     return

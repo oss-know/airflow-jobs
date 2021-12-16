@@ -5,11 +5,11 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 
 with DAG(
-        dag_id='github_commits_v1',
+        dag_id='github_test',
         schedule_interval=None,
         start_date=datetime(2000, 1, 1),
         catchup=False,
-        tags=['github'],
+        tags=['github', 'test'],
 ) as dag:
     def scheduler_init_sync_github_commit(ds, **kwargs):
         return 'End scheduler_init_sync_github_commit'
@@ -23,7 +23,7 @@ with DAG(
 
     def do_init_sync_github_commit(params):
         from airflow.models import Variable
-        from libs.github import commits
+        from libs.github import test
 
         github_tokens = Variable.get("github_infos", deserialize_json=True)
         opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
@@ -33,8 +33,8 @@ with DAG(
         since = params["since"]
         until = params["until"]
 
-        do_init_sync_info = commits.init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, since,
-                                                             until)
+        do_init_sync_info = test.init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, since,
+                                                          until)
 
         print(do_init_sync_info)
         return "do_init_sync_github_commit-end"

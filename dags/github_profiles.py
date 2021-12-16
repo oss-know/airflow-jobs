@@ -1,8 +1,8 @@
 import time
 from datetime import datetime
-from pprint import pprint
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from airflow.models import Variable
 
 with DAG(
         dag_id='github_profile_v1',
@@ -11,42 +11,38 @@ with DAG(
         catchup=False,
         tags=['github'],
 ) as dag:
-    # [START howto_operator_python]
-    def do_load_github_profile_info(ds, **kwargs):
+    def start_load_github_profile(ds, **kwargs):
+        return 'End start_load_github_profile'
+    op_start_load_github_profile = PythonOperator(
+        task_id='load_github_profile_info',
+        python_callable=start_load_github_profile,
+    )
+
+    def load_github_repo_profile(params):
         from airflow.models import Variable
         from libs.github import profiles
 
         github_tokens = Variable.get("github_infos", deserialize_json=True)
         opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
 
-        load_info = profiles.load_github_profile(github_tokens, opensearch_conn_infos)
+        owner = params["owner"]
+        repo = params["repo"]
 
-        print(load_info)
+        do_init_sync_profile = profiles.load_github_profile(github_tokens, opensearch_conn_infos, owner, repo)
 
-        return 'do_load_github_profile_info-end'
-
-
-    op_do_load_github_profile_info = PythonOperator(
-        task_id='load_github_profile_info',
-        python_callable=do_load_github_profile_info,
-    )
+        print(do_init_sync_profile)
+        return 'End load_github_repo_profile'
 
 
-    # [END howto_operator_python]
+    need_sync_github_profile_repos = Variable.get("need_sync_github_profile_repo_list", deserialize_json=True)
 
-    # [START howto_operator_python_kwargs]
-    def my_sleeping_function(random_base):
-        """This is a function that will run within the DAG execution"""
-        time.sleep(random_base)
-
-
-    # Generate 5 sleeping tasks, sleeping from 0.0 to 0.4 seconds respectively
-    for i in range(5):
-        task = PythonOperator(
-            task_id='sleep_for_' + str(i),
-            python_callable=my_sleeping_function,
-            op_kwargs={'random_base': float(i) / 10},
+    for now_need_sync_github_profile_repos in need_sync_github_profile_repos:
+        op_load_github_repo_profile = PythonOperator(
+            task_id='op_load_github_repo_profile_{owner}_{repo}'.format(
+                owner=now_need_sync_github_profile_repos["owner"],
+                repo=now_need_sync_github_profile_repos["repo"]),
+            python_callable=load_github_repo_profile,
+            op_kwargs={'params': now_need_sync_github_profile_repos},
         )
 
-        op_do_load_github_profile_info >> task
-    # [END howto_operator_python_kwargs]
+        op_start_load_github_profile >> op_load_github_repo_profile
