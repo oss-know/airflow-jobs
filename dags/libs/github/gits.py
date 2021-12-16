@@ -42,11 +42,7 @@ def init_sync_git_datas(git_url, owner, repo, opensearch_conn_datas, site="githu
                 }}
     all_git_list = []
     import copy
-    count =0
     for commit in repo_info.iter_commits():
-        if count == 30:
-            break
-        count += 1
         template_copy = copy.deepcopy(template)
         template_copy["_source"]["origin"] = "http://github.com/{owner}/{repo}.git".format(owner=owner, repo=repo)
         template_copy["_source"]["message"] = commit.message
@@ -66,6 +62,7 @@ def init_sync_git_datas(git_url, owner, repo, opensearch_conn_datas, site="githu
         template_copy["_source"]["committer_email"] = commit.committer.email
         template_copy["_source"]["files"] = commit.stats.files
         files = template_copy["_source"]["files"]
+        # 更改无法被opensearch识别.开头字段
         start_with_point_list = []
         for key in files:
             if key.startswith("."):
@@ -74,7 +71,6 @@ def init_sync_git_datas(git_url, owner, repo, opensearch_conn_datas, site="githu
             files[i[1:]] = files.get(i)
             del files[i]
         template_copy["_source"]["total"] = commit.stats.total
-        print("------------{}".format(template_copy))
         all_git_list.append(template_copy)
     print(all_git_list)
     init_sync_bulk_git_datas(all_git_list=all_git_list, opensearch_conn_infos=opensearch_conn_infos)
