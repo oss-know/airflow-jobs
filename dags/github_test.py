@@ -1,57 +1,29 @@
 import time
 from datetime import datetime
-from pprint import pprint
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from airflow.models import Variable
 
 with DAG(
-        dag_id='github_test',
+        dag_id='github_test_v1',
         schedule_interval=None,
-        start_date=datetime(2000, 1, 1),
+        start_date=datetime(2021, 1, 1),
         catchup=False,
-        tags=['github', 'test'],
+        tags=['github'],
 ) as dag:
-    def scheduler_init_sync_github_commit(ds, **kwargs):
-        return 'End scheduler_init_sync_github_commit'
-
-
-    op_scheduler_init_sync_github_commit = PythonOperator(
-        task_id='scheduler_init_sync_github_commit',
-        python_callable=scheduler_init_sync_github_commit
+    def start_load_github_profile(ds, **kwargs):
+        from libs.github.test import test_github_headers
+        test_github_headers()
+        return 'End start_load_github_profile'
+    op_start_load_github_profile = PythonOperator(
+        task_id='op_start_load_github_profile',
+        python_callable=start_load_github_profile,
     )
 
-
-    def do_init_sync_github_commit(params):
-        from airflow.models import Variable
-        from libs.github import test
-
-        github_tokens = Variable.get("github_infos", deserialize_json=True)
-        opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
-
-        owner = params["owner"]
-        repo = params["repo"]
-        since = params["since"]
-        until = params["until"]
-
-        do_init_sync_info = test.init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, since,
-                                                          until)
-
-        print(do_init_sync_info)
-        return "do_init_sync_github_commit-end"
-
-
-    need_do_inti_sync_ops = []
-
-    from airflow.models import Variable
-
-    need_init_sync_github_commits_list = Variable.get("need_init_sync_github_commits_list", deserialize_json=True)
-
-    for now_need_init_sync_github_commits in need_init_sync_github_commits_list:
-        op_do_init_sync_github_commit = PythonOperator(
-            task_id='do_init_sync_github_commit_{owner}_{repo}'.format(
-                owner=now_need_init_sync_github_commits["owner"],
-                repo=now_need_init_sync_github_commits["repo"]),
-            python_callable=do_init_sync_github_commit,
-            op_kwargs={'params': now_need_init_sync_github_commits},
-        )
-        op_scheduler_init_sync_github_commit >> op_do_init_sync_github_commit
+    def end_load_github_profile(ds, **kwargs):
+        return 'End::end_load_github_profile'
+    op_end_load_github_profile = PythonOperator(
+        task_id='op_end_load_github_profile',
+        python_callable=end_load_github_profile,
+    )
+    op_start_load_github_profile >> op_end_load_github_profile

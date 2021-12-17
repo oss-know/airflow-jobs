@@ -1,6 +1,4 @@
-import time
 from datetime import datetime
-from pprint import pprint
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 
