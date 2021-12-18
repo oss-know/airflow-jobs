@@ -4,16 +4,16 @@ import itertools
 import copy
 from opensearchpy import OpenSearch
 from opensearchpy import helpers as OpenSearchHelpers
-from ..util.base import github_headers
+from ..util.base import github_headers, do_get_result
 
 
-def get_github_issues(github_tokens_iter, opensearch_conn_infos, owner, page, repo, since):
+def get_github_issues(session, github_tokens_iter, opensearch_conn_infos, owner, page, repo, since):
     url = "https://api.github.com/repos/{owner}/{repo}/issues".format(
         owner=owner, repo=repo)
     headers = copy.deepcopy(github_headers)
     headers.update({'Authorization': 'token %s' % next(github_tokens_iter)})
     params = {'state': 'all', 'per_page': 100, 'page': page, 'since': since}
-    res = requests.get(url, headers=headers, params=params)
+    res = do_get_result(session, url, headers, params)
     if res.status_code != 200:
         print("opensearch_conn_info:", opensearch_conn_infos)
         print("url:", url)
@@ -79,11 +79,12 @@ def init_sync_github_issues(github_tokens, opensearch_conn_infos, owner, repo, s
                                                    })
     print("DELETE github issues result:", del_result)
 
+    session = requests.sessions.Session
     for page in range(1, 10000):
         # Token sleep
         time.sleep(1)
 
-        req = get_github_issues(github_tokens_iter, opensearch_conn_infos, owner, page, repo, since)
+        req = get_github_issues(session, github_tokens_iter, opensearch_conn_infos, owner, page, repo, since)
         one_page_github_issues = req.json()
 
         if (one_page_github_issues is not None) and len(one_page_github_issues) == 0:
