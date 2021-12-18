@@ -1,3 +1,5 @@
 apache_airflow==2.2.2
 opensearch_py==1.0.0
 requests==2.26.0
+urllib3~=1.26.7
+tenacity~=8.0.1

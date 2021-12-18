@@ -5,7 +5,7 @@ from airflow.operators.python import PythonOperator
 from airflow.models import Variable
 
 with DAG(
-        dag_id='github_profile_v1',
+        dag_id='github_init_profile_v1',
         schedule_interval=None,
         start_date=datetime(2021, 1, 1),
         catchup=False,
@@ -20,7 +20,7 @@ with DAG(
 
     def load_github_repo_profile(params):
         from airflow.models import Variable
-        from libs.github import profiles
+        from libs.github import init_profiles
 
         github_tokens = Variable.get("github_infos", deserialize_json=True)
         opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
