@@ -29,9 +29,8 @@ def do_get_result(session, url, headers, params):
     return res
 
 
-def get_client():
-    from airflow.models import Variable
-    opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
+def get_opensearch_client(opensearch_conn_infos):
+
     client = OpenSearch(
         hosts=[{'host': opensearch_conn_infos["HOST"], 'port': opensearch_conn_infos["PORT"]}],
         http_compress=True,

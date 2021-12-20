@@ -27,12 +27,14 @@ with DAG(
         owner = params["owner"]
         repo = params["repo"]
         url = params["url"]
+        proxy_config = params.get("proxy_config")
         opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
 
-        init_sync_git_info = gits.init_sync_git_datas(url,
-                                                      owner,
-                                                      repo,
-                                                      opensearch_conn_datas, )
+        init_sync_git_info = gits.init_sync_git_datas(git_url=url,
+                                                      owner=owner,
+                                                      repo=repo,
+                                                      proxy_config=proxy_config,
+                                                      opensearch_conn_datas=opensearch_conn_datas)
         print(init_sync_git_info)
         return 'do_sync_git_info:::end'
 
