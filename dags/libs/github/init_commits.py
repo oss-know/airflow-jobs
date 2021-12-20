@@ -11,9 +11,10 @@ from ..util.base import do_get_result
 
 # from requests.adapters import HTTPAdapter
 # from requests.packages.urllib3.util import Retry
+OPENSEARCH_INDEX_GITHUB_COMMITS = "github_commits"
 
 
-def get_github_commits(session, github_tokens_iter, opensearch_conn_infos, owner, page, repo, since, until):
+def get_github_commits(session, github_tokens_iter, opensearch_conn_infos, owner, repo, page, since, until):
     url = "https://api.github.com/repos/{owner}/{repo}/commits".format(
         owner=owner, repo=repo)
     headers = copy.deepcopy(github_headers)
@@ -26,7 +27,7 @@ def get_github_commits(session, github_tokens_iter, opensearch_conn_infos, owner
 def bulk_github_commits(now_github_commits, opensearch_client, owner, repo):
     bulk_all_github_commits = []
     for now_commit in now_github_commits:
-        has_commit = opensearch_client.search(index="github_commits".format(owner=owner, repo=repo),
+        has_commit = opensearch_client.search(index=OPENSEARCH_INDEX_GITHUB_COMMITS,
                                               body={
                                                   "query": {
                                                       "term": {
@@ -38,7 +39,7 @@ def bulk_github_commits(now_github_commits, opensearch_client, owner, repo):
                                               }
                                               )
         if len(has_commit["hits"]["hits"]) == 0:
-            template = {"_index": "github_commits".format(owner=owner, repo=repo),
+            template = {"_index": OPENSEARCH_INDEX_GITHUB_COMMITS,
                         "_source": {"search_key": {"owner": owner, "repo": repo},
                                     "raw_data": None}}
             commit_item = copy.deepcopy(template)
@@ -69,8 +70,7 @@ def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, 
 
     session = requests.sessions.Session
     for page in range(9999):
-        req = get_github_commits(session, github_tokens_iter, opensearch_conn_infos, owner, page, repo, since, until)
-
+        req = get_github_commits(session, github_tokens_iter, opensearch_conn_infos, owner, repo, page, since, until)
         now_github_commits = req.json()
 
         if (now_github_commits is not None) and len(now_github_commits) == 0:
@@ -80,8 +80,10 @@ def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, 
 
         bulk_github_commits(now_github_commits, opensearch_client, owner, repo)
 
-        print("success get github commits :: {owner}/{repo} page_index:{page}".format(owner=owner, repo=repo, page=page))
+        print("success get github commits :: {owner}/{repo} page_index:{page}".format(owner=owner,
+                                                                                      repo=repo,
+                                                                                      page=page))
 
         time.sleep(1)
 
-    return "END：：init_sync_github_commits"
+    return "END::init_sync_github_commits"

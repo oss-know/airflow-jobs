@@ -6,6 +6,8 @@ from opensearchpy import OpenSearch
 from opensearchpy import helpers as OpenSearchHelpers
 from ..util.base import github_headers, do_get_result
 
+OPENSEARCH_INDEX_GITHUB_ISSUES = "github_issues"
+
 
 def get_github_issues(session, github_tokens_iter, opensearch_conn_infos, owner, page, repo, since):
     url = "https://api.github.com/repos/{owner}/{repo}/issues".format(
@@ -28,7 +30,7 @@ def bulk_github_issues(now_github_issues, opensearch_client, owner, repo):
     bulk_all_github_issues = []
 
     for now_issue in now_github_issues:
-        template = {"_index": "github_issues".format(owner=owner, repo=repo),
+        template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES,
                     "_source": {"search_key": {"owner": owner, "repo": repo},
                                 "raw_data": None}}
         commit_item = copy.deepcopy(template)
@@ -59,7 +61,7 @@ def init_sync_github_issues(github_tokens, opensearch_conn_infos, owner, repo, s
     #     opensearch_client.indices.create("github_issues")
 
     # 由于需要初始化幂等要求，在重新初始化前删除对应owner/repo的所有数据
-    del_result = opensearch_client.delete_by_query(index="github_issues",
+    del_result = opensearch_client.delete_by_query(index=OPENSEARCH_INDEX_GITHUB_ISSUES,
                                                    body={
                                                        "track_total_hits": True,
                                                        "query": {

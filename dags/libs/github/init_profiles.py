@@ -111,7 +111,6 @@ def get_opensearch_client(opensearch_conn_infos):
 
 
 # TODO : 定时任务
-# TODO： 将查询更新的数据源从建立id新表变成折叠（collapse）查询opensearch（去重排序）
 # 更新github_profile
 def add_updated_github_profiles(github_tokens, opensearch_conn_infos):
     opensearch_client = get_opensearch_client(opensearch_conn_infos)
@@ -125,6 +124,25 @@ def add_updated_github_profiles(github_tokens, opensearch_conn_infos):
 
     github_tokens_iter = itertools.cycle(github_tokens)
     github_profile_userids = github_profile_userids["hits"]["hits"]
+    # TODO： 将查询更新的数据源从建立id新表变成折叠（collapse）查询opensearch（去重排序）
+    # existing_github_profiles = opensearch_client.search(
+    #     index='github_profile',
+    #     body={
+    #         "query": {
+    #             "match_all": {}
+    #         },
+    #         "collapse": {
+    #             "field": "login.keyword"
+    #         },
+    #         "sort": [
+    #             {il
+    #                 "updated_at": {
+    #                     "order": "desc"
+    #                 }
+    #             }
+    #         ]
+    #     }
+    # )
     for github_profile_userid in github_profile_userids:
         # 以id为查询条件获取OpenSearch中的最新profile信息
         existing_github_profile = opensearch_client.search(
