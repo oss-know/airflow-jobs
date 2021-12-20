@@ -80,8 +80,8 @@ def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, 
 
         bulk_github_commits(now_github_commits, opensearch_client, owner, repo)
 
-        print("success get github:: {owner}/{repo} page_index:{page}".format(owner=owner, repo=repo, page=page))
+        print("success get github commits :: {owner}/{repo} page_index:{page}".format(owner=owner, repo=repo, page=page))
 
         time.sleep(1)
 
-    return "init_sync_github_commits END"
+    return "END：：init_sync_github_commits"

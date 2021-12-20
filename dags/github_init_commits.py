@@ -12,7 +12,7 @@ with DAG(
         tags=['github'],
 ) as dag:
     def scheduler_init_sync_github_commit(ds, **kwargs):
-        return 'End scheduler_init_sync_github_commit'
+        return 'End::scheduler_init_sync_github_commit'
 
 
     op_scheduler_init_sync_github_commit = PythonOperator(
@@ -41,7 +41,7 @@ with DAG(
                                                                   until)
 
         print(do_init_sync_info)
-        return "do_init_sync_github_commit-end"
+        return "END::do_init_sync_github_commit"
 
 
     need_do_inti_sync_ops = []
