@@ -28,9 +28,14 @@ with DAG(
         owner = params["owner"]
         repo = params["repo"]
 
-        do_init_sync_profile = profiles.load_github_profile(github_tokens, opensearch_conn_infos, owner, repo)
+        do_init_sync_profile = init_profiles.load_github_profile(github_tokens, opensearch_conn_infos, owner, repo)
 
         print(do_init_sync_profile)
+
+        do_add_updated_github_profiles = init_profiles.add_updated_github_profiles(github_tokens, opensearch_conn_infos)
+
+        print(do_add_updated_github_profiles)
+
         return 'End load_github_repo_profile'
 
 
