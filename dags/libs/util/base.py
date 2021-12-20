@@ -1,4 +1,5 @@
 from tenacity import *
+from opensearchpy import OpenSearch
 import urllib3
 
 github_headers = {'Connection': 'keep-alive', 'Accept-Encoding': 'gzip, deflate, br', 'Accept': '*/*',
@@ -26,3 +27,18 @@ def do_get_result(session, url, headers, params):
         print("text:", res.text)
         raise Exception('获取github commits 失败！')
     return res
+
+
+def get_client():
+    from airflow.models import Variable
+    opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
+    client = OpenSearch(
+        hosts=[{'host': opensearch_conn_infos["HOST"], 'port': opensearch_conn_infos["PORT"]}],
+        http_compress=True,
+        http_auth=(opensearch_conn_infos["USER"], opensearch_conn_infos["PASSWD"]),
+        use_ssl=True,
+        verify_certs=False,
+        ssl_assert_hostname=False,
+        ssl_show_warn=False
+    )
+    return client
