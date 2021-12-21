@@ -6,7 +6,7 @@ github_headers = {'Connection': 'keep-alive', 'Accept-Encoding': 'gzip, deflate,
                   'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36', }
 
 
-class GithubGetException(Exception):
+class HttpGetException(Exception):
     def __init__(self, message, status):
         super().__init__(message, status)
         self.message = message
@@ -32,7 +32,7 @@ def do_get_result(req_session, url, headers, params):
         print("status_code:", res.status_code)
         print("params:", params)
         print("text:", res.text)
-        raise GithubGetException('获取github commits 失败！')
+        raise HttpGetException('http get 失败！')
 
     return res
 

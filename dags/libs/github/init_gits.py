@@ -12,6 +12,28 @@ from airflow.models import Variable
 opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
 
 
+def delete_pre(owner, repo, client):
+    query = {
+        "query": {
+            "bool": {
+                "must": [
+                    {"term": {
+                        "owner.keyword": {
+                            "value": owner
+                        }
+                    }}, {"term": {
+                        "repo.keyword": {
+                            "value": repo
+                        }
+                    }}
+                ]
+            }
+        }
+    }
+    client.delete_by_query(index="git_raw", body=query)
+    print("删除数据成功")
+
+
 def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, site="github"):
     # 克隆版本库
     if os.path.exists('/tmp/{owner}/{repo}'.format(owner=owner, repo=repo)):
@@ -27,6 +49,8 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
 
     client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
     all_git_list = []
+    # 删除在数据库中已经存在的此项目数据
+    delete_pre(owner=owner, repo=repo, client=client)
     for commit in repo_info.iter_commits():
         files = commit.stats.files
         files_list = []
@@ -61,8 +85,16 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
                          "total": commit.stats.total
                      }}
         all_git_list.append(bulk_data)
-    print(all_git_list)
+        # print(all_git_list)
+        if len(all_git_list) > 1000:
+            # 批量插入数据
+            init_sync_bulk_git_datas(all_git_list=all_git_list, client=client)
+            print("{owner}/{repo}, commit.hexsha:{sha}".format(owner=owner, repo=repo, sha=commit.hexsha))
+            all_git_list.clear()
+
     init_sync_bulk_git_datas(all_git_list=all_git_list, client=client)
+    print("{owner}/{repo}, commit.hexsha:{sha}".format(owner=owner, repo=repo, sha=commit.hexsha))
+    all_git_list.clear()
     return
 
 
