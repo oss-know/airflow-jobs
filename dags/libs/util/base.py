@@ -6,6 +6,12 @@ github_headers = {'Connection': 'keep-alive', 'Accept-Encoding': 'gzip, deflate,
                   'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36', }
 
 
+class GithubGetException(Exception):
+    def __init__(self, message, status):
+        super().__init__(message, status)
+        self.message = message
+        self.status = status
+
 # retry 防止SSL解密错误，请正确处理是否忽略证书有效性
 @retry(stop=stop_after_attempt(3),
        wait=wait_fixed(1),
@@ -23,9 +29,10 @@ def do_get_result(req_session, url, headers, params):
     if res.status_code != 200:
         print("url:", url)
         print("headers:", headers)
+        print("status_code:", res.status_code)
         print("params:", params)
         print("text:", res.text)
-        raise Exception('获取github commits 失败！')
+        raise GithubGetException('获取github commits 失败！')
 
     return res
 

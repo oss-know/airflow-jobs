@@ -3,7 +3,7 @@ import requests
 import time
 from opensearchpy import OpenSearch
 from opensearchpy.helpers import scan as os_scan
-from ..util.base import github_headers
+from ..util.base import github_headers, do_get_result, GithubGetException
 
 OPEN_SEARCH_GITHUB_PROFILE_INDEX = "github_profile"
 
@@ -84,14 +84,19 @@ def get_github_profile(github_tokens_iter, login_info, opensearch_conn_infos):
     github_headers.update({'Authorization': 'token %s' % next(github_tokens_iter),
                            'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'})
     try:
-        req = requests.get(url, headers=github_headers)
+        req_session = requests.Session()
+        req = do_get_result(req_session, url, headers=github_headers)
         if req.status_code != 200:
-            print("opensearch_conn_info:", opensearch_conn_infos)
-            print("url:", url)
-            print("headers:", github_headers)
-            print("text:", req.text)
             raise Exception('获取github profile 失败！')
         now_github_profile = req.json()
+    except GithubGetException:
+        print("遇到访问github api 错误！！！")
+        print("opensearch_conn_info:", opensearch_conn_infos)
+        print("url:", url)
+        print("status_code:", req.status_code)
+        print("headers:", github_headers)
+        print("text:", req.text)
     finally:
         req.close()
+
     return now_github_profile

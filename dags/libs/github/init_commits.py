@@ -14,6 +14,42 @@ from ..util.base import do_get_result
 OPENSEARCH_INDEX_GITHUB_COMMITS = "github_commits"
 
 
+def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, since=None, until=None):
+    github_tokens_iter = itertools.cycle(github_tokens)
+
+    opensearch_client = OpenSearch(
+        hosts=[{'host': opensearch_conn_infos["HOST"], 'port': opensearch_conn_infos["PORT"]}],
+        http_compress=True,
+        http_auth=(opensearch_conn_infos["USER"], opensearch_conn_infos["PASSWD"]),
+        use_ssl=True,
+        verify_certs=False,
+        ssl_assert_hostname=False,
+        ssl_show_warn=False
+    )
+
+    # if not opensearch_client.indices.exists("github_commits".format(owner=owner, repo=repo)):
+    #     opensearch_client.indices.create("github_commits".format(owner=owner, repo=repo))
+
+    session = requests.Session()
+    for page in range(9999):
+        req = get_github_commits(session, github_tokens_iter, opensearch_conn_infos, owner, repo, page, since, until)
+        now_github_commits = req.json()
+
+        if (now_github_commits is not None) and len(now_github_commits) == 0:
+            print("get github commits end to break:: {owner}/{repo} page_index:{page}".format(
+                owner=owner, repo=repo, page=page))
+            break
+
+        bulk_github_commits(now_github_commits, opensearch_client, owner, repo)
+
+        print("success get github commits :: {owner}/{repo} page_index:{page}".format(owner=owner,
+                                                                                      repo=repo,
+                                                                                      page=page))
+
+        time.sleep(1)
+
+    return "END::init_sync_github_commits"
+
 def get_github_commits(session, github_tokens_iter, opensearch_conn_infos, owner, repo, page, since, until):
     url = "https://api.github.com/repos/{owner}/{repo}/commits".format(
         owner=owner, repo=repo)
@@ -51,39 +87,3 @@ def bulk_github_commits(now_github_commits, opensearch_client, owner, repo):
     print("current page insert githubcommits success", success)
     print("current page insert githubcommits failed", failed)
 
-
-def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, since=None, until=None):
-    github_tokens_iter = itertools.cycle(github_tokens)
-
-    opensearch_client = OpenSearch(
-        hosts=[{'host': opensearch_conn_infos["HOST"], 'port': opensearch_conn_infos["PORT"]}],
-        http_compress=True,
-        http_auth=(opensearch_conn_infos["USER"], opensearch_conn_infos["PASSWD"]),
-        use_ssl=True,
-        verify_certs=False,
-        ssl_assert_hostname=False,
-        ssl_show_warn=False
-    )
-
-    if not opensearch_client.indices.exists("github_commits".format(owner=owner, repo=repo)):
-        opensearch_client.indices.create("github_commits".format(owner=owner, repo=repo))
-
-    session = requests.Session()
-    for page in range(9999):
-        req = get_github_commits(session, github_tokens_iter, opensearch_conn_infos, owner, repo, page, since, until)
-        now_github_commits = req.json()
-
-        if (now_github_commits is not None) and len(now_github_commits) == 0:
-            print("get github commits end to break:: {owner}/{repo} page_index:{page}".format(
-                owner=owner, repo=repo, page=page))
-            break
-
-        bulk_github_commits(now_github_commits, opensearch_client, owner, repo)
-
-        print("success get github commits :: {owner}/{repo} page_index:{page}".format(owner=owner,
-                                                                                      repo=repo,
-                                                                                      page=page))
-
-        time.sleep(1)
-
-    return "END::init_sync_github_commits"
