@@ -26,17 +26,16 @@ with DAG(
         from libs.github import init_pull_requests
 
         github_tokens = Variable.get("github_tokens", deserialize_json=True)
-        print("github_tokens--------------------------",github_tokens)
-        opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
+        opensearch_conn_info = Variable.get("opensearch_conn_data", deserialize_json=True)
 
         owner = params["owner"]
         repo = params["repo"]
         # since = params["since"]
         since = None
 
-        # do_init_sync_info = init_pull_requests.init_sync_github_pull_requests(
-        #     github_tokens, opensearch_conn_infos, owner, repo, since)
-        # print(do_init_sync_info)
+        do_init_sync_info = init_pull_requests.init_sync_github_pull_requests(
+            github_tokens, opensearch_conn_info, owner, repo, since)
+        print(do_init_sync_info)
 
         return "End:do_init_sync_github_pull_requests"
 

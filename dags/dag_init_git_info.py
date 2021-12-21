@@ -23,7 +23,7 @@ with DAG(
 
     def do_sync_git_info(params):
         from airflow.models import Variable
-        from libs.github import gits
+        from libs.github import init_gits
         owner = params["owner"]
         repo = params["repo"]
         url = params["url"]

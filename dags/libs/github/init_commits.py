@@ -68,7 +68,7 @@ def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, 
     if not opensearch_client.indices.exists("github_commits".format(owner=owner, repo=repo)):
         opensearch_client.indices.create("github_commits".format(owner=owner, repo=repo))
 
-    session = requests.sessions.Session
+    session = requests.Session()
     for page in range(9999):
         req = get_github_commits(session, github_tokens_iter, opensearch_conn_infos, owner, repo, page, since, until)
         now_github_commits = req.json()

@@ -9,40 +9,6 @@ from ..util.base import github_headers, do_get_result
 OPENSEARCH_INDEX_GITHUB_ISSUES = "github_issues"
 
 
-def get_github_issues(session, github_tokens_iter, opensearch_conn_infos, owner, page, repo, since):
-    url = "https://api.github.com/repos/{owner}/{repo}/issues".format(
-        owner=owner, repo=repo)
-    headers = copy.deepcopy(github_headers)
-    headers.update({'Authorization': 'token %s' % next(github_tokens_iter)})
-    params = {'state': 'all', 'per_page': 100, 'page': page, 'since': since}
-    res = do_get_result(session, url, headers, params)
-    if res.status_code != 200:
-        print("opensearch_conn_info:", opensearch_conn_infos)
-        print("url:", url)
-        print("headers:", headers)
-        print("params:", params)
-        print("text:", res.text)
-        raise Exception('get_github_issues error')
-    return res
-
-
-def bulk_github_issues(now_github_issues, opensearch_client, owner, repo):
-    bulk_all_github_issues = []
-
-    for now_issue in now_github_issues:
-        template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES,
-                    "_source": {"search_key": {"owner": owner, "repo": repo},
-                                "raw_data": None}}
-        commit_item = copy.deepcopy(template)
-        commit_item["_source"]["raw_data"] = now_issue
-        bulk_all_github_issues.append(commit_item)
-        print("add init sync github issues number:{number}".format(number=now_issue["number"]))
-
-    success, failed = OpenSearchHelpers.bulk(client=opensearch_client, actions=bulk_all_github_issues)
-    print("now page:{size} sync github issues success:{success} & failed:{failed}".format(
-        size=len(bulk_all_github_issues), success=success, failed=failed))
-
-
 def init_sync_github_issues(github_tokens, opensearch_conn_infos, owner, repo, since=None):
     github_tokens_iter = itertools.cycle(github_tokens)
 
@@ -81,7 +47,7 @@ def init_sync_github_issues(github_tokens, opensearch_conn_infos, owner, repo, s
                                                    })
     print("DELETE github issues result:", del_result)
 
-    session = requests.sessions.Session
+    session = requests.Session()
     for page in range(1, 10000):
         # Token sleep
         time.sleep(1)
@@ -98,3 +64,39 @@ def init_sync_github_issues(github_tokens, opensearch_conn_infos, owner, repo, s
 
         print(
             "success get github issues page:{owner}/{repo} page_index:{page}".format(owner=owner, repo=repo, page=page))
+
+
+def get_github_issues(session, github_tokens_iter, opensearch_conn_infos, owner, page, repo, since):
+    url = "https://api.github.com/repos/{owner}/{repo}/issues".format(
+        owner=owner, repo=repo)
+    headers = copy.deepcopy(github_headers)
+    headers.update({'Authorization': 'token %s' % next(github_tokens_iter)})
+    params = {'state': 'all', 'per_page': 100, 'page': page, 'since': since}
+    res = do_get_result(session, url, headers, params)
+    if res.status_code != 200:
+        print("opensearch_conn_info:", opensearch_conn_infos)
+        print("url:", url)
+        print("headers:", headers)
+        print("params:", params)
+        print("text:", res.text)
+        raise Exception('get_github_issues error')
+    return res
+
+
+def bulk_github_issues(now_github_issues, opensearch_client, owner, repo):
+    bulk_all_github_issues = []
+
+    for now_issue in now_github_issues:
+        template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES,
+                    "_source": {"search_key": {"owner": owner, "repo": repo},
+                                "raw_data": None}}
+        commit_item = copy.deepcopy(template)
+        commit_item["_source"]["raw_data"] = now_issue
+        bulk_all_github_issues.append(commit_item)
+        print("add init sync github issues number:{number}".format(number=now_issue["number"]))
+
+    success, failed = OpenSearchHelpers.bulk(client=opensearch_client, actions=bulk_all_github_issues)
+    print("now page:{size} sync github issues success:{success} & failed:{failed}".format(
+        size=len(bulk_all_github_issues), success=success, failed=failed))
+
+    return success, failed
