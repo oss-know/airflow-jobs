@@ -23,23 +23,24 @@ def load_github_profile(github_tokens, opensearch_conn_infos, owner, repo):
     )
 
     # 查询owner+repo所有github commits记录用来提取github author和committer
-    res = os_scan(client=opensearch_client, query={
-        "track_total_hits": True,
-        "query": {
-            "bool": {"must": [
-                {"term": {
-                    "search_key.owner.keyword": {
-                        "value": owner
-                    }
-                }},
-                {"term": {
-                    "search_key.repo.keyword": {
-                        "value": repo
-                    }
-                }}
-            ]}
-        }
-    }, index='github_commits', doc_type='_doc', timeout='1m')
+    res = os_scan(client=opensearch_client, index='github_commits',
+                  query={
+                      "track_total_hits": True,
+                      "query": {
+                          "bool": {"must": [
+                              {"term": {
+                                  "search_key.owner.keyword": {
+                                      "value": owner
+                                  }
+                              }},
+                              {"term": {
+                                  "search_key.repo.keyword": {
+                                      "value": repo
+                                  }
+                              }}
+                          ]}
+                      }
+                  }, doc_type='_doc', timeout='10m')
 
     # 对github author 和 committer 去重
     all_commits_users = {}

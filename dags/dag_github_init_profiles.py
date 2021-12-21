@@ -20,7 +20,7 @@ with DAG(
 
     def load_github_repo_profile(params):
         from airflow.models import Variable
-        from libs.github import init_profiles
+        from libs.github import init_profiles_by_github_commits
 
         github_tokens = Variable.get("github_tokens", deserialize_json=True)
         opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
