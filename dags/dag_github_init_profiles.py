@@ -22,13 +22,13 @@ with DAG(
         from airflow.models import Variable
         from libs.github import init_profiles
 
-        github_tokens = Variable.get("github_infos", deserialize_json=True)
+        github_tokens = Variable.get("github_tokens", deserialize_json=True)
         opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
 
         owner = params["owner"]
         repo = params["repo"]
 
-        do_init_sync_profile = profiles.load_github_profile(github_tokens, opensearch_conn_infos, owner, repo)
+        do_init_sync_profile = init_profiles.load_github_profile(github_tokens, opensearch_conn_infos, owner, repo)
 
         print(do_init_sync_profile)
         return 'End load_github_repo_profile'

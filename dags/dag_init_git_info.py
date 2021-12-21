@@ -5,7 +5,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 
 with DAG(
-        dag_id='git_sync_v1',
+        dag_id='git_init_sync_v1',
         schedule_interval=None,
         start_date=datetime(2021, 1, 1),
         catchup=False,
@@ -30,7 +30,7 @@ with DAG(
         proxy_config = params.get("proxy_config")
         opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
 
-        init_sync_git_info = gits.init_sync_git_datas(git_url=url,
+        init_sync_git_info = init_gits.init_sync_git_datas(git_url=url,
                                                       owner=owner,
                                                       repo=repo,
                                                       proxy_config=proxy_config,

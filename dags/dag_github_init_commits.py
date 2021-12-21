@@ -25,7 +25,7 @@ with DAG(
         from airflow.models import Variable
         from libs.github import init_commits
 
-        github_tokens = Variable.get("github_infos", deserialize_json=True)
+        github_tokens = Variable.get("github_tokens", deserialize_json=True)
         opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
 
         owner = params["owner"]

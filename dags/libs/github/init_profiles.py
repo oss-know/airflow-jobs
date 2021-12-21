@@ -5,6 +5,8 @@ from opensearchpy import OpenSearch
 from opensearchpy.helpers import scan as os_scan
 from ..util.base import github_headers
 
+OPEN_SEARCH_GITHUB_PROFILE_INDEX = "github_profile"
+
 
 def load_github_profile(github_tokens, opensearch_conn_infos, owner, repo):
     github_tokens_iter = itertools.cycle(github_tokens)
@@ -53,7 +55,7 @@ def load_github_profile(github_tokens, opensearch_conn_infos, owner, repo):
     for github_login in all_commits_users:
         time.sleep(1)
 
-        has_user_profile = opensearch_client.search(index="github_profile",
+        has_user_profile = opensearch_client.search(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
                                                     body={
                                                         "query": {
                                                             "term": {
@@ -69,7 +71,7 @@ def load_github_profile(github_tokens, opensearch_conn_infos, owner, repo):
 
         now_github_profile = get_github_profile(github_tokens_iter, github_login, opensearch_conn_infos)
         if len(current_profile_list) == 0:
-            opensearch_client.index(index="github_profile",
+            opensearch_client.index(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
                                     body=now_github_profile,
                                     refresh=True)
 

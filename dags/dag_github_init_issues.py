@@ -25,12 +25,13 @@ with DAG(
         from airflow.models import Variable
         from libs.github import init_issues
 
-        github_tokens = Variable.get("github_infos", deserialize_json=True)
+        github_tokens = Variable.get("github_tokens", deserialize_json=True)
         opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
 
         owner = params["owner"]
         repo = params["repo"]
-        since = params["since"]
+        # since = params["since"]
+        since = None
 
         do_init_sync_info = init_issues.init_sync_github_issues(
             github_tokens, opensearch_conn_infos, owner, repo, since)

@@ -19,7 +19,7 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
     # "https.proxy='socks5://127.0.0.1:7890'"
     if proxy_config:
         repo_info = Repo.clone_from(url=git_url, to_path='/tmp/{owner}/{repo}'.format(owner=owner, repo=repo),
-                                    config= proxy_config
+                                    config=proxy_config
                                     )
     else:
         repo_info = Repo.clone_from(url=git_url, to_path='/tmp/{owner}/{repo}'.format(owner=owner, repo=repo),
