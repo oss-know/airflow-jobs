@@ -54,13 +54,10 @@ def get_opensearch_client(opensearch_conn_infos):
     return client
 
 
-# todo : 并发传递数据怎么区分
-# failed_bulk_data = None
-
-def return_last_value(retry_state):
-    print(retry_state.__dict__)
+def do_opensearch_bulk_error_callback(retry_state):
     print(retry_state.args[0])
     print(retry_state.args[1])
+    print(retry_state.args[2])
 
     return retry_state
     demoretry_state__dict__ = '''
@@ -74,7 +71,8 @@ retry=<tenacity.retry.retry_if_exception_type object at 0x7f8e53089550>,
 before=<function before_nothing at 0x7f8e6d7dbb80>, 
 after=<function after_nothing at 0x7f8e6d7e4d30>)>,
  'fn': <function do_opensearch_bulk at 0x7f8e53079310>, 
-'args': (<OpenSearch([{'host': '192.168.8.201', 'port': '9200'}])>, []), 'kwargs': {}, 
+'args': (<OpenSearch([{'host': '192.168.8.201', 'port': '9200'}])>, []), 
+'kwargs': {}, 
 'attempt_number': 3, 
 'outcome': <Future at 0x7f8e52f082b0 state=finished raised HTTPError>, 
 'outcome_timestamp': 36839.030161701, 'idle_for': 2.0, 'next_action': None
@@ -82,15 +80,14 @@ after=<function after_nothing at 0x7f8e6d7e4d30>)>,
 '''
 
 
-
 # retry 防止SSL解密错误，请正确处理是否忽略证书有效性
-# todo: 更新opensearch 错误抓取
 @retry(stop=stop_after_attempt(3),
        wait=wait_fixed(1),
-       retry_error_callback=return_last_value,
+       retry_error_callback=do_opensearch_bulk_error_callback,
        retry=retry_if_exception_type(urllib3.exceptions.HTTPError))
 def do_opensearch_bulk(opensearch_client, bulk_all_data):
     success, failed = OpenSearchHelpers.bulk(client=opensearch_client, actions=bulk_all_data)
+    # 强制抛出异常
     raise urllib3.exceptions.HTTPError("do_opensearch_bulk Error")
     return success, failed
 
