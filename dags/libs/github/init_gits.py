@@ -159,7 +159,7 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
             print("datatime:{time}::count:{count}::{owner}/{repo}::commit.hexsha:{sha}".format(
                 time=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
                 count=now_count,
-                owner="owner", repo="repo",
+                owner=owner, repo=repo,
                 sha=commit.hexsha))
             all_git_list.clear()
 
