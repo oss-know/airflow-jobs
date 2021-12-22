@@ -54,46 +54,7 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
     all_git_list = []
     # 删除在数据库中已经存在的此项目数据
     delete_pre(owner=owner, repo=repo, client=client)
-    # for commit in repo_info.iter_commits():
-    #     files = commit.stats.files
-    #     files_list = []
-    #     for file in files:
-    #         file_dict = {}
-    #         file_dict["file_name"] = file
-    #         file_info = files[file]
-    #         for info in file_info:
-    #             file_dict[info] = file_info.get(info)
-    #         files_list.append(file_dict)
-    #     bulk_data = {"_index": "git_raw",
-    #                  "_source": {
-    #                      "owner": owner,
-    #                      "repo": repo,
-    #                      "origin": "http://github.com/{owner}/{repo}.git".format(owner=owner, repo=repo),
-    #                      "message": commit.message,
-    #                      "hexsha": commit.hexsha,
-    #                      "category": commit.type,
-    #                      "name_rev": commit.name_rev,
-    #                      "parents": [i.hexsha for i in commit.parents],
-    #                      "author_tz": int(commit.author_tz_offset / 3600),
-    #                      "commiter_tz": int(commit.committer_tz_offset / 3600),
-    #                      "author_name": commit.author.name,
-    #                      "author_email": commit.author.email,
-    #                      "committer_name": commit.committer.name,
-    #                      "committer_email": commit.committer.email,
-    #                      "authored_date": commit.authored_datetime,
-    #                      "authored_timestamp": commit.authored_date,
-    #                      "committed_date": commit.committed_datetime,
-    #                      "committed_timestamp": commit.committed_date,
-    #                      "files": files_list,
-    #                      "total": commit.stats.total
-    #                  }}
-    #     all_git_list.append(bulk_data)
-    #     # print(all_git_list)
-    #     if len(all_git_list) > 1000:
-    #         # 批量插入数据
-    #         init_sync_bulk_git_datas(all_git_list=all_git_list, client=client)
-    #         print("{owner}/{repo}, commit.hexsha:{sha}".format(owner=owner, repo=repo, sha=commit.hexsha))
-    #         all_git_list.clear()
+
     bulk_data_te = {"_index": "git_raw",
                     "_source": {
                         "search_key": {
@@ -151,6 +112,7 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
         bulk_data["_source"]["row_data"]["files"] = files_list
         bulk_data["_source"]["row_data"]["total"] = commit.stats.total
 
+
         now_count = now_count + 1
         all_git_list.append(bulk_data)
         if now_count % 500 == 0:
@@ -176,7 +138,6 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
     all_git_list.clear()
 
     return
-
 
 def init_sync_bulk_git_datas(all_git_list, client):
     success, failed = OpenSearchHelpers.bulk(client=client, actions=all_git_list)
