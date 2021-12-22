@@ -1,8 +1,11 @@
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+import airflow.providers.postgres.hooks.postgres as postgres_hooks
 
-# v0.0.1
+# irflow.providers.postgres.hooks.postgres
+# v0.0.1 初始化实现
+# v0.0.2 增加set_github_init_commits_check_data 用于设置初始化后更新的point data
 
 with DAG(
         dag_id='github_init_commits_v1',
@@ -26,21 +29,35 @@ with DAG(
         from libs.github import init_commits
 
         github_tokens = Variable.get("github_tokens", deserialize_json=True)
-        opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
+        opensearch_conn_info = Variable.get("opensearch_conn_data", deserialize_json=True)
 
         owner = params["owner"]
         repo = params["repo"]
         since = params["since"]
         until = params["until"]
 
-        do_init_sync_info = init_commits.init_sync_github_commits(github_tokens,
-                                                                  opensearch_conn_infos,
-                                                                  owner,
-                                                                  repo,
-                                                                  since,
-                                                                  until)
+        # 演示从airflow 获取 postgres_hooks 再获取 conn 链接
+        # postgres_conn = postgres_hooks.PostgresHook.get_hook("airflow-jobs").get_conn()
+        # pg_cursor = postgres_conn.cursor()
+        # pg_cursor.execute("select version();")
+        # record = pg_cursor.fetchone()
+        # print("PostgresRecord:", record)
+        # pg_cursor.close()
+        # postgres_conn.close()
 
-        print(do_init_sync_info)
+        postgres_conn = postgres_hooks.PostgresHook.get_hook("airflow-jobs").get_conn()
+        with postgres_conn:
+            do_init_sync_info = init_commits.init_sync_github_commits(github_tokens,
+                                                                      opensearch_conn_info,
+                                                                      postgres_conn,
+                                                                      owner,
+                                                                      repo,
+                                                                      since,
+                                                                      until)
+
+
+            print(do_init_sync_info)
+
         return "END::do_init_sync_github_commit"
 
 

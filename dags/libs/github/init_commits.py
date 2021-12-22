@@ -1,38 +1,34 @@
-import itertools
-import copy
-import time
-
-import requests
+import itertools, copy, time, datetime, requests
 from opensearchpy import OpenSearch
 from opensearchpy import helpers as OpenSearchHelpers
-from ..util.base import github_headers
+from ..util.base import github_headers, do_opensearch_bulk
 from ..util.base import do_get_result
-
 
 # from requests.adapters import HTTPAdapter
 # from requests.packages.urllib3.util import Retry
+OPENSEARCH_INDEX_CHECK_SYNC_DATA = "check_sync_data"
 OPENSEARCH_INDEX_GITHUB_COMMITS = "github_commits"
 
 
-def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, since=None, until=None):
+def init_sync_github_commits(github_tokens,
+                             opensearch_conn_info,
+                             postgres_conn,
+                             owner, repo, since=None, until=None):
     github_tokens_iter = itertools.cycle(github_tokens)
 
     opensearch_client = OpenSearch(
-        hosts=[{'host': opensearch_conn_infos["HOST"], 'port': opensearch_conn_infos["PORT"]}],
+        hosts=[{'host': opensearch_conn_info["HOST"], 'port': opensearch_conn_info["PORT"]}],
         http_compress=True,
-        http_auth=(opensearch_conn_infos["USER"], opensearch_conn_infos["PASSWD"]),
+        http_auth=(opensearch_conn_info["USER"], opensearch_conn_info["PASSWD"]),
         use_ssl=True,
         verify_certs=False,
         ssl_assert_hostname=False,
         ssl_show_warn=False
     )
 
-    # if not opensearch_client.indices.exists("github_commits".format(owner=owner, repo=repo)):
-    #     opensearch_client.indices.create("github_commits".format(owner=owner, repo=repo))
-
     session = requests.Session()
     for page in range(9999):
-        req = get_github_commits(session, github_tokens_iter, opensearch_conn_infos, owner, repo, page, since, until)
+        req = get_github_commits(session, github_tokens_iter, opensearch_conn_info, owner, repo, page, since, until)
         now_github_commits = req.json()
 
         if (now_github_commits is not None) and len(now_github_commits) == 0:
@@ -48,9 +44,12 @@ def init_sync_github_commits(github_tokens, opensearch_conn_infos, owner, repo, 
 
         time.sleep(1)
 
+    set_github_init_commits_check_data(opensearch_client, owner, repo, since, until)
+
     return "END::init_sync_github_commits"
 
-def get_github_commits(session, github_tokens_iter, opensearch_conn_infos, owner, repo, page, since, until):
+
+def get_github_commits(session, github_tokens_iter, opensearch_conn_info, owner, repo, page, since, until):
     url = "https://api.github.com/repos/{owner}/{repo}/commits".format(
         owner=owner, repo=repo)
     headers = copy.deepcopy(github_headers)
@@ -81,9 +80,40 @@ def bulk_github_commits(now_github_commits, opensearch_client, owner, repo):
             commit_item = copy.deepcopy(template)
             commit_item["_source"]["raw_data"] = now_commit
             bulk_all_github_commits.append(commit_item)
-            print("insert github commit sha:{sha}".format(sha=now_commit["sha"]))
-    print("current page insert count：", len(bulk_all_github_commits))
-    success, failed = OpenSearchHelpers.bulk(client=opensearch_client, actions=bulk_all_github_commits)
-    print("current page insert githubcommits success", success)
-    print("current page insert githubcommits failed", failed)
+            # print("insert github commit sha:{sha}".format(sha=now_commit["sha"]))
 
+    if len(bulk_all_github_commits) > 0:
+        success, failed = do_opensearch_bulk(opensearch_client, bulk_all_github_commits)
+        print("current github commits page insert count：{count},success:{success},failed:{failed}".format(
+            count=len(bulk_all_github_commits), failed=failed, success=success))
+
+
+# 完成owner/repo github commits 初始化后调用此方法建立初始化后下次更新的基准
+def set_github_init_commits_check_data(opensearch_client,
+                                       owner,
+                                       repo,
+                                       since,
+                                       until):
+    now_time = datetime.datetime.now()
+    check_update_info = {
+        "search_key": {
+            "update_time": now_time.isoformat(),
+            "update_timestamp": now_time.timestamp()
+        },
+        "owner": {
+            "name": owner
+        },
+        "repo": {
+            "name": repo
+        },
+        "github": {
+            "commits": {
+                "sync_timestamp": now_time.timestamp(),
+                "sync_since_datetime": since,
+                "sync_until_datetime": until
+            }
+        }
+    }
+    opensearch_client.index(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA,
+                            body=check_update_info,
+                            refresh=True)
