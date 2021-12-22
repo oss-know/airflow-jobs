@@ -1,9 +1,9 @@
 import json
-
+import urllib3
 from tenacity import *
 from opensearchpy import OpenSearch
 from opensearchpy import helpers as OpenSearchHelpers
-import urllib3
+from opensearchpy.exceptions import OpenSearchException
 
 github_headers = {'Connection': 'keep-alive', 'Accept-Encoding': 'gzip, deflate, br', 'Accept': '*/*',
                   'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36', }
@@ -84,11 +84,11 @@ after=<function after_nothing at 0x7f8e6d7e4d30>)>,
 @retry(stop=stop_after_attempt(3),
        wait=wait_fixed(1),
        retry_error_callback=do_opensearch_bulk_error_callback,
-       retry=retry_if_exception_type(urllib3.exceptions.HTTPError))
+       retry=retry_if_exception_type(OpenSearchException))
 def do_opensearch_bulk(opensearch_client, bulk_all_data):
     success, failed = OpenSearchHelpers.bulk(client=opensearch_client, actions=bulk_all_data)
     # 强制抛出异常
-    raise urllib3.exceptions.HTTPError("do_opensearch_bulk Error")
+    # raise urllib3.exceptions.HTTPError("do_opensearch_bulk Error")
     return success, failed
 
 
