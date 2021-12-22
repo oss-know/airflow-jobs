@@ -49,7 +49,7 @@ def init_sync_github_commits(github_tokens,
     return "END::init_sync_github_commits"
 
 
-def get_github_commits(session, github_tokens_iter, opensearch_conn_infos, owner, repo, page, since, until):
+def get_github_commits(session, github_tokens_iter, opensearch_conn_info, owner, repo, page, since, until):
     url = "https://api.github.com/repos/{owner}/{repo}/commits".format(
         owner=owner, repo=repo)
     headers = copy.deepcopy(github_headers)
@@ -82,9 +82,10 @@ def bulk_github_commits(now_github_commits, opensearch_client, owner, repo):
             bulk_all_github_commits.append(commit_item)
             # print("insert github commit sha:{sha}".format(sha=now_commit["sha"]))
 
-    success, failed = do_opensearch_bulk(opensearch_client,bulk_all_github_commits)
-    print("current github commits page insert count：{count},success:{success},failed:{failed}".format(
-        count=len(bulk_all_github_commits), failed=failed, success=success))
+    if len(bulk_all_github_commits) > 0:
+        success, failed = do_opensearch_bulk(opensearch_client, bulk_all_github_commits)
+        print("current github commits page insert count：{count},success:{success},failed:{failed}".format(
+            count=len(bulk_all_github_commits), failed=failed, success=success))
 
 
 # 完成owner/repo github commits 初始化后调用此方法建立初始化后下次更新的基准
