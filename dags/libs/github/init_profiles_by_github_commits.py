@@ -1,9 +1,12 @@
+import copy
 import itertools
 import requests
 import time
 from opensearchpy import OpenSearch
 from opensearchpy.helpers import scan as os_scan
-from ..util.base import github_headers
+from ..util.base import github_headers, do_get_result, HttpGetException
+
+OPEN_SEARCH_GITHUB_PROFILE_INDEX = "github_profile"
 
 
 def load_github_profile(github_tokens, opensearch_conn_infos, owner, repo):
@@ -12,23 +15,24 @@ def load_github_profile(github_tokens, opensearch_conn_infos, owner, repo):
     opensearch_client = get_opensearch_client(opensearch_conn_infos)
 
     # 查询owner+repo所有github commits记录用来提取github author和committer
-    res = os_scan(client=opensearch_client, query={
-        "track_total_hits": True,
-        "query": {
-            "bool": {"must": [
-                {"term": {
-                    "search_key.owner.keyword": {
-                        "value": owner
-                    }
-                }},
-                {"term": {
-                    "search_key.repo.keyword": {
-                        "value": repo
-                    }
-                }}
-            ]}
-        }
-    }, index='github_commits', doc_type='_doc', timeout='1m')
+    res = os_scan(client=opensearch_client, index='github_commits',
+                  query={
+                      "track_total_hits": True,
+                      "query": {
+                          "bool": {"must": [
+                              {"term": {
+                                  "search_key.owner.keyword": {
+                                      "value": owner
+                                  }
+                              }},
+                              {"term": {
+                                  "search_key.repo.keyword": {
+                                      "value": repo
+                                  }
+                              }}
+                          ]}
+                      }
+                  }, doc_type='_doc', timeout='10m')
 
     # 对github author 和 committer 去重
     all_commits_users = {}
@@ -45,7 +49,7 @@ def load_github_profile(github_tokens, opensearch_conn_infos, owner, repo):
     for github_login in all_commits_users:
         time.sleep(1)
 
-        has_user_profile = opensearch_client.search(index="github_profile",
+        has_user_profile = opensearch_client.search(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
                                                     body={
                                                         "query": {
                                                             "term": {
@@ -63,7 +67,7 @@ def load_github_profile(github_tokens, opensearch_conn_infos, owner, repo):
         now_github_profile = get_github_profile(github_tokens_iter, github_login, opensearch_conn_infos)
 
         if len(current_profile_list) == 0:
-            opensearch_client.index(index="github_profile",
+            opensearch_client.index(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
                                     body=now_github_profile,
                                     refresh=True)
             import json
@@ -79,20 +83,37 @@ def load_github_profile(github_tokens, opensearch_conn_infos, owner, repo):
 def get_github_profile(github_tokens_iter, login_info, opensearch_conn_infos):
     url = "https://api.github.com/users/{login_info}".format(
         login_info=login_info)
+
     github_headers.update({'Authorization': 'token %s' % next(github_tokens_iter),
                            'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
                                          'Chrome/96.0.4664.110 Safari/537.36'})
+
+    # github_headers.update({'Authorization': 'token %s' % next(github_tokens_iter),
+    #                        'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'})
+    headers = copy.deepcopy(github_headers)
+    headers.update({'Authorization': 'token %s' % next(github_tokens_iter)})
+    params = {}
+    req = {}
+    req_session = requests.Session()
+    now_github_profile = {}
+
     try:
-        req = requests.get(url, headers=github_headers)
-        if req.status_code != 200:
-            print("opensearch_conn_info:", opensearch_conn_infos)
-            print("url:", url)
-            print("headers:", github_headers)
-            print("text:", req.text)
-            raise Exception('获取github profile 失败！')
+        req = do_get_result(req_session, url, headers, params)
+        # if req.status_code != 200:
+        #     raise Exception('获取github profile 失败！')
         now_github_profile = req.json()
-    finally:
-        req.close()
+    except HttpGetException as hge:
+        print("遇到访问github api 错误！！！")
+        print("opensearch_conn_info:", opensearch_conn_infos)
+        print("url:", url)
+        print("status_code:", req.status_code)
+        print("headers:", headers)
+        print("text:", req.text)
+    except TypeError as e:
+        print("捕获airflow抛出的TypeError:", e)
+    # finally:
+    #     req.close()
+
     return now_github_profile
 
 

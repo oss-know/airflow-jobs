@@ -3,6 +3,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 
 # v0.0.1
+NEED_INIT_SYNC_GITHUB_ISSUES_COMMENTS_REPOS = "need_init_sync_github_issues_comments_repos"
 
 with DAG(
         dag_id='github_init_issues_comments_v1',
@@ -25,14 +26,19 @@ with DAG(
         from airflow.models import Variable
         from libs.github import init_issues_comments
 
-        github_tokens = Variable.get("github_infos", deserialize_json=True)
+        github_tokens = Variable.get("github_tokens", deserialize_json=True)
         opensearch_conn_info = Variable.get("opensearch_conn_data", deserialize_json=True)
+
+
+
 
         owner = params["owner"]
         repo = params["repo"]
-        since = params["since"]
+        # since = params["since"]
+        since = None
 
-        do_init_sync_info = init_issues_comments.init_sync_github_issues(
+
+        do_init_sync_info = init_issues_comments.init_sync_github_issues_comments(
             github_tokens, opensearch_conn_info, owner, repo, since)
 
         print(do_init_sync_info)
@@ -43,7 +49,8 @@ with DAG(
 
     from airflow.models import Variable
 
-    need_init_sync_github_issues_comments_repos = Variable.get("need_init_sync_github_issues_comments_repos", deserialize_json=True)
+    need_init_sync_github_issues_comments_repos = Variable.get(NEED_INIT_SYNC_GITHUB_ISSUES_COMMENTS_REPOS,
+                                                               deserialize_json=True)
 
     for need_init_sync_github_issues_comments_repo in need_init_sync_github_issues_comments_repos:
         op_do_init_sync_github_issues_comments = PythonOperator(
