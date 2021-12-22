@@ -96,10 +96,12 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
     #         all_git_list.clear()
     bulk_data_te = {"_index": "git_raw",
                     "_source": {
+                        "search_key": {
+                            "owner": owner,
+                            "repo": repo,
+                            "origin": "http://github.com/{owner}/{repo}.git".format(owner=owner, repo=repo),
+                        },
                         "row_data": {
-                            "owner": "",
-                            "repo": "repo",
-                            "origin": "",
                             "message": "",
                             "hexsha": "",
                             "category": "",

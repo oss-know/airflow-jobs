@@ -4,7 +4,7 @@ from pprint import pprint
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 
-# git_init_sync_v0.0.1
+# git_init_sync_v0.0.3
 
 with DAG(
         dag_id='git_init_sync_v1',
