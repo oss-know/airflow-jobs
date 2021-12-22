@@ -31,7 +31,8 @@ def load_github_profile(github_tokens, opensearch_conn_infos, owner, repo):
                                   }
                               }}
                           ]}
-                      }
+                      },
+                      "size": 10
                   }, doc_type='_doc', timeout='10m')
 
     # 对github author 和 committer 去重
@@ -57,8 +58,7 @@ def load_github_profile(github_tokens, opensearch_conn_infos, owner, repo):
                                                                     "value": github_login
                                                                 }
                                                             }
-                                                        },
-                                                        "size": 10
+                                                        }
                                                     }
                                                     )
 
@@ -88,8 +88,8 @@ def get_github_profile(github_tokens_iter, login_info, opensearch_conn_infos):
                            'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
                                          'Chrome/96.0.4664.110 Safari/537.36'})
 
-    # github_headers.update({'Authorization': 'token %s' % next(github_tokens_iter),
-    #                        'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'})
+    # github_headers.update({'Authorization': 'token %s' % next(github_tokens_iter), 'user-agent': 'Mozilla/5.0 (X11;
+    # Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'})
     headers = copy.deepcopy(github_headers)
     headers.update({'Authorization': 'token %s' % next(github_tokens_iter)})
     params = {}
@@ -131,68 +131,70 @@ def get_opensearch_client(opensearch_conn_infos):
     return opensearch_client
 
 
-# TODO : 定时任务
+# TODO: 传入用户的profile信息，获取用户的location、company、email，与晨琪对接
+def github_profile_data_source(now_github_profile):
+    import json
+    now_github_profile = json.dumps(now_github_profile)
+
+    now_github_profile_user_company = json.loads(now_github_profile)["company"]
+    if now_github_profile_user_company is not None:
+        print("now_github_profile_user_company")
+        print(now_github_profile_user_company)
+
+    now_github_profile_user_location = json.loads(now_github_profile)["location"]
+    if now_github_profile_user_location is not None:
+        print("now_github_profile_user_location")
+        print(now_github_profile_user_location)
+
+    now_github_profile_user_email = json.loads(now_github_profile)["email"]
+    if now_github_profile_user_email is not None:
+        print("now_github_profile_user_email")
+        print(now_github_profile_user_email)
+    return "与晨琪对接哈"
+
+
+# TODO: 定时任务
 # 更新github_profile
 def add_updated_github_profiles(github_tokens, opensearch_conn_infos):
     opensearch_client = get_opensearch_client(opensearch_conn_infos)
-    github_profile_userids = opensearch_client.search(index="github_profile_userid",
-                                                      body={
-                                                          "query": {
-                                                              "match_all": {}
-                                                          }
-                                                      }
-                                                      )
 
     github_tokens_iter = itertools.cycle(github_tokens)
-    github_profile_userids = github_profile_userids["hits"]["hits"]
-    # TODO： 将查询更新的数据源从建立id新表变成折叠（collapse）查询opensearch（去重排序）
-    # existing_github_profiles = opensearch_client.search(
-    #     index='github_profile',
-    #     body={
-    #         "query": {
-    #             "match_all": {}
-    #         },
-    #         "collapse": {
-    #             "field": "login.keyword"
-    #         },
-    #         "sort": [
-    #             {il
-    #                 "updated_at": {
-    #                     "order": "desc"
-    #                 }
-    #             }
-    #         ]
-    #     }
-    # )
-    for github_profile_userid in github_profile_userids:
-        # 以id为查询条件获取OpenSearch中的最新profile信息
-        existing_github_profile = opensearch_client.search(
-            index='github_profile',
-            body={
-                "query": {
-                    "term": {
-                        "id": {
-                            "value": github_profile_userid["_source"]["github_user_id"]
-                        }
-                    }
-                },
-                "size": 1,
-                "sort": {
+
+    # 将折叠（collapse）查询opensearch（去重排序）的结果作为查询更新的数据源
+    existing_github_profiles = opensearch_client.search(
+        index='github_profile',
+        body={
+            "query": {
+                "match_all": {}
+            },
+            "collapse": {
+                "field": "login.keyword"
+            },
+            "sort": [
+                {
                     "updated_at": {
                         "order": "desc"
                     }
                 }
-            }
-        )
+            ]
+        }
+    )
 
+    import json
+    existing_github_profiles = json.dumps(existing_github_profiles)
+    existing_github_profiles = json.loads(existing_github_profiles)["hits"]["hits"]
+
+    for existing_github_profile in existing_github_profiles:
         # 获取OpenSearch中最新的profile的"updated_at"信息
-        import json
-        existing_github_profile = json.dumps(existing_github_profile)
-        existing_github_profile_user_updated_at = json.loads(existing_github_profile)["hits"]["hits"][0]["_source"]["updated_at"]
+        existing_github_profile_user_updated_at = existing_github_profile["_source"]["updated_at"]
 
         # 根据上述"login"信息获取git上的profile信息中的"updated_at1"信息
-        existing_github_profile_user = json.loads(existing_github_profile)["hits"]["hits"][0]["_source"]["login"]
-        now_github_profile = get_github_profile(github_tokens_iter, existing_github_profile_user, opensearch_conn_infos)
+        existing_github_profile_login = existing_github_profile["_source"]["login"]
+        now_github_profile = get_github_profile(github_tokens_iter, existing_github_profile_login,
+                                                opensearch_conn_infos)
+        # todo: test -->delete
+        github_profile_data_source(now_github_profile)
+
         now_github_profile = json.dumps(now_github_profile)
         now_github_profile_user_updated_at = json.loads(now_github_profile)["updated_at"]
 
@@ -203,6 +205,7 @@ def add_updated_github_profiles(github_tokens, opensearch_conn_infos):
             opensearch_client.index(index="github_profile",
                                     body=now_github_profile,
                                     refresh=True)
+            print("用户有更新profile信息，将github上更新完的profile信息存入到opensearch中")
         else:
             print("两次的updated_at信息一致")
     return "增加更新用户信息测试"
