@@ -163,10 +163,20 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
                 sha=commit.hexsha))
             all_git_list.clear()
 
-    init_sync_bulk_git_datas(all_git_list=all_git_list, client=client)
-    print("{owner}/{repo}, commit.hexsha:{sha}".format(owner=owner, repo=repo, sha=commit.hexsha))
+    #                   init_sync_bulk_git_datas(all_git_list=all_git_list, client=client)
+    # print("{owner}/{repo}, commit.hexsha:{sha}".format(owner=owner, repo=repo, sha=commit.hexsha))
+    # all_git_list.clear()
+    success, failed = init_sync_bulk_git_datas(all_git_list=all_git_list, client=client)
+    print("init_sync_bulk_git_datas::success:{success},failed:{failed}".format(success=success, failed=failed))
+    print("datatime:{time}::count:{count}::{owner}/{repo}::commit.hexsha:{sha}".format(
+        time=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+        count=now_count,
+        owner=owner, repo=repo,
+        sha=commit.hexsha))
     all_git_list.clear()
+
     return
+
 
 
 def init_sync_bulk_git_datas(all_git_list, client):
