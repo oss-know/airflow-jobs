@@ -178,7 +178,6 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
     return
 
 
-
 def init_sync_bulk_git_datas(all_git_list, client):
     success, failed = OpenSearchHelpers.bulk(client=client, actions=all_git_list)
     return success, failed
