@@ -1,16 +1,13 @@
 import copy
 import time
-
-from git import Repo
 import shutil
 import os
-# import requests
-# import json
-# import itertools
-from opensearchpy import OpenSearch
-from ..util.base import get_opensearch_client
+
+from git import Repo
 from opensearchpy import helpers as OpenSearchHelpers
 from airflow.models import Variable
+
+from ..util.base import get_opensearch_client
 
 opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
 
@@ -112,7 +109,6 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
         bulk_data["_source"]["row_data"]["files"] = files_list
         bulk_data["_source"]["row_data"]["total"] = commit.stats.total
 
-
         now_count = now_count + 1
         all_git_list.append(bulk_data)
         if now_count % 500 == 0:
@@ -138,6 +134,7 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
     all_git_list.clear()
 
     return
+
 
 def init_sync_bulk_git_datas(all_git_list, client):
     success, failed = OpenSearchHelpers.bulk(client=client, actions=all_git_list)

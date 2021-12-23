@@ -2,8 +2,10 @@ import copy
 import itertools
 import requests
 import time
+
 from opensearchpy import OpenSearch
 from opensearchpy.helpers import scan as os_scan
+
 from ..util.base import github_headers, do_get_result, HttpGetException
 
 OPEN_SEARCH_GITHUB_PROFILE_INDEX = "github_profile"
