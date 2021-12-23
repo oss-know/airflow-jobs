@@ -1,8 +1,11 @@
 import urllib3
+import psycopg2
 from tenacity import *
 from opensearchpy import OpenSearch
-from opensearchpy import helpers as OpenSearchHelpers
+from opensearchpy import helpers as opensearch_helpers
 from opensearchpy.exceptions import OpenSearchException
+
+from ..util.airflow import get_postgres_conn
 
 github_headers = {'Connection': 'keep-alive', 'Accept-Encoding': 'gzip, deflate, br', 'Accept': '*/*',
                   'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36', }
@@ -54,29 +57,53 @@ def get_opensearch_client(opensearch_conn_infos):
 
 
 def do_opensearch_bulk_error_callback(retry_state):
-    print(retry_state.args[0])
-    print(retry_state.args[1])
-    print(retry_state.args[2])
+    # retry_state <class 'tuple'> attr
+    # {
+    # 'start_time': 36837.02790198,
+    # 'retry_object': <Retrying object at 0x7f8e53089760 (
+    # stop=<tenacity.stop.stop_after_attempt object at 0x7f8e53089730>,
+    # wait=<tenacity.wait.wait_fixed object at 0x7f8e53089520>,
+    # sleep=<function sleep at 0x7f8e6d7db0d0>,
+    # retry=<tenacity.retry.retry_if_exception_type object at 0x7f8e53089550>,
+    # before=<function before_nothing at 0x7f8e6d7dbb80>,
+    # after=<function after_nothing at 0x7f8e6d7e4d30>)>,
+    # 'fn': <function do_opensearch_bulk at 0x7f8e53079310>,
+    # 'args': (<OpenSearch([{'host': '192.168.8.201', 'port': '9200'}])>, []),
+    # 'kwargs': {},
+    # 'attempt_number': 3,
+    # 'outcome': <Future at 0x7f8e52f082b0 state=finished raised HTTPError>,
+    # 'outcome_timestamp': 36839.030161701, 'idle_for': 2.0, 'next_action': None
+    # }
 
+    print("retry_state.args-----------------------------------")
+    print(retry_state.args[1])
+    postgres_conn = get_postgres_conn()
+    sql = 'INSERT INTO "airflow-jobs".opensearch_bulk_failed_data(' \
+          'OWNER, REPO, BULK_DATA, TYPE) VALUES (' \
+          '%s, %s, %s, %s)'
+    try:
+        # create a new cursor
+        cur = postgres_conn.cursor()
+        # execute the INSERT statement
+        cur.executemany(sql, retry_state.args[1])
+        # commit the changes to the database
+        postgres_conn.commit()
+        # close communication with the database
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+    finally:
+        if postgres_conn is not None:
+            postgres_conn.close()
+    # 演示从airflow 获取 postgres_hooks 再获取 conn 链接
+    # postgres_conn = postgres_hooks.PostgresHook.get_hook("airflow-jobs").get_conn()
+    # pg_cursor = postgres_conn.cursor()
+    # pg_cursor.execute("select version();")
+    # record = pg_cursor.fetchone()
+    # print("PostgresRecord:", record)
+    # pg_cursor.close()
+    # postgres_conn.close()
     return retry_state
-    demoretry_state__dict__ = '''
-{
-'start_time': 36837.02790198, 
-'retry_object': <Retrying object at 0x7f8e53089760 (
-stop=<tenacity.stop.stop_after_attempt object at 0x7f8e53089730>, 
-wait=<tenacity.wait.wait_fixed object at 0x7f8e53089520>, 
-sleep=<function sleep at 0x7f8e6d7db0d0>, 
-retry=<tenacity.retry.retry_if_exception_type object at 0x7f8e53089550>, 
-before=<function before_nothing at 0x7f8e6d7dbb80>, 
-after=<function after_nothing at 0x7f8e6d7e4d30>)>,
- 'fn': <function do_opensearch_bulk at 0x7f8e53079310>, 
-'args': (<OpenSearch([{'host': '192.168.8.201', 'port': '9200'}])>, []), 
-'kwargs': {}, 
-'attempt_number': 3, 
-'outcome': <Future at 0x7f8e52f082b0 state=finished raised HTTPError>, 
-'outcome_timestamp': 36839.030161701, 'idle_for': 2.0, 'next_action': None
-}
-'''
 
 
 # retry 防止OpenSearchException
@@ -85,20 +112,7 @@ after=<function after_nothing at 0x7f8e6d7e4d30>)>,
        retry_error_callback=do_opensearch_bulk_error_callback,
        retry=retry_if_exception_type(OpenSearchException))
 def do_opensearch_bulk(opensearch_client, bulk_all_data):
-    success, failed = OpenSearchHelpers.bulk(client=opensearch_client, actions=bulk_all_data)
+    success, failed = opensearch_helpers.bulk(client=opensearch_client, actions=bulk_all_data)
     # 强制抛出异常
-    # raise urllib3.exceptions.HTTPError("do_opensearch_bulk Error")
+    # raise OpenSearchException("do_opensearch_bulk Error")
     return success, failed
-
-
-# --------------------------------------------
-
-PostgresSqlConn = None
-
-
-def set_postgresSQL_conn(postgresSQL_conn):
-    PostgresSqlConn = postgresSQL_conn
-
-
-def get_postgresSQL_conn():
-    return PostgresSqlConn

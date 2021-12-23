@@ -15,7 +15,6 @@ OPENSEARCH_INDEX_GITHUB_COMMITS = "github_commits"
 
 def init_sync_github_commits(github_tokens,
                              opensearch_conn_info,
-                             postgres_conn,
                              owner, repo, since=None, until=None):
     github_tokens_iter = itertools.cycle(github_tokens)
 
