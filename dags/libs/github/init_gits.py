@@ -133,6 +133,17 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
         sha=commit.hexsha))
     all_git_list.clear()
 
+    # 这里记录更新位置（gitlog 最上边的一条）
+    head_commit = repo_info.head.commit
+    response = client.index(body={
+        "owner": owner,
+        "repo": repo,
+        "commit_sha": head_commit.hexsha,
+        "commit_date": head_commit.committed_datetime,
+        "last_insert_timestamp": int(time.time())
+    }, index="git_commit_record")
+    print(response)
+
     return
 
 
