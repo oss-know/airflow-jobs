@@ -5,6 +5,7 @@ import time
 from opensearchpy import OpenSearch
 from opensearchpy.helpers import scan as os_scan
 from ..util.base import github_headers, do_get_result, HttpGetException
+from loguru import logger
 
 OPEN_SEARCH_GITHUB_PROFILE_INDEX = "github_profile"
 
@@ -154,8 +155,7 @@ def github_profile_data_source(now_github_profile):
     return "与晨琪对接哈"
 
 
-# TODO: 定时任务
-# 更新github_profile
+# TODO: 定时任务更新github_profile
 def add_updated_github_profiles(github_tokens, opensearch_conn_infos):
     opensearch_client = get_opensearch_client(opensearch_conn_infos)
 
@@ -207,6 +207,4 @@ def add_updated_github_profiles(github_tokens, opensearch_conn_infos):
                                     body=now_github_profile,
                                     refresh=True)
             print("用户有更新profile信息，将github上更新完的profile信息存入到opensearch中")
-        else:
-            print("两次的updated_at信息一致")
     return "增加更新用户信息测试"

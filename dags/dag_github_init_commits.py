@@ -3,6 +3,8 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 import airflow.providers.postgres.hooks.postgres as postgres_hooks
 
+
+
 # irflow.providers.postgres.hooks.postgres
 # v0.0.1 初始化实现
 # v0.0.2 增加set_github_init_commits_check_data 用于设置初始化后更新的point data

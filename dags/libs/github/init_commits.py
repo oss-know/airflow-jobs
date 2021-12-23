@@ -1,11 +1,14 @@
-import itertools, copy, time, datetime, requests
-from opensearchpy import OpenSearch
-from opensearchpy import helpers as OpenSearchHelpers
-from ..util.base import github_headers, do_opensearch_bulk
-from ..util.base import do_get_result
+import copy
+import datetime
+import itertools
+import requests
+import time
 
-# from requests.adapters import HTTPAdapter
-# from requests.packages.urllib3.util import Retry
+from opensearchpy import OpenSearch
+
+from ..util.base import do_get_result
+from ..util.base import github_headers, do_opensearch_bulk
+
 OPENSEARCH_INDEX_CHECK_SYNC_DATA = "check_sync_data"
 OPENSEARCH_INDEX_GITHUB_COMMITS = "github_commits"
 

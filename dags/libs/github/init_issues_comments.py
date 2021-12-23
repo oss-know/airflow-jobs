@@ -1,11 +1,11 @@
-import json
-
 import requests
 import time
 import itertools
 import copy
+
 from opensearchpy import OpenSearch
 from opensearchpy import helpers as OpenSearchHelpers
+
 from ..util.base import github_headers, do_get_result
 
 OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS = "github_issues_comments"

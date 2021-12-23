@@ -1,11 +1,11 @@
-import json
-
 import requests
 import time
 import itertools
 import copy
+
 from opensearchpy import OpenSearch
-from opensearchpy import helpers as OpenSearchHelpers
+from opensearchpy import helpers as opensearch_helpers
+
 from ..util.base import github_headers, do_get_result
 
 OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE = "github_issues_timeline"
@@ -26,9 +26,9 @@ def init_sync_github_issues_timeline(github_tokens, opensearch_conn_info, owner,
     )
 
     # 根据指定的 owner/repo , 获取现在所有的 issues，并根据所有 issues 便利相关的 comments
-    scan_results = OpenSearchHelpers.scan(opensearch_client,
-                                          index=OPENSEARCH_INDEX_GITHUB_ISSUES,
-                                          query={
+    scan_results = opensearch_helpers.scan(opensearch_client,
+                                           index=OPENSEARCH_INDEX_GITHUB_ISSUES,
+                                           query={
                                               "query": {
                                                   "bool": {"must": [
                                                       {"term": {
@@ -44,8 +44,8 @@ def init_sync_github_issues_timeline(github_tokens, opensearch_conn_info, owner,
                                                   ]}
                                               }
                                           },
-                                          doc_type="_doc"
-                                          )
+                                           doc_type="_doc"
+                                           )
     need_init_sync_all_results = []
     for now_item in scan_results:
         need_init_sync_all_results.append(now_item)
@@ -123,6 +123,6 @@ def bulk_github_pull_issues_timeline(now_github_issues_timeline, opensearch_clie
         bulk_all_datas.append(append_item)
         print("add init sync github issues_timeline number:{number}".format(number=number))
 
-    success, failed = OpenSearchHelpers.bulk(client=opensearch_client, actions=bulk_all_datas)
+    success, failed = opensearch_helpers.bulk(client=opensearch_client, actions=bulk_all_datas)
     print("now page:{size} sync github issues_timeline success:{success} & failed:{failed}".format(
         size=len(bulk_all_datas), success=success, failed=failed))
