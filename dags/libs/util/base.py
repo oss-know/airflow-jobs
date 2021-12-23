@@ -1,4 +1,3 @@
-import json
 import urllib3
 from tenacity import *
 from opensearchpy import OpenSearch
@@ -80,7 +79,7 @@ after=<function after_nothing at 0x7f8e6d7e4d30>)>,
 '''
 
 
-# retry 防止SSL解密错误，请正确处理是否忽略证书有效性
+# retry 防止OpenSearchException
 @retry(stop=stop_after_attempt(3),
        wait=wait_fixed(1),
        retry_error_callback=do_opensearch_bulk_error_callback,
