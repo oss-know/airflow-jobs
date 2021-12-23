@@ -1,3 +1,5 @@
+import json
+
 import urllib3
 import psycopg2
 from tenacity import *
@@ -56,54 +58,43 @@ def get_opensearch_client(opensearch_conn_infos):
     return client
 
 
+# retry_state <class 'tuple'> attr
+# {
+# 'start_time': 36837.02790198,
+# 'retry_object': <Retrying object at 0x7f8e53089760 (
+# stop=<tenacity.stop.stop_after_attempt object at 0x7f8e53089730>,
+# wait=<tenacity.wait.wait_fixed object at 0x7f8e53089520>,
+# sleep=<function sleep at 0x7f8e6d7db0d0>,
+# retry=<tenacity.retry.retry_if_exception_type object at 0x7f8e53089550>,
+# before=<function before_nothing at 0x7f8e6d7dbb80>,
+# after=<function after_nothing at 0x7f8e6d7e4d30>)>,
+# 'fn': <function do_opensearch_bulk at 0x7f8e53079310>,
+# 'args': (<OpenSearch([{'host': '192.168.8.201', 'port': '9200'}])>, []),
+# 'kwargs': {},
+# 'attempt_number': 3,
+# 'outcome': <Future at 0x7f8e52f082b0 state=finished raised HTTPError>,
+# 'outcome_timestamp': 36839.030161701, 'idle_for': 2.0, 'next_action': None
+# }
 def do_opensearch_bulk_error_callback(retry_state):
-    # retry_state <class 'tuple'> attr
-    # {
-    # 'start_time': 36837.02790198,
-    # 'retry_object': <Retrying object at 0x7f8e53089760 (
-    # stop=<tenacity.stop.stop_after_attempt object at 0x7f8e53089730>,
-    # wait=<tenacity.wait.wait_fixed object at 0x7f8e53089520>,
-    # sleep=<function sleep at 0x7f8e6d7db0d0>,
-    # retry=<tenacity.retry.retry_if_exception_type object at 0x7f8e53089550>,
-    # before=<function before_nothing at 0x7f8e6d7dbb80>,
-    # after=<function after_nothing at 0x7f8e6d7e4d30>)>,
-    # 'fn': <function do_opensearch_bulk at 0x7f8e53079310>,
-    # 'args': (<OpenSearch([{'host': '192.168.8.201', 'port': '9200'}])>, []),
-    # 'kwargs': {},
-    # 'attempt_number': 3,
-    # 'outcome': <Future at 0x7f8e52f082b0 state=finished raised HTTPError>,
-    # 'outcome_timestamp': 36839.030161701, 'idle_for': 2.0, 'next_action': None
-    # }
-
-    print("retry_state.args-----------------------------------")
-    print(retry_state.args[1])
     postgres_conn = get_postgres_conn()
-    sql = 'INSERT INTO "airflow-jobs".opensearch_bulk_failed_data(' \
-          'OWNER, REPO, BULK_DATA, TYPE) VALUES (' \
-          '%s, %s, %s, %s)'
+    sql = '''INSERT INTO afj_opensearch_bulk_failed_data(
+                OWNER, REPO, TYPE, BULK_DATA) 
+                VALUES (%s, %s, %s, %s);'''
     try:
-        # create a new cursor
         cur = postgres_conn.cursor()
-        # execute the INSERT statement
-        cur.executemany(sql, retry_state.args[1])
-        # commit the changes to the database
+        owner = retry_state.args[2]
+        repo = retry_state.args[3]
+        for bulk_item in retry_state.args[1]:
+            cur.execute(sql, (owner, repo, 'opensearch_bulk', json.dumps(bulk_item)))
         postgres_conn.commit()
-        # close communication with the database
         cur.close()
-    except (Exception, psycopg2.DatabaseError) as error:
+    except (psycopg2.DatabaseError) as error:
         print(error)
     finally:
         if postgres_conn is not None:
             postgres_conn.close()
-    # 演示从airflow 获取 postgres_hooks 再获取 conn 链接
-    # postgres_conn = postgres_hooks.PostgresHook.get_hook("airflow-jobs").get_conn()
-    # pg_cursor = postgres_conn.cursor()
-    # pg_cursor.execute("select version();")
-    # record = pg_cursor.fetchone()
-    # print("PostgresRecord:", record)
-    # pg_cursor.close()
-    # postgres_conn.close()
-    return retry_state
+
+    return retry_state.outcome.result()
 
 
 # retry 防止OpenSearchException
@@ -111,7 +102,9 @@ def do_opensearch_bulk_error_callback(retry_state):
        wait=wait_fixed(1),
        retry_error_callback=do_opensearch_bulk_error_callback,
        retry=retry_if_exception_type(OpenSearchException))
-def do_opensearch_bulk(opensearch_client, bulk_all_data):
+def do_opensearch_bulk(opensearch_client, bulk_all_data, owner, repo):
+    print("owner:{owner},repo:{repo}::do_opensearch_bulk".format(owner=owner, repo=repo))
+
     success, failed = opensearch_helpers.bulk(client=opensearch_client, actions=bulk_all_data)
     # 强制抛出异常
     # raise OpenSearchException("do_opensearch_bulk Error")
