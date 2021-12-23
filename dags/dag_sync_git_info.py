@@ -25,7 +25,7 @@ with DAG(
 
     def do_sync_git_info(params):
         from airflow.models import Variable
-        from libs.github import sysc_gits
+        from libs.github import sync_gits
         owner = params["owner"]
         repo = params["repo"]
         url = params["url"]
