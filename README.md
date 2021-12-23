@@ -22,3 +22,13 @@ airflow-jobs
 ```
 
 #需要设置更多的token
+
+# 更新docker镜像
+```
+a.停止容器运行: docker-compose stop
+b.删除容器: docker-conpose rm
+c.更新docker镜像: docker pull airflowjobs/airflow:dev-python3.8
+d.设置airflow用户: echo -e "AIRFLOW_UID=$(id -u)" > .env
+e.查看airflow用户设置是否成功：ll -a--->cat .env
+f.启动docker镜像: docker-compose up
+```

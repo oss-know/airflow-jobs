@@ -10,6 +10,7 @@ OPEN_SEARCH_GITHUB_PROFILE_INDEX = "github_profile"
 
 
 def load_github_profile(github_tokens, opensearch_conn_infos, owner, repo):
+    print("========================connectionTest20211223+++++++++++++++++++++++++++++++++++")
     github_tokens_iter = itertools.cycle(github_tokens)
 
     opensearch_client = get_opensearch_client(opensearch_conn_infos)
