@@ -18,11 +18,11 @@ def delete_pre(owner, repo, client):
             "bool": {
                 "must": [
                     {"term": {
-                        "owner.keyword": {
+                        "search_key.owner.keyword": {
                             "value": owner
                         }
                     }}, {"term": {
-                        "repo.keyword": {
+                        "search_key.repo.keyword": {
                             "value": repo
                         }
                     }}
