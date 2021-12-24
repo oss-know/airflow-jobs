@@ -77,8 +77,8 @@ def get_opensearch_client(opensearch_conn_infos):
 # }
 def do_opensearch_bulk_error_callback(retry_state):
     postgres_conn = get_postgres_conn()
-    sql = '''INSERT INTO afj_opensearch_bulk_failed_data(
-                OWNER, REPO, TYPE, BULK_DATA) 
+    sql = '''INSERT INTO retry_data(
+                OWNER, REPO, TYPE, DATA) 
                 VALUES (%s, %s, %s, %s);'''
     try:
         cur = postgres_conn.cursor()
