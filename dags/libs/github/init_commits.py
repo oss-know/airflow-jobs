@@ -6,11 +6,10 @@ import time
 
 from opensearchpy import OpenSearch
 
+from ..base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COMMITS
 from ..util.base import do_get_result
 from ..util.base import github_headers, do_opensearch_bulk
 
-OPENSEARCH_INDEX_CHECK_SYNC_DATA = "check_sync_data"
-OPENSEARCH_INDEX_GITHUB_COMMITS = "github_commits"
 
 
 def init_sync_github_commits(github_tokens,
