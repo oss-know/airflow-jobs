@@ -33,3 +33,4 @@ e.查看airflow用户设置是否成功：ll -a--->cat .env
 f.启动docker镜像: docker-compose up
 ```
 
+测试 sync git
