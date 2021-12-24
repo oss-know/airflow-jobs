@@ -32,7 +32,7 @@ with DAG(
         proxy_config = params.get("proxy_config")
         opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
 
-        sync_git_info = sysc_gits.sync_git_datas(git_url=url,
+        sync_git_info = sync_gits.sync_git_datas(git_url=url,
                                                       owner=owner,
                                                       repo=repo,
                                                       proxy_config=proxy_config,
