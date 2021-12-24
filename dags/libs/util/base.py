@@ -1,8 +1,13 @@
+import json
+
 import urllib3
+import psycopg2
 from tenacity import *
 from opensearchpy import OpenSearch
-from opensearchpy import helpers as OpenSearchHelpers
+from opensearchpy import helpers as opensearch_helpers
 from opensearchpy.exceptions import OpenSearchException
+
+from ..util.airflow import get_postgres_conn
 
 github_headers = {'Connection': 'keep-alive', 'Accept-Encoding': 'gzip, deflate, br', 'Accept': '*/*',
                   'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36', }
@@ -53,30 +58,43 @@ def get_opensearch_client(opensearch_conn_infos):
     return client
 
 
+# retry_state <class 'tuple'> attr
+# {
+# 'start_time': 36837.02790198,
+# 'retry_object': <Retrying object at 0x7f8e53089760 (
+# stop=<tenacity.stop.stop_after_attempt object at 0x7f8e53089730>,
+# wait=<tenacity.wait.wait_fixed object at 0x7f8e53089520>,
+# sleep=<function sleep at 0x7f8e6d7db0d0>,
+# retry=<tenacity.retry.retry_if_exception_type object at 0x7f8e53089550>,
+# before=<function before_nothing at 0x7f8e6d7dbb80>,
+# after=<function after_nothing at 0x7f8e6d7e4d30>)>,
+# 'fn': <function do_opensearch_bulk at 0x7f8e53079310>,
+# 'args': (<OpenSearch([{'host': '192.168.8.201', 'port': '9200'}])>, []),
+# 'kwargs': {},
+# 'attempt_number': 3,
+# 'outcome': <Future at 0x7f8e52f082b0 state=finished raised HTTPError>,
+# 'outcome_timestamp': 36839.030161701, 'idle_for': 2.0, 'next_action': None
+# }
 def do_opensearch_bulk_error_callback(retry_state):
-    print(retry_state.args[0])
-    print(retry_state.args[1])
-    print(retry_state.args[2])
+    postgres_conn = get_postgres_conn()
+    sql = '''INSERT INTO afj_opensearch_bulk_failed_data(
+                OWNER, REPO, TYPE, BULK_DATA) 
+                VALUES (%s, %s, %s, %s);'''
+    try:
+        cur = postgres_conn.cursor()
+        owner = retry_state.args[2]
+        repo = retry_state.args[3]
+        for bulk_item in retry_state.args[1]:
+            cur.execute(sql, (owner, repo, 'opensearch_bulk', json.dumps(bulk_item)))
+        postgres_conn.commit()
+        cur.close()
+    except (psycopg2.DatabaseError) as error:
+        print(error)
+    finally:
+        if postgres_conn is not None:
+            postgres_conn.close()
 
-    return retry_state
-    demoretry_state__dict__ = '''
-{
-'start_time': 36837.02790198, 
-'retry_object': <Retrying object at 0x7f8e53089760 (
-stop=<tenacity.stop.stop_after_attempt object at 0x7f8e53089730>, 
-wait=<tenacity.wait.wait_fixed object at 0x7f8e53089520>, 
-sleep=<function sleep at 0x7f8e6d7db0d0>, 
-retry=<tenacity.retry.retry_if_exception_type object at 0x7f8e53089550>, 
-before=<function before_nothing at 0x7f8e6d7dbb80>, 
-after=<function after_nothing at 0x7f8e6d7e4d30>)>,
- 'fn': <function do_opensearch_bulk at 0x7f8e53079310>, 
-'args': (<OpenSearch([{'host': '192.168.8.201', 'port': '9200'}])>, []), 
-'kwargs': {}, 
-'attempt_number': 3, 
-'outcome': <Future at 0x7f8e52f082b0 state=finished raised HTTPError>, 
-'outcome_timestamp': 36839.030161701, 'idle_for': 2.0, 'next_action': None
-}
-'''
+    return retry_state.outcome.result()
 
 
 # retry 防止OpenSearchException
@@ -84,21 +102,10 @@ after=<function after_nothing at 0x7f8e6d7e4d30>)>,
        wait=wait_fixed(1),
        retry_error_callback=do_opensearch_bulk_error_callback,
        retry=retry_if_exception_type(OpenSearchException))
-def do_opensearch_bulk(opensearch_client, bulk_all_data):
-    success, failed = OpenSearchHelpers.bulk(client=opensearch_client, actions=bulk_all_data)
+def do_opensearch_bulk(opensearch_client, bulk_all_data, owner, repo):
+    print("owner:{owner},repo:{repo}::do_opensearch_bulk".format(owner=owner, repo=repo))
+
+    success, failed = opensearch_helpers.bulk(client=opensearch_client, actions=bulk_all_data)
     # 强制抛出异常
-    # raise urllib3.exceptions.HTTPError("do_opensearch_bulk Error")
+    # raise OpenSearchException("do_opensearch_bulk Error")
     return success, failed
-
-
-# --------------------------------------------
-
-PostgresSqlConn = None
-
-
-def set_postgresSQL_conn(postgresSQL_conn):
-    PostgresSqlConn = postgresSQL_conn
-
-
-def get_postgresSQL_conn():
-    return PostgresSqlConn

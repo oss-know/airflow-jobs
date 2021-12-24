@@ -15,7 +15,6 @@ OPENSEARCH_INDEX_GITHUB_COMMITS = "github_commits"
 
 def init_sync_github_commits(github_tokens,
                              opensearch_conn_info,
-                             postgres_conn,
                              owner, repo, since=None, until=None):
     github_tokens_iter = itertools.cycle(github_tokens)
 
@@ -86,7 +85,7 @@ def bulk_github_commits(now_github_commits, opensearch_client, owner, repo):
             # print("insert github commit sha:{sha}".format(sha=now_commit["sha"]))
 
     if len(bulk_all_github_commits) > 0:
-        success, failed = do_opensearch_bulk(opensearch_client, bulk_all_github_commits)
+        success, failed = do_opensearch_bulk(opensearch_client, bulk_all_github_commits, owner, repo)
         print("current github commits page insert count：{count},success:{success},failed:{failed}".format(
             count=len(bulk_all_github_commits), failed=failed, success=success))
 

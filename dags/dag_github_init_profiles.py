@@ -28,14 +28,21 @@ with DAG(
         owner = params["owner"]
         repo = params["repo"]
 
-        do_init_sync_profile = init_profiles_by_github_commits.load_github_profile(github_tokens, opensearch_conn_infos, owner, repo)
-
+        # todo: need clean just for test
+        # do_init_sync_profile = init_profiles_by_github_commits.load_github_profile(github_tokens, opensearch_conn_infos, owner, repo)
+        #
+        # print(do_init_sync_profile)
+        #
+        # do_add_updated_github_profiles = init_profiles_by_github_commits.add_updated_github_profiles(github_tokens, opensearch_conn_infos)
+        #
+        # print(do_add_updated_github_profiles)
+        # from libs.github import init_profile_by_github_issues
+        # do_init_sync_profile = init_profile_by_github_issues.load_github_profile_issues(github_tokens, opensearch_conn_infos, owner, repo)
+        from libs.github import init_profile_by_github_issues_comments
+        do_init_sync_profile = init_profile_by_github_issues_comments.load_github_profile_issues_comments(github_tokens,
+                                                                                        opensearch_conn_infos, owner,
+                                                                                        repo)
         print(do_init_sync_profile)
-
-        do_add_updated_github_profiles = init_profiles_by_github_commits.add_updated_github_profiles(github_tokens, opensearch_conn_infos)
-
-        print(do_add_updated_github_profiles)
-
         return 'End load_github_repo_profile'
 
 

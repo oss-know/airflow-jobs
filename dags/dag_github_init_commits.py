@@ -38,27 +38,15 @@ with DAG(
         since = params["since"]
         until = params["until"]
 
-        # 演示从airflow 获取 postgres_hooks 再获取 conn 链接
-        # postgres_conn = postgres_hooks.PostgresHook.get_hook("airflow-jobs").get_conn()
-        # pg_cursor = postgres_conn.cursor()
-        # pg_cursor.execute("select version();")
-        # record = pg_cursor.fetchone()
-        # print("PostgresRecord:", record)
-        # pg_cursor.close()
-        # postgres_conn.close()
-
-        postgres_conn = postgres_hooks.PostgresHook.get_hook("airflow-jobs").get_conn()
-        with postgres_conn:
-            do_init_sync_info = init_commits.init_sync_github_commits(github_tokens,
-                                                                      opensearch_conn_info,
-                                                                      postgres_conn,
-                                                                      owner,
-                                                                      repo,
-                                                                      since,
-                                                                      until)
+        do_init_sync_info = init_commits.init_sync_github_commits(github_tokens,
+                                                                  opensearch_conn_info,
+                                                                  owner,
+                                                                  repo,
+                                                                  since,
+                                                                  until)
 
 
-            print(do_init_sync_info)
+        print(do_init_sync_info)
 
         return "END::do_init_sync_github_commit"
 
