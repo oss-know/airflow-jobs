@@ -76,6 +76,7 @@ def get_opensearch_client(opensearch_conn_infos):
 # 'outcome_timestamp': 36839.030161701, 'idle_for': 2.0, 'next_action': None
 # }
 def do_opensearch_bulk_error_callback(retry_state):
+    print("-----------------------=call do_opensearch_bulk_error_callback=----------------------")
     postgres_conn = get_postgres_conn()
     sql = '''INSERT INTO retry_data(
                 owner, repo, type, data) 
@@ -102,7 +103,8 @@ def do_opensearch_bulk_error_callback(retry_state):
 @retry(stop=stop_after_attempt(3),
        wait=wait_fixed(1),
        retry_error_callback=do_opensearch_bulk_error_callback,
-       retry=retry_if_exception_type(OpenSearchException))
+       retry=(retry_if_exception_type(OSError) | retry_if_exception_type(urllib3.exceptions.HTTPError) | retry_if_exception_type(OpenSearchException))
+       )
 def do_opensearch_bulk(opensearch_client, bulk_all_data, owner, repo):
     print("owner:{owner},repo:{repo}::do_opensearch_bulk".format(owner=owner, repo=repo))
 
