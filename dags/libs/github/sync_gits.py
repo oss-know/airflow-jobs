@@ -47,11 +47,11 @@ def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, si
         "query": {
             "bool": {"must": [
                 {"term": {
-                    "owner": {
+                    "owner.keyword": {
                         "value": owner
                     }
                 }}, {"term": {
-                    "repo": {
+                    "repo.keyword": {
                         "value": repo
                     }
                 }}
