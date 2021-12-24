@@ -7,7 +7,7 @@ from git import Repo
 from opensearchpy import helpers as OpenSearchHelpers
 from airflow.models import Variable
 
-from ..util.base import get_opensearch_client
+from ..util.base import get_opensearch_client, do_opensearch_bulk
 
 opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
 
@@ -18,11 +18,11 @@ def delete_pre(owner, repo, client):
             "bool": {
                 "must": [
                     {"term": {
-                        "owner.keyword": {
+                        "search_key.owner.keyword": {
                             "value": owner
                         }
                     }}, {"term": {
-                        "repo.keyword": {
+                        "search_key.repo.keyword": {
                             "value": repo
                         }
                     }}
@@ -112,7 +112,7 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
         now_count = now_count + 1
         all_git_list.append(bulk_data)
         if now_count % 500 == 0:
-            success, failed = init_sync_bulk_git_datas(all_git_list=all_git_list, client=client)
+            success, failed = do_opensearch_bulk(opensearch_client=client, bulk_all_data=all_git_list, owner=owner, repo=repo)
             print("init_sync_bulk_git_datas::success:{success},failed:{failed}".format(success=success, failed=failed))
             print("datatime:{time}::count:{count}::{owner}/{repo}::commit.hexsha:{sha}".format(
                 time=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
@@ -124,7 +124,7 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
     #                   init_sync_bulk_git_datas(all_git_list=all_git_list, client=client)
     # print("{owner}/{repo}, commit.hexsha:{sha}".format(owner=owner, repo=repo, sha=commit.hexsha))
     # all_git_list.clear()
-    success, failed = init_sync_bulk_git_datas(all_git_list=all_git_list, client=client)
+    success, failed = do_opensearch_bulk(opensearch_client=client, bulk_all_data=all_git_list, owner=owner, repo=repo)
     print("init_sync_bulk_git_datas::success:{success},failed:{failed}".format(success=success, failed=failed))
     print("datatime:{time}::count:{count}::{owner}/{repo}::commit.hexsha:{sha}".format(
         time=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
@@ -147,6 +147,6 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
     return
 
 
-def init_sync_bulk_git_datas(all_git_list, client):
-    success, failed = OpenSearchHelpers.bulk(client=client, actions=all_git_list)
-    return success, failed
+# def init_sync_bulk_git_datas(all_git_list, client):
+#     success, failed = OpenSearchHelpers.bulk(client=client, actions=all_git_list)
+#     return success, failed

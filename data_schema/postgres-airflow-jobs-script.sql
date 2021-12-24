@@ -1,20 +1,21 @@
-create table if not exists afj_opensearch_bulk_failed_data
+create table if not exists retry_data
 (
-    id        serial
-        constraint afj_opensearch_bulk_failed_data_pk
+    id               serial
+        constraint retry_data_pk
             primary key,
-    owner     varchar not null,
-    repo      varchar not null,
-    type      varchar not null,
-    bulk_data text    not null
+    owner            varchar,
+    repo             varchar,
+    data             varchar,
+    type             varchar,
+    create_timestamp date default CURRENT_TIMESTAMP
 );
 
-create unique index if not exists afj_opensearch_bulk_failed_data_id_uindex
-    on afj_opensearch_bulk_failed_data (id);
+create unique index if not exists retry_data_id_uindex
+    on retry_data (id);
 
-create index if not exists afj_opensearch_bulk_failed_data__index_owner_repo
-    on afj_opensearch_bulk_failed_data (owner, repo);
+create index if not exists retry_data_owner_repo_index
+    on retry_data (owner, repo);
 
-create index if not exists afj_opensearch_bulk_failed_data__index_type
-    on afj_opensearch_bulk_failed_data (type);
+create index if not exists retry_data_type_index
+    on retry_data (type);
 
