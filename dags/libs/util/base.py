@@ -78,7 +78,7 @@ def get_opensearch_client(opensearch_conn_infos):
 def do_opensearch_bulk_error_callback(retry_state):
     postgres_conn = get_postgres_conn()
     sql = '''INSERT INTO retry_data(
-                OWNER, REPO, TYPE, DATA) 
+                owner, repo, type, data) 
                 VALUES (%s, %s, %s, %s);'''
     try:
         cur = postgres_conn.cursor()
@@ -89,6 +89,7 @@ def do_opensearch_bulk_error_callback(retry_state):
         postgres_conn.commit()
         cur.close()
     except (psycopg2.DatabaseError) as error:
+        print("-----------------------=数据库异常！=----------------------")
         print(error)
     finally:
         if postgres_conn is not None:
