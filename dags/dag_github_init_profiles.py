@@ -3,6 +3,7 @@ from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.models import Variable
+from loguru import logger
 
 with DAG(
         dag_id='github_init_profile_v1',
@@ -38,11 +39,17 @@ with DAG(
         # print(do_add_updated_github_profiles)
         # from libs.github import init_profile_by_github_issues
         # do_init_sync_profile = init_profile_by_github_issues.load_github_profile_issues(github_tokens, opensearch_conn_infos, owner, repo)
-        from libs.github import init_profile_by_github_issues_comments
-        do_init_sync_profile = init_profile_by_github_issues_comments.load_github_profile_issues_comments(github_tokens,
-                                                                                        opensearch_conn_infos, owner,
-                                                                                        repo)
+        # from libs.github import init_profile_by_github_issues_comments
+        # do_init_sync_profile = init_profile_by_github_issues_comments.load_github_profile_issues_comments(github_tokens,
+        #                                                                                 opensearch_conn_infos, owner,
+        #                                                                                 repo)
+        from libs.github import init_profile_by_github_issues_timeline
+        do_init_sync_profile = init_profile_by_github_issues_timeline.load_github_profile_issues_timeline(github_tokens,
+                                                                                                          opensearch_conn_infos,
+                                                                                                          owner,
+                                                                                                          repo)
         print(do_init_sync_profile)
+        logger.info(f'do_init_sync_profile:{do_init_sync_profile}')
         return 'End load_github_repo_profile'
 
 

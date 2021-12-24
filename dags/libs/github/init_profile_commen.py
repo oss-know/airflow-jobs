@@ -2,9 +2,11 @@ import copy
 import requests
 from opensearchpy import OpenSearch
 from ..util.base import github_headers, do_get_result, HttpGetException
+from loguru import logger
 
 
 def get_github_profile(github_tokens_iter, login_info, opensearch_conn_infos):
+    """Get GitHub user's latest profile from GitHUb."""
     url = "https://api.github.com/users/{login_info}".format(
         login_info=login_info)
 
@@ -37,12 +39,13 @@ def get_github_profile(github_tokens_iter, login_info, opensearch_conn_infos):
         print("捕获airflow抛出的TypeError:", e)
     # finally:
     #     req.close()
-
+    logger.info(get_github_profile.__doc__)
     return now_github_profile
 
 
 # 连接OpenSearch
 def get_opensearch_client(opensearch_conn_infos):
+    """Get opensearch client to connect to opensearch."""
     opensearch_client = OpenSearch(
         hosts=[{'host': opensearch_conn_infos["HOST"], 'port': opensearch_conn_infos["PORT"]}],
         http_compress=True,
@@ -52,4 +55,5 @@ def get_opensearch_client(opensearch_conn_infos):
         ssl_assert_hostname=False,
         ssl_show_warn=False
     )
+    logger.info(get_opensearch_client.__doc__)
     return opensearch_client

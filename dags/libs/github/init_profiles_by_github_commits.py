@@ -8,7 +8,8 @@ OPEN_SEARCH_GITHUB_PROFILE_INDEX = "github_profile"
 
 
 def load_github_profile(github_tokens, opensearch_conn_infos, owner, repo):
-    print("========================connectionTest20211223+++++++++++++++++++++++++++++++++++")
+    """Get GitHub user's profile from GitHub commit and put it into opensearch if it is not in opensearch."""
+
     github_tokens_iter = itertools.cycle(github_tokens)
 
     opensearch_client = init_profile_commen.get_opensearch_client(opensearch_conn_infos)
@@ -63,20 +64,17 @@ def load_github_profile(github_tokens, opensearch_conn_infos, owner, repo):
 
         current_profile_list = has_user_profile["hits"]["hits"]
 
-        now_github_profile = init_profile_commen.get_github_profile(github_tokens_iter, github_login,
-                                                                    opensearch_conn_infos)
+        if current_profile_list is None:
+            logger.info(f"There's no github profile's login in {repo}")
+        else:
+            now_github_profile = init_profile_commen.get_github_profile(github_tokens_iter, github_login,
+                                                                        opensearch_conn_infos)
+            if len(current_profile_list) == 0:
+                opensearch_client.index(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
+                                        body=now_github_profile,
+                                        refresh=True)
 
-        if len(current_profile_list) == 0:
-            opensearch_client.index(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
-                                    body=now_github_profile,
-                                    refresh=True)
-            import json
-            now_github_profile = json.dumps(now_github_profile, indent=4)
-            now_github_user_id = json.loads(now_github_profile)["id"]
-            opensearch_client.index(index="github_profile_userid",
-                                    body={"github_user_id": now_github_user_id},
-                                    refresh=True)
-
+        logger.info(load_github_profile.__doc__)
     return "End::load_github_profile"
 
 
@@ -153,5 +151,5 @@ def add_updated_github_profiles(github_tokens, opensearch_conn_infos):
             opensearch_client.index(index="github_profile",
                                     body=now_github_profile,
                                     refresh=True)
-            print("用户有更新profile信息，将github上更新完的profile信息存入到opensearch中")
+            logger.info("Put the github user's new profile into opensearch.")
     return "增加更新用户信息测试"
