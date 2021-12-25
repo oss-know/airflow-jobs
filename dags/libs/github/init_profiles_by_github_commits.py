@@ -8,7 +8,8 @@ OPEN_SEARCH_GITHUB_PROFILE_INDEX = "github_profile"
 
 
 def load_github_profile(github_tokens, opensearch_conn_infos, owner, repo):
-    print("========================connectionTest20211223+++++++++++++++++++++++++++++++++++")
+    """Get GitHub user's profile from GitHub commit and put it into opensearch if it is not in opensearch."""
+
     github_tokens_iter = itertools.cycle(github_tokens)
 
     opensearch_client = init_profile_commen.get_opensearch_client(opensearch_conn_infos)
@@ -36,55 +37,36 @@ def load_github_profile(github_tokens, opensearch_conn_infos, owner, repo):
 
     # 对github author 和 committer 去重
     all_commits_users = {}
+    all_commits_users_set = set([])
+
     for commit in res:
         raw_data = commit["_source"]["raw_data"]
         if (raw_data["author"] is not None) and ("author" in raw_data) and ("login" in raw_data["author"]):
             all_commits_users[raw_data["author"]["login"]] = \
                 raw_data["author"]["url"]
+            all_commits_users_set.add(raw_data["author"]["login"])
         if (raw_data["committer"] is not None) and ("committer" in raw_data) and ("login" in raw_data["committer"]):
             all_commits_users[raw_data["committer"]["login"]] = \
                 raw_data["committer"]["url"]
+            all_commits_users_set.add(raw_data["committer"]["login"])
 
     # 获取github profile
-    for github_login in all_commits_users:
-        time.sleep(1)
+    # init_profile_commen.put_profile_into_opensearch(opensearch_client, all_commits_users_set,
+    #                                                 OPEN_SEARCH_GITHUB_PROFILE_INDEX, github_tokens_iter,
+    #                                                 opensearch_conn_infos)
+    init_profile_dict = {'opensearch_client': opensearch_client, 'logins': all_commits_users_set,
+                         'OPEN_SEARCH_GITHUB_PROFILE_INDEX': OPEN_SEARCH_GITHUB_PROFILE_INDEX,
+                         'github_tokens_iter': github_tokens_iter, 'opensearch_conn_infos': opensearch_conn_infos}
+    logger.info(load_github_profile.__doc__)
 
-        has_user_profile = opensearch_client.search(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
-                                                    body={
-                                                        "query": {
-                                                            "term": {
-                                                                "login.keyword": {
-                                                                    "value": github_login
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                    )
-
-        current_profile_list = has_user_profile["hits"]["hits"]
-
-        now_github_profile = init_profile_commen.get_github_profile(github_tokens_iter, github_login,
-                                                                    opensearch_conn_infos)
-
-        if len(current_profile_list) == 0:
-            opensearch_client.index(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
-                                    body=now_github_profile,
-                                    refresh=True)
-            import json
-            now_github_profile = json.dumps(now_github_profile, indent=4)
-            now_github_user_id = json.loads(now_github_profile)["id"]
-            opensearch_client.index(index="github_profile_userid",
-                                    body={"github_user_id": now_github_user_id},
-                                    refresh=True)
-
-    return "End::load_github_profile"
+    return init_profile_dict
 
 
 # TODO: 传入用户的profile信息，获取用户的location、company、email，与晨琪对接
 def github_profile_data_source(now_github_profile):
     import json
     now_github_profile = json.dumps(now_github_profile)
-
+    # todo: the print statements just for testing, w can ignore them
     now_github_profile_user_company = json.loads(now_github_profile)["company"]
     if now_github_profile_user_company is not None:
         print("now_github_profile_user_company")
@@ -153,5 +135,5 @@ def add_updated_github_profiles(github_tokens, opensearch_conn_infos):
             opensearch_client.index(index="github_profile",
                                     body=now_github_profile,
                                     refresh=True)
-            print("用户有更新profile信息，将github上更新完的profile信息存入到opensearch中")
+            logger.info("Put the github user's new profile into opensearch.")
     return "增加更新用户信息测试"
