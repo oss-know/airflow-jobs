@@ -44,31 +44,9 @@ def load_github_profile_issues_comments(github_tokens, opensearch_conn_infos, ow
             all_issues_comments_users.add(issue_comment_user_login)
 
         # 获取github profile
-        for issue_comment_user in all_issues_comments_users:
-            logger.info(f'issue_comment_user:{issue_comment_user}')
-            time.sleep(1)
+        # init_profile_commen.put_profile_into_opensearch(opensearch_client, all_issues_comments_users,
+        #                                                 OPEN_SEARCH_GITHUB_PROFILE_INDEX, github_tokens_iter,
+        #                                                 opensearch_conn_infos)
 
-            has_user_profile = opensearch_client.search(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
-                                                        body={
-                                                            "query": {
-                                                                "term": {
-                                                                    "login.keyword": {
-                                                                        "value": issue_comment_user
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                        )
-
-            current_profile_list = has_user_profile["hits"]["hits"]
-
-            now_github_profile = init_profile_commen.get_github_profile(github_tokens_iter, issue_comment_user,
-                                                                        opensearch_conn_infos)
-
-            if len(current_profile_list) == 0:
-                opensearch_client.index(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
-                                        body=now_github_profile,
-                                        refresh=True)
-                logger.info("Put the github user's profile into opensearch.")
         logger.info(load_github_profile_issues_comments.__doc__)
-    return "End::load_github_profile_issues_comments"
+    return all_issues_comments_users

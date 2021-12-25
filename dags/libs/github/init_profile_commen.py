@@ -3,6 +3,7 @@ import requests
 from opensearchpy import OpenSearch
 from ..util.base import github_headers, do_get_result, HttpGetException
 from loguru import logger
+import time
 
 
 def get_github_profile(github_tokens_iter, login_info, opensearch_conn_infos):
@@ -57,3 +58,34 @@ def get_opensearch_client(opensearch_conn_infos):
     )
     logger.info(get_opensearch_client.__doc__)
     return opensearch_client
+
+
+def put_profile_into_opensearch(opensearch_client, all_github_profile_users, OPEN_SEARCH_GITHUB_PROFILE_INDEX, github_tokens_iter, opensearch_conn_infos):
+    """put GitHub user profile into opensearch if it is not in opensearch"""
+    # 获取github profile
+    for github_profile_user in all_github_profile_users:
+        logger.info(f'github_profile_user:{github_profile_user}')
+        time.sleep(1)
+
+        has_user_profile = opensearch_client.search(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
+                                                    body={
+                                                        "query": {
+                                                            "term": {
+                                                                "login.keyword": {
+                                                                    "value": github_profile_user
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    )
+
+        current_profile_list = has_user_profile["hits"]["hits"]
+
+        now_github_profile = get_github_profile(github_tokens_iter, github_profile_user,
+                                                                    opensearch_conn_infos)
+
+        if len(current_profile_list) == 0:
+            opensearch_client.index(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
+                                    body=now_github_profile,
+                                    refresh=True)
+            logger.info("Put the github user's profile into opensearch.")
