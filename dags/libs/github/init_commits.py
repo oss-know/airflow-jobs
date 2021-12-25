@@ -28,7 +28,7 @@ def init_sync_github_commits(github_tokens,
     )
 
     session = requests.Session()
-    for page in range(9999):
+    for page in range(1, 9999):
         req = get_github_commits(session, github_tokens_iter, opensearch_conn_info, owner, repo, page, since, until)
         now_github_commits = req.json()
 
