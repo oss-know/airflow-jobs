@@ -7,6 +7,7 @@ import time
 
 
 def get_github_profile(github_tokens_iter, login_info, opensearch_conn_infos):
+
     """Get GitHub user's latest profile from GitHUb."""
     url = "https://api.github.com/users/{login_info}".format(
         login_info=login_info)
