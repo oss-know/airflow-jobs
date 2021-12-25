@@ -44,10 +44,6 @@ with DAG(
                                                                   repo,
                                                                   since,
                                                                   until)
-
-
-        print(do_init_sync_info)
-
         return "END::do_init_sync_github_commit"
 
 

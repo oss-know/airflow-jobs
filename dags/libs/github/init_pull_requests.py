@@ -2,9 +2,12 @@ import requests
 import time
 import itertools
 import copy
+
 from opensearchpy import OpenSearch
 from opensearchpy import helpers as OpenSearchHelpers
+
 from ..util.base import github_headers, do_get_result
+from ..util.log import logger
 
 OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS = "github_pull_requests"
 
@@ -45,7 +48,7 @@ def init_sync_github_pull_requests(github_tokens, opensearch_conn_info, owner, r
                                                            ]}
                                                        }
                                                    })
-    print("DELETE github pull_requests result:", del_result)
+    logger.info(f"DELETE github pull_requests result:{del_result}")
 
     # 获取指定owner/page 的 pull_requests
     session = requests.Session()
@@ -57,16 +60,12 @@ def init_sync_github_pull_requests(github_tokens, opensearch_conn_info, owner, r
         one_page_github_pull_requests = req.json()
 
         if (one_page_github_pull_requests is not None) and len(one_page_github_pull_requests) == 0:
-            print("init sync github pull_requests end to break:{owner}/{repo} page_index:{page}".format(
-                owner=owner, repo=repo, page=page))
+            logger.info(f"init sync github pull_requests end to break:{owner}/{repo} page_index:{page}")
             break
 
         bulk_github_pull_requests(one_page_github_pull_requests, opensearch_client, owner, repo)
 
-        print(
-            "success get github pull_requests page:{owner}/{repo} page_index:{page}".format(owner=owner,
-                                                                                            repo=repo,
-                                                                                            page=page))
+        logger.info(f"success get github pull_requests page:{owner}/{repo} page_index:{page}")
 
 
 def get_github_pull_requests(session, github_tokens_iter, opensearch_conn_infos, owner, page, repo, since):
@@ -89,10 +88,10 @@ def bulk_github_pull_requests(now_github_pull_requests, opensearch_client, owner
         pull_requests_item = copy.deepcopy(template)
         pull_requests_item["_source"]["raw_data"] = now_pull_requests
         bulk_all_github_pull_requests.append(pull_requests_item)
-        print("add init sync github pull_requests number:{number}".format(number=now_pull_requests["number"]))
+        logger.info(f"add init sync github pull_requests number:{now_pull_requests['number']}")
 
     success, failed = OpenSearchHelpers.bulk(client=opensearch_client, actions=bulk_all_github_pull_requests)
-    print("now page:{size} sync github pull_requests success:{success} & failed:{failed}".format(
-        size=len(bulk_all_github_pull_requests), success=success, failed=failed))
+    logger.info(
+        f"now page:{len(bulk_all_github_pull_requests)} sync github pull_requests success:{success} & failed:{failed}")
 
     return success, failed

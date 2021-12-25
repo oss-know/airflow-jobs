@@ -8,6 +8,7 @@ from opensearchpy import helpers as opensearch_helpers
 from opensearchpy.exceptions import OpenSearchException
 
 from ..util.airflow import get_postgres_conn
+from ..util.log import logger
 
 github_headers = {'Connection': 'keep-alive', 'Accept-Encoding': 'gzip, deflate, br', 'Accept': '*/*',
                   'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36', }
@@ -30,18 +31,15 @@ def do_get_result(req_session, url, headers, params):
     #     max_retries=Retry(total=5, method_whitelist=frozenset(['GET', 'POST']))))  # 设置 post()方法进行重访问
     # session.mount('https://', HTTPAdapter(
     #     max_retries=Retry(total=5, method_whitelist=frozenset(['GET', 'POST']))))  # 设置 post()方法进行重访问
-    # print("do_get_result::", params)
     # raise urllib3.exceptions.SSLError('获取github commits 失败！')
 
     res = req_session.get(url, headers=headers, params=params)
     if res.status_code >= 300:
-        print("url:", url)
-        print("headers:", headers)
-        print("status_code:", res.status_code)
-        print("params:", params)
-        print("text:", res.text)
+        logger.warning(f"url:{url}")
+        logger.warning(f"headers:{headers}")
+        logger.warning(f"params:{params}")
+        logger.warning(f"text:{res.text}")
         raise HttpGetException('http get 失败！')
-
     return res
 
 
@@ -76,7 +74,6 @@ def get_opensearch_client(opensearch_conn_infos):
 # 'outcome_timestamp': 36839.030161701, 'idle_for': 2.0, 'next_action': None
 # }
 def do_opensearch_bulk_error_callback(retry_state):
-    print("-----------------------=call do_opensearch_bulk_error_callback=----------------------")
     postgres_conn = get_postgres_conn()
     sql = '''INSERT INTO retry_data(
                 owner, repo, type, data) 
@@ -90,8 +87,8 @@ def do_opensearch_bulk_error_callback(retry_state):
         postgres_conn.commit()
         cur.close()
     except (psycopg2.DatabaseError) as error:
-        print("-----------------------=数据库异常！=----------------------")
-        print(error)
+        logger.error(f"psycopg2.DatabaseError:{error}")
+
     finally:
         if postgres_conn is not None:
             postgres_conn.close()
@@ -106,7 +103,7 @@ def do_opensearch_bulk_error_callback(retry_state):
        retry=(retry_if_exception_type(OSError) | retry_if_exception_type(urllib3.exceptions.HTTPError) | retry_if_exception_type(OpenSearchException))
        )
 def do_opensearch_bulk(opensearch_client, bulk_all_data, owner, repo):
-    print("owner:{owner},repo:{repo}::do_opensearch_bulk".format(owner=owner, repo=repo))
+    logger.info(f"owner:{owner},repo:{repo}::do_opensearch_bulk")
 
     success, failed = opensearch_helpers.bulk(client=opensearch_client, actions=bulk_all_data)
     # 强制抛出异常

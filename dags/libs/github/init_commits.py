@@ -7,9 +7,8 @@ import time
 from opensearchpy import OpenSearch
 
 from ..base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COMMITS, OPENSEARCH_INDEX_CHECK_SYNC_DATA
-from ..util.base import do_get_result
-from ..util.base import github_headers, do_opensearch_bulk
-
+from ..util.base import do_get_result, github_headers, do_opensearch_bulk
+from ..util.log import logger
 
 
 def init_sync_github_commits(github_tokens,
@@ -29,19 +28,16 @@ def init_sync_github_commits(github_tokens,
 
     session = requests.Session()
     for page in range(1, 9999):
-        req = get_github_commits(session, github_tokens_iter, opensearch_conn_info, owner, repo, page, since, until)
+        req = get_github_commits(session, github_tokens_iter, owner, repo, page, since, until)
         now_github_commits = req.json()
 
         if (now_github_commits is not None) and len(now_github_commits) == 0:
-            print("get github commits end to break:: {owner}/{repo} page_index:{page}".format(
-                owner=owner, repo=repo, page=page))
+            logger.info(f'get github commits end to break:: {owner}/{repo} page_index:{page}')
             break
 
         bulk_github_commits(now_github_commits, opensearch_client, owner, repo)
 
-        print("success get github commits :: {owner}/{repo} page_index:{page}".format(owner=owner,
-                                                                                      repo=repo,
-                                                                                      page=page))
+        logger.info(f"success get github commits :: {owner}/{repo} page_index:{page}")
 
         time.sleep(1)
 
@@ -50,7 +46,7 @@ def init_sync_github_commits(github_tokens,
     return "END::init_sync_github_commits"
 
 
-def get_github_commits(session, github_tokens_iter, opensearch_conn_info, owner, repo, page, since, until):
+def get_github_commits(session, github_tokens_iter, owner, repo, page, since, until):
     url = "https://api.github.com/repos/{owner}/{repo}/commits".format(
         owner=owner, repo=repo)
     headers = copy.deepcopy(github_headers)
@@ -81,12 +77,11 @@ def bulk_github_commits(now_github_commits, opensearch_client, owner, repo):
             commit_item = copy.deepcopy(template)
             commit_item["_source"]["raw_data"] = now_commit
             bulk_all_github_commits.append(commit_item)
-            # print("insert github commit sha:{sha}".format(sha=now_commit["sha"]))
 
     if len(bulk_all_github_commits) > 0:
         success, failed = do_opensearch_bulk(opensearch_client, bulk_all_github_commits, owner, repo)
-        print("current github commits page insert count：{count},success:{success},failed:{failed}".format(
-            count=len(bulk_all_github_commits), failed=failed, success=success))
+        logger.info(
+            f"current github commits page insert count：{len(bulk_all_github_commits)},success:{success},failed:{failed}")
 
 
 # 完成owner/repo github commits 初始化后调用此方法建立初始化后下次更新的基准
