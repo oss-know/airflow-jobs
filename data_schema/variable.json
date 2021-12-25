@@ -91,31 +91,31 @@
       "owner": "projectacrn",
       "repo": "projectacrn.github.io",
       "since": "1980-01-01T00:00:00Z",
-      "until": "2021-12-12T00:00:00Z"
+      "until": "2021-12-20T00:00:00Z"
     },
     {
       "owner": "projectacrn",
       "repo": "acrn-unit-test",
       "since": "1980-01-01T00:00:00Z",
-      "until": "2021-12-12T00:00:00Z"
+      "until": "2021-12-20T00:00:00Z"
     },
     {
       "owner": "projectacrn",
       "repo": "acrn-hypervisor",
       "since": "1980-01-01T00:00:00Z",
-      "until": "2021-12-12T00:00:00Z"
+      "until": "2021-12-20T00:00:00Z"
     },
     {
       "owner": "projectacrn",
       "repo": "acrn-edk2",
       "since": "1980-01-01T00:00:00Z",
-      "until": "2021-12-12T00:00:00Z"
+      "until": "2021-12-20T00:00:00Z"
     },
     {
       "owner": "projectacrn",
       "repo": "acrn-libvirt",
       "since": "1980-01-01T00:00:00Z",
-      "until": "2021-12-12T00:00:00Z"
+      "until": "2021-12-20T00:00:00Z"
     }
   ],
   "need_init_sync_github_issues_comments_repos": [
