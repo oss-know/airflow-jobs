@@ -7,6 +7,7 @@ from opensearchpy import OpenSearch
 from opensearchpy import helpers as opensearch_helpers
 
 from ..util.base import github_headers, do_get_result
+from ..util.log import logger
 
 OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE = "github_issues_timeline"
 OPENSEARCH_INDEX_GITHUB_ISSUES = "github_issues"
@@ -72,7 +73,7 @@ def init_sync_github_issues_timeline(github_tokens, opensearch_conn_info, owner,
                                                            ]}
                                                        }
                                                    })
-    print("DELETE github issues_timeline result:", del_result)
+    log("DELETE github issues_timeline result:", del_result)
 
     req_session = requests.Session()
 
@@ -87,17 +88,13 @@ def init_sync_github_issues_timeline(github_tokens, opensearch_conn_info, owner,
 
             if (one_page_github_issues_timeline is not None) and len(
                     one_page_github_issues_timeline) == 0:
-                print("init sync github issues end to break:{owner}/{repo} page_index:{page}".format(
-                    owner=owner, repo=repo, page=page))
+                logger.info(f"init sync github issues end to break:{owner}/{repo} page_index:{page}")
                 break
 
             bulk_github_pull_issues_timeline(one_page_github_issues_timeline,
                                              opensearch_client, owner, repo, number)
 
-            print("success get github issues "
-                  "page:{owner}/{repo} page_index:{page}".format(owner=owner,
-                                                                 repo=repo,
-                                                                 page=page))
+            logger.info(f"success get github issues page:{owner}/{repo} page_index:{page}")
 
 
 def get_github_issues_timeline(req_session, github_tokens_iter, owner, repo, number, page,
@@ -121,8 +118,7 @@ def bulk_github_pull_issues_timeline(now_github_issues_timeline, opensearch_clie
         append_item = copy.deepcopy(template)
         append_item["_source"]["raw_data"] = val
         bulk_all_datas.append(append_item)
-        print("add init sync github issues_timeline number:{number}".format(number=number))
+        logger.info(f"add init sync github issues_timeline number:{number}")
 
     success, failed = opensearch_helpers.bulk(client=opensearch_client, actions=bulk_all_datas)
-    print("now page:{size} sync github issues_timeline success:{success} & failed:{failed}".format(
-        size=len(bulk_all_datas), success=success, failed=failed))
+    logger.info(f"now page:{len(bulk_all_datas)} sync github issues_timeline success:{success} & failed:{failed}")

@@ -2,9 +2,12 @@ import requests
 import time
 import itertools
 import copy
+
 from opensearchpy import OpenSearch
 from opensearchpy import helpers as OpenSearchHelpers
+
 from ..util.base import github_headers, do_get_result
+from ..util.log import logger
 
 OPENSEARCH_INDEX_GITHUB_ISSUES = "github_issues"
 
@@ -45,7 +48,7 @@ def init_sync_github_issues(github_tokens, opensearch_conn_infos, owner, repo, s
                                                            ]}
                                                        }
                                                    })
-    print("DELETE github issues result:", del_result)
+    logger.info("DELETE github issues result:{del_result}")
 
     session = requests.Session()
     for page in range(1, 10000):
@@ -56,14 +59,12 @@ def init_sync_github_issues(github_tokens, opensearch_conn_infos, owner, repo, s
         one_page_github_issues = req.json()
 
         if (one_page_github_issues is not None) and len(one_page_github_issues) == 0:
-            print("init sync github issues end to break:{owner}/{repo} page_index:{page}".format(
-                owner=owner, repo=repo, page=page))
+            logger.info(f"init sync github issues end to break:{owner}/{repo} page_index:{page}")
             break
 
         bulk_github_issues(one_page_github_issues, opensearch_client, owner, repo)
 
-        print(
-            "success get github issues page:{owner}/{repo} page_index:{page}".format(owner=owner, repo=repo, page=page))
+        logger.info(f"success get github issues page:{owner}/{repo} page_index:{page}")
 
 
 def get_github_issues(session, github_tokens_iter, opensearch_conn_infos, owner, page, repo, since):
@@ -73,13 +74,7 @@ def get_github_issues(session, github_tokens_iter, opensearch_conn_infos, owner,
     headers.update({'Authorization': 'token %s' % next(github_tokens_iter)})
     params = {'state': 'all', 'per_page': 100, 'page': page, 'since': since}
     res = do_get_result(session, url, headers, params)
-    if res.status_code != 200:
-        print("opensearch_conn_info:", opensearch_conn_infos)
-        print("url:", url)
-        print("headers:", headers)
-        print("params:", params)
-        print("text:", res.text)
-        raise Exception('get_github_issues error')
+
     return res
 
 
@@ -93,10 +88,9 @@ def bulk_github_issues(now_github_issues, opensearch_client, owner, repo):
         commit_item = copy.deepcopy(template)
         commit_item["_source"]["raw_data"] = now_issue
         bulk_all_github_issues.append(commit_item)
-        print("add init sync github issues number:{number}".format(number=now_issue["number"]))
+        logger.info(f"add init sync github issues number:{now_issue['number']}")
 
     success, failed = OpenSearchHelpers.bulk(client=opensearch_client, actions=bulk_all_github_issues)
-    print("now page:{size} sync github issues success:{success} & failed:{failed}".format(
-        size=len(bulk_all_github_issues), success=success, failed=failed))
+    logger.info(f"now page:{len(bulk_all_github_issues)} sync github issues success:{success} & failed:{failed}")
 
     return success, failed

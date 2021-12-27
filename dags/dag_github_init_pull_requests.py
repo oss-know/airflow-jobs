@@ -35,7 +35,6 @@ with DAG(
 
         do_init_sync_info = init_pull_requests.init_sync_github_pull_requests(
             github_tokens, opensearch_conn_info, owner, repo, since)
-        print(do_init_sync_info)
 
         return "End:do_init_sync_github_pull_requests"
 

@@ -7,12 +7,13 @@ from opensearchpy import OpenSearch
 from opensearchpy import helpers as OpenSearchHelpers
 
 from ..util.base import github_headers, do_get_result
+from ..util.log import logger
 
 OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS = "github_issues_comments"
 OPENSEARCH_INDEX_GITHUB_ISSUES = "github_issues"
 
 
-def get_github_issues_comments(req_session, github_tokens_iter, opensearch_conn_infos, owner, repo, number, page,
+def get_github_issues_comments(req_session, github_tokens_iter, opensearch_conn_info, owner, repo, number, page,
                                since):
     url = "https://api.github.com/repos/{owner}/{repo}/issues/{number}/comments".format(
         owner=owner, repo=repo, number=number)
@@ -20,13 +21,6 @@ def get_github_issues_comments(req_session, github_tokens_iter, opensearch_conn_
     headers.update({'Authorization': 'token %s' % next(github_tokens_iter)})
     params = {'per_page': 100, 'page': page, 'since': since}
     res = do_get_result(req_session, url, headers, params)
-    if res.status_code != 200:
-        print("opensearch_conn_info:", opensearch_conn_infos)
-        print("url:", url)
-        print("headers:", headers)
-        print("params:", params)
-        print("text:", res.text)
-        raise Exception('get_github_issues error')
     return res
 
 
@@ -40,11 +34,11 @@ def bulk_github_issues_comments(now_github_issues_comments, opensearch_client, o
         commit_comment_item = copy.deepcopy(template)
         commit_comment_item["_source"]["raw_data"] = now_issue_comments
         bulk_all_github_issues_comments.append(commit_comment_item)
-        print("add init sync github issues comments number:{number}".format(number=number))
+        logger.info(f"add init sync github issues comments number:{number}")
 
     success, failed = OpenSearchHelpers.bulk(client=opensearch_client, actions=bulk_all_github_issues_comments)
-    print("now page:{size} sync github issues comments success:{success} & failed:{failed}".format(
-        size=len(bulk_all_github_issues_comments), success=success, failed=failed))
+    logger.info(
+        f"now page:{len(bulk_all_github_issues_comments)} sync github issues comments success:{success} & failed:{failed}")
 
 
 def init_sync_github_issues_comments(github_tokens, opensearch_conn_info, owner, repo, since=None):
@@ -109,7 +103,7 @@ def init_sync_github_issues_comments(github_tokens, opensearch_conn_info, owner,
                                                            ]}
                                                        }
                                                    })
-    print("DELETE github issues comment result:", del_result)
+    logger.info(f"DELETE github issues comment result:{del_result}")
 
     req_session = requests.Session()
 
@@ -123,11 +117,9 @@ def init_sync_github_issues_comments(github_tokens, opensearch_conn_info, owner,
             one_page_github_issues_comments = req.json()
 
             if (one_page_github_issues_comments is not None) and len(one_page_github_issues_comments) == 0:
-                print("init sync github issues end to break:{owner}/{repo} page_index:{page}".format(
-                    owner=owner, repo=repo, page=page))
+                logger.info("init sync github issues end to break:{owner}/{repo} page_index:{page}")
                 break
 
             bulk_github_issues_comments(one_page_github_issues_comments, opensearch_client, owner, repo, number)
 
-            print("success get github issues page:{owner}/{repo} page_index:{page}".format(owner=owner, repo=repo,
-                                                                                           page=page))
+            logger.info(f"success get github issues page:{owner}/{repo} page_index:{page}")

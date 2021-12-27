@@ -37,7 +37,6 @@ with DAG(
         do_init_sync_info = init_issues_timeline.init_sync_github_issues_timeline(
             github_tokens, opensearch_conn_info, owner, repo, since)
 
-        print(do_init_sync_info)
         return "End:do_init_sync_github_issues_timeline"
 
 
