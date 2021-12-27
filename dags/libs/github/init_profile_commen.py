@@ -1,4 +1,5 @@
 import copy
+from random import random
 import requests
 from opensearchpy import OpenSearch
 from ..util.base import github_headers, do_get_result, HttpGetException
@@ -67,7 +68,7 @@ def put_profile_into_opensearch(all_github_profile_users, github_tokens_iter, op
     # 获取github profile
     for github_profile_user in all_github_profile_users:
         logger.info(f'github_profile_user:{github_profile_user}')
-        time.sleep(1)
+        time.sleep(random.uniform(0.001, 0.01))
         has_user_profile = opensearch_client.search(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
                                                     body={
                                                         "query": {

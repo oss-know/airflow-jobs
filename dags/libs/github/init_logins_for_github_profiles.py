@@ -5,13 +5,13 @@ from loguru import logger
 
 # todo 抽象成类，设置全局属性
 def load_github_logins_by_repo(opensearch_conn_infos, owner, repo):
-    init_profile_logins = load_logins_by_github_commits(opensearch_conn_infos, owner, repo)
-    init_profile_logins += load_logins_by_github_issues(opensearch_conn_infos, owner, repo)
-    init_profile_logins += load_logins_by_github_issues_comments(opensearch_conn_infos, owner,
+    init_profile_logins = load_logins_by_github_issues_timeline(opensearch_conn_infos, owner,
                                                                                            repo)
-    init_profile_logins += load_logins_by_github_issues_timeline(opensearch_conn_infos, owner,
-                                                                                           repo)
-    init_profile_logins += load_logins_by_pull_requests(opensearch_conn_infos, owner, repo)
+    # init_profile_logins += load_logins_by_github_commits(opensearch_conn_infos, owner, repo)
+    # init_profile_logins += load_logins_by_github_issues(opensearch_conn_infos, owner, repo)
+    # init_profile_logins += load_logins_by_github_issues_comments(opensearch_conn_infos, owner,
+    #                                                                                        repo)
+    # init_profile_logins += load_logins_by_pull_requests(opensearch_conn_infos, owner, repo)
     return init_profile_logins
 
 
