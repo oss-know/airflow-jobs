@@ -31,19 +31,20 @@ with DAG(
         url = params["url"]
         proxy_config = params.get("proxy_config")
         opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
-
+        git_save_local_path = Variable.get("git_save_local_path", deserialize_json=True)
         sync_git_info = sync_gits.sync_git_datas(git_url=url,
-                                                      owner=owner,
-                                                      repo=repo,
-                                                      proxy_config=proxy_config,
-                                                      opensearch_conn_datas=opensearch_conn_datas)
+                                                 owner=owner,
+                                                 repo=repo,
+                                                 proxy_config=proxy_config,
+                                                 opensearch_conn_datas=opensearch_conn_datas,
+                                                 git_save_local_path=git_save_local_path)
         print(sync_git_info)
         return 'do_sync_git_info:::end'
 
 
     from airflow.models import Variable
 
-    git_info_list = Variable.get("git_info_list", deserialize_json=True)
+    git_info_list = Variable.get("need_sync_gits", deserialize_json=True)
     for git_info in git_info_list:
         op_do_init_sync_git_info = PythonOperator(
             task_id=f'do_sync_git_info_{git_info["owner"]}_{git_info["repo"]}',
