@@ -1,65 +1,7 @@
 import itertools
-import time
-from opensearchpy.helpers import scan as os_scan
+
 from loguru import logger
 from . import init_profile_commen
-
-OPEN_SEARCH_GITHUB_PROFILE_INDEX = "github_profile"
-
-
-def load_github_profile(github_tokens, opensearch_conn_infos, owner, repo):
-    """Get GitHub user's profile from GitHub commit and put it into opensearch if it is not in opensearch."""
-
-    github_tokens_iter = itertools.cycle(github_tokens)
-
-    opensearch_client = init_profile_commen.get_opensearch_client(opensearch_conn_infos)
-
-    # 查询owner+repo所有github commits记录用来提取github author和committer
-    res = os_scan(client=opensearch_client, index='github_commits',
-                  query={
-                      "track_total_hits": True,
-                      "query": {
-                          "bool": {"must": [
-                              {"term": {
-                                  "search_key.owner.keyword": {
-                                      "value": owner
-                                  }
-                              }},
-                              {"term": {
-                                  "search_key.repo.keyword": {
-                                      "value": repo
-                                  }
-                              }}
-                          ]}
-                      },
-                      "size": 10
-                  }, doc_type='_doc', timeout='10m')
-
-    # 对github author 和 committer 去重
-    all_commits_users = {}
-    all_commits_users_set = set([])
-
-    for commit in res:
-        raw_data = commit["_source"]["raw_data"]
-        if (raw_data["author"] is not None) and ("author" in raw_data) and ("login" in raw_data["author"]):
-            all_commits_users[raw_data["author"]["login"]] = \
-                raw_data["author"]["url"]
-            all_commits_users_set.add(raw_data["author"]["login"])
-        if (raw_data["committer"] is not None) and ("committer" in raw_data) and ("login" in raw_data["committer"]):
-            all_commits_users[raw_data["committer"]["login"]] = \
-                raw_data["committer"]["url"]
-            all_commits_users_set.add(raw_data["committer"]["login"])
-
-    # 获取github profile
-    # init_profile_commen.put_profile_into_opensearch(opensearch_client, all_commits_users_set,
-    #                                                 OPEN_SEARCH_GITHUB_PROFILE_INDEX, github_tokens_iter,
-    #                                                 opensearch_conn_infos)
-    init_profile_dict = {'opensearch_client': opensearch_client, 'logins': all_commits_users_set,
-                         'OPEN_SEARCH_GITHUB_PROFILE_INDEX': OPEN_SEARCH_GITHUB_PROFILE_INDEX,
-                         'github_tokens_iter': github_tokens_iter, 'opensearch_conn_infos': opensearch_conn_infos}
-    logger.info(load_github_profile.__doc__)
-
-    return init_profile_dict
 
 
 # TODO: 传入用户的profile信息，获取用户的location、company、email，与晨琪对接
