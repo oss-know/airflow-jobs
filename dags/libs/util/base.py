@@ -1,5 +1,5 @@
 import json
-
+import datetime
 import urllib3
 import psycopg2
 from tenacity import *
@@ -9,7 +9,7 @@ from opensearchpy.exceptions import OpenSearchException
 
 from ..util.airflow import get_postgres_conn
 from ..util.log import logger
-
+from ..base_dict.opensearch_index import OPENSEARCH_INDEX_CHECK_SYNC_DATA
 github_headers = {'Connection': 'keep-alive', 'Accept-Encoding': 'gzip, deflate, br', 'Accept': '*/*',
                   'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36', }
 
@@ -109,3 +109,27 @@ def do_opensearch_bulk(opensearch_client, bulk_all_data, owner, repo):
     # 强制抛出异常
     # raise OpenSearchException("do_opensearch_bulk Error")
     return success, failed
+
+
+def sync_git_check_update_info(opensearch_client, owner, repo, head_commit):
+    now_time = datetime.datetime.now()
+    check_update_info = {
+        "search_key": {
+            "update_time": now_time.isoformat(),
+            "update_timestamp": now_time.timestamp()
+        },
+        "owner": {
+            "name": owner
+        },
+        "repo": {
+            "name": repo
+        },
+        "git": {
+            "git_commits": {
+                "sync_timestamp": now_time.timestamp(),
+                "sync_commit_sha": head_commit,
+            }
+        }
+    }
+    response = opensearch_client.index(body=check_update_info, index=OPENSEARCH_INDEX_CHECK_SYNC_DATA)
+    logger.info(response)

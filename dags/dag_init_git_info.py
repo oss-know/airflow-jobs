@@ -31,12 +31,13 @@ with DAG(
         url = params["url"]
         proxy_config = params.get("proxy_config")
         opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
-
+        git_save_local_path = Variable.get("git_save_local_path", deserialize_json=True)
         init_sync_git_info = init_gits.init_sync_git_datas(git_url=url,
                                                       owner=owner,
                                                       repo=repo,
                                                       proxy_config=proxy_config,
-                                                      opensearch_conn_datas=opensearch_conn_datas)
+                                                      opensearch_conn_datas=opensearch_conn_datas,
+                                                      git_save_local_path=git_save_local_path)
         print(init_sync_git_info)
         return 'do_sync_git_info:::end'
 
