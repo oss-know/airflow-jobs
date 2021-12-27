@@ -117,7 +117,7 @@ def init_sync_github_issues_comments(github_tokens, opensearch_conn_info, owner,
             one_page_github_issues_comments = req.json()
 
             if (one_page_github_issues_comments is not None) and len(one_page_github_issues_comments) == 0:
-                logger.info("init sync github issues end to break:{owner}/{repo} page_index:{page}")
+                logger.info(f"init sync github issues end to break:{owner}/{repo} page_index:{page}")
                 break
 
             bulk_github_issues_comments(one_page_github_issues_comments, opensearch_client, owner, repo, number)

@@ -30,21 +30,21 @@ def init_sync_github_issues_timeline(github_tokens, opensearch_conn_info, owner,
     scan_results = opensearch_helpers.scan(opensearch_client,
                                            index=OPENSEARCH_INDEX_GITHUB_ISSUES,
                                            query={
-                                              "query": {
-                                                  "bool": {"must": [
-                                                      {"term": {
-                                                          "search_key.owner.keyword": {
-                                                              "value": owner
-                                                          }
-                                                      }},
-                                                      {"term": {
-                                                          "search_key.repo.keyword": {
-                                                              "value": repo
-                                                          }
-                                                      }}
-                                                  ]}
-                                              }
-                                          },
+                                               "query": {
+                                                   "bool": {"must": [
+                                                       {"term": {
+                                                           "search_key.owner.keyword": {
+                                                               "value": owner
+                                                           }
+                                                       }},
+                                                       {"term": {
+                                                           "search_key.repo.keyword": {
+                                                               "value": repo
+                                                           }
+                                                       }}
+                                                   ]}
+                                               }
+                                           },
                                            doc_type="_doc"
                                            )
     need_init_sync_all_results = []
@@ -73,7 +73,7 @@ def init_sync_github_issues_timeline(github_tokens, opensearch_conn_info, owner,
                                                            ]}
                                                        }
                                                    })
-    log("DELETE github issues_timeline result:", del_result)
+    logger.info(f"DELETE github issues_timeline result:", del_result)
 
     req_session = requests.Session()
 
