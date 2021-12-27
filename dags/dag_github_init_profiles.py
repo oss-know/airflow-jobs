@@ -25,11 +25,11 @@ with DAG(
 
     def load_github_repo_login(params):
         from airflow.models import Variable
-        from libs.github import init_login_1227
+        from libs.github import init_logins_for_github_profiles
         opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
         owner = params["owner"]
         repo = params["repo"]
-        init_logins = init_login_1227.load_github_repo_github_user_login(opensearch_conn_infos, owner, repo)
+        init_logins = init_logins_for_github_profiles.load_github_logins_by_repo(opensearch_conn_infos, owner, repo)
 
         # todo: need clean just for test
         # do_add_updated_github_profiles = init_profiles_by_github_commits.add_updated_github_profiles(github_tokens,
@@ -45,8 +45,8 @@ with DAG(
         github_users_logins = ti.xcom_pull(task_ids='op_load_github_repo_login_{owner}_{repo}'.format(
             owner=params["owner"], repo=params["repo"]))
 
-        from libs.github import init_profile_1227
-        init_profile_1227.load_github_profile(github_tokens, opensearch_conn_infos, github_users_logins)
+        from libs.github import init_github_profiles
+        init_github_profiles.load_github_profile(github_tokens, opensearch_conn_infos, github_users_logins)
         return 'End load_github_repo_profile'
 
 

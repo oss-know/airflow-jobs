@@ -3,16 +3,15 @@ from opensearchpy.helpers import scan as os_scan
 from loguru import logger
 
 
-def load_github_repo_github_user_login(opensearch_conn_infos, owner, repo):
-    # init_profile_dict = {}
+# todo 抽象成类，设置全局属性
+def load_github_logins_by_repo(opensearch_conn_infos, owner, repo):
     init_profile_logins = load_logins_by_github_commits(opensearch_conn_infos, owner, repo)
-    init_profile_logins[len(init_profile_logins):] = load_logins_by_github_issues(opensearch_conn_infos, owner, repo)
-    init_profile_logins[len(init_profile_logins):] = load_logins_by_github_issues_comments(opensearch_conn_infos, owner,
+    init_profile_logins += load_logins_by_github_issues(opensearch_conn_infos, owner, repo)
+    init_profile_logins += load_logins_by_github_issues_comments(opensearch_conn_infos, owner,
                                                                                            repo)
-    init_profile_logins[len(init_profile_logins):] = load_logins_by_github_issues_timeline(opensearch_conn_infos, owner,
+    init_profile_logins += load_logins_by_github_issues_timeline(opensearch_conn_infos, owner,
                                                                                            repo)
-    init_profile_logins[len(init_profile_logins):] = load_logins_by_pull_requests(opensearch_conn_infos, owner, repo)
-    # init_profile_dict['logins'] = init_profile_logins
+    init_profile_logins += load_logins_by_pull_requests(opensearch_conn_infos, owner, repo)
     return init_profile_logins
 
 
@@ -44,10 +43,10 @@ def load_logins_by_github_issues(opensearch_conn_infos, owner, repo):
 
     res = get_github_data_by_repo_owner_index_from_os(opensearch_conn_infos, owner, repo, index='github_issues')
 
+    all_issues_users = []
     if res is None:
         logger.info(f"There's no github issues in {repo}")
     else:
-        all_issues_users = []
 
         for issue in res:
             raw_data = issue["_source"]["raw_data"]["user"]["login"]
@@ -62,11 +61,10 @@ def load_logins_by_github_issues_comments(opensearch_conn_infos, owner, repo):
     res = get_github_data_by_repo_owner_index_from_os(opensearch_conn_infos, owner, repo,
                                                       index='github_issues_comments')
 
+    all_issues_comments_users = []
     if res is None:
         logger.info(f"There's no github issues' comments in {repo}")
     else:
-        all_issues_comments_users = []
-
         for issue_comment in res:
             issue_comment_user_login = issue_comment["_source"]["raw_data"]["user"]["login"]
             all_issues_comments_users.append(issue_comment_user_login)
@@ -81,11 +79,10 @@ def load_logins_by_github_issues_timeline(opensearch_conn_infos, owner, repo):
     res = get_github_data_by_repo_owner_index_from_os(opensearch_conn_infos, owner, repo,
                                                       index='github_issues_timeline')
 
+    all_issues_timeline_users = []
     if res is None:
         logger.info(f"There's no github issues' timeline in {repo}")
     else:
-        all_issues_timeline_users = []
-
         for issue_timeline in res:
             issue_timeline_raw_data = issue_timeline["_source"]["raw_data"]
             if issue_timeline_raw_data["event"] != "committed":
@@ -103,13 +100,12 @@ def load_logins_by_github_issues_timeline(opensearch_conn_infos, owner, repo):
 def load_logins_by_pull_requests(opensearch_conn_infos, owner, repo):
     """Get GitHub users' logins from GitHub pull requests."""
 
+    all_pull_requests_users = []
     res = get_github_data_by_repo_owner_index_from_os(opensearch_conn_infos, owner, repo, index='github_pull_requests')
 
     if res is None:
         logger.info(f"There's no github issues in {repo}")
     else:
-        all_pull_requests_users = []
-
         for pull_request in res:
             raw_data = pull_request["_source"]["raw_data"]["user"]["login"]
             all_pull_requests_users.append(raw_data)

@@ -68,7 +68,6 @@ def put_profile_into_opensearch(all_github_profile_users, github_tokens_iter, op
     for github_profile_user in all_github_profile_users:
         logger.info(f'github_profile_user:{github_profile_user}')
         time.sleep(1)
-
         has_user_profile = opensearch_client.search(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
                                                     body={
                                                         "query": {
