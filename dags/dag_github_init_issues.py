@@ -33,7 +33,7 @@ with DAG(
         # since = params["since"]
         since = None
 
-        do_init_sync_info = init_issues.init_sync_github_issues(
+        do_init_sync_info = init_issues.init_github_issues(
             github_tokens, opensearch_conn_infos, owner, repo, since)
 
         return "End:do_init_sync_github_commit"

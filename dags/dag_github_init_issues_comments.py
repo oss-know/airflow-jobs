@@ -3,7 +3,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 
 # v0.0.1
-NEED_INIT_SYNC_GITHUB_ISSUES_COMMENTS_REPOS = "need_init_sync_github_issues_comments_repos"
+NEED_INIT_SYNC_GITHUB_ISSUES_COMMENTS_REPOS = "need_sync_github_issues_comments_repos"
 
 with DAG(
         dag_id='github_init_issues_comments_v1',
@@ -29,17 +29,11 @@ with DAG(
         github_tokens = Variable.get("github_tokens", deserialize_json=True)
         opensearch_conn_info = Variable.get("opensearch_conn_data", deserialize_json=True)
 
-
-
-
         owner = params["owner"]
         repo = params["repo"]
-        # since = params["since"]
-        since = None
-
 
         do_init_sync_info = init_issues_comments.init_sync_github_issues_comments(
-            github_tokens, opensearch_conn_info, owner, repo, since)
+            github_tokens, opensearch_conn_info, owner, repo)
 
         return "End:do_init_sync_github_issues_comments"
 

@@ -1,6 +1,7 @@
 import json
 import datetime
 import urllib3
+import dateutil.parser
 import psycopg2
 from tenacity import *
 from opensearchpy import OpenSearch
@@ -10,6 +11,7 @@ from opensearchpy.exceptions import OpenSearchException
 from ..util.airflow import get_postgres_conn
 from ..util.log import logger
 from ..base_dict.opensearch_index import OPENSEARCH_INDEX_CHECK_SYNC_DATA
+
 github_headers = {'Connection': 'keep-alive', 'Accept-Encoding': 'gzip, deflate, br', 'Accept': '*/*',
                   'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36', }
 
@@ -133,3 +135,37 @@ def sync_git_check_update_info(opensearch_client, owner, repo, head_commit):
     }
     response = opensearch_client.index(body=check_update_info, index=OPENSEARCH_INDEX_CHECK_SYNC_DATA)
     logger.info(response)
+
+# 建立 owner/repo github commits 更新基准
+def sync_github_commits_check_update_info(opensearch_client,
+                                          owner,
+                                          repo,
+                                          since,
+                                          until):
+    now_time = datetime.datetime.now()
+    check_update_info = {
+        "search_key": {
+            "type": "github_commits",
+            "update_time": now_time.strftime('%Y-%m-%dT00:00:00Z'),
+            "update_timestamp": now_time.timestamp(),
+            "owner": owner,
+            "repo": repo
+        },
+        "github": {
+            "type": "github_commits",
+            "owner": owner,
+            "repo": repo,
+            "commits": {
+                "owner": owner,
+                "repo": repo,
+                "sync_timestamp": now_time.timestamp(),
+                "sync_since_timestamp": dateutil.parser.parse(since).timestamp(),
+                "sync_until_timestamp": dateutil.parser.parse(until).timestamp(),
+                "sync_since_datetime": since,
+                "sync_until_datetime": until
+            }
+        }
+    }
+    opensearch_client.index(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA,
+                            body=check_update_info,
+                            refresh=True)

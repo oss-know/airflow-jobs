@@ -38,12 +38,12 @@ with DAG(
         since = params["since"]
         until = params["until"]
 
-        do_init_sync_info = init_commits.init_sync_github_commits(github_tokens,
-                                                                  opensearch_conn_info,
-                                                                  owner,
-                                                                  repo,
-                                                                  since,
-                                                                  until)
+        do_init_sync_info = init_commits.init_github_commits(github_tokens,
+                                                             opensearch_conn_info,
+                                                             owner,
+                                                             repo,
+                                                             since,
+                                                             until)
         return "END::do_init_sync_github_commit"
 
 

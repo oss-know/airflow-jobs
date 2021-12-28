@@ -1,3 +1,5 @@
+import random
+
 import requests
 import time
 import itertools
@@ -6,14 +8,15 @@ import copy
 from opensearchpy import OpenSearch
 from opensearchpy import helpers as OpenSearchHelpers
 
+from .init_issues_timeline import OPENSEARCH_INDEX_GITHUB_ISSUES
+from ..base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS
 from ..util.base import github_headers, do_get_result
 from ..util.log import logger
 
-OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS = "github_issues_comments"
-OPENSEARCH_INDEX_GITHUB_ISSUES = "github_issues"
 
 
-def get_github_issues_comments(req_session, github_tokens_iter, opensearch_conn_info, owner, repo, number, page,
+
+def get_github_issues_comments(req_session, github_tokens_iter, owner, repo, number, page,
                                since):
     url = "https://api.github.com/repos/{owner}/{repo}/issues/{number}/comments".format(
         owner=owner, repo=repo, number=number)
@@ -54,7 +57,7 @@ def init_sync_github_issues_comments(github_tokens, opensearch_conn_info, owner,
         ssl_show_warn=False
     )
 
-    # 根据指定的owner/repo,获取现在所有的issues，并根据所有issues便利相关的comments
+    # 根据指定的owner/repo,获取现在所有的issues，并根据所有issues遍历相关的comments
     issues_results = OpenSearchHelpers.scan(opensearch_client,
                                             index=OPENSEARCH_INDEX_GITHUB_ISSUES,
                                             query={
@@ -81,10 +84,6 @@ def init_sync_github_issues_comments(github_tokens, opensearch_conn_info, owner,
 
     # 提取需要同步的所有issues
 
-    # 不要在dag or task里面 创建index 会有并发异常！！！
-    # if not opensearch_client.indices.exists("github_issues"):
-    #     opensearch_client.indices.create("github_issues")
-
     # 由于需要初始化幂等要求，在重新初始化前删除对应owner/repo 指定的issues comment记录的所有数据
     del_result = opensearch_client.delete_by_query(index=OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS,
                                                    body={
@@ -110,9 +109,9 @@ def init_sync_github_issues_comments(github_tokens, opensearch_conn_info, owner,
     for issue_item in need_init_sync_all_issues:
         number = issue_item["_source"]["raw_data"]["number"]
         for page in range(1, 10000):
-            time.sleep(1)
+            time.sleep(random.uniform(0.1, 0.5))
 
-            req = get_github_issues_comments(req_session, github_tokens_iter, opensearch_conn_info, owner, repo, number,
+            req = get_github_issues_comments(req_session, github_tokens_iter, owner, repo, number,
                                              page, since)
             one_page_github_issues_comments = req.json()
 
