@@ -7,11 +7,8 @@ from loguru import logger
 def load_github_logins_by_repo(opensearch_conn_infos, owner, repo):
     init_profile_logins = load_logins_by_github_issues_timeline(opensearch_conn_infos, owner,
                                                                                            repo)
-    # init_profile_logins += load_logins_by_github_commits(opensearch_conn_infos, owner, repo)
-    # init_profile_logins += load_logins_by_github_issues(opensearch_conn_infos, owner, repo)
-    # init_profile_logins += load_logins_by_github_issues_comments(opensearch_conn_infos, owner,
-    #                                                                                        repo)
-    # init_profile_logins += load_logins_by_pull_requests(opensearch_conn_infos, owner, repo)
+    init_profile_logins += load_logins_by_github_commits(opensearch_conn_infos, owner, repo)
+
     return init_profile_logins
 
 
@@ -38,41 +35,6 @@ def load_logins_by_github_commits(opensearch_conn_infos, owner, repo):
     return all_commits_users
 
 
-def load_logins_by_github_issues(opensearch_conn_infos, owner, repo):
-    """Get GitHub users' logins from GitHub issues ."""
-
-    res = get_github_data_by_repo_owner_index_from_os(opensearch_conn_infos, owner, repo, index='github_issues')
-
-    all_issues_users = []
-    if res is None:
-        logger.info(f"There's no github issues in {repo}")
-    else:
-
-        for issue in res:
-            raw_data = issue["_source"]["raw_data"]["user"]["login"]
-            all_issues_users.append(raw_data)
-        logger.info(load_logins_by_github_issues.__doc__)
-    return all_issues_users
-
-
-def load_logins_by_github_issues_comments(opensearch_conn_infos, owner, repo):
-    """Get GitHub user's login from GitHub issues comments."""
-
-    res = get_github_data_by_repo_owner_index_from_os(opensearch_conn_infos, owner, repo,
-                                                      index='github_issues_comments')
-
-    all_issues_comments_users = []
-    if res is None:
-        logger.info(f"There's no github issues' comments in {repo}")
-    else:
-        for issue_comment in res:
-            issue_comment_user_login = issue_comment["_source"]["raw_data"]["user"]["login"]
-            all_issues_comments_users.append(issue_comment_user_login)
-
-        logger.info(load_logins_by_github_issues_comments.__doc__)
-    return all_issues_comments_users
-
-
 def load_logins_by_github_issues_timeline(opensearch_conn_infos, owner, repo):
     """Get GitHub users' logins from GitHub issues timeline ."""
 
@@ -85,33 +47,23 @@ def load_logins_by_github_issues_timeline(opensearch_conn_infos, owner, repo):
     else:
         for issue_timeline in res:
             issue_timeline_raw_data = issue_timeline["_source"]["raw_data"]
-            if issue_timeline_raw_data["event"] != "committed":
+            if issue_timeline_raw_data["event"] == "cross-referenced":
+                issue_timeline_user_login = issue_timeline_raw_data["actor"]["login"] \
+                                            + issue_timeline_raw_data["source"]["issue"]["user"]["login"]
+                all_issues_timeline_users.append(issue_timeline_user_login)
+            elif issue_timeline_raw_data["event"] != "committed":
                 if "user" in issue_timeline_raw_data:
                     issue_timeline_user_login = issue_timeline_raw_data["user"]["login"]
                     all_issues_timeline_users.append(issue_timeline_user_login)
-                else:
+                if "actor" in issue_timeline_raw_data:
                     issue_timeline_user_login = issue_timeline_raw_data["actor"]["login"]
+                    all_issues_timeline_users.append(issue_timeline_user_login)
+                if "assignee" in issue_timeline_raw_data:
+                    issue_timeline_user_login = issue_timeline_raw_data["assignee"]["login"]
                     all_issues_timeline_users.append(issue_timeline_user_login)
 
         logger.info(load_logins_by_github_issues_timeline.__doc__)
     return all_issues_timeline_users
-
-
-def load_logins_by_pull_requests(opensearch_conn_infos, owner, repo):
-    """Get GitHub users' logins from GitHub pull requests."""
-
-    all_pull_requests_users = []
-    res = get_github_data_by_repo_owner_index_from_os(opensearch_conn_infos, owner, repo, index='github_pull_requests')
-
-    if res is None:
-        logger.info(f"There's no github issues in {repo}")
-    else:
-        for pull_request in res:
-            raw_data = pull_request["_source"]["raw_data"]["user"]["login"]
-            all_pull_requests_users.append(raw_data)
-
-        logger.info(load_logins_by_pull_requests.__doc__)
-    return all_pull_requests_users
 
 
 def get_github_data_by_repo_owner_index_from_os(opensearch_conn_infos, owner, repo, index):
