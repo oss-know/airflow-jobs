@@ -3,6 +3,7 @@ import datetime
 import urllib3
 import dateutil.parser
 import psycopg2
+
 from tenacity import *
 from opensearchpy import OpenSearch
 from opensearchpy import helpers as opensearch_helpers

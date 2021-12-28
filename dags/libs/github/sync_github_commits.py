@@ -1,12 +1,15 @@
 import copy
 import datetime
 import itertools
+import random
+
 import requests
 import time
 
 from opensearchpy import OpenSearch
 
-from .init_commits import get_github_commits, bulk_github_commits
+from ..util.github_api import GithubAPI
+from ..util.opensearch_api import OpensearchAPI
 from ..base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COMMITS, OPENSEARCH_INDEX_CHECK_SYNC_DATA
 from ..util.base import do_get_result, github_headers, do_opensearch_bulk, sync_github_commits_check_update_info
 from ..util.log import logger
@@ -86,19 +89,24 @@ def sync_github_commits(github_tokens,
     logger.info(f'sync github commits since：{since}，sync until：{until}')
 
     session = requests.Session()
+    github_api = GithubAPI()
+    opensearch_api = OpensearchAPI()
     for page in range(1, 9999):
-        req = get_github_commits(session, github_tokens_iter, owner, repo, page, since, until)
+        time.sleep(random.uniform(0.1, 0.5))
+        req = github_api.get_github_commits(http_session=session, github_tokens_iter=github_tokens_iter,
+                                            owner=owner, repo=repo, page=page, since=since, until=until)
         now_github_commits = req.json()
 
         if (now_github_commits is not None) and len(now_github_commits) == 0:
             logger.info(f'get github commits end to break:: {owner}/{repo} page_index:{page}')
             break
 
-        bulk_github_commits(now_github_commits, opensearch_client, owner, repo)
+        opensearch_api.bulk_github_commits(opensearch_client=opensearch_client,
+                                           github_commits=now_github_commits,
+                                           owner=owner, repo=repo)
 
         logger.info(f"success get github commits :: {owner}/{repo} page_index:{page}")
 
-        time.sleep(1)
 
     sync_github_commits_check_update_info(opensearch_client, owner, repo, since, until)
 

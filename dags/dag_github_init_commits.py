@@ -1,9 +1,6 @@
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-import airflow.providers.postgres.hooks.postgres as postgres_hooks
-
-
 
 # irflow.providers.postgres.hooks.postgres
 # v0.0.1 初始化实现
@@ -28,7 +25,7 @@ with DAG(
 
     def do_init_sync_github_commit(params):
         from airflow.models import Variable
-        from libs.github import init_commits
+        from libs.github import init_github_commits
 
         github_tokens = Variable.get("github_tokens", deserialize_json=True)
         opensearch_conn_info = Variable.get("opensearch_conn_data", deserialize_json=True)
@@ -38,12 +35,12 @@ with DAG(
         since = params["since"]
         until = params["until"]
 
-        do_init_sync_info = init_commits.init_github_commits(github_tokens,
-                                                             opensearch_conn_info,
-                                                             owner,
-                                                             repo,
-                                                             since,
-                                                             until)
+        do_init_sync_info = init_github_commits.init_github_commits(github_tokens,
+                                                                    opensearch_conn_info,
+                                                                    owner,
+                                                                    repo,
+                                                                    since,
+                                                                    until)
         return "END::do_init_sync_github_commit"
 
 

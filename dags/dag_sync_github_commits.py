@@ -44,7 +44,7 @@ with DAG(
 
     from airflow.models import Variable
 
-    need_sync_github_commits_list = Variable.get("need_sync_github_commits_list", deserialize_json=True)
+    need_sync_github_commits_list = Variable.get("need_sync_github_commits", deserialize_json=True)
 
     for now_need_sync_github_commits in need_sync_github_commits_list:
         op_do_sync_github_commit = PythonOperator(

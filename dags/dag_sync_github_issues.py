@@ -57,7 +57,7 @@ with DAG(
 
     from airflow.models import Variable
     need_do_sync_ops = []
-    need_sync_github_issues_repos = Variable.get("need_sync_github_issues_list", deserialize_json=True)
+    need_sync_github_issues_repos = Variable.get("need_sync_github_issues", deserialize_json=True)
     for sync_github_issues_repo in need_sync_github_issues_repos:
         op_do_sync_github_issues = PythonOperator(
             task_id='op_do_sync_github_issues_{owner}_{repo}'.format(
