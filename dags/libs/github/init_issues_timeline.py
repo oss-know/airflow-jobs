@@ -73,6 +73,7 @@ def init_sync_github_issues_timeline(github_tokens, opensearch_conn_info, owner,
                                                            ]}
                                                        }
                                                    })
+
     logger.info(f"DELETE github issues_timeline result:", del_result)
 
     req_session = requests.Session()
@@ -81,7 +82,6 @@ def init_sync_github_issues_timeline(github_tokens, opensearch_conn_info, owner,
         number = now_item["_source"]["raw_data"]["number"]
         for page in range(1, 10000):
             time.sleep(1)
-
             req = get_github_issues_timeline(req_session, github_tokens_iter, owner, repo, number,
                                              page, since)
             one_page_github_issues_timeline = req.json()

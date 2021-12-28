@@ -60,11 +60,9 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
                         "row_data": {
                             "message": "",
                             "hexsha": "",
-                            "category": "",
-                            "name_rev": "",
                             "parents": "",
                             "author_tz": "",
-                            "commiter_tz": "",
+                            "committer_tz": "",
                             "author_name": "",
                             "author_email": "",
                             "committer_name": "",
@@ -94,7 +92,7 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
         bulk_data["_source"]["row_data"]["type"] = commit.type
         bulk_data["_source"]["row_data"]["parents"] = [i.hexsha for i in commit.parents]
         bulk_data["_source"]["row_data"]["author_tz"] = int(commit.author_tz_offset / 3600)
-        bulk_data["_source"]["row_data"]["commiter_tz"] = int(commit.committer_tz_offset / 3600)
+        bulk_data["_source"]["row_data"]["committer_tz"] = int(commit.committer_tz_offset / 3600)
         bulk_data["_source"]["row_data"]["author_name"] = commit.author.name
         bulk_data["_source"]["row_data"]["author_email"] = commit.author.email
         bulk_data["_source"]["row_data"]["committer_name"] = commit.committer.name
