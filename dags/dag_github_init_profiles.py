@@ -24,15 +24,18 @@ with DAG(
 
 
     def load_github_repo_login(params):
+        print("==============================1227ConnectionTest=========================================")
         from airflow.models import Variable
         from libs.github import init_logins_for_github_profiles
+        from libs.github import init_profile_needToDo
         opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
         owner = params["owner"]
         repo = params["repo"]
         init_logins = init_logins_for_github_profiles.load_github_logins_by_repo(opensearch_conn_infos, owner, repo)
 
         # todo: need clean just for test
-        # do_add_updated_github_profiles = init_profiles_by_github_commits.add_updated_github_profiles(github_tokens,
+        # github_tokens = Variable.get("github_tokens", deserialize_json=True)
+        # do_add_updated_github_profiles = init_profile_needToDo.add_updated_github_profiles(github_tokens,
         # opensearch_conn_infos)
         return init_logins
 
