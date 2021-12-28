@@ -1,3 +1,4 @@
 OPENSEARCH_INDEX_CHECK_SYNC_DATA = "check_sync_data"
 OPENSEARCH_INDEX_GITHUB_COMMITS = "github_commits"
 OPENSEARCH_GIT_RAW = "git_raw"
+OPENSEARCH_GIT_GITHUB_CLEAN = "git_github_clean"
