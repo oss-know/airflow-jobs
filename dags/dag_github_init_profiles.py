@@ -1,9 +1,10 @@
-import time
+
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.models import Variable
 from loguru import logger
+from libs.base_dict.variable_key import NEED_INIT_GITHUB_PROFILES_REPOS
 
 with DAG(
         dag_id='github_init_profile_v1',
@@ -53,7 +54,7 @@ with DAG(
         return 'End load_github_repo_profile'
 
 
-    need_sync_github_profile_repos = Variable.get("need_sync_github_profile_repo_list", deserialize_json=True)
+    need_sync_github_profile_repos = Variable.get(NEED_INIT_GITHUB_PROFILES_REPOS, deserialize_json=True)
 
     for now_need_sync_github_profile_repos in need_sync_github_profile_repos:
         op_load_github_repo_login = PythonOperator(
