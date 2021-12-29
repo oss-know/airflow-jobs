@@ -129,7 +129,7 @@ def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, gi
     else:
         now_count = 0
         all_git_list = []
-        commit_sha = hits_datas[0]["_source"]["git"]["git_commits"]["sync_commit_sha"]
+        commit_sha = hits_datas[0]["_source"]["git"]["commits"]["sync_commit_sha"]
         commits_iters = git_repo.iter_commits()
         opensearch_api = OpensearchAPI()
         for commit in commits_iters:

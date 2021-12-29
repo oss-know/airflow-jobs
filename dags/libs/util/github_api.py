@@ -58,7 +58,6 @@ class GithubAPI:
         logger.info(self.get_github_profiles.__doc__)
         return now_github_profile
 
-
     def get_github_issues_timeline(self, http_session, github_tokens_iter, owner, repo, number, page):
         url = "https://api.github.com/repos/{owner}/{repo}/issues/{number}/timeline".format(
             owner=owner, repo=repo, number=number)
@@ -77,3 +76,11 @@ class GithubAPI:
         res = do_get_result(req_session, url, headers, params)
         return res
 
+    def get_github_pull_requests(self, session, github_tokens_iter, owner, page, repo, since):
+        url = "https://api.github.com/repos/{owner}/{repo}/pulls".format(
+            owner=owner, repo=repo)
+        headers = copy.deepcopy(self.github_headers)
+        headers.update({'Authorization': 'token %s' % next(github_tokens_iter)})
+        params = {'state': 'all', 'per_page': 100, 'page': page, 'since': since}
+        res = do_get_result(session, url, headers, params)
+        return res

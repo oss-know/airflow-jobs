@@ -1,11 +1,12 @@
-import time
 from datetime import datetime
-from pprint import pprint
 from opensearchpy import helpers as opensearch_helpers
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+
+from libs.base_dict.variable_key import OPENSEARCH_CONN_DATA
+from libs.base_dict.opensearch_index import OPENSEARCH_GIT_RAW
+
 from libs.util.base import get_opensearch_client
-from .libs.base_dict.opensearch_index import OPENSEARCH_GIT_RAW
 
 # git_init_sync_v0.0.3
 
@@ -26,7 +27,7 @@ with DAG(
     )
     from airflow.models import Variable
 
-    opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
+    opensearch_conn_datas = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
 
 
     def do_sync_init_data_cleaning(params):
@@ -40,7 +41,7 @@ with DAG(
         return 'do_sync_init_data_cleaning:::end'
 
 
-    git_info_list = Variable.get("git_info_list", deserialize_json=True)
+    # git_info_list = Variable.get("git_info_list", deserialize_json=True)
     opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
     # 拿出opensearch中所有去重后的项目
     results = opensearch_helpers.scan(client=opensearch_client,

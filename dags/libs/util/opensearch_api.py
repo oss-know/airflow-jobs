@@ -12,6 +12,7 @@ from opensearchpy.exceptions import OpenSearchException
 from tenacity import *
 import requests
 
+from ..github.init_pull_requests import OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS
 from ..util.airflow import get_postgres_conn
 from ..util.log import logger
 from ..util.github_api import GithubAPI
@@ -204,11 +205,8 @@ class OpensearchAPI:
                                 refresh=True)
 
     # 建立 owner/repo github commits 更新基准
-    def sync_github_commits_check_update_info(self, opensearch_client,
-                                              owner,
-                                              repo,
-                                              since,
-                                              until):
+    def sync_github_commits_check_update_info(self, opensearch_client, owner,
+                                              repo, since, until):
         now_time = datetime.datetime.now()
         check_update_info = {
             "search_key": {
@@ -236,6 +234,25 @@ class OpensearchAPI:
         opensearch_client.index(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA,
                                 body=check_update_info,
                                 refresh=True)
+
+    def bulk_github_pull_requests(self, github_pull_requests, opensearch_client, owner, repo):
+        bulk_all_github_pull_requests = []
+        for now_pr in github_pull_requests:
+            template = {"_index": OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS,
+                        "_source": {"search_key": {"owner": owner, "repo": repo},
+                                    "raw_data": None}}
+            pull_requests_item = copy.deepcopy(template)
+            pull_requests_item["_source"]["raw_data"] = now_pr
+            bulk_all_github_pull_requests.append(pull_requests_item)
+            logger.info(f"add init sync github pull_requests number:{now_pr['number']}")
+
+        success, failed = opensearch_helpers.bulk(client=opensearch_client, actions=bulk_all_github_pull_requests)
+        logger.info(
+            f"now page:{len(bulk_all_github_pull_requests)} sync github pull_requests success:{success} & failed:{failed}")
+
+        return success, failed
+
+    # -----------------------------------------
 
     def do_opensearch_bulk_error_callback(retry_state):
         postgres_conn = get_postgres_conn()

@@ -1,12 +1,12 @@
+import random
+
 import requests
 import time
 import itertools
-import copy
 
 from opensearchpy import OpenSearch
 from opensearchpy import helpers as opensearch_helpers
 
-from ..util.base import github_headers, do_get_result
 from ..util.github_api import GithubAPI
 from ..util.log import logger
 from ..util.opensearch_api import OpensearchAPI
@@ -85,7 +85,7 @@ def init_sync_github_issues_timeline(github_tokens, opensearch_conn_info, owner,
     for now_item in need_init_sync_all_results:
         number = now_item["_source"]["raw_data"]["number"]
         for page in range(1, 10000):
-            time.sleep(1)
+            time.sleep(random.uniform(0.1, 0.2))
             req = github_api.get_github_issues_timeline(req_session, github_tokens_iter, owner, repo, number,
                                                         page)
             one_page_github_issues_timeline = req.json()

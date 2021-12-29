@@ -1,17 +1,12 @@
 import datetime
 import random
-
 import requests
 import time
 import itertools
-import copy
 
 from opensearchpy import OpenSearch
-from opensearchpy import helpers as OpenSearchHelpers
 
-# from .init_issues import get_github_issues, bulk_github_issues, set_sync_github_issues_check
 from ..base_dict.opensearch_index import OPENSEARCH_INDEX_CHECK_SYNC_DATA
-from ..util.base import github_headers, do_get_result
 from ..util.github_api import GithubAPI
 from ..util.log import logger
 from ..util.opensearch_api import OpensearchAPI
