@@ -6,7 +6,7 @@ from airflow.operators.python import PythonOperator
 from libs.base_dict.variable_key import NEED_INIT_GITS
 
 with DAG(
-        dag_id='git_init_sync_v1',
+        dag_id='git_init_v1',
         schedule_interval=None,
         start_date=datetime(2021, 1, 1),
         catchup=False,
