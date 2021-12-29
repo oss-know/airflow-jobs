@@ -44,7 +44,7 @@ def bulk_github_issues_comments(now_github_issues_comments, opensearch_client, o
         f"now page:{len(bulk_all_github_issues_comments)} sync github issues comments success:{success} & failed:{failed}")
 
 
-def init_sync_github_issues_comments(github_tokens, opensearch_conn_info, owner, repo, since=None):
+def init_github_issues_comments(github_tokens, opensearch_conn_info, owner, repo, since=None):
     github_tokens_iter = itertools.cycle(github_tokens)
 
     opensearch_client = OpenSearch(

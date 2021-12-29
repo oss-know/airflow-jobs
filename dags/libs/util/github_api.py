@@ -3,6 +3,7 @@ import copy
 from ..util.base import do_get_result
 from ..util.log import logger
 
+
 class GithubAPIException(Exception):
     def __init__(self, message, status):
         super().__init__(message, status)
@@ -38,12 +39,20 @@ class GithubAPI:
 
         return res
 
-    def get_github_issues_timeline(self, http_session, github_tokens_iter, owner, repo, number, page,
-                                   since):
+    def get_github_issues_timeline(self, http_session, github_tokens_iter, owner, repo, number, page):
         url = "https://api.github.com/repos/{owner}/{repo}/issues/{number}/timeline".format(
             owner=owner, repo=repo, number=number)
         headers = copy.deepcopy(self.github_headers)
         headers.update({'Authorization': 'token %s' % next(github_tokens_iter)})
-        params = {'per_page': 100, 'page': page, 'since': since}
+        params = {'per_page': 100, 'page': page}
         res = do_get_result(http_session, url, headers, params)
+        return res
+
+    def get_github_issues_comments(self, req_session, github_tokens_iter, owner, repo, number, page):
+        url = "https://api.github.com/repos/{owner}/{repo}/issues/{number}/comments".format(
+            owner=owner, repo=repo, number=number)
+        headers = copy.deepcopy(self.github_headers)
+        headers.update({'Authorization': 'token %s' % next(github_tokens_iter)})
+        params = {'per_page': 100, 'page': page}
+        res = do_get_result(req_session, url, headers, params)
         return res

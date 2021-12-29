@@ -49,35 +49,6 @@ def init_github_issues(github_tokens, opensearch_conn_infos, owner, repo, since=
         logger.info(f"success get github issues page:{owner}/{repo} page_index:{page}")
 
     # 建立 sync 标志
-    set_sync_github_issues_check(opensearch_client, owner, repo)
+    opensearch_api.set_sync_github_issues_check(opensearch_client, owner, repo)
 
 
-# 建立 owner/repo github issues 更新基准
-def set_sync_github_issues_check(opensearch_client,
-                                 owner,
-                                 repo):
-    now_time = datetime.datetime.now()
-    check_update_info = {
-        "search_key": {
-            "type": "github_issues",
-            "update_time": now_time.strftime('%Y-%m-%dT00:00:00Z'),
-            "update_timestamp": now_time.timestamp(),
-            "owner": owner,
-            "repo": repo
-        },
-        "github": {
-            "type": "github_issues",
-            "owner": owner,
-            "repo": repo,
-            "issues": {
-                "owner": owner,
-                "repo": repo,
-                "sync_datetime": now_time.strftime('%Y-%m-%dT00:00:00Z'),
-                "sync_timestamp": now_time.timestamp()
-            }
-        }
-    }
-
-    opensearch_client.index(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA,
-                            body=check_update_info,
-                            refresh=True)

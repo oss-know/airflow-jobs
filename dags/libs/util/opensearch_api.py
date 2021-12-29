@@ -1,4 +1,5 @@
 import copy
+import datetime
 import json
 from typing import Tuple, Union, List, Any
 
@@ -12,7 +13,7 @@ from tenacity import *
 from ..util.airflow import get_postgres_conn
 from ..util.log import logger
 from ..base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COMMITS, OPENSEARCH_INDEX_GITHUB_ISSUES, \
-    OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE
+    OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE, OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, OPENSEARCH_INDEX_CHECK_SYNC_DATA
 
 
 class OpenSearchAPIException(Exception):
@@ -104,46 +105,10 @@ class OpensearchAPI:
 
         return success, failed
 
-    def bulk_github_issues_timeline(self, now_github_issues_timeline, opensearch_client, owner, repo, number):
+    def bulk_github_issues_timeline(self, opensearch_client, issues_timelines, owner, repo, number):
         bulk_all_datas = []
 
-        for val in now_github_issues_timeline:
-
-            # 如果对应 issue timeline存在则先删除
-            del_result = opensearch_client.delete_by_query(index=OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE,
-                                                           body={
-                                                               "track_total_hits": True,
-                                                               "query": {
-                                                                   "bool": {
-                                                                       "must": [
-                                                                           {
-                                                                               "term": {
-                                                                                   "raw_data.number": {
-                                                                                       "value": now_issue["number"]
-                                                                                   }
-                                                                               }
-                                                                           },
-                                                                           {
-                                                                               "term": {
-                                                                                   "search_key.owner.keyword": {
-                                                                                       "value": owner
-                                                                                   }
-                                                                               }
-                                                                           },
-                                                                           {
-                                                                               "term": {
-                                                                                   "search_key.repo.keyword": {
-                                                                                       "value": repo
-                                                                                   }
-                                                                               }
-                                                                           }
-                                                                       ]
-                                                                   }
-                                                               }
-                                                           })
-            logger.info(f"DELETE github issues result:{del_result}")
-
-
+        for val in issues_timelines:
             template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE,
                         "_source": {"search_key": {"owner": owner, "repo": repo, "number": number},
                                     "raw_data": None}}
@@ -154,6 +119,49 @@ class OpensearchAPI:
 
         success, failed = opensearch_helpers.bulk(client=opensearch_client, actions=bulk_all_datas)
         logger.info(f"now page:{len(bulk_all_datas)} sync github issues_timeline success:{success} & failed:{failed}")
+
+    def bulk_github_issues_comments(self, opensearch_client, issues_comments, owner, repo, number):
+        bulk_all_github_issues_comments = []
+
+        template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS,
+                    "_source": {"search_key": {"owner": owner, "repo": repo, "number": number},
+                                "raw_data": None}}
+        commit_comment_item = copy.deepcopy(template)
+        commit_comment_item["_source"]["raw_data"] = issues_comments
+        bulk_all_github_issues_comments.append(commit_comment_item)
+        logger.info(f"add init sync github issues comments number:{number}")
+
+        success, failed = opensearch_helpers.bulk(client=opensearch_client, actions=bulk_all_github_issues_comments)
+        logger.info(
+            f"now page:{len(bulk_all_github_issues_comments)} sync github issues comments success:{success} & failed:{failed}")
+
+    # 建立 owner/repo github issues 更新基准
+    def set_sync_github_issues_check(self, opensearch_client, owner, repo):
+        now_time = datetime.datetime.now()
+        check_update_info = {
+            "search_key": {
+                "type": "github_issues",
+                "update_time": now_time.strftime('%Y-%m-%dT00:00:00Z'),
+                "update_timestamp": now_time.timestamp(),
+                "owner": owner,
+                "repo": repo
+            },
+            "github": {
+                "type": "github_issues",
+                "owner": owner,
+                "repo": repo,
+                "issues": {
+                    "owner": owner,
+                    "repo": repo,
+                    "sync_datetime": now_time.strftime('%Y-%m-%dT00:00:00Z'),
+                    "sync_timestamp": now_time.timestamp()
+                }
+            }
+        }
+
+        opensearch_client.index(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA,
+                                body=check_update_info,
+                                refresh=True)
 
     def do_opensearch_bulk_error_callback(retry_state):
         postgres_conn = get_postgres_conn()

@@ -1,25 +1,19 @@
 import random
+
 import requests
 import time
 import itertools
 
 from opensearchpy import OpenSearch
 
-from ..base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS
+# from .init_issues_timeline import get_github_issues_timeline
+from ..base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE
 from ..util.github_api import GithubAPI
 from ..util.log import logger
 from ..util.opensearch_api import OpensearchAPI
 
 
-class SyncGithubIssuesCommentsException(Exception):
-    def __init__(self, message, status):
-        super().__init__(message, status)
-        self.message = message
-        self.status = status
-
-
-def sync_github_issues_comments(github_tokens, opensearch_conn_info, owner, repo, issues_numbers):
-    logger.info("start sync_github_issues_comments()")
+def sync_github_issues_timelines(github_tokens, opensearch_conn_info, owner, repo, issues_numbers):
     github_tokens_iter = itertools.cycle(github_tokens)
 
     opensearch_client = OpenSearch(
@@ -31,13 +25,16 @@ def sync_github_issues_comments(github_tokens, opensearch_conn_info, owner, repo
         ssl_assert_hostname=False,
         ssl_show_warn=False
     )
-
-    session = requests.Session()
+    http_session = requests.Session()
     opensearch_api = OpensearchAPI()
     github_api = GithubAPI()
+
     for issues_number in issues_numbers:
-        del_result = opensearch_client.delete_by_query(index=OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS,
+
+        # 同步前删除原来存在的issues_numbers对应timeline
+        del_result = opensearch_client.delete_by_query(index=OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE,
                                                        body={
+                                                           "size": 10000,
                                                            "track_total_hits": True,
                                                            "query": {
                                                                "bool": {
@@ -67,24 +64,25 @@ def sync_github_issues_comments(github_tokens, opensearch_conn_info, owner, repo
                                                                }
                                                            }
                                                        })
-        logger.info(f"DELETE github issues {issues_number} comments result:{del_result}")
+        logger.info(f"DELETE github issues {issues_number} timeline result:{del_result}")
 
         for page in range(1, 10000):
             # Token sleep
             time.sleep(random.uniform(0.1, 0.5))
 
-            req = github_api.get_github_issues_comments(session, github_tokens_iter, owner, repo, issues_number, page)
-            one_page_github_issues_comments = req.json()
+            req = github_api.get_github_issues_timeline(http_session=http_session,
+                                                        github_tokens_iter=github_tokens_iter,
+                                                        owner=owner, repo=repo, number=issues_number, page=page)
+            one_page_github_issues_timeline = req.json()
 
-            if (one_page_github_issues_comments is not None) and len(one_page_github_issues_comments) == 0:
-                logger.info(f"sync github issues comments end to break:{owner}/{repo} page_index:{page}")
+            if (one_page_github_issues_timeline is not None) and len(
+                    one_page_github_issues_timeline) == 0:
+                logger.info(
+                    f"sync github issues timeline end to break:{owner}/{repo}/{issues_number} page_index:{page}")
                 break
 
-            opensearch_api.bulk_github_issues_comments(opensearch_client=opensearch_client,
-                                                       issues_comments=one_page_github_issues_comments,
+            opensearch_api.bulk_github_issues_timeline(opensearch_client=opensearch_client,
+                                                       issues_timelines=one_page_github_issues_timeline,
                                                        owner=owner, repo=repo, number=issues_number)
 
-            logger.info(f"success get github issues comments page:{owner}/{repo} page_index:{page}")
-
-    # 建立 sync 标志
-    opensearch_api.set_sync_github_issues_check(opensearch_client, owner, repo)
+            logger.info(f"success get github issues timeline page:{owner}/{repo}/{issues_number} page_index:{page}")
