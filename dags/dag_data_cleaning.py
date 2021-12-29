@@ -55,15 +55,35 @@ with DAG(
                                           }
                                           , "_source": ["search_key.repo", "search_key.owner"]
                                       })
-    # datas = results["hits"]["hits"]
-    for commit in results:
-        owner = commit["_source"]["search_key"]["owner"]
-        repo = commit["_source"]["search_key"]["repo"]
-        owner_repo = [owner, repo]
-        op_do_sync_init_data_cleaning = PythonOperator(
-            task_id=f'op_do_sync_init_data_cleaning_{owner_repo[0]}_{owner_repo[1]}',
-            python_callable=do_sync_init_data_cleaning,
-            op_kwargs={'params': owner_repo},
-        )
+    results = opensearch_client.search(index=OPENSEARCH_GIT_RAW,
+                                       body={
+                                           "size": 0,
+                                           "aggs": {
+                                               "group_by_owner": {
+                                                   "terms": {
+                                                       "field": "search_key.owner.keyword",
+                                                       "size": 50000
+                                                   }, "aggs": {
+                                                       "group_by_repo": {
+                                                           "terms": {
+                                                               "field": "search_key.repo.keyword",
+                                                               "size": 50000
+                                                           }
+                                                       }
+                                                   }
+                                               }
+                                           }
+                                       })
+    datas = results["aggregations"]["group_by_owner"]["buckets"]
+    for owner_repo in datas:
+        owner = owner_repo["key"]
+        for repo_ in owner_repo["group_by_repo"]["buckets"]:
+            repo = repo_["key"]
+            owner_repo = [owner, repo]
+            op_do_sync_init_data_cleaning = PythonOperator(
+                task_id=f'op_do_sync_init_data_cleaning_{owner_repo[0]}_{owner_repo[1]}',
+                python_callable=do_sync_init_data_cleaning,
+                op_kwargs={'params': owner_repo},
+            )
 
-        op_init_data_cleaning >> op_do_sync_init_data_cleaning
+            op_init_data_cleaning >> op_do_sync_init_data_cleaning
