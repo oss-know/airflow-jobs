@@ -1,16 +1,12 @@
 {
-    "git_info_list": [
-        {
-            "owner": "fivestarsky",
-            "repo": "airflow-jobs",
-            "url": "git://github.com/fivestarsky/airflow-jobs.git"
-        }
-    ],
+    "git_save_local_path": {
+        "PATH": "/tmp/gits"
+    },
     "github_tokens": [
-        "abcd",
-        "abcd",
-        "abcd",
-        "abcd"
+        "123123",
+        "asdfasdf",
+        "asdfasdf",
+        "asdfasdf"
     ],
     "need_init_github_commits_repos": [
         {
@@ -40,12 +36,15 @@
     ],
     "need_init_github_pull_requests_repos": [
         {
-            "owner": "projectacrn",
-            "repo": "projectacrn.github.io"
-        },
+            "owner": "fivestarsky",
+            "repo": "airflow-jobs"
+        }
+    ],
+    "need_init_gits": [
         {
-            "owner": "projectacrn",
-            "repo": "acrn-unit-test"
+            "owner": "fivestarsky",
+            "repo": "airflow-jobs",
+            "url": "git://github.com/fivestarsky/airflow-jobs.git"
         }
     ],
     "need_sync_github_commits_repos": [
@@ -72,9 +71,15 @@
             "repo": "airflow-jobs"
         }
     ],
-    "need_sync_gits": [],
+    "need_sync_gits": [
+        {
+            "owner": "fivestarsky",
+            "repo": "airflow-jobs",
+            "url": "git://github.com/fivestarsky/airflow-jobs.git"
+        }
+    ],
     "opensearch_conn_data": {
-        "HOST": "192.168.8.201",
+        "HOST": "192.168.8.10",
         "PASSWD": "admin",
         "PORT": "9200",
         "USER": "admin"
