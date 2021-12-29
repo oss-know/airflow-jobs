@@ -4,7 +4,7 @@ import datetime
 from git import Repo, exc
 from loguru import logger
 from ..github.init_gits import init_sync_git_datas
-from ..util.base import get_opensearch_client, do_opensearch_bulk
+from ..util.base import get_opensearch_client
 from ..base_dict.opensearch_index import OPENSEARCH_INDEX_CHECK_SYNC_DATA, OPENSEARCH_GIT_RAW
 from ..util.opensearch_api import OpensearchAPI
 
