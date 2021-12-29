@@ -45,6 +45,7 @@ with DAG(
         return params
 
 
+
     need_do_inti_sync_ops = []
 
     from airflow.models import Variable

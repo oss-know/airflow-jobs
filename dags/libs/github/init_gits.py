@@ -1,15 +1,41 @@
 import copy
-import time
+import datetime
 import shutil
 import os
 from loguru import logger
 from git import Repo
 from airflow.models import Variable
+from ..base_dict.opensearch_index import OPENSEARCH_GIT_RAW, OPENSEARCH_INDEX_CHECK_SYNC_DATA
+from ..util.base import get_opensearch_client
+from ..util.opensearch_api import OpensearchAPI
 
-from ..util.base import get_opensearch_client, do_opensearch_bulk, sync_git_check_update_info
+
+# 用于记录上一次更新的点
+def sync_git_check_update_info(opensearch_client, owner, repo, head_commit):
+    now_time = datetime.datetime.now()
+    check_update_info = {
+        "search_key": {
+            "type": "git_commits",
+            "update_time": now_time.strftime('%Y-%m-%dT00:00:00Z'),
+            "update_timestamp": now_time.timestamp(),
+            "owner": owner,
+            "repo": repo
+        },
+        "git": {
+            "type": "git_commits",
+            "owner": owner,
+            "repo": repo,
+            "commits": {
+                "sync_timestamp": now_time.timestamp(),
+                "sync_commit_sha": head_commit,
+            }
+        }
+    }
+    response = opensearch_client.index(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA, body=check_update_info)
+    logger.info(response)
 
 
-def delete_pre(owner, repo, client):
+def delete_old_data(owner, repo, client):
     query = {
         "query": {
             "bool": {
@@ -27,7 +53,7 @@ def delete_pre(owner, repo, client):
             }
         }
     }
-    response = client.delete_by_query(index="git_raw", body=query)
+    response = client.delete_by_query(index=OPENSEARCH_GIT_RAW, body=query)
     logger.info(response)
 
 
@@ -46,9 +72,8 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
                                     )
 
     opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
-    all_git_list = []
     # 删除在数据库中已经存在的此项目数据
-    delete_pre(owner=owner, repo=repo, client=opensearch_client)
+    delete_old_data(owner=owner, repo=repo, client=opensearch_client)
 
     bulk_data_tp = {"_index": "git_raw",
                     "_source": {
@@ -78,6 +103,8 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
     repo_iter_commits = repo_info.iter_commits()
     now_count = 0
     all_git_list = []
+    # 实例化opensearchapi
+    opensearch_api = OpensearchAPI()
     for commit in repo_iter_commits:
         files = commit.stats.files
         files_list = []
@@ -107,22 +134,20 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
         now_count = now_count + 1
         all_git_list.append(bulk_data)
         if now_count % 500 == 0:
-            success, failed = do_opensearch_bulk(opensearch_client=opensearch_client,
-                                                 bulk_all_data=all_git_list,
-                                                 owner=owner,
-                                                 repo=repo)
+            success, failed = opensearch_api.do_opensearch_bulk(opensearch_client=opensearch_client,
+                                                                bulk_all_data=all_git_list,
+                                                                owner=owner,
+                                                                repo=repo)
             logger.info(f"sync_bulk_git_datas::success:{success},failed:{failed}")
             logger.info(f"count:{now_count}::{owner}/{repo}::commit.hexsha:{commit.hexsha}")
             all_git_list.clear()
 
-
-    success, failed = do_opensearch_bulk(opensearch_client=opensearch_client,
-                                         bulk_all_data=all_git_list,
-                                         owner=owner,
-                                         repo=repo)
+    success, failed = opensearch_api.do_opensearch_bulk(opensearch_client=opensearch_client,
+                                                        bulk_all_data=all_git_list,
+                                                        owner=owner,
+                                                        repo=repo)
     logger.info(f"sync_bulk_git_datas::success:{success},failed:{failed}")
     logger.info(f"count:{now_count}::{owner}/{repo}::commit.hexsha:{commit.hexsha}")
-    all_git_list.clear()
 
     # 这里记录更新位置（gitlog 最上边的一条）
     head_commit = repo_info.head.commit.hexsha
@@ -131,5 +156,3 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
                                repo=repo,
                                head_commit=head_commit)
     return
-
-
