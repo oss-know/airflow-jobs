@@ -6,7 +6,7 @@ import time
 from opensearchpy import OpenSearch
 
 from ..util.log import logger
-from ..util.base import sync_github_commits_check_update_info
+# from ..util.base import sync_github_commits_check_update_info
 from ..util.github_api import GithubAPI
 from ..util.opensearch_api import OpensearchAPI
 
@@ -47,6 +47,6 @@ def init_github_commits(github_tokens,
 
         logger.info(f"success get github commits :: {owner}/{repo} page_index:{page}")
 
-    sync_github_commits_check_update_info(opensearch_client, owner, repo, since, until)
+    opensearch_api.sync_github_commits_check_update_info(opensearch_client, owner, repo, since, until)
 
     return "END::init_github_commits"

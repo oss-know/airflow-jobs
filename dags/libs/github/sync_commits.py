@@ -11,7 +11,8 @@ from opensearchpy import OpenSearch
 from ..util.github_api import GithubAPI
 from ..util.opensearch_api import OpensearchAPI
 from ..base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COMMITS, OPENSEARCH_INDEX_CHECK_SYNC_DATA
-from ..util.base import do_get_result, github_headers, do_opensearch_bulk, sync_github_commits_check_update_info
+from ..util.base import do_get_result
+    #, github_headers, do_opensearch_bulk, sync_github_commits_check_update_info
 from ..util.log import logger
 
 
@@ -108,6 +109,6 @@ def sync_github_commits(github_tokens,
         logger.info(f"success get github commits :: {owner}/{repo} page_index:{page}")
 
 
-    sync_github_commits_check_update_info(opensearch_client, owner, repo, since, until)
+    opensearch_api.sync_github_commits_check_update_info(opensearch_client, owner, repo, since, until)
 
     return "END::sync_github_commits"

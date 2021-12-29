@@ -3,6 +3,7 @@ import datetime
 import json
 from typing import Tuple, Union, List, Any
 
+import dateutil
 import psycopg2
 import urllib3
 
@@ -159,6 +160,40 @@ class OpensearchAPI:
             }
         }
 
+        opensearch_client.index(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA,
+                                body=check_update_info,
+                                refresh=True)
+
+    # 建立 owner/repo github commits 更新基准
+    def sync_github_commits_check_update_info(self, opensearch_client,
+                                              owner,
+                                              repo,
+                                              since,
+                                              until):
+        now_time = datetime.datetime.now()
+        check_update_info = {
+            "search_key": {
+                "type": "github_commits",
+                "update_time": now_time.strftime('%Y-%m-%dT00:00:00Z'),
+                "update_timestamp": now_time.timestamp(),
+                "owner": owner,
+                "repo": repo
+            },
+            "github": {
+                "type": "github_commits",
+                "owner": owner,
+                "repo": repo,
+                "commits": {
+                    "owner": owner,
+                    "repo": repo,
+                    "sync_timestamp": now_time.timestamp(),
+                    "sync_since_timestamp": dateutil.parser.parse(since).timestamp(),
+                    "sync_until_timestamp": dateutil.parser.parse(until).timestamp(),
+                    "sync_since_datetime": since,
+                    "sync_until_datetime": until
+                }
+            }
+        }
         opensearch_client.index(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA,
                                 body=check_update_info,
                                 refresh=True)
