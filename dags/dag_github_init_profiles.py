@@ -48,7 +48,7 @@ with DAG(
         github_users_logins = ti.xcom_pull(task_ids='op_load_github_repo_login_{owner}_{repo}'.format(
             owner=params["owner"], repo=params["repo"]))
 
-        from libs.github import init_github_profiles
+        from libs.github import init_profiles
         init_github_profiles.load_github_profile(github_tokens, opensearch_conn_infos, github_users_logins)
         return 'End load_github_repo_profile'
 

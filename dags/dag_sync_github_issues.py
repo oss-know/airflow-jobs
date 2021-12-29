@@ -23,7 +23,7 @@ with DAG(
 
     def do_sync_github_issues(params):
         from airflow.models import Variable
-        from libs.github import sync_github_issues
+        from libs.github import sync_issues
 
         github_tokens = Variable.get("github_tokens", deserialize_json=True)
         opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
@@ -46,7 +46,7 @@ with DAG(
         issues_numbers = ti.xcom_pull(task_ids=task_ids)
 
         from airflow.models import Variable
-        from libs.github import sync_github_issues_comments
+        from libs.github import sync_issues_comments
 
         github_tokens = Variable.get("github_tokens", deserialize_json=True)
         opensearch_conn_info = Variable.get("opensearch_conn_data", deserialize_json=True)

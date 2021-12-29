@@ -103,6 +103,7 @@ class OpensearchAPI:
 
         return success, failed
 
+
     def do_opensearch_bulk_error_callback(retry_state):
         postgres_conn = get_postgres_conn()
         sql = '''INSERT INTO retry_data(

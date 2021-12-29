@@ -14,12 +14,6 @@ class GithubAPI:
     github_headers = {'Connection': 'keep-alive', 'Accept-Encoding': 'gzip, deflate, br', 'Accept': '*/*',
                       'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36', }
 
-    """一个简单的类实例"""
-
-    # i = 12345
-    # def get_github_commints(self):
-    #     return 'hello world'
-
     def get_github_commits(self, http_session, github_tokens_iter, owner, repo, page, since, until):
         if not http_session or not github_tokens_iter or not owner or not repo or not page or not since or not until:
             raise GithubAPIException(f"缺少必须的参数")

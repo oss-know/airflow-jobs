@@ -25,7 +25,7 @@ with DAG(
 
     def do_init_sync_github_commit(params):
         from airflow.models import Variable
-        from libs.github import init_github_commits
+        from libs.github import init_commits
 
         github_tokens = Variable.get("github_tokens", deserialize_json=True)
         opensearch_conn_info = Variable.get("opensearch_conn_data", deserialize_json=True)
