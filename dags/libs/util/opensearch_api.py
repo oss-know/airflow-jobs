@@ -140,7 +140,7 @@ class OpensearchAPI:
                 opensearch_client.index(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
                                         body=now_github_profile,
                                         refresh=True)
-                logger.info("Put the github user's profile into opensearch.")
+                logger.info(f"Put the github {github_login}'s profile into opensearch.")
             else:
                 logger.info(f"{github_login}'s profile has already existed.")
         return "Put GitHub user profile into opensearch if it is not in opensearch"
