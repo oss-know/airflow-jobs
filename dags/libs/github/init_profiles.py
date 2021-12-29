@@ -12,16 +12,17 @@ def load_github_logins_by_repo(opensearch_conn_infos, owner, repo):
     init_profile_logins = load_logins_by_github_issues_timeline(opensearch_client, owner,
                                                                 repo)
     init_profile_logins += load_logins_by_github_commits(opensearch_client, owner, repo)
-
     return init_profile_logins
 
 
 def load_logins_by_github_commits(opensearch_client, owner, repo):
     """Get GitHub users' logins from GitHub commits."""
-
+    logger.debug(f'calling load_logins_by_github_commits for {owner}/{repo}')
     res = get_github_data_by_repo_owner_index_from_os(opensearch_client, owner, repo,
                                                       index=OPENSEARCH_INDEX_GITHUB_COMMITS)
-
+    if not res:
+        logger.info(f"There's no github commits in {repo}")
+        return []
     # delete duplicated data of GitHub author and GitHub committer
     all_commits_users_dict = {}
     all_commits_users = []
@@ -36,39 +37,34 @@ def load_logins_by_github_commits(opensearch_client, owner, repo):
             all_commits_users_dict[raw_data["committer"]["login"]] = \
                 raw_data["committer"]["url"]
             all_commits_users.append(raw_data["committer"]["login"])
-    logger.info(load_logins_by_github_commits.__doc__)
+
     return all_commits_users
 
 
 def load_logins_by_github_issues_timeline(opensearch_client, owner, repo):
     """Get GitHub users' logins from GitHub issues timeline ."""
 
+    logger.debug(f'calling load_logins_by_github_issues_timeline for {owner}/{repo}')
+
     res = get_github_data_by_repo_owner_index_from_os(opensearch_client, owner, repo,
                                                       index=OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE)
 
-    all_issues_timeline_users = []
-    if res is None:
+    if not res:
         logger.info(f"There's no github issues' timeline in {repo}")
-    else:
-        for issue_timeline in res:
-            issue_timeline_raw_data = issue_timeline["_source"]["raw_data"]
-            if issue_timeline_raw_data["event"] == "cross-referenced":
-                issue_timeline_user_login = issue_timeline_raw_data["actor"]["login"] \
-                                            + issue_timeline_raw_data["source"]["issue"]["user"]["login"]
-                all_issues_timeline_users.append(issue_timeline_user_login)
-            elif issue_timeline_raw_data["event"] != "committed":
-                if "user" in issue_timeline_raw_data:
-                    issue_timeline_user_login = issue_timeline_raw_data["user"]["login"]
-                    all_issues_timeline_users.append(issue_timeline_user_login)
-                if "actor" in issue_timeline_raw_data:
-                    issue_timeline_user_login = issue_timeline_raw_data["actor"]["login"]
-                    all_issues_timeline_users.append(issue_timeline_user_login)
-                if "assignee" in issue_timeline_raw_data:
-                    issue_timeline_user_login = issue_timeline_raw_data["assignee"]["login"]
-                    all_issues_timeline_users.append(issue_timeline_user_login)
+        return []
 
-        logger.info(load_logins_by_github_issues_timeline.__doc__)
-    return all_issues_timeline_users
+    all_issues_timeline_users = set()
+    for issue_timeline in res:
+        issue_timeline_raw_data = issue_timeline["_source"]["raw_data"]
+        if issue_timeline_raw_data["event"] == "cross-referenced":
+            all_issues_timeline_users.add(issue_timeline_raw_data["actor"]["login"])
+            all_issues_timeline_users.add(issue_timeline_raw_data["source"]["issue"]["user"]["login"])
+        elif issue_timeline_raw_data["event"] != "committed":
+            for key in ["user", "actor", "assignee"]:
+                if key in issue_timeline_raw_data:
+                    all_issues_timeline_users.add(issue_timeline_raw_data[key]["login"])
+
+    return list(all_issues_timeline_users)
 
 
 def get_github_data_by_repo_owner_index_from_os(opensearch_client, owner, repo, index):
@@ -120,5 +116,4 @@ def get_opensearch_client(opensearch_conn_infos):
         ssl_assert_hostname=False,
         ssl_show_warn=False
     )
-    logger.info(get_opensearch_client.__doc__)
     return opensearch_client
