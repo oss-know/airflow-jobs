@@ -8,6 +8,7 @@ RUN pip install --no-cache-dir  loguru==0.5.3 \
                                 urllib3==1.26.7 \
                                 tenacity==8.0.1 \
                                 requests==2.26.0
+RUN pip install 'apache-airflow[password]'
 USER root
 RUN sudo apt-get update \
   && sudo apt-get install git -y
