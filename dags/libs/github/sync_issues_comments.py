@@ -1,6 +1,4 @@
-import datetime
 import random
-
 import requests
 import time
 import itertools
@@ -9,8 +7,8 @@ import copy
 from opensearchpy import OpenSearch
 from opensearchpy import helpers as OpenSearchHelpers
 
-from .init_issues import get_github_issues, bulk_github_issues, sync_github_issues_check_update_info
-from ..base_dict.opensearch_index import OPENSEARCH_INDEX_CHECK_SYNC_DATA, OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS
+from .init_issues import set_sync_github_issues_check
+from ..base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS
 from ..util.base import github_headers, do_get_result
 from ..util.log import logger
 
@@ -35,54 +33,6 @@ def sync_github_issues_comments(github_tokens, opensearch_conn_info, owner, repo
         ssl_assert_hostname=False,
         ssl_show_warn=False
     )
-
-    # has_issues_comments_check = opensearch_client.search(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA,
-    #                                             body={
-    #                                                 "size": 1,
-    #                                                 "track_total_hits": True,
-    #                                                 "query": {
-    #                                                     "bool": {
-    #                                                         "must": [
-    #                                                             {
-    #                                                                 "term": {
-    #                                                                     "search_key.type.keyword": {
-    #                                                                         "value": "github_issues"
-    #                                                                     }
-    #                                                                 }
-    #                                                             },
-    #                                                             {
-    #                                                                 "term": {
-    #                                                                     "search_key.owner.keyword": {
-    #                                                                         "value": owner
-    #                                                                     }
-    #                                                                 }
-    #                                                             },
-    #                                                             {
-    #                                                                 "term": {
-    #                                                                     "search_key.repo.keyword": {
-    #                                                                         "value": repo
-    #                                                                     }
-    #                                                                 }
-    #                                                             }
-    #                                                         ]
-    #                                                     }
-    #                                                 },
-    #                                                 "sort": [
-    #                                                     {
-    #                                                         "search_key.update_timestamp": {
-    #                                                             "order": "desc"
-    #                                                         }
-    #                                                     }
-    #                                                 ]
-    #                                             }
-    #                                             )
-    # if len(has_issues_comments_check["hits"]["hits"]) == 0:
-    #     raise SyncGithubIssuesCommentsException("没有得到上次github issues 同步的时间")
-    # github_issues_check = has_issues_comments_check["hits"]["hits"][0]["_source"]["github"]["issues"]
-    #
-    # # 生成本次同步的时间范围：同步到今天的 00:00:00
-    # since = datetime.datetime.fromtimestamp(github_issues_check["sync_timestamp"]).strftime('%Y-%m-%dT00:00:00Z')
-    # logger.info(f'sync github issues comments since：{since}')
 
     session = requests.Session()
     for issues_number in issues_numbers:
@@ -135,7 +85,7 @@ def sync_github_issues_comments(github_tokens, opensearch_conn_info, owner, repo
             logger.info(f"success get github issues comments page:{owner}/{repo} page_index:{page}")
 
     # 建立 sync 标志
-    sync_github_issues_check_update_info(opensearch_client, owner, repo)
+    set_sync_github_issues_check(opensearch_client, owner, repo)
 
 
 def get_github_issues_comments(req_session, github_tokens_iter, owner, repo, number, page):

@@ -1,6 +1,7 @@
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TOKENS, NEED_SYNC_GITHUB_ISSUES_REPOS
 
 # v0.0.1
 
@@ -25,13 +26,13 @@ with DAG(
         from airflow.models import Variable
         from libs.github import sync_issues
 
-        github_tokens = Variable.get("github_tokens", deserialize_json=True)
-        opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
+        github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
+        opensearch_conn_infos = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
 
         owner = params["owner"]
         repo = params["repo"]
 
-        issues_numbers = sync_github_issues.sync_github_issues(
+        issues_numbers = sync_issues.sync_github_issues(
             github_tokens, opensearch_conn_infos, owner, repo)
 
         return issues_numbers
@@ -48,16 +49,16 @@ with DAG(
         from airflow.models import Variable
         from libs.github import sync_issues_comments
 
-        github_tokens = Variable.get("github_tokens", deserialize_json=True)
-        opensearch_conn_info = Variable.get("opensearch_conn_data", deserialize_json=True)
+        github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
+        opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
 
 
-        do_sync_since = sync_github_issues_comments.sync_github_issues_comments(
+        do_sync_since = sync_issues_comments.sync_github_issues_comments(
             github_tokens, opensearch_conn_info, owner, repo, issues_numbers)
 
     from airflow.models import Variable
     need_do_sync_ops = []
-    need_sync_github_issues_repos = Variable.get("need_sync_github_issues", deserialize_json=True)
+    need_sync_github_issues_repos = Variable.get(NEED_SYNC_GITHUB_ISSUES_REPOS, deserialize_json=True)
     for sync_github_issues_repo in need_sync_github_issues_repos:
         op_do_sync_github_issues = PythonOperator(
             task_id='op_do_sync_github_issues_{owner}_{repo}'.format(
