@@ -1,6 +1,4 @@
-import time
 from datetime import datetime
-from pprint import pprint
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 
@@ -33,12 +31,11 @@ with DAG(
         opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
         git_save_local_path = Variable.get("git_save_local_path", deserialize_json=True)
         init_sync_git_info = init_gits.init_sync_git_datas(git_url=url,
-                                                      owner=owner,
-                                                      repo=repo,
-                                                      proxy_config=proxy_config,
-                                                      opensearch_conn_datas=opensearch_conn_datas,
-                                                      git_save_local_path=git_save_local_path)
-        print(init_sync_git_info)
+                                                           owner=owner,
+                                                           repo=repo,
+                                                           proxy_config=proxy_config,
+                                                           opensearch_conn_datas=opensearch_conn_datas,
+                                                           git_save_local_path=git_save_local_path)
         return 'do_sync_git_info:::end'
 
 
@@ -47,9 +44,7 @@ with DAG(
     git_info_list = Variable.get("git_info_list", deserialize_json=True)
     for git_info in git_info_list:
         op_do_init_sync_git_info = PythonOperator(
-            task_id='do_sync_git_info_{owner}_{repo}'.format(
-                owner=git_info["owner"],
-                repo=git_info["repo"]),
+            task_id=f'do_sync_git_info_{git_info["owner"]}_{git_info["repo"]}',
             python_callable=do_sync_git_info,
             op_kwargs={'params': git_info},
         )
