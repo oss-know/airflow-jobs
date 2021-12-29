@@ -9,7 +9,7 @@ import copy
 from opensearchpy import OpenSearch
 from opensearchpy import helpers as OpenSearchHelpers
 
-from .init_issues import get_github_issues, bulk_github_issues, sync_github_issues_check_update_info
+from .init_issues import get_github_issues, bulk_github_issues, set_sync_github_issues_check
 from ..base_dict.opensearch_index import OPENSEARCH_INDEX_CHECK_SYNC_DATA
 from ..util.base import github_headers, do_get_result
 from ..util.log import logger
@@ -107,7 +107,7 @@ def sync_github_issues(github_tokens, opensearch_conn_info, owner, repo):
         logger.info(f"success get github issues page:{owner}/{repo} page_index:{page}")
 
     # 建立 sync 标志
-    sync_github_issues_check_update_info(opensearch_client, owner, repo)
+    set_sync_github_issues_check(opensearch_client, owner, repo)
 
     logger.info(f"issues_list:{issues_numbers}")
 

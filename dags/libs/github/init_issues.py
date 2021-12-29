@@ -49,13 +49,13 @@ def init_github_issues(github_tokens, opensearch_conn_infos, owner, repo, since=
         logger.info(f"success get github issues page:{owner}/{repo} page_index:{page}")
 
     # 建立 sync 标志
-    sync_github_issues_check_update_info(opensearch_client, owner, repo)
+    set_sync_github_issues_check(opensearch_client, owner, repo)
 
 
 # 建立 owner/repo github issues 更新基准
-def sync_github_issues_check_update_info(opensearch_client,
-                                         owner,
-                                         repo):
+def set_sync_github_issues_check(opensearch_client,
+                                 owner,
+                                 repo):
     now_time = datetime.datetime.now()
     check_update_info = {
         "search_key": {

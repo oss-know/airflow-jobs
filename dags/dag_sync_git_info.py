@@ -1,6 +1,4 @@
-import time
 from datetime import datetime
-from pprint import pprint
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 
@@ -38,7 +36,6 @@ with DAG(
                                                  proxy_config=proxy_config,
                                                  opensearch_conn_datas=opensearch_conn_datas,
                                                  git_save_local_path=git_save_local_path)
-        print(sync_git_info)
         return 'do_sync_git_info:::end'
 
 

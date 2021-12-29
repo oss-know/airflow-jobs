@@ -38,6 +38,7 @@ class GithubAPI:
 
         return res
 
+<<<<<<< HEAD
     def get_github_profiles(self, http_session, github_tokens_iter, login_info):
         """Get GitHub user's latest profile from GitHUb."""
         url = "https://api.github.com/users/{login_info}".format(
@@ -58,3 +59,14 @@ class GithubAPI:
         return now_github_profile
 
 
+=======
+    def get_github_issues_timeline(self, http_session, github_tokens_iter, owner, repo, number, page,
+                                   since):
+        url = "https://api.github.com/repos/{owner}/{repo}/issues/{number}/timeline".format(
+            owner=owner, repo=repo, number=number)
+        headers = copy.deepcopy(self.github_headers)
+        headers.update({'Authorization': 'token %s' % next(github_tokens_iter)})
+        params = {'per_page': 100, 'page': page, 'since': since}
+        res = do_get_result(http_session, url, headers, params)
+        return res
+>>>>>>> meng/main

@@ -1,9 +1,8 @@
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-import airflow.providers.postgres.hooks.postgres as postgres_hooks
+from libs.base_dict.variable_key import GITHUB_TOKENS, OPENSEARCH_CONN_DATA, NEED_SYNC_GITHUB_COMMITS_REPOS
 
-# irflow.providers.postgres.hooks.postgres
 # v0.0.1 初始化实现
 # v0.0.2 增加set_github_init_commits_check_data 用于设置初始化后更新的point data
 
@@ -28,23 +27,23 @@ with DAG(
         from airflow.models import Variable
         from libs.github import sync_commits
 
-        github_tokens = Variable.get("github_tokens", deserialize_json=True)
-        opensearch_conn_info = Variable.get("opensearch_conn_data", deserialize_json=True)
+        github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
+        opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
 
         owner = params["owner"]
         repo = params["repo"]
 
-        do_init_sync_info = sync_github_commits.sync_github_commits(github_tokens,
-                                                                    opensearch_conn_info,
-                                                                    owner, repo)
-        return "END::do_sync_github_commit"
+        do_init_sync_info = sync_commits.sync_github_commits(github_tokens,
+                                                             opensearch_conn_info,
+                                                             owner, repo)
+        return params
 
 
     need_do_inti_sync_ops = []
 
     from airflow.models import Variable
 
-    need_sync_github_commits_list = Variable.get("need_sync_github_commits", deserialize_json=True)
+    need_sync_github_commits_list = Variable.get(NEED_SYNC_GITHUB_COMMITS_REPOS, deserialize_json=True)
 
     for now_need_sync_github_commits in need_sync_github_commits_list:
         op_do_sync_github_commit = PythonOperator(
