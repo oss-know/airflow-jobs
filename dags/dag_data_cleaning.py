@@ -55,8 +55,8 @@ with DAG(
                                           }
                                           , "_source": ["search_key.repo", "search_key.owner"]
                                       })
-    datas = results["hits"]["hits"]
-    for commit in datas:
+    # datas = results["hits"]["hits"]
+    for commit in results:
         owner = commit["_source"]["search_key"]["owner"]
         repo = commit["_source"]["search_key"]["repo"]
         owner_repo = [owner, repo]
