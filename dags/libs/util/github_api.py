@@ -39,6 +39,26 @@ class GithubAPI:
 
         return res
 
+    def get_github_profiles(self, http_session, github_tokens_iter, login_info):
+        """Get GitHub user's latest profile from GitHUb."""
+        url = "https://api.github.com/users/{login_info}".format(
+            login_info=login_info)
+        headers = copy.deepcopy(self.github_headers)
+        headers.update({'Authorization': 'token %s' % next(github_tokens_iter),
+                               'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                                             'Chrome/96.0.4664.110 Safari/537.36'})
+        headers.update({'Authorization': 'token %s' % next(github_tokens_iter)})
+        params = {}
+        now_github_profile = {}
+        try:
+            req = do_get_result(http_session, url, headers, params)
+            now_github_profile = req.json()
+        except TypeError as e:
+            print("捕获airflow抛出的TypeError:", e)
+        logger.info(self.get_github_profiles.__doc__)
+        return now_github_profile
+
+
     def get_github_issues_timeline(self, http_session, github_tokens_iter, owner, repo, number, page):
         url = "https://api.github.com/repos/{owner}/{repo}/issues/{number}/timeline".format(
             owner=owner, repo=repo, number=number)
@@ -56,3 +76,4 @@ class GithubAPI:
         params = {'per_page': 100, 'page': page}
         res = do_get_result(req_session, url, headers, params)
         return res
+

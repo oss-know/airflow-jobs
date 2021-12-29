@@ -6,15 +6,19 @@ from typing import Tuple, Union, List, Any
 import dateutil
 import psycopg2
 import urllib3
-
+import random
 from opensearchpy import helpers as opensearch_helpers
 from opensearchpy.exceptions import OpenSearchException
 from tenacity import *
+import requests
 
 from ..util.airflow import get_postgres_conn
 from ..util.log import logger
+from ..util.github_api import GithubAPI
+
 from ..base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COMMITS, OPENSEARCH_INDEX_GITHUB_ISSUES, \
-    OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE, OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, OPENSEARCH_INDEX_CHECK_SYNC_DATA
+    OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE, OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, \
+    OPENSEARCH_INDEX_CHECK_SYNC_DATA, OPEN_SEARCH_GITHUB_PROFILE_INDEX
 
 
 class OpenSearchAPIException(Exception):
@@ -105,6 +109,41 @@ class OpensearchAPI:
         logger.info(f"now page:{len(bulk_all_github_issues)} sync github issues success:{success} & failed:{failed}")
 
         return success, failed
+
+    def put_profile_into_opensearch(self, github_logins, github_tokens_iter, opensearch_client):
+        """Put GitHub user profile into opensearch if it is not in opensearch."""
+
+        # 获取github profile
+        for github_login in github_logins:
+            logger.info(f'github_profile_user:{github_login}')
+            time.sleep(round(random.uniform(0.01, 0.1), 2))
+            has_user_profile = opensearch_client.search(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
+                                                        body={
+                                                            "query": {
+                                                                "term": {
+                                                                    "login.keyword": {
+                                                                        "value": github_login
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                        )
+
+            current_profile_list = has_user_profile["hits"]["hits"]
+
+            if len(current_profile_list) == 0:
+                github_api = GithubAPI()
+                session = requests.Session()
+                now_github_profile = github_api.get_github_profiles(http_session=session,
+                                                                    github_tokens_iter=github_tokens_iter,
+                                                                    login_info=github_login)
+                opensearch_client.index(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
+                                        body=now_github_profile,
+                                        refresh=True)
+                logger.info("Put the github user's profile into opensearch.")
+            else:
+                logger.info(f"{github_login}'s profile has already existed.")
+        return "Put GitHub user profile into opensearch if it is not in opensearch"
 
     def bulk_github_issues_timeline(self, opensearch_client, issues_timelines, owner, repo, number):
         bulk_all_datas = []
