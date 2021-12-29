@@ -30,7 +30,7 @@ def init_github_issues(github_tokens, opensearch_conn_infos, owner, repo, since=
     opensearch_api = OpensearchAPI()
     for page in range(1, 10000):
         # Token sleep
-        time.sleep(random.uniform(0.1, 0.5))
+        time.sleep(random.uniform(0.1, 0.2))
 
         # 获取github issues
         req = github_api.get_github_issues(http_session=session, github_tokens_iter=github_tokens_iter,
