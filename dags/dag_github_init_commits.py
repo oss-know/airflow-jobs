@@ -24,7 +24,7 @@ with DAG(
     )
 
 
-    def do_init_sync_github_commit(params):
+    def do_init_github_commit(params):
         from airflow.models import Variable
         from libs.github import init_commits
 
@@ -57,7 +57,7 @@ with DAG(
             task_id='do_init_github_commit_{owner}_{repo}'.format(
                 owner=now_need_init_sync_github_commits["owner"],
                 repo=now_need_init_sync_github_commits["repo"]),
-            python_callable=do_init_sync_github_commit,
+            python_callable=do_init_github_commit,
             op_kwargs={'params': now_need_init_sync_github_commits},
         )
         op_scheduler_init_sync_github_commit >> op_do_init_sync_github_commit

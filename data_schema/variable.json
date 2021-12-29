@@ -1,240 +1,82 @@
 {
-  "git_info_list": [
-    {
-      "owner": "projectacrn",
-      "repo": "projectacrn.github.io",
-      "url": "https://github.com/projectacrn/projectacrn.github.io.git"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-unit-test",
-      "url": "https://github.com/projectacrn/acrn-unit-test.git"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-hypervisor",
-      "url": "https://github.com/projectacrn/acrn-hypervisor.git"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-edk2",
-      "url": "https://github.com/projectacrn/acrn-edk2.git"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-libvirt",
-      "url": "https://github.com/projectacrn/acrn-libvirt.git"
+    "git_info_list": [
+        {
+            "owner": "fivestarsky",
+            "repo": "airflow-jobs",
+            "url": "git://github.com/fivestarsky/airflow-jobs.git"
+        }
+    ],
+    "github_tokens": [
+        "abcd",
+        "abcd",
+        "abcd",
+        "abcd"
+    ],
+    "need_init_github_commits_repos": [
+        {
+            "owner": "fivestarsky",
+            "repo": "airflow-jobs",
+            "since": "1980-01-01T00:00:00Z",
+            "until": "2021-12-20T00:00:00Z"
+        }
+    ],
+    "need_init_github_issues_comments_repos": [
+        {
+            "owner": "fivestarsky",
+            "repo": "airflow-jobs"
+        }
+    ],
+    "need_init_github_issues_repos": [
+        {
+            "owner": "fivestarsky",
+            "repo": "airflow-jobs"
+        }
+    ],
+    "need_init_github_issues_timeline_repos": [
+        {
+            "owner": "fivestarsky",
+            "repo": "airflow-jobs"
+        }
+    ],
+    "need_init_github_pull_requests_repos": [
+        {
+            "owner": "projectacrn",
+            "repo": "projectacrn.github.io"
+        },
+        {
+            "owner": "projectacrn",
+            "repo": "acrn-unit-test"
+        }
+    ],
+    "need_sync_github_commits_repos": [
+        {
+            "owner": "fivestarsky",
+            "repo": "airflow-jobs"
+        }
+    ],
+    "need_sync_github_issues_comments_repos": [
+        {
+            "owner": "fivestarsky",
+            "repo": "airflow-jobs"
+        }
+    ],
+    "need_sync_github_issues_repos": [
+        {
+            "owner": "fivestarsky",
+            "repo": "airflow-jobs"
+        }
+    ],
+    "need_sync_github_profile_repo_list": [
+        {
+            "owner": "fivestarsky",
+            "repo": "airflow-jobs"
+        }
+    ],
+    "need_sync_gits": [],
+    "opensearch_conn_data": {
+        "HOST": "192.168.8.201",
+        "PASSWD": "admin",
+        "PORT": "9200",
+        "USER": "admin"
     }
-  ],
-  "need_sync_gits": [
-    {
-      "owner": "projectacrn",
-      "repo": "projectacrn.github.io",
-      "url": "https://github.com/projectacrn/projectacrn.github.io.git"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-unit-test",
-      "url": "https://github.com/projectacrn/acrn-unit-test.git"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-hypervisor",
-      "url": "https://github.com/projectacrn/acrn-hypervisor.git"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-edk2",
-      "url": "https://github.com/projectacrn/acrn-edk2.git"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-libvirt",
-      "url": "https://github.com/projectacrn/acrn-libvirt.git"
-    }
-  ],
-  "need_init_sync_gits": [
-    {
-      "owner": "projectacrn",
-      "repo": "projectacrn.github.io",
-      "url": "https://github.com/projectacrn/projectacrn.github.io.git"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-unit-test",
-      "url": "https://github.com/projectacrn/acrn-unit-test.git"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-hypervisor",
-      "url": "https://github.com/projectacrn/acrn-hypervisor.git"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-edk2",
-      "url": "https://github.com/projectacrn/acrn-edk2.git"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-libvirt",
-      "url": "https://github.com/projectacrn/acrn-libvirt.git"
-    }
-  ],
-  "github_tokens": [
-    "请填入自己的Token",
-    "请填入自己的Token",
-    "请填入自己的Token",
-    "请填入自己的Token..."
-  ],
-  "need_init_sync_github_commits_list": [
-    {
-      "owner": "projectacrn",
-      "repo": "projectacrn.github.io",
-      "since": "1980-01-01T00:00:00Z",
-      "until": "2021-12-20T00:00:00Z"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-unit-test",
-      "since": "1980-01-01T00:00:00Z",
-      "until": "2021-12-20T00:00:00Z"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-hypervisor",
-      "since": "1980-01-01T00:00:00Z",
-      "until": "2021-12-20T00:00:00Z"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-edk2",
-      "since": "1980-01-01T00:00:00Z",
-      "until": "2021-12-20T00:00:00Z"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-libvirt",
-      "since": "1980-01-01T00:00:00Z",
-      "until": "2021-12-20T00:00:00Z"
-    }
-  ],
-  "need_init_sync_github_issues_comments_repos": [
-    {
-      "owner": "projectacrn",
-      "repo": "projectacrn.github.io"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-unit-test"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-hypervisor"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-edk2"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-libvirt"
-    }
-  ],
-  "need_init_sync_github_issues_list": [
-    {
-      "owner": "projectacrn",
-      "repo": "projectacrn.github.io"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-unit-test"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-hypervisor"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-edk2"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-libvirt"
-    }
-  ],
-  "need_init_sync_github_issues_timeline_repos": [
-    {
-      "owner": "projectacrn",
-      "repo": "projectacrn.github.io"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-unit-test"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-hypervisor"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-edk2"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-libvirt"
-    }
-  ],
-  "need_init_sync_github_pull_requests_list": [
-    {
-      "owner": "projectacrn",
-      "repo": "projectacrn.github.io"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-unit-test"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-hypervisor"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-edk2"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-libvirt"
-    }
-  ],
-  "need_sync_github_profile_repo_list": [
-    {
-      "owner": "projectacrn",
-      "repo": "projectacrn.github.io"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-unit-test"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-hypervisor"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-edk2"
-    },
-    {
-      "owner": "projectacrn",
-      "repo": "acrn-libvirt"
-    }
-  ],
-  "opensearch_conn_data": {
-    "HOST": "192.168.8.10",
-    "PASSWD": "admin",
-    "PORT": "9200",
-    "USER": "admin"
-  },
-  "git_save_local_path": {
-    "PATH": "/tmp/gits"
-  }
 }
