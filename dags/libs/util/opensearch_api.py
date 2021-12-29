@@ -11,7 +11,8 @@ from tenacity import *
 
 from ..util.airflow import get_postgres_conn
 from ..util.log import logger
-from ..base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COMMITS, OPENSEARCH_INDEX_GITHUB_ISSUES
+from ..base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COMMITS, OPENSEARCH_INDEX_GITHUB_ISSUES, \
+    OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE
 
 
 class OpenSearchAPIException(Exception):
@@ -103,6 +104,56 @@ class OpensearchAPI:
 
         return success, failed
 
+    def bulk_github_issues_timeline(self, now_github_issues_timeline, opensearch_client, owner, repo, number):
+        bulk_all_datas = []
+
+        for val in now_github_issues_timeline:
+
+            # 如果对应 issue timeline存在则先删除
+            del_result = opensearch_client.delete_by_query(index=OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE,
+                                                           body={
+                                                               "track_total_hits": True,
+                                                               "query": {
+                                                                   "bool": {
+                                                                       "must": [
+                                                                           {
+                                                                               "term": {
+                                                                                   "raw_data.number": {
+                                                                                       "value": now_issue["number"]
+                                                                                   }
+                                                                               }
+                                                                           },
+                                                                           {
+                                                                               "term": {
+                                                                                   "search_key.owner.keyword": {
+                                                                                       "value": owner
+                                                                                   }
+                                                                               }
+                                                                           },
+                                                                           {
+                                                                               "term": {
+                                                                                   "search_key.repo.keyword": {
+                                                                                       "value": repo
+                                                                                   }
+                                                                               }
+                                                                           }
+                                                                       ]
+                                                                   }
+                                                               }
+                                                           })
+            logger.info(f"DELETE github issues result:{del_result}")
+
+
+            template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE,
+                        "_source": {"search_key": {"owner": owner, "repo": repo, "number": number},
+                                    "raw_data": None}}
+            append_item = copy.deepcopy(template)
+            append_item["_source"]["raw_data"] = val
+            bulk_all_datas.append(append_item)
+            logger.info(f"add init sync github issues_timeline number:{number}")
+
+        success, failed = opensearch_helpers.bulk(client=opensearch_client, actions=bulk_all_datas)
+        logger.info(f"now page:{len(bulk_all_datas)} sync github issues_timeline success:{success} & failed:{failed}")
 
     def do_opensearch_bulk_error_callback(retry_state):
         postgres_conn = get_postgres_conn()

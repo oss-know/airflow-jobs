@@ -1,6 +1,7 @@
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from libs.base_dict.variable_key import NEED_INIT_GITHUB_ISSUES_REPOS, OPENSEARCH_CONN_DATA, GITHUB_TOKENS
 
 # v0.0.1
 
@@ -25,32 +26,31 @@ with DAG(
         from airflow.models import Variable
         from libs.github import init_issues
 
-        github_tokens = Variable.get("github_tokens", deserialize_json=True)
-        opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
+        github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
+        opensearch_conn_infos = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
 
         owner = params["owner"]
         repo = params["repo"]
-        # since = params["since"]
         since = None
 
         do_init_sync_info = init_issues.init_github_issues(
             github_tokens, opensearch_conn_infos, owner, repo, since)
 
-        return "End:do_init_sync_github_commit"
+        return params
 
 
     need_do_init_sync_ops = []
 
     from airflow.models import Variable
 
-    need_init_sync_github_issues_repos = Variable.get("need_init_sync_github_issues_list", deserialize_json=True)
+    need_init_github_issues_repos = Variable.get(NEED_INIT_GITHUB_ISSUES_REPOS, deserialize_json=True)
 
-    for init_sync_github_issues_repo in need_init_sync_github_issues_repos:
+    for init_github_issues_repo in need_init_github_issues_repos:
         op_do_init_sync_github_issues = PythonOperator(
             task_id='do_init_sync_github_commit_{owner}_{repo}'.format(
-                owner=init_sync_github_issues_repo["owner"],
-                repo=init_sync_github_issues_repo["repo"]),
+                owner=init_github_issues_repo["owner"],
+                repo=init_github_issues_repo["repo"]),
             python_callable=do_init_sync_github_issues,
-            op_kwargs={'params': init_sync_github_issues_repo},
+            op_kwargs={'params': init_github_issues_repo},
         )
         op_scheduler_init_sync_github_issues >> op_do_init_sync_github_issues

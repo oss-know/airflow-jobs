@@ -1,6 +1,7 @@
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TOKENS, NEED_INIT_GITHUB_COMMITS_REPOS
 
 # irflow.providers.postgres.hooks.postgres
 # v0.0.1 初始化实现
@@ -27,8 +28,8 @@ with DAG(
         from airflow.models import Variable
         from libs.github import init_commits
 
-        github_tokens = Variable.get("github_tokens", deserialize_json=True)
-        opensearch_conn_info = Variable.get("opensearch_conn_data", deserialize_json=True)
+        github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
+        opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
 
         owner = params["owner"]
         repo = params["repo"]
@@ -36,23 +37,24 @@ with DAG(
         until = params["until"]
 
         do_init_sync_info = init_commits.init_github_commits(github_tokens,
-                                                                    opensearch_conn_info,
-                                                                    owner,
-                                                                    repo,
-                                                                    since,
-                                                                    until)
-        return "END::do_init_sync_github_commit"
+                                                             opensearch_conn_info,
+                                                             owner,
+                                                             repo,
+                                                             since,
+                                                             until)
+        return params
+
 
 
     need_do_inti_sync_ops = []
 
     from airflow.models import Variable
 
-    need_init_sync_github_commits_list = Variable.get("need_init_sync_github_commits_list", deserialize_json=True)
+    need_init_sync_github_commits_list = Variable.get(NEED_INIT_GITHUB_COMMITS_REPOS, deserialize_json=True)
 
     for now_need_init_sync_github_commits in need_init_sync_github_commits_list:
         op_do_init_sync_github_commit = PythonOperator(
-            task_id='do_init_sync_github_commit_{owner}_{repo}'.format(
+            task_id='do_init_github_commit_{owner}_{repo}'.format(
                 owner=now_need_init_sync_github_commits["owner"],
                 repo=now_need_init_sync_github_commits["repo"]),
             python_callable=do_init_sync_github_commit,
