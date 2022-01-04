@@ -110,6 +110,7 @@ class OpensearchAPI:
 
         return success, failed
 
+
     def put_profile_into_opensearch(self, github_logins, github_tokens_iter, opensearch_client):
         """Put GitHub user profile into opensearch if it is not in opensearch."""
 

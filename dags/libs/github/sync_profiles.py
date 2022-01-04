@@ -42,9 +42,14 @@ def add_updated_github_profiles(github_tokens, opensearch_conn_infos):
                 "match_all": {}
             },
             "collapse": {
-                "field": "login.keyword"
+                "field": "id"
             },
             "sort": [
+                {
+                    "id": {
+                        "order": "desc"
+                    }
+                },
                 {
                     "updated_at": {
                         "order": "desc"
@@ -66,7 +71,8 @@ def add_updated_github_profiles(github_tokens, opensearch_conn_infos):
         existing_github_login = existing_github_profile["_source"]["login"]
         github_api = GithubAPI()
         session = requests.Session()
-        now_github_profile = github_api.get_github_profiles(http_session=session, github_tokens_iter=github_tokens_iter, login_info=existing_github_login)
+        now_github_profile = github_api.get_github_profiles(http_session=session, github_tokens_iter=github_tokens_iter,
+                                                            login_info=existing_github_login)
         # todo: test -->delete
         github_profile_data_source(now_github_profile)
         now_github_profile = json.dumps(now_github_profile)
