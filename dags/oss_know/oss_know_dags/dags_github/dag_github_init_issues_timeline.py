@@ -3,7 +3,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 
 # v0.0.1
-from ..libs.base_dict.variable_key import NEED_INIT_GITHUB_ISSUES_TIMELINE_REPOS, GITHUB_TOKENS, OPENSEARCH_CONN_DATA
+from oss_know.libs.base_dict.variable_key import NEED_INIT_GITHUB_ISSUES_TIMELINE_REPOS, GITHUB_TOKENS, OPENSEARCH_CONN_DATA
 
 with DAG(
         dag_id='github_init_issues_timeline_v1',
@@ -24,7 +24,7 @@ with DAG(
 
     def do_init_github_issues_timeline(params):
         from airflow.models import Variable
-        from ..libs.github import init_issues_timeline
+        from oss_know.libs.github import init_issues_timeline
 
         github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
         opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)

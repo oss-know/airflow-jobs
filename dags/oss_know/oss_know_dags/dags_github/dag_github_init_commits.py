@@ -1,7 +1,7 @@
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from ..libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TOKENS, NEED_INIT_GITHUB_COMMITS_REPOS
+from oss_know.libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TOKENS, NEED_INIT_GITHUB_COMMITS_REPOS
 
 # irflow.providers.postgres.hooks.postgres
 # v0.0.1 初始化实现
@@ -26,7 +26,7 @@ with DAG(
 
     def do_init_github_commit(params):
         from airflow.models import Variable
-        from ..libs.github import init_commits
+        from oss_know.libs.github import init_commits
 
         github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
         opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)

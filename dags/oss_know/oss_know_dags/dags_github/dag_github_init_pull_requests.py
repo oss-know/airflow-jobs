@@ -3,7 +3,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 
 # v0.0.1
-from ..libs.base_dict.variable_key import GITHUB_TOKENS, OPENSEARCH_CONN_DATA, NEED_INIT_GITHUB_PULL_REQUESTS_REPOS
+from oss_know.libs.base_dict.variable_key import GITHUB_TOKENS, OPENSEARCH_CONN_DATA, NEED_INIT_GITHUB_PULL_REQUESTS_REPOS
 
 with DAG(
         dag_id='github_init_pull_requests_v1',
@@ -24,7 +24,7 @@ with DAG(
 
     def do_init_github_pull_requests(params):
         from airflow.models import Variable
-        from ..libs.github import init_pull_requests
+        from oss_know.libs.github import init_pull_requests
 
         github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
         opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)

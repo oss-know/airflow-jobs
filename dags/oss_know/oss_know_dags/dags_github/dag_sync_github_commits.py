@@ -1,7 +1,7 @@
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from ..libs.base_dict.variable_key import GITHUB_TOKENS, OPENSEARCH_CONN_DATA, NEED_SYNC_GITHUB_COMMITS_REPOS
+from oss_know.libs.base_dict.variable_key import GITHUB_TOKENS, OPENSEARCH_CONN_DATA, NEED_SYNC_GITHUB_COMMITS_REPOS
 
 # v0.0.1 初始化实现
 # v0.0.2 增加set_github_init_commits_check_data 用于设置初始化后更新的point data
@@ -25,7 +25,7 @@ with DAG(
 
     def do_sync_github_commit(params):
         from airflow.models import Variable
-        from ..libs.github import sync_commits
+        from oss_know.libs.github import sync_commits
 
         github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
         opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
