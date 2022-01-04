@@ -109,6 +109,6 @@ def sync_github_commits(github_tokens,
         logger.info(f"success get github commits :: {owner}/{repo} page_index:{page}")
 
 
-    opensearch_api.sync_github_commits_check_update_info(opensearch_client, owner, repo, since, until)
+    opensearch_api.set_sync_github_commits_check(opensearch_client, owner, repo, since, until)
 
     return "END::sync_github_commits"

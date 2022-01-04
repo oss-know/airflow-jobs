@@ -203,9 +203,38 @@ class OpensearchAPI:
                                 body=check_update_info,
                                 refresh=True)
 
+    # 建立 owner/repo github pull_requests 更新基准
+    def set_sync_github_pull_requests_check(self, opensearch_client, owner, repo):
+        now_time = datetime.datetime.now()
+        check_update_info = {
+            "search_key": {
+                "type": "github_pull_requests",
+                "update_time": now_time.strftime('%Y-%m-%dT00:00:00Z'),
+                "update_timestamp": now_time.timestamp(),
+                "owner": owner,
+                "repo": repo
+            },
+            "github": {
+                "type": "github_pull_requests",
+                "owner": owner,
+                "repo": repo,
+                "issues": {
+                    "owner": owner,
+                    "repo": repo,
+                    "sync_datetime": now_time.strftime('%Y-%m-%dT00:00:00Z'),
+                    "sync_timestamp": now_time.timestamp()
+                }
+            }
+        }
+
+        # 创建 github_pull_requests 的 check 更新记录
+        opensearch_client.index(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA,
+                                body=check_update_info,
+                                refresh=True)
+
     # 建立 owner/repo github commits 更新基准
-    def sync_github_commits_check_update_info(self, opensearch_client, owner,
-                                              repo, since, until):
+    def set_sync_github_commits_check(self, opensearch_client, owner,
+                                      repo, since, until):
         now_time = datetime.datetime.now()
         check_update_info = {
             "search_key": {

@@ -66,20 +66,20 @@ class GithubAPI:
         res = do_get_result(http_session, url, headers, params)
         return res
 
-    def get_github_issues_comments(self, req_session, github_tokens_iter, owner, repo, number, page):
+    def get_github_issues_comments(self, http_session, github_tokens_iter, owner, repo, number, page):
         url = "https://api.github.com/repos/{owner}/{repo}/issues/{number}/comments".format(
             owner=owner, repo=repo, number=number)
         headers = copy.deepcopy(self.github_headers)
         headers.update({'Authorization': 'token %s' % next(github_tokens_iter)})
         params = {'per_page': 100, 'page': page}
-        res = do_get_result(req_session, url, headers, params)
+        res = do_get_result(http_session, url, headers, params)
         return res
 
-    def get_github_pull_requests(self, session, github_tokens_iter, owner, page, repo, since):
+    def get_github_pull_requests(self, http_session, github_tokens_iter, owner, repo, page, since):
         url = "https://api.github.com/repos/{owner}/{repo}/pulls".format(
             owner=owner, repo=repo)
         headers = copy.deepcopy(self.github_headers)
         headers.update({'Authorization': 'token %s' % next(github_tokens_iter)})
         params = {'state': 'all', 'per_page': 100, 'page': page, 'since': since}
-        res = do_get_result(session, url, headers, params)
+        res = do_get_result(http_session, url, headers, params)
         return res
