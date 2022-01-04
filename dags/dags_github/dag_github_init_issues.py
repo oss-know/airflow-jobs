@@ -1,7 +1,7 @@
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from libs.base_dict.variable_key import NEED_INIT_GITHUB_ISSUES_REPOS, OPENSEARCH_CONN_DATA, GITHUB_TOKENS
+from ..libs.base_dict.variable_key import NEED_INIT_GITHUB_ISSUES_REPOS, OPENSEARCH_CONN_DATA, GITHUB_TOKENS
 
 # v0.0.1
 
@@ -24,7 +24,7 @@ with DAG(
 
     def do_init_sync_github_issues(params):
         from airflow.models import Variable
-        from libs.github import init_issues
+        from ..libs.github import init_issues
 
         github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
         opensearch_conn_infos = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)

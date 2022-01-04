@@ -3,7 +3,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 
 # v0.0.1
-from libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TOKENS
+from ..libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TOKENS
 
 NEED_INIT_SYNC_GITHUB_ISSUES_COMMENTS_REPOS = "need_init_github_issues_comments_repos"
 
@@ -26,7 +26,7 @@ with DAG(
 
     def do_init_github_issues_comments(params):
         from airflow.models import Variable
-        from libs.github import init_issues_comments
+        from ..libs.github import init_issues_comments
 
         # OPENSEARCH_CONN_DATA = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
         # opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
