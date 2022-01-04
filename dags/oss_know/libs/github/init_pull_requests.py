@@ -6,10 +6,10 @@ import itertools
 
 from opensearchpy import OpenSearch
 
-from ..base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS
-from ..util.github_api import GithubAPI
-from ..util.opensearch_api import OpensearchAPI
-from ..util.log import logger
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS
+from oss_know.libs.util.github_api import GithubAPI
+from oss_know.libs.util.opensearch_api import OpensearchAPI
+from oss_know.libs.util.log import logger
 
 
 def init_sync_github_pull_requests(github_tokens, opensearch_conn_info, owner, repo, since=None):

@@ -5,10 +5,9 @@ import time
 
 from opensearchpy import OpenSearch
 
-from ..util.log import logger
-# from ..util.base import sync_github_commits_check_update_info
-from ..util.github_api import GithubAPI
-from ..util.opensearch_api import OpensearchAPI
+from oss_know.libs.util.log import logger
+from oss_know.libs.util.github_api import GithubAPI
+from oss_know.libs.util.opensearch_api import OpensearchAPI
 
 
 def init_github_commits(github_tokens,

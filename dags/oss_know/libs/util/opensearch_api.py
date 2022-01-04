@@ -12,11 +12,11 @@ from opensearchpy.exceptions import OpenSearchException
 from tenacity import *
 import requests
 
-from ..util.airflow import get_postgres_conn
-from ..util.log import logger
-from ..util.github_api import GithubAPI
+from oss_know.libs.util.airflow import get_postgres_conn
+from oss_know.libs.util.log import logger
+from oss_know.libs.util.github_api import GithubAPI
 
-from ..base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COMMITS, OPENSEARCH_INDEX_GITHUB_ISSUES, \
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COMMITS, OPENSEARCH_INDEX_GITHUB_ISSUES, \
     OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE, OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, \
     OPENSEARCH_INDEX_CHECK_SYNC_DATA, OPEN_SEARCH_GITHUB_PROFILE_INDEX, OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS
 

@@ -3,7 +3,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 
 # git_init_sync_v0.0.3
-# from ..libs.base_dict.variable_key import NEED_INIT_GITS
+# from ..oss_know.libs.base_dict.variable_key import NEED_INIT_GITS
 
 with DAG(
         dag_id='os2ck',

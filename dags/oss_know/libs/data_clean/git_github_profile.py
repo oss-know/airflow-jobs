@@ -1,12 +1,12 @@
 from opensearchpy import helpers
 from opensearchpy import OpenSearch
 from loguru import logger
-from ..util.base import get_opensearch_client
-from ..base_dict.opensearch_index import (OPENSEARCH_GIT_RAW,
+from oss_know.libs.util.base import get_opensearch_client
+from oss_know.libs.base_dict.opensearch_index import (OPENSEARCH_GIT_RAW,
                                           OPENSEARCH_INDEX_GITHUB_COMMITS,
                                           OPENSEARCH_GIT_GITHUB_CLEAN,
                                           OPENSEARCH_INDEX_GITHUB_PROFILE)
-from ..util.opensearch_api import OpensearchAPI
+from oss_know.libs.util.opensearch_api import OpensearchAPI
 
 
 def data_clean(owner, repo, opensearch_conn_datas):

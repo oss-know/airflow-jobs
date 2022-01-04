@@ -2,8 +2,8 @@ import itertools
 from loguru import logger
 from . import init_profiles
 import requests
-from ..base_dict.opensearch_index import OPEN_SEARCH_GITHUB_PROFILE_INDEX
-from ..util.github_api import GithubAPI
+from oss_know.libs.base_dict.opensearch_index import OPEN_SEARCH_GITHUB_PROFILE_INDEX
+from oss_know.libs.util.github_api import GithubAPI
 
 
 # TODO: 传入用户的profile信息，获取用户的location、company、email，与晨琪对接

@@ -1,8 +1,8 @@
 import itertools
 from loguru import logger
 from opensearchpy.helpers import scan as os_scan
-from ..base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COMMITS, OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE
-from ..util.opensearch_api import OpensearchAPI
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COMMITS, OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE
+from oss_know.libs.util.opensearch_api import OpensearchAPI
 from opensearchpy import OpenSearch
 
 

@@ -4,10 +4,9 @@ import shutil
 import os
 from loguru import logger
 from git import Repo
-from airflow.models import Variable
-from ..base_dict.opensearch_index import OPENSEARCH_GIT_RAW, OPENSEARCH_INDEX_CHECK_SYNC_DATA
-from ..util.base import get_opensearch_client
-from ..util.opensearch_api import OpensearchAPI
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_GIT_RAW, OPENSEARCH_INDEX_CHECK_SYNC_DATA
+from oss_know.libs.util.base import get_opensearch_client
+from oss_know.libs.util.opensearch_api import OpensearchAPI
 
 
 # 用于记录上一次更新的点

@@ -3,10 +3,10 @@ from opensearchpy import helpers as opensearch_helpers
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 
-from libs.base_dict.variable_key import OPENSEARCH_CONN_DATA
-from libs.base_dict.opensearch_index import OPENSEARCH_GIT_RAW
+from oss_know.libs.base_dict.variable_key import OPENSEARCH_CONN_DATA
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_GIT_RAW
 
-from libs.util.base import get_opensearch_client
+from oss_know.libs.util.base import get_opensearch_client
 
 # git_init_sync_v0.0.3
 
@@ -31,7 +31,7 @@ with DAG(
 
 
     def do_sync_init_data_cleaning(params):
-        from libs.data_clean import git_github_profile
+        from oss_know.libs.data_clean import git_github_profile
         owner = params[0]
         repo = params[1]
         git_github_profile.data_clean(owner=owner,

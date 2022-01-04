@@ -8,10 +8,10 @@ import copy
 from opensearchpy import OpenSearch
 from opensearchpy import helpers as OpenSearchHelpers
 
-from .init_issues_timeline import OPENSEARCH_INDEX_GITHUB_ISSUES
-from ..base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS
-from ..util.github_api import GithubAPI
-from ..util.log import logger
+from init_issues_timeline import OPENSEARCH_INDEX_GITHUB_ISSUES
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS
+from oss_know.libs.util.github_api import GithubAPI
+from oss_know.libs.util.log import logger
 
 #
 #
@@ -41,7 +41,7 @@ from ..util.log import logger
 #     success, failed = OpenSearchHelpers.bulk(client=opensearch_client, actions=bulk_all_github_issues_comments)
 #     logger.info(
 #         f"now page:{len(bulk_all_github_issues_comments)} sync github issues comments success:{success} & failed:{failed}")
-from ..util.opensearch_api import OpensearchAPI
+from oss_know.libs.util.opensearch_api import OpensearchAPI
 
 
 def init_github_issues_comments(github_tokens, opensearch_conn_info, owner, repo, since=None):

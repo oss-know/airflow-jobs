@@ -3,7 +3,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 
 # git_init_sync_v0.0.3
-from libs.base_dict.variable_key import NEED_INIT_GITS
+from oss_know.libs.base_dict.variable_key import NEED_INIT_GITS
 
 with DAG(
         dag_id='git_init_v1',
@@ -24,7 +24,7 @@ with DAG(
 
     def do_sync_git_info(params):
         from airflow.models import Variable
-        from libs.github import init_gits
+        from oss_know.libs.github import init_gits
         owner = params["owner"]
         repo = params["repo"]
         url = params["url"]

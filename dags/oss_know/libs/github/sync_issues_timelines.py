@@ -7,10 +7,10 @@ import itertools
 from opensearchpy import OpenSearch
 
 # from .init_issues_timeline import get_github_issues_timeline
-from ..base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE
-from ..util.github_api import GithubAPI
-from ..util.log import logger
-from ..util.opensearch_api import OpensearchAPI
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE
+from oss_know.libs.util.github_api import GithubAPI
+from oss_know.libs.util.log import logger
+from oss_know.libs.util.opensearch_api import OpensearchAPI
 
 
 def sync_github_issues_timelines(github_tokens, opensearch_conn_info, owner, repo, issues_numbers):

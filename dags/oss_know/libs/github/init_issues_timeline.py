@@ -7,9 +7,9 @@ import itertools
 from opensearchpy import OpenSearch
 from opensearchpy import helpers as opensearch_helpers
 
-from ..util.github_api import GithubAPI
-from ..util.log import logger
-from ..util.opensearch_api import OpensearchAPI
+from oss_know.libs.util.github_api import GithubAPI
+from oss_know.libs.util.log import logger
+from oss_know.libs.util.opensearch_api import OpensearchAPI
 
 OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE = "github_issues_timeline"
 OPENSEARCH_INDEX_GITHUB_ISSUES = "github_issues"

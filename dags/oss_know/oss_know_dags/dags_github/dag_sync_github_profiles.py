@@ -1,7 +1,7 @@
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TOKENS
+from oss_know.libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TOKENS
 
 # v0.0.1
 
@@ -26,7 +26,7 @@ with DAG(
 
     def do_sync_github_profiles():
         from airflow.models import Variable
-        from libs.github import sync_profiles01os
+        from oss_know.libs.github import sync_profiles01os
 
         github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
         opensearch_conn_infos = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)

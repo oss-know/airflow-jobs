@@ -1,7 +1,7 @@
 import copy
 
-from ..util.base import do_get_result
-from ..util.log import logger
+from oss_know.libs.util.base import do_get_result
+from oss_know.libs.util.log import logger
 
 
 class GithubAPIException(Exception):

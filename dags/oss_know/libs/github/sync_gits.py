@@ -3,10 +3,10 @@ import copy
 import datetime
 from git import Repo, exc
 from loguru import logger
-from ..github.init_gits import init_sync_git_datas
-from ..util.base import get_opensearch_client
-from ..base_dict.opensearch_index import OPENSEARCH_INDEX_CHECK_SYNC_DATA, OPENSEARCH_GIT_RAW
-from ..util.opensearch_api import OpensearchAPI
+from oss_know.libs.github.init_gits import init_sync_git_datas
+from oss_know.libs.util.base import get_opensearch_client
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_CHECK_SYNC_DATA, OPENSEARCH_GIT_RAW
+from oss_know.libs.util.opensearch_api import OpensearchAPI
 
 
 # 用于记录上一次更新的点

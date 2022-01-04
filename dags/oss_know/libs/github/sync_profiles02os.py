@@ -2,9 +2,9 @@ import datetime
 import itertools
 import requests
 from opensearchpy import OpenSearch
-from ..util.github_api import GithubAPI
-from ..base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_PROFILE
-from ..util.log import logger
+from oss_know.libs.util.github_api import GithubAPI
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_PROFILE
+from oss_know.libs.util.log import logger
 
 
 class SyncGithubProfilesException(Exception):
