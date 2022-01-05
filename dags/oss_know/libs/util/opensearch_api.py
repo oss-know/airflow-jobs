@@ -110,20 +110,19 @@ class OpensearchAPI:
 
         return success, failed
 
-
-    def put_profile_into_opensearch(self, github_logins, github_tokens_iter, opensearch_client):
+    def put_profile_into_opensearch(self, github_ids, github_tokens_iter, opensearch_client):
         """Put GitHub user profile into opensearch if it is not in opensearch."""
 
         # 获取github profile
-        for github_login in github_logins:
-            logger.info(f'github_profile_user:{github_login}')
+        for github_id in github_ids:
+            logger.info(f'github_profile_user:{github_id}')
             time.sleep(round(random.uniform(0.01, 0.1), 2))
             has_user_profile = opensearch_client.search(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
                                                         body={
                                                             "query": {
                                                                 "term": {
-                                                                    "login.keyword": {
-                                                                        "value": github_login
+                                                                    "id": {
+                                                                        "value": github_id
                                                                     }
                                                                 }
                                                             }
@@ -137,13 +136,17 @@ class OpensearchAPI:
                 session = requests.Session()
                 now_github_profile = github_api.get_github_profiles(http_session=session,
                                                                     github_tokens_iter=github_tokens_iter,
-                                                                    login_info=github_login)
+                                                                    id_info=github_id)
+                for key in ["name", "company", "blog", "location", "email", "hireable", "bio", "twitter_username"]:
+                    print("now_github_profile[key]:",now_github_profile[key])
+                    if now_github_profile[key] is None:
+                        now_github_profile[key]= ''
                 opensearch_client.index(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
                                         body=now_github_profile,
                                         refresh=True)
-                logger.info(f"Put the github {github_login}'s profile into opensearch.")
+                logger.info(f"Put the github {github_id}'s profile into opensearch.")
             else:
-                logger.info(f"{github_login}'s profile has already existed.")
+                logger.info(f"{github_id}'s profile has already existed.")
         return "Put GitHub user profile into opensearch if it is not in opensearch"
 
     def bulk_github_issues_timeline(self, opensearch_client, issues_timelines, owner, repo, number):
@@ -260,6 +263,34 @@ class OpensearchAPI:
                 }
             }
         }
+        opensearch_client.index(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA,
+                                body=check_update_info,
+                                refresh=True)
+
+    # 建立 github profile更新基准
+    def set_sync_github_profiles_check(self, opensearch_client, login, id):
+        now_time = datetime.datetime.now()
+        check_update_info = {
+            "search_key": {
+                "type": "github_profiles",
+                "update_time": now_time.strftime('%Y-%m-%dT00:00:00Z'),
+                "update_timestamp": now_time.timestamp(),
+                "login": login,
+                "id": id,
+            },
+            "github": {
+                "type": "github_profiles",
+                "login": login,
+                "id": id,
+                "profiles": {
+                    "login": login,
+                    "id": id,
+                    "sync_datetime": now_time.strftime('%Y-%m-%dT00:00:00Z'),
+                    "sync_timestamp": now_time.timestamp()
+                }
+            }
+        }
+
         opensearch_client.index(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA,
                                 body=check_update_info,
                                 refresh=True)
