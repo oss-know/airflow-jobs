@@ -26,11 +26,11 @@ with DAG(
 
     def do_sync_github_profiles():
         from airflow.models import Variable
-        from oss_know.libs.github import sync_profiles01os
+        from oss_know.libs.github import sync_profiles
 
         github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
         opensearch_conn_infos = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
-        sync_profiles01os.sync_github_profiles(github_tokens, opensearch_conn_infos)
+        sync_profiles.sync_github_profiles(github_tokens, opensearch_conn_infos)
 
 
     op_do_sync_github_profiles = PythonOperator(

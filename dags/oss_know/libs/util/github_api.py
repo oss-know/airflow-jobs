@@ -39,22 +39,21 @@ class GithubAPI:
 
         return res
 
-    def get_github_profiles(self, http_session, github_tokens_iter, login_info):
+    def get_github_profiles(self, http_session, github_tokens_iter, id_info):
         """Get GitHub user's latest profile from GitHUb."""
-        url = "https://api.github.com/users/{login_info}".format(
-            login_info=login_info)
+        url = "https://api.github.com/user/{id_info}".format(
+            id_info=id_info)
         headers = copy.deepcopy(self.github_headers)
         headers.update({'Authorization': 'token %s' % next(github_tokens_iter)})
         params = {}
-        now_github_profile = {}
         try:
             req = do_get_result(http_session, url, headers, params)
             now_github_profile = req.json()
         except TypeError as e:
-            print("捕获airflow抛出的TypeError:", e)
-            return {'login': login_info, 'status': 'User status is abnormal.', 'company': None, 'location': None,
-                    'email': None}
-        logger.info(f"Get GitHub {login_info}'s latest profile from GitHUb.")
+            logger.error(f"捕获airflow抛出的TypeError:{e}")
+            return {'id': id_info, 'status': 'User status is abnormal.', 'company': '', 'location': '',
+                    'email':''}
+        logger.info(f"Get GitHub {id_info}'s latest profile from GitHUb.")
         return now_github_profile
 
     def get_github_issues_timeline(self, http_session, github_tokens_iter, owner, repo, number, page):

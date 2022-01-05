@@ -6,18 +6,18 @@ from oss_know.libs.util.opensearch_api import OpensearchAPI
 from opensearchpy import OpenSearch
 
 
-def load_github_logins_by_repo(opensearch_conn_infos, owner, repo):
-    """Get GitHub users' logins from GitHub assigned owner and repo."""
+def load_github_ids_by_repo(opensearch_conn_infos, owner, repo):
+    """Get GitHub users' ids from GitHub assigned owner and repo."""
     opensearch_client = get_opensearch_client(opensearch_conn_infos)
-    init_profile_logins = load_logins_by_github_issues_timeline(opensearch_client, owner,
+    init_profile_ids = load_ids_by_github_issues_timeline(opensearch_client, owner,
                                                                 repo)
-    init_profile_logins += load_logins_by_github_commits(opensearch_client, owner, repo)
-    return init_profile_logins
+    init_profile_ids += load_ids_by_github_commits(opensearch_client, owner, repo)
+    return init_profile_ids
 
 
-def load_logins_by_github_commits(opensearch_client, owner, repo):
-    """Get GitHub users' logins from GitHub commits."""
-    logger.debug(f'calling load_logins_by_github_commits for {owner}/{repo}')
+def load_ids_by_github_commits(opensearch_client, owner, repo):
+    """Get GitHub users' ids from GitHub commits."""
+    logger.debug(f'calling load_ids_by_github_commits for {owner}/{repo}')
     res = get_github_data_by_repo_owner_index_from_os(opensearch_client, owner, repo,
                                                       index=OPENSEARCH_INDEX_GITHUB_COMMITS)
     if not res:
@@ -29,22 +29,22 @@ def load_logins_by_github_commits(opensearch_client, owner, repo):
 
     for commit in res:
         raw_data = commit["_source"]["raw_data"]
-        if (raw_data["author"] is not None) and ("author" in raw_data) and ("login" in raw_data["author"]):
-            all_commits_users_dict[raw_data["author"]["login"]] = \
+        if (raw_data["author"] is not None) and ("author" in raw_data) and ("id" in raw_data["author"]):
+            all_commits_users_dict[raw_data["author"]["id"]] = \
                 raw_data["author"]["url"]
-            all_commits_users.append(raw_data["author"]["login"])
-        if (raw_data["committer"] is not None) and ("committer" in raw_data) and ("login" in raw_data["committer"]):
-            all_commits_users_dict[raw_data["committer"]["login"]] = \
+            all_commits_users.append(raw_data["author"]["id"])
+        if (raw_data["committer"] is not None) and ("committer" in raw_data) and ("id" in raw_data["committer"]):
+            all_commits_users_dict[raw_data["committer"]["id"]] = \
                 raw_data["committer"]["url"]
-            all_commits_users.append(raw_data["committer"]["login"])
+            all_commits_users.append(raw_data["committer"]["id"])
 
     return all_commits_users
 
 
-def load_logins_by_github_issues_timeline(opensearch_client, owner, repo):
-    """Get GitHub users' logins from GitHub issues timeline ."""
+def load_ids_by_github_issues_timeline(opensearch_client, owner, repo):
+    """Get GitHub users' ids from GitHub issues timeline ."""
 
-    logger.debug(f'calling load_logins_by_github_issues_timeline for {owner}/{repo}')
+    logger.debug(f'calling load_ids_by_github_issues_timeline for {owner}/{repo}')
 
     res = get_github_data_by_repo_owner_index_from_os(opensearch_client, owner, repo,
                                                       index=OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE)
@@ -57,12 +57,12 @@ def load_logins_by_github_issues_timeline(opensearch_client, owner, repo):
     for issue_timeline in res:
         issue_timeline_raw_data = issue_timeline["_source"]["raw_data"]
         if issue_timeline_raw_data["event"] == "cross-referenced":
-            all_issues_timeline_users.add(issue_timeline_raw_data["actor"]["login"])
-            all_issues_timeline_users.add(issue_timeline_raw_data["source"]["issue"]["user"]["login"])
+            all_issues_timeline_users.add(issue_timeline_raw_data["actor"]["id"])
+            all_issues_timeline_users.add(issue_timeline_raw_data["source"]["issue"]["user"]["id"])
         elif issue_timeline_raw_data["event"] != "committed":
             for key in ["user", "actor", "assignee"]:
                 if key in issue_timeline_raw_data:
-                    all_issues_timeline_users.add(issue_timeline_raw_data[key]["login"])
+                    all_issues_timeline_users.add(issue_timeline_raw_data[key]["id"])
 
     return list(all_issues_timeline_users)
 
@@ -93,14 +93,14 @@ def get_github_data_by_repo_owner_index_from_os(opensearch_client, owner, repo, 
     return res
 
 
-def load_github_profiles(github_tokens, opensearch_conn_infos, github_users_logins):
-    """Get GitHub profiles by logins."""
-    # get logins set;
-    github_users_logins = list(set(github_users_logins))
+def load_github_profiles(github_tokens, opensearch_conn_infos, github_users_ids):
+    """Get GitHub profiles by ids."""
+    # get ids set;
+    github_users_ids = list(set(github_users_ids))
     # put GitHub user profile into opensearch if it is not in opensearch
     github_tokens_iter = itertools.cycle(github_tokens)
     opensearch_api = OpensearchAPI()
-    opensearch_api.put_profile_into_opensearch(github_logins=github_users_logins, github_tokens_iter=github_tokens_iter,
+    opensearch_api.put_profile_into_opensearch(github_ids=github_users_ids, github_tokens_iter=github_tokens_iter,
                                                 opensearch_client=get_opensearch_client(opensearch_conn_infos))
     logger.info(load_github_profiles.__doc__)
 
