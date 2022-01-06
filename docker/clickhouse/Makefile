@@ -13,6 +13,7 @@ help: ## Help dialog.
 ####################################################################
 
 up_infra: ## Create and start containers
+	docker pull yandex/clickhouse-server:21.12 && \
 	$(DOCKER_INFRA) up -d
 
 down_infra: ## Stop and remove all containers

@@ -13,6 +13,8 @@ help: ## Help dialog.
 ####################################################################
 
 up_infra: ## Create and start containers
+	docker pull opensearchproject/opensearch:latest && \
+	docker pull opensearchproject/opensearch-dashboards:latest && \
 	$(DOCKER_INFRA) up -d
 
 down_infra: ## Stop and remove all containers

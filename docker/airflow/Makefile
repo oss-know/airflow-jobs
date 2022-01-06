@@ -13,6 +13,7 @@ help: ## Help dialog.
 ####################################################################
 
 up_infra: ## Create and start containers
+	docker pull airflowjobs/airflow:dev-python3.8 && \
 	$(DOCKER_INFRA) up -d
 
 down_infra: ## Stop and remove all containers
