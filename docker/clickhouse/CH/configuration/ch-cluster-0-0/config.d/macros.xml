@@ -1,0 +1,9 @@
+<yandex>
+    <macros replace="replace">
+        <layer>base_layer</layer>
+        <shard>base_shard_0</shard>
+        <rep>0-0</rep>
+        <replica>ch-cluster-0-0</replica>
+        <cluster>cluster</cluster>
+    </macros>
+</yandex>

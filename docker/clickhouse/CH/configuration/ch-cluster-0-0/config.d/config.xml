@@ -1,0 +1,36 @@
+<yandex>
+    <remote_servers>
+        <cluster>
+            <shard>
+                <weight>1</weight>
+                <internal_replication>true</internal_replication>
+                <replica>
+                    <host>ch-cluster-0-0</host>
+                    <port>9000</port>
+                </replica>
+                <replica>
+                    <host>ch-cluster-0-1</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+            <shard>
+                <weight>1</weight>
+                <internal_replication>true</internal_replication>
+                <replica>
+                    <host>ch-cluster-1-0</host>
+                    <port>9000</port>
+                </replica>
+                <replica>
+                    <host>ch-cluster-1-1</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+        </cluster>
+    </remote_servers>
+    <zookeeper>
+        <node>
+            <host>zookeeper</host>
+            <port>2181</port>
+        </node>
+    </zookeeper>
+</yandex>

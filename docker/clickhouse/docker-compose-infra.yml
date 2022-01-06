@@ -1,0 +1,87 @@
+version: '3.5'
+
+services:
+
+  ch-cluster-0-0:
+    container_name: ch-cluster-0-0
+    hostname: ch-cluster-0-0
+    image: yandex/clickhouse-server:21.12
+    restart: always
+    volumes:
+      - ./CH/configuration/ch-cluster-0-0/config.d/local.xml:/etc/clickhouse-server/config.d/config.xml
+      - ./CH/configuration/ch-cluster-0-0/config.d/macros.xml:/etc/clickhouse-server/config.d/macros.xml
+      - ./CH/configuration/ch-cluster-0-0/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
+      - ./CH/configuration/ch-cluster-0-0/config.xml:/etc/clickhouse-server/config.xml
+      - ./CH/configuration/ch-cluster-0-0/users.xml:/etc/clickhouse-server/users.xml
+      - ./CH/data/clickhouse-data/ch-cluster-0-0:/var/lib/clickhouse
+    ports:
+      - "19000:9000"
+      - "18000:8123"
+    depends_on:
+      - ch-zookeeper
+
+  ch-cluster-0-1:
+    container_name: ch-cluster-0-1
+    hostname: ch-cluster-0-1
+    image: yandex/clickhouse-server:21.12
+    restart: on-failure
+    volumes:
+      - ./CH/configuration/ch-cluster-0-1/config.d/local.xml:/etc/clickhouse-server/config.d/local.xml
+      - ./CH/configuration/ch-cluster-0-1/config.d/macros.xml:/etc/clickhouse-server/config.d/macros.xml
+      - ./CH/configuration/ch-cluster-0-1/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
+      - ./CH/configuration/ch-cluster-0-1/config.xml:/etc/clickhouse-server/config.xml
+      - ./CH/configuration/ch-cluster-0-1/users.xml:/etc/clickhouse-server/users.xml
+      - ./CH/data/clickhouse-data/ch-cluster-0-1:/var/lib/clickhouse
+    ports:
+      - "19001:9000"
+      - "18001:8123"
+    depends_on:
+      - ch-zookeeper
+
+  ch-cluster-1-0:
+    container_name: ch-cluster-1-0
+    hostname: ch-cluster-1-0
+    image: yandex/clickhouse-server:21.12
+    restart: on-failure
+    volumes:
+      - ./CH/configuration/ch-cluster-1-0/config.d/local.xml:/etc/clickhouse-server/config.d/local.xml
+      - ./CH/configuration/ch-cluster-1-0/config.d/macros.xml:/etc/clickhouse-server/config.d/macros.xml
+      - ./CH/configuration/ch-cluster-1-0/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
+      - ./CH/configuration/ch-cluster-1-0/config.xml:/etc/clickhouse-server/config.xml
+      - ./CH/configuration/ch-cluster-1-0/users.xml:/etc/clickhouse-server/users.xml
+      - ./CH/data/clickhouse-data/ch-cluster-1-0:/var/lib/clickhouse
+    ports:
+      - "19010:9000"
+      - "18010:8123"
+    depends_on:
+      - ch-zookeeper
+
+  ch-cluster-1-1:
+    container_name: ch-cluster-1-1
+    hostname: ch-cluster-1-1
+    image: yandex/clickhouse-server:21.12
+    restart: on-failure
+    volumes:
+      - ./CH/configuration/ch-cluster-1-1/config.d/local.xml:/etc/clickhouse-server/config.d/local.xml
+      - ./CH/configuration/ch-cluster-1-1/config.d/macros.xml:/etc/clickhouse-server/config.d/macros.xml
+      - ./CH/configuration/ch-cluster-1-1/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
+      - ./CH/configuration/ch-cluster-1-1/config.xml:/etc/clickhouse-server/config.xml
+      - ./CH/configuration/ch-cluster-1-1/users.xml:/etc/clickhouse-server/users.xml
+      - ./CH/data/clickhouse-data/ch-cluster-1-1:/var/lib/clickhouse
+    ports:
+      - "19011:9000"
+      - "18011:8123"
+    depends_on:
+      - ch-zookeeper
+
+  ch-zookeeper:
+    image: zookeeper:3.7
+    hostname: zookeeper
+    ports:
+      - 2181:2181
+    container_name: zookeeper
+    environment:
+#      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - ./CH/data/zookeeper-data:/var/lib/zookeeper/data
