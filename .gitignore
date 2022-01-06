@@ -131,3 +131,5 @@ dmypy.json
 .idea/
 logs/
 .DS_Store
+
+docker/clickhouse/CH/data
