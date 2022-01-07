@@ -131,16 +131,12 @@ class OpensearchAPI:
 
             current_profile_list = has_user_profile["hits"]["hits"]
 
-            if len(current_profile_list) == 0:
+            if current_profile_list:
                 github_api = GithubAPI()
                 session = requests.Session()
                 now_github_profile = github_api.get_github_profiles(http_session=session,
                                                                     github_tokens_iter=github_tokens_iter,
                                                                     id_info=github_id)
-                for key in ["name", "company", "blog", "location", "email", "hireable", "bio", "twitter_username"]:
-                    print("now_github_profile[key]:",now_github_profile[key])
-                    if now_github_profile[key] is None:
-                        now_github_profile[key]= ''
                 opensearch_client.index(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
                                         body=now_github_profile,
                                         refresh=True)

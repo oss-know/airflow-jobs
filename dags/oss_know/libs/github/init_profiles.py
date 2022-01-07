@@ -25,16 +25,16 @@ def load_ids_by_github_commits(opensearch_client, owner, repo):
         logger.info(f"There's no github commits in {repo}")
         return []
     # delete duplicated data of GitHub author and GitHub committer
-    all_commits_users = set()
+    all_commits_ids = set()
 
     for commit in res:
         raw_data = commit["_source"]["raw_data"]
-        if (raw_data["author"] is not None) and ("author" in raw_data) and ("id" in raw_data["author"]):
-            all_commits_users.add(raw_data["author"]["id"])
-        if (raw_data["committer"] is not None) and ("committer" in raw_data) and ("id" in raw_data["committer"]):
-            all_commits_users.add(raw_data["committer"]["id"])
+        if ("author" in raw_data) and (not raw_data["author"]) and ("id" in raw_data["author"]):
+            all_commits_ids.add(raw_data["author"]["id"])
+        if ("committer" in raw_data) and (not raw_data["committer"]) and  ("id" in raw_data["committer"]):
+            all_commits_ids.add(raw_data["committer"]["id"])
 
-    return list(all_commits_users)
+    return list(all_commits_ids)
 
 
 def load_ids_by_github_issues_timeline(opensearch_client, owner, repo):
@@ -91,6 +91,7 @@ def get_github_data_by_repo_owner_index_from_os(opensearch_client, owner, repo, 
 
 def load_github_profiles(github_tokens, opensearch_conn_infos, github_users_ids):
     """Get GitHub profiles by ids."""
+    logger.debug(f'calling load_github_profiles by {github_users_ids}')
     # get ids set;
     github_users_ids = list(set(github_users_ids))
     # put GitHub user profile into opensearch if it is not in opensearch
@@ -98,7 +99,7 @@ def load_github_profiles(github_tokens, opensearch_conn_infos, github_users_ids)
     opensearch_api = OpensearchAPI()
     opensearch_api.put_profile_into_opensearch(github_ids=github_users_ids, github_tokens_iter=github_tokens_iter,
                                                opensearch_client=get_opensearch_client(opensearch_conn_infos))
-    logger.info(load_github_profiles.__doc__)
+
 
 
 def get_opensearch_client(opensearch_conn_infos):

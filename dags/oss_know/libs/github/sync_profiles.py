@@ -37,7 +37,7 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
                                                         "match_all": {}
                                                     },
                                                     "collapse": {
-                                                        "field": "login.keyword"
+                                                        "field": "id"
                                                     },
                                                     "size": 1,
                                                     "sort": [
@@ -49,6 +49,9 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
                                                     ]
                                                 }
                                                 )
+    if the_last_profile["hits"]["hits"]:
+        logger.error("There's no github profile in opensearch")
+        return "There's no github profile in opensearch."
     the_last_github_id = the_last_profile["hits"]["hits"][0]["_source"]["id"]
 
     # 取得上次更新github profile 的位置，用于判断循环起点
@@ -80,7 +83,7 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
                                                  )
 
     existing_github_id = None
-    if len(has_profile_check["hits"]["hits"]) != 0:
+    if not has_profile_check["hits"]["hits"]:
         existing_github_id = has_profile_check["hits"]["hits"][0]["_source"]["github"]["id"]
         if the_last_github_id == existing_github_id:
             existing_github_id = None
@@ -113,9 +116,6 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
         logger.error("There's no existing github profiles")
         return "There's no existing github profiles"
 
-    import json
-    existing_github_profiles = json.dumps(existing_github_profiles)
-    existing_github_profiles = json.loads(existing_github_profiles)["hits"]["hits"]
     next_profile_login = None
 
     nowTime = datetime.datetime.now() + datetime.timedelta(0)
@@ -139,12 +139,12 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
         if not flag or the_last_github_id == next_profile_id:
             opensearch_api.set_sync_github_profiles_check(opensearch_client=opensearch_client, login=next_profile_login,
                                            id=next_profile_id)
-            logger.info("Invalid Runtime")
-            return "Invalid Runtime"
+            logger.debug(f'Invalid runtime to update existing GitHub profiles by ids.')
+            break
 
         if (existing_github_id is None) or (existing_github_id <= next_profile_id):
             # 获取OpenSearch中最新的profile的"updated_at"信息
-            existing_github_profile_user_updated_at = existing_github_profile["_source"]["updated_at"]
+            existing_profile_updated_at = existing_github_profile["_source"]["updated_at"]
             # 根据上述"login"信息获取git上的profile信息中的"updated_at1"信息
             next_profile_login = existing_github_profile["_source"]["login"]
 
@@ -152,16 +152,12 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
                                                                 github_tokens_iter=github_tokens_iter,
                                                                 id_info=next_profile_id)
 
-            now_github_profile = json.dumps(now_github_profile)
-            now_github_profile_user_updated_at = json.loads(now_github_profile)["updated_at"]
+            now_profile_updated_at = now_github_profile["updated_at"]
 
             # 将获取两次的"updated_at"信息对比
             # 一致：不作处理
             # 不一致：将新的清洗过的profile信息添加到OpenSearch中
-            if existing_github_profile_user_updated_at != now_github_profile_user_updated_at:
-                for key in ["name", "company", "blog", "location", "email", "hireable", "bio", "twitter_username"]:
-                    if now_github_profile[key] is None:
-                        now_github_profile[key]= ''
+            if existing_profile_updated_at != now_profile_updated_at:
                 opensearch_client.index(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
                                         body=now_github_profile,
                                         refresh=True)
@@ -174,20 +170,19 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
 
 # TODO: 传入用户的profile信息，获取用户的location、company、email，与晨琪对接
 def github_profile_data_source(now_github_profile):
-    import json
-    now_github_profile = json.dumps(now_github_profile)
+
     # todo: the print statements just for testing, w can ignore them
-    now_github_profile_user_company = json.loads(now_github_profile)["company"]
+    now_github_profile_user_company = now_github_profile["company"]
     if now_github_profile_user_company is not None:
         print("now_github_profile_user_company")
         print(now_github_profile_user_company)
 
-    now_github_profile_user_location = json.loads(now_github_profile)["location"]
+    now_github_profile_user_location = now_github_profile["location"]
     if now_github_profile_user_location is not None:
         print("now_github_profile_user_location")
         print(now_github_profile_user_location)
 
-    now_github_profile_user_email = json.loads(now_github_profile)["email"]
+    now_github_profile_user_email = now_github_profile["email"]
     if now_github_profile_user_email is not None:
         print("now_github_profile_user_email")
         print(now_github_profile_user_email)
