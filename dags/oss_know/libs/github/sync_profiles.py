@@ -30,7 +30,7 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
         ssl_assert_hostname=False,
         ssl_show_warn=False
     )
-    #
+    # 取得需要更新os中profile的末位id，用于判断循环更新终点
     the_last_profile = opensearch_client.search(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
                                                 body={
                                                     "query": {
@@ -51,7 +51,7 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
                                                 )
     the_last_github_id = the_last_profile["hits"]["hits"][0]["_source"]["id"]
 
-    # 取得上次更新github profile 的位置
+    # 取得上次更新github profile 的位置，用于判断循环起点
     has_profile_check = opensearch_client.search(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA,
                                                  body={
                                                      "size": 1,
@@ -84,8 +84,7 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
         existing_github_id = has_profile_check["hits"]["hits"][0]["_source"]["github"]["id"]
         if the_last_github_id == existing_github_id:
             existing_github_id = None
-    else:
-        raise SyncGithubProfilesException("没有得到上次github profiles同步时间")
+
     # 将折叠（collapse）查询opensearch（去重排序）的结果作为查询更新的数据源
     existing_github_profiles = opensearch_client.search(
         index=OPENSEARCH_INDEX_GITHUB_PROFILE,
@@ -111,8 +110,8 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
         }
     )
     if not existing_github_profiles:
-        logger.error("There's no  existing github profiles")
-        return "There's no  existing github profiles"
+        logger.error("There's no existing github profiles")
+        return "There's no existing github profiles"
 
     import json
     existing_github_profiles = json.dumps(existing_github_profiles)

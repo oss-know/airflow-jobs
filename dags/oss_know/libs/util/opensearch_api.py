@@ -18,7 +18,7 @@ from oss_know.libs.util.github_api import GithubAPI
 
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COMMITS, OPENSEARCH_INDEX_GITHUB_ISSUES, \
     OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE, OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, \
-    OPENSEARCH_INDEX_CHECK_SYNC_DATA, OPEN_SEARCH_GITHUB_PROFILE_INDEX, OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS
+    OPENSEARCH_INDEX_CHECK_SYNC_DATA, OPENSEARCH_INDEX_GITHUB_PROFILE, OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS
 
 
 class OpenSearchAPIException(Exception):
@@ -117,7 +117,7 @@ class OpensearchAPI:
         for github_id in github_ids:
             logger.info(f'github_profile_user:{github_id}')
             time.sleep(round(random.uniform(0.01, 0.1), 2))
-            has_user_profile = opensearch_client.search(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
+            has_user_profile = opensearch_client.search(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
                                                         body={
                                                             "query": {
                                                                 "term": {
@@ -141,7 +141,7 @@ class OpensearchAPI:
                     print("now_github_profile[key]:",now_github_profile[key])
                     if now_github_profile[key] is None:
                         now_github_profile[key]= ''
-                opensearch_client.index(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
+                opensearch_client.index(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
                                         body=now_github_profile,
                                         refresh=True)
                 logger.info(f"Put the github {github_id}'s profile into opensearch.")

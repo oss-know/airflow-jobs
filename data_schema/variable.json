@@ -40,6 +40,12 @@
             "repo": "airflow-jobs"
         }
     ],
+    "need_init_github_profiles_repos": [
+        {
+            "owner": "fivestarsky",
+            "repo": "airflow-jobs"
+        }
+    ],
     "need_init_gits": [
         {
             "owner": "fivestarsky",
@@ -60,12 +66,6 @@
         }
     ],
     "need_sync_github_issues_repos": [
-        {
-            "owner": "fivestarsky",
-            "repo": "airflow-jobs"
-        }
-    ],
-    "need_sync_github_profile_repo_list": [
         {
             "owner": "fivestarsky",
             "repo": "airflow-jobs"
