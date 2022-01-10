@@ -75,3 +75,54 @@ create table dev_oss.github_issues
       ORDER BY (id)
       SETTINGS index_granularity = 4;
 
+
+
+-- 目前测试通过的最复杂clickhouse sql ##########################################################
+create table demo_git
+(
+    id                       UInt64,
+    create_time              DateTime64(3),
+    parent                   Array(String),
+    `github_author.email`    String,
+    `github_author.name`     String,
+    `github_committer.email` String,
+    `github_committer.name`  String,
+    `files.insertions`       UInt32,
+    `files.deletions`        UInt32,
+    `files.lines`            UInt32,
+    `files.stats.name`       Array(String),
+    `files.stats.insertions` Array(UInt32),
+    `files.stats.deletions`  Array(UInt32),
+    `files.stats.lines`      Array(UInt64)
+)
+    engine = MergeTree PARTITION BY toYYYYMMDD(create_time)
+        ORDER BY id
+        SETTINGS index_granularity = 4;
+
+INSERT INTO oss_know.demo_git (create_time, parent,
+                               `github_author.email`, `github_author.name`,
+                               `github_committer.email`, `github_committer.name`,
+                               `files.insertions`, `files.deletions`, `files.lines`,
+                               `files.stats.name`, `files.stats.insertions`, `files.stats.deletions`,
+                               `files.stats.lines`)
+VALUES ('2022-01-09 15:02:45.000', ['parent1','parent2'],
+        'fivestarsky@163.com', 'fivestarsky', 'fivestarsky@163.com', 'fivestarsky', 100, 5, 105,
+        ['readme.MD','test.py'], [60,40], [2,3], [62,43]);
+
+
+select `files.stats.name`, `files.stats.insertions`, `files.stats.deletions`, `files.stats.lines`
+from demo_git
+where `github_committer.name` = 'fivestarsky';
+
+SELECT `github_author.email`,
+       `github_author.name`,
+       `github_committer.email`,
+       `github_committer.name`,
+       `filesstats.name`,
+       `filesstats.insertions`,
+       `filesstats.deletions`,
+       `filesstats.lines`
+from demo_git
+         ARRAY JOIN `files.stats` AS `filesstats`
+WHERE files.stats.insertions[indexOf(files.stats.name, 'readme.MD')] > 10;
+

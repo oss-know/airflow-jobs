@@ -112,7 +112,6 @@ class OpensearchAPI:
 
     def put_profile_into_opensearch(self, github_ids, github_tokens_iter, opensearch_client):
         """Put GitHub user profile into opensearch if it is not in opensearch."""
-
         # 获取github profile
         for github_id in github_ids:
             logger.info(f'github_profile_user:{github_id}')
@@ -131,7 +130,7 @@ class OpensearchAPI:
 
             current_profile_list = has_user_profile["hits"]["hits"]
 
-            if current_profile_list:
+            if not current_profile_list:
                 github_api = GithubAPI()
                 session = requests.Session()
                 now_github_profile = github_api.get_github_profiles(http_session=session,
