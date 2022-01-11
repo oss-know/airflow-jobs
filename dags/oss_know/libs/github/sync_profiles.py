@@ -23,24 +23,7 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
 
     opensearch_client = get_opensearch_client(opensearch_conn_info)
     # 取得需要更新os中profile的首位id，用于判断循环更新终点
-    the_first_profile = opensearch_client.search(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
-                                                 body={
-                                                     "query": {
-                                                         "match_all": {}
-                                                     },
-                                                     "collapse": {
-                                                         "field": "id"
-                                                     },
-                                                     "size": 1,
-                                                     "sort": [
-                                                         {
-                                                             "id": {
-                                                                 "order": "desc"
-                                                             }
-                                                         }
-                                                     ]
-                                                 }
-                                                 )
+    the_first_profile = get_the_first_profile(opensearch_client=opensearch_client)
     if not the_first_profile["hits"]["hits"]:
         logger.error("There's no github profile in opensearch")
         return "There's no github profile in opensearch."
@@ -144,11 +127,33 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
             logger.info(f"Success put updated {next_profile_login}'s github profiles into opensearch.")
         else:
             logger.info(f"{next_profile_login}'s github profiles of opensearch is latest.")
-
+    the_first_profile= get_the_first_profile(opensearch_client=opensearch_client)
+    the_first_github_id = the_first_profile["hits"]["hits"][0]["_source"]["id"]
+    the_first_github_login = the_first_profile["hits"]["hits"][0]["_source"]["login"]
     opensearch_api.set_sync_github_profiles_check(opensearch_client=opensearch_client, login=the_first_github_login,
                                                   id=the_first_github_id)
     return "END::sync_github_profiles"
 
+def get_the_first_profile(opensearch_client):
+    the_first_profile = opensearch_client.search(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
+                                                 body={
+                                                     "query": {
+                                                         "match_all": {}
+                                                     },
+                                                     "collapse": {
+                                                         "field": "id"
+                                                     },
+                                                     "size": 1,
+                                                     "sort": [
+                                                         {
+                                                             "id": {
+                                                                 "order": "desc"
+                                                             }
+                                                         }
+                                                     ]
+                                                 }
+                                                 )
+    return the_first_profile
 
 # TODO: 传入用户的profile信息，获取用户的location、company、email，与晨琪对接
 def github_profile_data_source(now_github_profile):
