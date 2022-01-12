@@ -1,4 +1,3 @@
-import time
 import datetime
 import itertools
 import requests
@@ -7,13 +6,6 @@ from oss_know.libs.util.github_api import GithubAPI
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_PROFILE, OPENSEARCH_INDEX_CHECK_SYNC_DATA
 from oss_know.libs.util.log import logger
 from oss_know.libs.util.opensearch_api import OpensearchAPI
-
-
-class SyncGithubProfilesException(Exception):
-    def __init__(self, message, status):
-        super().__init__(message, status)
-        self.message = message
-        self.status = status
 
 
 def sync_github_profiles(github_tokens, opensearch_conn_info):
@@ -51,10 +43,10 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
                                                  }
                                                  )
 
-    if not has_profile_check["hits"]["hits"]:
+    if has_profile_check["hits"]["hits"]:
         existing_github_id = has_profile_check["hits"]["hits"][0]["_source"]["github"]["id"]
     else:
-        existing_github_id = '0'
+        existing_github_id = -1
 
     # 将折叠（collapse）查询opensearch（去重排序）的结果作为查询更新的数据源
     # collapse和scan、scroll无法同时使用，为保证效率， 将每次获取的数据量设定为1000
@@ -88,61 +80,66 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
     )
 
     if not existing_github_profiles:
-        logger.error("There's no existing github profiles")
-        return "There's no existing github profiles"
+        logger.info("There's no existing github profiles")
+        return "END::There's no existing github profiles"
 
     github_api = GithubAPI()
     session = requests.Session()
     opensearch_api = OpensearchAPI()
 
-    end_time = (datetime.datetime.now() + datetime.timedelta(2)).timestamp()
-
+    end_time = (datetime.datetime.now() + datetime.timedelta(3)).timestamp()
+    current_profile_id = None
     for existing_github_profile in existing_github_profiles['hits']['hits']:
-        next_profile_id = existing_github_profile["_source"]["id"]
-        next_profile_login = existing_github_profile["_source"]["login"]
-        # 判断当前时间是否为查询有效时间（当日零点到凌晨两点之间）
+        current_profile_id = existing_github_profile["_source"]["id"]
+        current_profile_login = existing_github_profile["_source"]["login"]
+        # 判断当前时间是否为查询有效时间（当日零点到凌晨三点之间：一小时只查询比较不存储约处理360个profile,为保证高效可用，每次查询时间由2小时延长至3小时）
         if datetime.datetime.now().timestamp() > end_time:
-            opensearch_api.set_sync_github_profiles_check(opensearch_client=opensearch_client, login=next_profile_login,
-                                                          id=next_profile_id)
-            logger.debug(f'Invalid runtime to update existing GitHub profiles by ids.')
+            opensearch_api.set_sync_github_profiles_check(opensearch_client=opensearch_client,
+                                                          login=current_profile_login,
+                                                          id=current_profile_id)
+            logger.info('The connection has timed out.')
             break
 
         existing_profile_updated_at = existing_github_profile["_source"]["updated_at"]
 
-        now_github_profile = github_api.get_github_profiles(http_session=session,
-                                                            github_tokens_iter=github_tokens_iter,
-                                                            id_info=next_profile_id)
-        now_profile_updated_at = now_github_profile["updated_at"]
+        latest_github_profile = github_api.get_github_profiles(http_session=session,
+                                                               github_tokens_iter=github_tokens_iter,
+                                                               id_info=current_profile_id)
+        latest_profile_updated_at = latest_github_profile["updated_at"]
 
-        if existing_profile_updated_at != now_profile_updated_at:
+        if existing_profile_updated_at != latest_profile_updated_at:
             opensearch_client.index(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
-                                    body=now_github_profile,
+                                    body=latest_github_profile,
                                     refresh=True)
-            logger.info(f"Success put updated {next_profile_login}'s github profiles into opensearch.")
+            logger.info(f"Success put updated {current_profile_login}'s github profiles into opensearch.")
         else:
-            logger.info(f"{next_profile_login}'s github profiles of opensearch is latest.")
-    the_first_profile= opensearch_client.search(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
+            logger.info(f"{current_profile_login}'s github profiles of opensearch is latest.")
+    the_first_profile = opensearch_client.search(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
                                                  body={
                                                      "query": {
-                                                         "match_all": {}
+                                                         "range": {
+                                                             "id": {
+                                                                 "gt": current_profile_id
+                                                             }
+                                                         }
                                                      },
-                                                     "collapse": {
-                                                         "field": "id"
-                                                     },
-                                                     "size": 1,
                                                      "sort": [
                                                          {
                                                              "id": {
                                                                  "order": "asc"
                                                              }
-                                                         }
-                                                     ]
+                                                         }],
+                                                     "size": 1
                                                  }
                                                  )
-    the_first_github_id = the_first_profile["hits"]["hits"][0]["_source"]["id"]
-    the_first_github_login = the_first_profile["hits"]["hits"][0]["_source"]["login"]
-    opensearch_api.set_sync_github_profiles_check(opensearch_client=opensearch_client, login=the_first_github_login,
-                                                  id=the_first_github_id)
+    if  the_first_profile["hits"]["hits"]:
+        current_profile_id = the_first_profile["hits"]["hits"][0]["_source"]["id"]
+        current_profile_login = the_first_profile["hits"]["hits"][0]["_source"]["login"]
+    else:
+        current_profile_id = -1
+        current_profile_login = None
+    opensearch_api.set_sync_github_profiles_check(opensearch_client=opensearch_client, login=current_profile_login,
+                                                  id=current_profile_id)
     return "END::sync_github_profiles"
 
 
