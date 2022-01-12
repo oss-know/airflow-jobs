@@ -22,13 +22,6 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
     github_tokens_iter = itertools.cycle(github_tokens)
 
     opensearch_client = get_opensearch_client(opensearch_conn_info)
-    # 取得需要更新os中profile的首位id，用于判断循环更新终点
-    the_first_profile = get_the_first_profile(opensearch_client=opensearch_client)
-    if not the_first_profile["hits"]["hits"]:
-        logger.error("There's no github profile in opensearch")
-        return "There's no github profile in opensearch."
-    the_first_github_id = the_first_profile["hits"]["hits"][0]["_source"]["id"]
-    the_first_github_login = the_first_profile["hits"]["hits"][0]["_source"]["login"]
 
     # 取得上次更新github profile 的位置，用于判断循环起点
     has_profile_check = opensearch_client.search(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA,
@@ -61,16 +54,17 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
     if not has_profile_check["hits"]["hits"]:
         existing_github_id = has_profile_check["hits"]["hits"][0]["_source"]["github"]["id"]
     else:
-        existing_github_id = the_first_github_id
+        existing_github_id = '0'
 
     # 将折叠（collapse）查询opensearch（去重排序）的结果作为查询更新的数据源
+    # collapse和scan、scroll无法同时使用，为保证效率， 将每次获取的数据量设定为1000
     existing_github_profiles = opensearch_client.search(
         index=OPENSEARCH_INDEX_GITHUB_PROFILE,
         body={
             "query": {
                 "range": {
                     "id": {
-                        "lte": existing_github_id
+                        "gte": existing_github_id
                     }
                 }
             },
@@ -80,7 +74,7 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
             "sort": [
                 {
                     "id": {
-                        "order": "desc"
+                        "order": "asc"
                     }
                 },
                 {
@@ -127,15 +121,7 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
             logger.info(f"Success put updated {next_profile_login}'s github profiles into opensearch.")
         else:
             logger.info(f"{next_profile_login}'s github profiles of opensearch is latest.")
-    the_first_profile= get_the_first_profile(opensearch_client=opensearch_client)
-    the_first_github_id = the_first_profile["hits"]["hits"][0]["_source"]["id"]
-    the_first_github_login = the_first_profile["hits"]["hits"][0]["_source"]["login"]
-    opensearch_api.set_sync_github_profiles_check(opensearch_client=opensearch_client, login=the_first_github_login,
-                                                  id=the_first_github_id)
-    return "END::sync_github_profiles"
-
-def get_the_first_profile(opensearch_client):
-    the_first_profile = opensearch_client.search(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
+    the_first_profile= opensearch_client.search(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
                                                  body={
                                                      "query": {
                                                          "match_all": {}
@@ -147,13 +133,18 @@ def get_the_first_profile(opensearch_client):
                                                      "sort": [
                                                          {
                                                              "id": {
-                                                                 "order": "desc"
+                                                                 "order": "asc"
                                                              }
                                                          }
                                                      ]
                                                  }
                                                  )
-    return the_first_profile
+    the_first_github_id = the_first_profile["hits"]["hits"][0]["_source"]["id"]
+    the_first_github_login = the_first_profile["hits"]["hits"][0]["_source"]["login"]
+    opensearch_api.set_sync_github_profiles_check(opensearch_client=opensearch_client, login=the_first_github_login,
+                                                  id=the_first_github_id)
+    return "END::sync_github_profiles"
+
 
 # TODO: 传入用户的profile信息，获取用户的location、company、email，与晨琪对接
 def github_profile_data_source(now_github_profile):
