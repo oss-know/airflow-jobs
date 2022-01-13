@@ -30,7 +30,7 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
                                                                          }
                                                                      }
                                                                  }
-                                                             ]
+                                    draw io居中                         ]
                                                          }
                                                      },
                                                      "sort": [
@@ -45,6 +45,7 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
 
     if has_profile_check["hits"]["hits"]:
         existing_github_id = has_profile_check["hits"]["hits"][0]["_source"]["github"]["id"]
+        print("上次存储的check node的id为：",existing_github_id)
     else:
         existing_github_id = -1
 
@@ -87,18 +88,13 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
     session = requests.Session()
     opensearch_api = OpensearchAPI()
 
-    end_time = (datetime.datetime.now() + datetime.timedelta(3)).timestamp()
+    # end_time = (datetime.datetime.now() + datetime.timedelta(hours=3)).timestamp()
+    end_time = (datetime.datetime.now() + datetime.timedelta(microseconds=4000)).timestamp()
     current_profile_id = None
     for existing_github_profile in existing_github_profiles['hits']['hits']:
         current_profile_id = existing_github_profile["_source"]["id"]
         current_profile_login = existing_github_profile["_source"]["login"]
-        # 判断当前时间是否为查询有效时间（当日零点到凌晨三点之间：一小时只查询比较不存储约处理360个profile,为保证高效可用，每次查询时间由2小时延长至3小时）
-        if datetime.datetime.now().timestamp() > end_time:
-            opensearch_api.set_sync_github_profiles_check(opensearch_client=opensearch_client,
-                                                          login=current_profile_login,
-                                                          id=current_profile_id)
-            logger.info('The connection has timed out.')
-            break
+
 
         existing_profile_updated_at = existing_github_profile["_source"]["updated_at"]
 
@@ -114,7 +110,12 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
             logger.info(f"Success put updated {current_profile_login}'s github profiles into opensearch.")
         else:
             logger.info(f"{current_profile_login}'s github profiles of opensearch is latest.")
-    the_first_profile = opensearch_client.search(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
+        # 判断当前时间是否为查询有效时间（当日零点到凌晨三点之间：一小时只查询比较不存储约处理360个profile,为保证高效可用，每次查询时间由2小时延长至3小时）
+        if datetime.datetime.now().timestamp() > end_time:
+            logger.info('The connection has timed out.')
+            break
+
+    check_node_profile = opensearch_client.search(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
                                                  body={
                                                      "query": {
                                                          "range": {
@@ -132,14 +133,14 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
                                                      "size": 1
                                                  }
                                                  )
-    if  the_first_profile["hits"]["hits"]:
-        current_profile_id = the_first_profile["hits"]["hits"][0]["_source"]["id"]
-        current_profile_login = the_first_profile["hits"]["hits"][0]["_source"]["login"]
+    if  check_node_profile["hits"]["hits"]:
+        check_node_id = check_node_profile["hits"]["hits"][0]["_source"]["id"]
+        check_node_login = check_node_profile["hits"]["hits"][0]["_source"]["login"]
     else:
-        current_profile_id = -1
-        current_profile_login = None
-    opensearch_api.set_sync_github_profiles_check(opensearch_client=opensearch_client, login=current_profile_login,
-                                                  id=current_profile_id)
+        check_node_id = -1
+        check_node_login = None
+    opensearch_api.set_sync_github_profiles_check(opensearch_client=opensearch_client, login=check_node_login,
+                                                  id=check_node_id)
     return "END::sync_github_profiles"
 
 
