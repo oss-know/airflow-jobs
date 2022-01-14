@@ -89,7 +89,7 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
     opensearch_api = OpensearchAPI()
 
     # end_time = (datetime.datetime.now() + datetime.timedelta(hours=3)).timestamp()
-    end_time = (datetime.datetime.now() + datetime.timedelta(microseconds=4000)).timestamp()
+    end_time = (datetime.datetime.now() + datetime.timedelta(microseconds=1800)).timestamp()
     current_profile_id = None
     for existing_github_profile in existing_github_profiles['hits']['hits']:
         current_profile_id = existing_github_profile["_source"]["id"]
