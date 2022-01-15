@@ -1,87 +1,142 @@
 {
-    "git_save_local_path": {
-        "PATH": "/tmp/gits"
-    },
-    "github_tokens": [
-        "123123",
-        "asdfasdf",
-        "asdfasdf",
-        "asdfasdf"
-    ],
-    "need_init_github_commits_repos": [
-        {
-            "owner": "fivestarsky",
-            "repo": "airflow-jobs",
-            "since": "1980-01-01T00:00:00Z",
-            "until": "2021-12-20T00:00:00Z"
-        }
-    ],
-    "need_init_github_issues_comments_repos": [
-        {
-            "owner": "fivestarsky",
-            "repo": "airflow-jobs"
-        }
-    ],
-    "need_init_github_issues_repos": [
-        {
-            "owner": "fivestarsky",
-            "repo": "airflow-jobs"
-        }
-    ],
-    "need_init_github_issues_timeline_repos": [
-        {
-            "owner": "fivestarsky",
-            "repo": "airflow-jobs"
-        }
-    ],
-    "need_init_github_pull_requests_repos": [
-        {
-            "owner": "fivestarsky",
-            "repo": "airflow-jobs"
-        }
-    ],
-    "need_init_gits": [
-        {
-            "owner": "fivestarsky",
-            "repo": "airflow-jobs",
-            "url": "git://github.com/fivestarsky/airflow-jobs.git"
-        }
-    ],
-    "need_sync_github_commits_repos": [
-        {
-            "owner": "fivestarsky",
-            "repo": "airflow-jobs"
-        }
-    ],
-    "need_sync_github_issues_comments_repos": [
-        {
-            "owner": "fivestarsky",
-            "repo": "airflow-jobs"
-        }
-    ],
-    "need_sync_github_issues_repos": [
-        {
-            "owner": "fivestarsky",
-            "repo": "airflow-jobs"
-        }
-    ],
-    "need_sync_github_profile_repo_list": [
-        {
-            "owner": "fivestarsky",
-            "repo": "airflow-jobs"
-        }
-    ],
-    "need_sync_gits": [
-        {
-            "owner": "fivestarsky",
-            "repo": "airflow-jobs",
-            "url": "git://github.com/fivestarsky/airflow-jobs.git"
-        }
-    ],
-    "opensearch_conn_data": {
-        "HOST": "192.168.8.10",
-        "PASSWD": "admin",
-        "PORT": "9200",
-        "USER": "admin"
+  "git_save_local_path": {
+    "PATH": "/tmp/gits"
+  },
+  "github_tokens": [
+    "123123",
+    "asdfasdf",
+    "asdfasdf",
+    "asdfasdf"
+  ],
+  "need_init_github_commits_repos": [
+    {
+      "owner": "fivestarsky",
+      "repo": "airflow-jobs",
+      "since": "1980-01-01T00:00:00Z",
+      "until": "2021-12-20T00:00:00Z"
     }
+  ],
+  "need_init_github_issues_comments_repos": [
+    {
+      "owner": "fivestarsky",
+      "repo": "airflow-jobs"
+    }
+  ],
+  "need_init_github_issues_repos": [
+    {
+      "owner": "fivestarsky",
+      "repo": "airflow-jobs"
+    }
+  ],
+  "need_init_github_issues_timeline_repos": [
+    {
+      "owner": "fivestarsky",
+      "repo": "airflow-jobs"
+    }
+  ],
+  "need_init_github_pull_requests_repos": [
+    {
+      "owner": "fivestarsky",
+      "repo": "airflow-jobs"
+    }
+  ],
+  "need_init_gits": [
+    {
+      "owner": "fivestarsky",
+      "repo": "airflow-jobs",
+      "url": "git://github.com/fivestarsky/airflow-jobs.git"
+    }
+  ],
+  "need_sync_github_commits_repos": [
+    {
+      "owner": "fivestarsky",
+      "repo": "airflow-jobs"
+    }
+  ],
+  "need_sync_github_issues_comments_repos": [
+    {
+      "owner": "fivestarsky",
+      "repo": "airflow-jobs"
+    }
+  ],
+  "need_sync_github_issues_repos": [
+    {
+      "owner": "fivestarsky",
+      "repo": "airflow-jobs"
+    }
+  ],
+  "need_sync_github_profile_repo_list": [
+    {
+      "owner": "fivestarsky",
+      "repo": "airflow-jobs"
+    }
+  ],
+  "need_sync_gits": [
+    {
+      "owner": "fivestarsky",
+      "repo": "airflow-jobs",
+      "url": "git://github.com/fivestarsky/airflow-jobs.git"
+    }
+  ],
+  "opensearch_conn_data": {
+    "HOST": "192.168.8.10",
+    "PASSWD": "admin",
+    "PORT": "9200",
+    "USER": "admin"
+  },
+  "transfer_data_os_index_and_ck_tbname": [
+    {
+      "OPENSEARCH_INDEX": "github_profile",
+      "CK_TABLE_NAME": "table1"
+    }
+  ],
+  "clickhouse_driver_info": {
+    "HOST": "192.168.8.102",
+    "PASSWD": "",
+    "PORT": "19001",
+    "USER": "default",
+    "DATABASE": "default"
+  },
+  "ck_table_infos": [
+    {
+      "table_name": "table1",
+      "table_engine": "MergeTree",
+      "partition_by": "",
+      "order_by": "id",
+      "parse_data": {
+        "login": "ketabaki",
+        "id": 96709985,
+        "node_id": "U_kgDOBcOtYQ",
+        "avatar_url": "https://avatars.githubusercontent.com/u/96709985?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/ketabaki",
+        "html_url": "https://github.com/ketabaki",
+        "followers_url": "https://api.github.com/users/ketabaki/followers",
+        "following_url": "https://api.github.com/users/ketabaki/following{/other_user}",
+        "gists_url": "https://api.github.com/users/ketabaki/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/ketabaki/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/ketabaki/subscriptions",
+        "organizations_url": "https://api.github.com/users/ketabaki/orgs",
+        "repos_url": "https://api.github.com/users/ketabaki/repos",
+        "events_url": "https://api.github.com/users/ketabaki/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/ketabaki/received_events",
+        "type": "User",
+        "site_admin": false,
+        "name": "Ketaba Ki",
+        "company": "",
+        "blog": "",
+        "location": "China",
+        "email": "",
+        "hireable": "",
+        "bio": "KK, a curious developer looking forward to explore the code world.",
+        "twitter_username": "",
+        "public_repos": 1,
+        "public_gists": 0,
+        "followers": 0,
+        "following": 0,
+        "created_at": "2021-12-27T03:27:26Z",
+        "updated_at": "2021-12-27T03:45:14Z"
+      }
+    }
+  ]
 }
