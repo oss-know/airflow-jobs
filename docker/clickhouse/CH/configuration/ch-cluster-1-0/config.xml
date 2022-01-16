@@ -656,6 +656,32 @@
                 </replica>
             </shard>
         </test_shard_localhost>
+        <cluster>
+            <shard>
+                <weight>1</weight>
+                <internal_replication>true</internal_replication>
+                <replica>
+                    <host>ch-cluster-0-0</host>
+                    <port>9000</port>
+                </replica>
+                <replica>
+                    <host>ch-cluster-0-1</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+            <shard>
+                <weight>1</weight>
+                <internal_replication>true</internal_replication>
+                <replica>
+                    <host>ch-cluster-1-0</host>
+                    <port>9000</port>
+                </replica>
+                <replica>
+                    <host>ch-cluster-1-1</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+        </cluster>
         <test_cluster_one_shard_three_replicas_localhost>
             <shard>
                 <internal_replication>false</internal_replication>
@@ -688,6 +714,38 @@
                 </replica>
             </shard-->
         </test_cluster_one_shard_three_replicas_localhost>
+        <test_cluster_two_shard_three_replicas_localhost>
+            <shard>
+                <internal_replication>false</internal_replication>
+                <replica>
+                    <host>127.0.0.1</host>
+                    <port>9000</port>
+                </replica>
+                <replica>
+                    <host>127.0.0.2</host>
+                    <port>9000</port>
+                </replica>
+                <replica>
+                    <host>127.0.0.3</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+            <shard>
+                <internal_replication>false</internal_replication>
+                <replica>
+                    <host>127.0.0.1</host>
+                    <port>9000</port>
+                </replica>
+                <replica>
+                    <host>127.0.0.2</host>
+                    <port>9000</port>
+                </replica>
+                <replica>
+                    <host>127.0.0.3</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+        </test_cluster_two_shard_three_replicas_localhost>
         <test_cluster_two_shards_localhost>
              <shard>
                  <replica>
@@ -805,6 +863,12 @@
         </node>
     </zookeeper>
     -->
+    <zookeeper>
+        <node>
+            <host>zookeeper</host>
+            <port>2181</port>
+        </node>
+    </zookeeper>
 
     <!-- Substitutions for parameters of replicated tables.
           Optional. If you don't use replicated tables, you could omit that.
@@ -817,7 +881,15 @@
         <replica>example01-01-1</replica>
     </macros>
     -->
-
+    <macros replace="replace">
+        <layer>base_layer</layer>
+        <shard>base_shard_1</shard>
+        <rep>1-0</rep>
+        <replica>ch-cluster-1-0</replica>
+        <cluster>cluster</cluster>
+    </macros>
+<!--    <include_from>/etc/clickhouse-server/config.d/config.xml</include_from>-->
+<!--    <zookeeper incl="zookeeper" optional="false"/>-->
 
     <!-- Reloading interval for embedded dictionaries, in seconds. Default: 3600. -->
     <builtin_dictionaries_reload_interval>3600</builtin_dictionaries_reload_interval>

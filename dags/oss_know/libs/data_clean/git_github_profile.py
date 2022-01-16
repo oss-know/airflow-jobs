@@ -176,9 +176,7 @@ def get_profile(opensearch_client, login):
                                                             "order": "desc"
                                                         }
                                                     }
-                                                ], "_source": ["name", "company", "blog", "location", "email",
-                                                               "hireable", "bio",
-                                                               "twitter_username"]
+                                                ]
                                             })
     return user_profile
 

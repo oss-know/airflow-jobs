@@ -14,3 +14,8 @@ NEED_SYNC_GITHUB_COMMITS_REPOS = "need_init_github_commits_repos"
 
 NEED_INIT_GITS = "need_init_gits"
 
+NEED_CK_TABLE_INFOS = "ck_table_infos"
+
+CLICKHOUSE_DRIVER_INFO = "clickhouse_driver_info"
+
+TRANSFER_DATA_OS_INDEX_AND_CK_TBNAME="transfer_data_os_index_and_ck_tbname"
