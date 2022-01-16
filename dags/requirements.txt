@@ -1,0 +1,12 @@
+apache-airflow==2.2.3
+loguru==0.5.3
+opensearch-py==1.0.0
+mysqlclient==2.1.0
+apache-airflow-providers-postgres==2.4.0
+apache-airflow-providers-redis==2.0.1
+PyGithub==1.54.1
+GitPython==3.1.24
+psycopg2-binary==2.9.2
+urllib3==1.26.7
+tenacity==8.0.1
+requests==2.26.0
