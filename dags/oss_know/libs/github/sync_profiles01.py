@@ -64,30 +64,35 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
         identifier = acquire_lock('resource')
         need_updated_id=redis_client.spop('sync_github_profiles:need_updated_ids')
         if not need_updated_id:
-            continue
+            break
         logger.info(f'need_updated_id:{need_updated_id}')
         need_updated_updated_at = redis_client.hget('sync_github_profiles:need_updated_hash',need_updated_id)
         redis_client.hset(name='sync_github_profiles:failed_updated_hash',key=need_updated_id,value=need_updated_updated_at)
         redis_client.hdel('sync_github_profiles:need_updated_hash', need_updated_id)
         release_lock('resource', identifier)
-        github_api = GithubAPI()
-        session = requests.Session()
-        latest_github_profile = github_api.get_github_profiles(http_session=session,
-                                                               github_tokens_iter=github_tokens_iter,
-                                                               id_info=need_updated_id)
-        latest_profile_updated_at = latest_github_profile["updated_at"]
+        try:
+            github_api = GithubAPI()
+            session = requests.Session()
+            latest_github_profile = github_api.get_github_profiles(http_session=session,
+                                                                   github_tokens_iter=github_tokens_iter,
+                                                                   id_info=need_updated_id)
+            latest_profile_updated_at = latest_github_profile["updated_at"]
 
-        if need_updated_updated_at != latest_profile_updated_at:
-            opensearch_client.index(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
-                                    body=latest_github_profile,
-                                    refresh=True)
-            logger.info(f"Success put updated {need_updated_id}'s github profiles into opensearch.")
+            if need_updated_updated_at != latest_profile_updated_at:
+                opensearch_client.index(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
+                                        body=latest_github_profile,
+                                        refresh=True)
+                logger.info(f"Success put updated {need_updated_id}'s github profiles into opensearch.")
+            else:
+                logger.info(f"{need_updated_id}'s github profiles of opensearch is latest.")
+        except Exception as e:
+            logger.error(f"Failed sync_github_profiles,the exception message: {e}")
         else:
-            logger.info(f"{need_updated_id}'s github profiles of opensearch is latest.")
-        redis_client.hdel('sync_github_profiles:failed_updated_hash',need_updated_id)
-        if datetime.datetime.now().timestamp() > end_time:
-            logger.info('The connection has timed out.')
-            break
+            redis_client.hdel('sync_github_profiles:failed_updated_hash',need_updated_id)
+        finally:
+            if datetime.datetime.now().timestamp() > end_time:
+                logger.info('The connection has timed out.')
+                break
 
 
 def acquire_lock(lock_name, acquire_time=10, time_out=10):
