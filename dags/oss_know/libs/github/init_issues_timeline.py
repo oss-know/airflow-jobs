@@ -7,6 +7,8 @@ import itertools
 from opensearchpy import OpenSearch
 from opensearchpy import helpers as opensearch_helpers
 
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES, \
+    OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE
 from oss_know.libs.util.github_api import GithubAPI
 from oss_know.libs.util.log import logger
 from oss_know.libs.util.opensearch_api import OpensearchAPI
@@ -81,7 +83,7 @@ def init_sync_github_issues_timeline(github_tokens, opensearch_conn_info, owner,
     for now_item in need_init_sync_all_results:
         number = now_item["_source"]["raw_data"]["number"]
         for page in range(1, 10000):
-            time.sleep(random.uniform(0.1, 0.2))
+            time.sleep(random.uniform(0.01, 0.02))
             req = github_api.get_github_issues_timeline(req_session, github_tokens_iter, owner, repo, number,
                                                         page)
             one_page_github_issues_timeline = req.json()

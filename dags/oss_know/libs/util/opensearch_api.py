@@ -45,7 +45,8 @@ class OpensearchAPI:
                                                   )
             if len(has_commit["hits"]["hits"]) == 0:
                 template = {"_index": OPENSEARCH_INDEX_GITHUB_COMMITS,
-                            "_source": {"search_key": {"owner": owner, "repo": repo},
+                            "_source": {"search_key": {"owner": owner, "repo": repo,
+                                                       'updated_at': datetime.datetime.now().timestamp()},
                                         "raw_data": None}}
                 commit_item = copy.deepcopy(template)
                 commit_item["_source"]["raw_data"] = now_commit
@@ -98,7 +99,8 @@ class OpensearchAPI:
             logger.info(f"DELETE github issues result:{del_result}")
 
             template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES,
-                        "_source": {"search_key": {"owner": owner, "repo": repo},
+                        "_source": {"search_key": {"owner": owner, "repo": repo,
+                                                   'updated_at': datetime.datetime.now().timestamp()},
                                     "raw_data": None}}
             commit_item = copy.deepcopy(template)
             commit_item["_source"]["raw_data"] = now_issue
@@ -138,9 +140,9 @@ class OpensearchAPI:
                                                                     github_tokens_iter=github_tokens_iter,
                                                                     id_info=github_id)
                 for key in ["name", "company", "blog", "location", "email", "hireable", "bio", "twitter_username"]:
-                    print("now_github_profile[key]:",now_github_profile[key])
+                    print("now_github_profile[key]:", now_github_profile[key])
                     if now_github_profile[key] is None:
-                        now_github_profile[key]= ''
+                        now_github_profile[key] = ''
                 opensearch_client.index(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
                                         body=now_github_profile,
                                         refresh=True)
@@ -154,7 +156,8 @@ class OpensearchAPI:
 
         for val in issues_timelines:
             template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE,
-                        "_source": {"search_key": {"owner": owner, "repo": repo, "number": number},
+                        "_source": {"search_key": {"owner": owner, "repo": repo, "number": number,
+                                                   'updated_at': datetime.datetime.now().timestamp()},
                                     "raw_data": None}}
             append_item = copy.deepcopy(template)
             append_item["_source"]["raw_data"] = val
@@ -168,7 +171,8 @@ class OpensearchAPI:
         bulk_all_github_issues_comments = []
 
         template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS,
-                    "_source": {"search_key": {"owner": owner, "repo": repo, "number": number},
+                    "_source": {"search_key": {"owner": owner, "repo": repo, "number": number,
+                                               'updated_at': datetime.datetime.now().timestamp()},
                                 "raw_data": None}}
         commit_comment_item = copy.deepcopy(template)
         commit_comment_item["_source"]["raw_data"] = issues_comments
@@ -299,7 +303,8 @@ class OpensearchAPI:
         bulk_all_github_pull_requests = []
         for now_pr in github_pull_requests:
             template = {"_index": OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS,
-                        "_source": {"search_key": {"owner": owner, "repo": repo},
+                        "_source": {"search_key": {"owner": owner, "repo": repo,
+                                                   'updated_at': datetime.datetime.now().timestamp()},
                                     "raw_data": None}}
             pull_requests_item = copy.deepcopy(template)
             pull_requests_item["_source"]["raw_data"] = now_pr
