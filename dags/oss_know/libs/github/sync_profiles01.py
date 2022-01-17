@@ -10,22 +10,25 @@ from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_PRO
 from oss_know.libs.util.log import logger
 from opensearchpy import helpers as opensearch_helpers
 
-redis_client = redis.Redis(host='192.168.8.107', port=6379, db=0, decode_responses=True)
 
 
-def get_need_updated_profiles(opensearch_conn_info):
+
+STORAGE_UPDATED_HASH = 'sync_github_profiles:storage_updated_hash'
+STORAGE_UPDATED_IDS_SET = 'sync_github_profiles:storage_updated_ids_set'
+WORKING_UPDATED_HASH = 'sync_github_profiles:working_updated_hash'
+REDIS_CLIENT_HOST = '192.168.8.107'
+REDIS_CLIENT_PORT = 6379
+DURATION_OF_SYNC_GITHUB_PROFILES = 3
+
+redis_client = redis.Redis(host=REDIS_CLIENT_HOST, port=REDIS_CLIENT_PORT, db=0, decode_responses=True)
+
+
+def init_storage_updated_profiles(opensearch_conn_info):
+
     opensearch_client = get_opensearch_client(opensearch_conn_info)
-    failed_updated_hash=redis_client.hgetall("sync_github_profiles:failed_updated_hash")
-    if failed_updated_hash or redis_client.hgetall("sync_github_profiles:failed_updated_hash"):
-        if failed_updated_hash:
-            redis_client.hmset(name='sync_github_profiles:need_updated_hash', mapping=failed_updated_hash)
-            need_updated_ids_set = redis_client.hkeys('sync_github_profiles:failed_updated_hash')
-            with redis_client.pipeline(transaction=False) as p:
-                for need_updated_id in need_updated_ids_set:
-                    p.sadd('sync_github_profiles:need_updated_ids', need_updated_id)
-                p.execute()
-            redis_client.delete('sync_github_profiles:failed_updated_hash')
-    else:
+    working_updated_hash=redis_client.hgetall(WORKING_UPDATED_HASH)
+
+    if not redis_client.hgetall(STORAGE_UPDATED_HASH) and not redis_client.hgetall(WORKING_UPDATED_HASH):
         existing_github_profiles = opensearch_helpers.scan(opensearch_client,
                                                            preserve_order=True,
                                                            index=OPENSEARCH_INDEX_GITHUB_PROFILE,
@@ -44,91 +47,65 @@ def get_need_updated_profiles(opensearch_conn_info):
                                                                ],
                                                            },
                                                            doc_type="_doc"
-                                                     )
+                                                           )
+
         with redis_client.pipeline(transaction=False) as p:
             for existing_github_profile in existing_github_profiles:
-                if "updated_at" not in existing_github_profile["_source"] or not existing_github_profile['_source']['id'] :
-                    continue
-                else:
-                    p.hset(name='sync_github_profiles:need_updated_hash', key=existing_github_profile['_source']['id'],
+                if "updated_at" in existing_github_profile["_source"] and existing_github_profile["_source"]["updated_at"]\
+                        and existing_github_profile['_source']['id']:
+                    p.hset(name=STORAGE_UPDATED_HASH, key=existing_github_profile['_source']['id'],
                            value=existing_github_profile['_source']['updated_at'])
-                    p.sadd('sync_github_profiles:need_updated_ids', existing_github_profile['_source']['id'])
+                    p.sadd(STORAGE_UPDATED_IDS_SET, existing_github_profile['_source']['id'])
             p.execute()
+
+    elif working_updated_hash:
+        redis_client.hmset(name=STORAGE_UPDATED_HASH, mapping=working_updated_hash)
+        storage_updated_ids_set = redis_client.hkeys(WORKING_UPDATED_HASH)
+
+        with redis_client.pipeline(transaction=False) as p:
+            for storage_updated_id in storage_updated_ids_set:
+                p.sadd(STORAGE_UPDATED_IDS_SET, storage_updated_id)
+            p.execute()
+        redis_client.delete(WORKING_UPDATED_HASH)
+
+        
 
 def sync_github_profiles(github_tokens, opensearch_conn_info):
     github_tokens_iter = itertools.cycle(github_tokens)
     opensearch_client = get_opensearch_client(opensearch_conn_info)
-    # end_time = (datetime.datetime.now() + datetime.timedelta(hours=3)).timestamp()
+    # end_time = (datetime.datetime.now() + datetime.timedelta(hours=DURATION_OF_SYNC_GITHUB_PROFILES)).timestamp()
     end_time = (datetime.datetime.now() + datetime.timedelta(milliseconds=10000)).timestamp()
     while True:
-        identifier = acquire_lock('resource')
-        need_updated_id=redis_client.spop('sync_github_profiles:need_updated_ids')
-        if not need_updated_id:
+        # pipe = redis_client.pipeline(transaction=True)
+        storage_updated_id=redis_client.spop(STORAGE_UPDATED_IDS_SET)
+        if not storage_updated_id:
             break
-        logger.info(f'need_updated_id:{need_updated_id}')
-        need_updated_updated_at = redis_client.hget('sync_github_profiles:need_updated_hash',need_updated_id)
-        redis_client.hset(name='sync_github_profiles:failed_updated_hash',key=need_updated_id,value=need_updated_updated_at)
-        redis_client.hdel('sync_github_profiles:need_updated_hash', need_updated_id)
-        release_lock('resource', identifier)
+        logger.info(f'storage_updated_id:{storage_updated_id}')
+
+        storage_updated_at = redis_client.hget(name=STORAGE_UPDATED_HASH,key=str(storage_updated_id))
+        redis_client.hset(name=WORKING_UPDATED_HASH,key=str(storage_updated_id),value=str(storage_updated_at))
+        redis_client.hdel(STORAGE_UPDATED_HASH, str(storage_updated_id))
+        # pipe.execute()
         try:
             github_api = GithubAPI()
             session = requests.Session()
             latest_github_profile = github_api.get_github_profiles(http_session=session,
                                                                    github_tokens_iter=github_tokens_iter,
-                                                                   id_info=need_updated_id)
+                                                                   id_info=storage_updated_id)
             latest_profile_updated_at = latest_github_profile["updated_at"]
-
-            if need_updated_updated_at != latest_profile_updated_at:
+            if storage_updated_at != latest_profile_updated_at:
                 opensearch_client.index(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
                                         body=latest_github_profile,
                                         refresh=True)
-                logger.info(f"Success put updated {need_updated_id}'s github profiles into opensearch.")
+                logger.info(f"Success put updated {storage_updated_id}'s github profiles into opensearch.")
             else:
-                logger.info(f"{need_updated_id}'s github profiles of opensearch is latest.")
+                logger.info(f"{storage_updated_id}'s github profiles of opensearch is latest.")
         except Exception as e:
             logger.error(f"Failed sync_github_profiles,the exception message: {e}")
         else:
-            redis_client.hdel('sync_github_profiles:failed_updated_hash',need_updated_id)
+            redis_client.hdel(WORKING_UPDATED_HASH,storage_updated_id)
         finally:
             if datetime.datetime.now().timestamp() > end_time:
                 logger.info('The connection has timed out.')
                 break
-
-
-def acquire_lock(lock_name, acquire_time=10, time_out=10):
-    """获取一个分布式锁"""
-    identifier = str(uuid.uuid4())
-    end = time.time() + acquire_time
-    lock = "string:lock:" + lock_name
-    while time.time() < end:
-        if redis_client.setnx(lock, identifier):
-            # 给锁设置超时时间, 防止进程崩溃导致其他进程无法获取锁
-            redis_client.expire(lock, time_out)
-            return identifier
-        elif not redis_client.ttl(lock):
-            redis_client.expire(lock, time_out)
-        time.sleep(0.001)
-    return False
-
-def release_lock(lock_name, identifier):
-    """通用的锁释放函数"""
-    lock = "string:lock:" + lock_name
-    pip = redis_client.pipeline(True)
-    while True:
-        try:
-            pip.watch(lock)
-            lock_value = redis_client.get(lock)
-            if not lock_value:
-                return True
-
-            if lock_value == identifier:
-                pip.multi()
-                pip.delete(lock)
-                pip.execute()
-                return True
-            pip.unwatch()
-            break
-        except redis.exceptions.WatchError:
-            pass
-    return False
 

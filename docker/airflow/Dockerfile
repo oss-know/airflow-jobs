@@ -14,7 +14,11 @@ RUN pip install --no-cache-dir  'loguru==0.5.3' \
                                 'urllib3==1.26.7' \
                                 'tenacity==8.0.1' \
                                 'requests==2.26.0' \
-                                'clickhouse-driver[lz4,zstd,numpy]==0.2.2'
+                                'clickhouse-driver[lz4,zstd,numpy]==0.2.2' \
+                                'geopy==2.2.0'
+
+#######RUN #pip install --no-cache-dir  'numpy' 'pandas' 'scikit-learn'
+
 RUN pip install --no-cache-dir 'apache-airflow[password]==2.2.3'
 
 

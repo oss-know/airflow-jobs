@@ -40,18 +40,18 @@ with DAG(
             python_callable=do_sync_github_profiles,
             provide_context=True,
         )
-    def get_need_updated_profiles():
+    def init_storage_updated_profiles():
         from airflow.models import Variable
         from oss_know.libs.github import sync_profiles01
 
         opensearch_conn_infos = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
-        sync_profiles01.get_need_updated_profiles(opensearch_conn_infos)
+        sync_profiles01.init_storage_updated_profiles(opensearch_conn_infos)
 
 
-    op_get_need_updated_profiles = PythonOperator(
-        task_id='op_get_need_updated_profiles',
-        python_callable=get_need_updated_profiles,
+    op_init_storage_updated_profiles = PythonOperator(
+        task_id='op_init_storage_updated_profiles',
+        python_callable=init_storage_updated_profiles,
         provide_context=True,
     )
 
-    op_scheduler_sync_github_profiles >> op_get_need_updated_profiles>>op_do_sync_github_profiles
+    op_scheduler_sync_github_profiles >> op_init_storage_updated_profiles>>op_do_sync_github_profiles
