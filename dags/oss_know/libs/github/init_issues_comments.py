@@ -8,8 +8,8 @@ import copy
 from opensearchpy import OpenSearch
 from opensearchpy import helpers as OpenSearchHelpers
 
-from init_issues_timeline import OPENSEARCH_INDEX_GITHUB_ISSUES
-from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, \
+    OPENSEARCH_INDEX_GITHUB_ISSUES
 from oss_know.libs.util.github_api import GithubAPI
 from oss_know.libs.util.log import logger
 

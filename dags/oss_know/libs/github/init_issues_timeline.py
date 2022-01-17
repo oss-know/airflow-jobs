@@ -11,10 +11,6 @@ from oss_know.libs.util.github_api import GithubAPI
 from oss_know.libs.util.log import logger
 from oss_know.libs.util.opensearch_api import OpensearchAPI
 
-OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE = "github_issues_timeline"
-OPENSEARCH_INDEX_GITHUB_ISSUES = "github_issues"
-
-
 def init_sync_github_issues_timeline(github_tokens, opensearch_conn_info, owner, repo, since=None):
     github_tokens_iter = itertools.cycle(github_tokens)
 
