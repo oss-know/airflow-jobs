@@ -30,7 +30,7 @@ def sync_github_profiles(github_tokens, opensearch_conn_info):
                                                                          }
                                                                      }
                                                                  }
-                                    draw io居中                         ]
+                                                             ]
                                                          }
                                                      },
                                                      "sort": [
