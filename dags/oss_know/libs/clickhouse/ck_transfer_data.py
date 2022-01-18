@@ -42,7 +42,7 @@ class CKServer:
 def clickhouse_type(data_type):
     type_init = "String"
     if isinstance(data_type, int):
-        type_init = "Int32"
+        type_init = "Int64"
     return type_init
 
 
@@ -85,8 +85,10 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
             if not dict_data.get(field):
                 fields_have_no_data.append(f'`{field}`')
             if dict_data.get(field) and fields.get(field) == 'DateTime64(3)':
-                dict_data[field] = date_format_change(dict_data[field])
-                print(dict_data[field], "***********************************************************************")
+                dict_data[field] = iso8601_to_timestamp(dict_data[field])
+            print(dict_data.get(field), type(dict_data.get(field)),
+                  "***********************************************************************")
+
         # 这里fields_have_no_data 里存储的就是表结构中有的fields 而数据中没有的字段
         if fields_have_no_data:
             logger.info(f'缺失的字段列表：{fields_have_no_data}')
@@ -117,7 +119,7 @@ def parse_data(df):
     data_is_none_list = []
     for index, row in df.iloc[0].iteritems():
         # 去除以raw_data开头的字段
-        if index.startswith('row_data'):
+        if index.startswith('raw_data'):
             index = index[9:]
         # 第一步的转化
         row = alter_data_type(row)
@@ -175,6 +177,6 @@ def get_table_structure(table_name, ck: CKServer):
     return fields_structure_dict
 
 
-def date_format_change(date):
+def iso8601_to_timestamp(date):
     format_date = time.strptime(date, "%Y-%m-%dT%H:%M:%S%z")
     return int(time.mktime(format_date) * 1000)
