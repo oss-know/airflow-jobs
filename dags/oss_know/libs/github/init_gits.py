@@ -74,7 +74,7 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
     # 删除在数据库中已经存在的此项目数据
     delete_old_data(owner=owner, repo=repo, client=opensearch_client)
 
-    bulk_data_tp = {"_index": "git_raw",
+    bulk_data_tp = {"_index": OPENSEARCH_GIT_RAW,
                     "_source": {
                         "search_key": {
                             "owner": owner,
