@@ -46,7 +46,7 @@ class OpensearchAPI:
             if len(has_commit["hits"]["hits"]) == 0:
                 template = {"_index": OPENSEARCH_INDEX_GITHUB_COMMITS,
                             "_source": {"search_key": {"owner": owner, "repo": repo,
-                                                       'updated_at': datetime.datetime.now().timestamp()},
+                                                       'updated_at': int(datetime.datetime.now().timestamp() * 1000)},
                                         "raw_data": None}}
                 commit_item = copy.deepcopy(template)
                 commit_item["_source"]["raw_data"] = now_commit
@@ -100,7 +100,7 @@ class OpensearchAPI:
 
             template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES,
                         "_source": {"search_key": {"owner": owner, "repo": repo,
-                                                   'updated_at': datetime.datetime.now().timestamp()},
+                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000)},
                                     "raw_data": None}}
             commit_item = copy.deepcopy(template)
             commit_item["_source"]["raw_data"] = now_issue
@@ -159,7 +159,7 @@ class OpensearchAPI:
         for val in issues_timelines:
             template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE,
                         "_source": {"search_key": {"owner": owner, "repo": repo, "number": number,
-                                                   'updated_at': datetime.datetime.now().timestamp()},
+                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000)},
                                     "raw_data": None}}
             append_item = copy.deepcopy(template)
             append_item["_source"]["raw_data"] = val
@@ -174,7 +174,7 @@ class OpensearchAPI:
 
         template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS,
                     "_source": {"search_key": {"owner": owner, "repo": repo, "number": number,
-                                               'updated_at': datetime.datetime.now().timestamp()},
+                                               'updated_at': int(datetime.datetime.now().timestamp() * 1000)},
                                 "raw_data": None}}
         commit_comment_item = copy.deepcopy(template)
         commit_comment_item["_source"]["raw_data"] = issues_comments
@@ -306,7 +306,7 @@ class OpensearchAPI:
         for now_pr in github_pull_requests:
             template = {"_index": OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS,
                         "_source": {"search_key": {"owner": owner, "repo": repo,
-                                                   'updated_at': datetime.datetime.now().timestamp()},
+                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000)},
                                     "raw_data": None}}
             pull_requests_item = copy.deepcopy(template)
             pull_requests_item["_source"]["raw_data"] = now_pr

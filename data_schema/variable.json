@@ -112,10 +112,9 @@
   "ck_table_infos": [
     {
       "table_name": "gits",
-      "table_engine": "ReplicatedMergeTree",
+      "table_engine": "MergeTree",
       "partition_by": "",
       "order_by": [
-        "uuid",
         "search_key.owner",
         "search_key
           "total": {
@@ -127,46 +126,46 @@
           "type": "commit".repo"
       ],
       "parse_data": {
-        "search_key": {
-          "owner": "fivestarsky",
-          "repo": "airflow-jobs",
-          "origin": "http://github.com/fivestarsky/airflow-jobs.git"
-        },
-        "row_data": {
-          "message": "add requirements.txt to dags",
-          "hexsha": "837cbda6b11a750766293682a0a9664644a11d28",
-          "parents": [
-            "9f7d8fe862b0ae437dc1524a64a790f95677a64b"
-          ],
-          "author_tz": -8,
-          "committer_tz": -8,
-          "author_name": "fivestarsky",
-          "author_email": "fivestarsky@gmail.com",
-          "committer_name": "fivestarsky",
-          "committer_email": "fivestarsky@gmail.com",
-          "authored_date": "2022-01-16T16:21:23+08:00",
-          "authored_timestamp": 1642321283,
-          "committed_date": "2022-01-16T16:21:23+08:00",
-          "committed_timestamp": 1642321283,
-          "files": [
-            {
-              "file_name": "dags/requirements.txt",
-              "stats": {
-                "insertions": 12,
-                "deletions": 0,
-                "lines": 12
-              }
-            }
-          ],
-          "total": {
-            "insertions": 12,
-            "deletions": 0,
-            "lines": 12,
-            "files": 1
+          "search_key" : {
+            "owner" : "fivestarsky",
+            "repo" : "airflow-jobs",
+            "origin" : "http://github.com/fivestarsky/airflow-jobs.git",
+            "updated_at" : 1642497888444
           },
-          "type": "commit"
+          "raw_data" : {
+            "message" : "fix init_gits.py index name",
+            "hexsha" : "d1dacc4a3f6745a8560a31f8f702044a66b3a4fd",
+            "parents" : [
+              "bd282015e9cd9c19fa72a98952e785e0b5efaeb7"
+            ],
+            "author_tz" : 8,
+            "committer_tz" : 8,
+            "author_name" : "fivestarsky",
+            "author_email" : "fivestarsky@gmail.com",
+            "committer_name" : "fivestarsky",
+            "committer_email" : "fivestarsky@gmail.com",
+            "authored_date" : "2022-01-18T15:23:03+08:00",
+            "authored_timestamp" : 1642490583,
+            "committed_date" : "2022-01-18T15:23:03+08:00",
+            "committed_timestamp" : 1642490583,
+            "files" : [
+              {
+                "insertions" : 1,
+                "deletions" : 1,
+                "lines" : 2,
+                "file_name" : "dags/oss_know/libs/github/init_gits.py"
+              }
+            ],
+            "total" : {
+              "insertions" : 1,
+              "deletions" : 1,
+              "lines" : 2,
+              "files" : 1
+            },
+            "if_merged" : false,
+            "type" : "commit"
+          }
         }
-      }
     }
   ],
   "redis_client_data": {
