@@ -48,7 +48,7 @@ def clickhouse_type(data_type):
         if validate_iso8601(data_type):
             type_init = "DateTime64(3)"
     elif isinstance(data_type, int):
-        type_init = "Int32"
+        type_init = "Int64"
     return type_init
 
 
@@ -91,7 +91,7 @@ def datetime_valid(dt_str):
 def create_ck_table(df,
                     table_name="default_table",
                     table_engine="MergeTree",
-                    order_by="",
+                    order_by=[],
                     partition_by="",
                     clickhouse_server_info=None):
     # 存储最终的字段
@@ -133,7 +133,7 @@ def create_ck_table(df,
                     data_type_outer = f"`{index}` Array({ck_type})"
         # 不是列表判断是否为int类型 可以不用判断是否为字符串类型, 默认是字符串类型
         elif isinstance(row, int):
-            data_type_outer = f"`{index}` Int32"
+            data_type_outer = f"`{index}` Int64"
         elif isinstance(row, str):
             if validate_iso8601(row):
                 data_type_outer= f"`{index}` DateTime64(3)"
@@ -145,7 +145,13 @@ def create_ck_table(df,
     if partition_by:
         create_table_ddl = f'{create_table_ddl} PARTITION BY {partition_by}'
     if order_by:
-        create_table_ddl = f'{create_table_ddl} ORDER BY {order_by}'
+        order_by_str = ""
+        for i in range(len(order_by)):
+            if i != len(order_by)-1:
+                order_by_str = f'{order_by_str}{order_by[i]},'
+            else:
+                order_by_str = f'{order_by_str}{order_by[i]}'
+        create_table_ddl = f'{create_table_ddl} ORDER BY ({order_by_str})'
     logger.info(f'ddl sql::{create_table_ddl}')
     ck = CKServer(host=clickhouse_server_info["HOST"], port=clickhouse_server_info["PORT"], user=clickhouse_server_info["USER"], password=clickhouse_server_info["PASSWD"], database=clickhouse_server_info["DATABASE"])
     execute_ddl(ck, create_table_ddl)
