@@ -1,4 +1,4 @@
-OPENSEARCH_GIT_RAW = "git_raw"
+OPENSEARCH_GIT_RAW = "gits"
 OPENSEARCH_GIT_GITHUB_CLEAN = "git_github_clean"
 
 OPENSEARCH_INDEX_GITHUB_COMMITS = "github_commits"
