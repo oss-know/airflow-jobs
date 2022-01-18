@@ -18,7 +18,7 @@ from oss_know.libs.util.github_api import GithubAPI
 
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COMMITS, OPENSEARCH_INDEX_GITHUB_ISSUES, \
     OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE, OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, \
-    OPENSEARCH_INDEX_CHECK_SYNC_DATA, OPENSEARCH_INDEX_GITHUB_PROFILE, OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS
+    OPENSEARCH_INDEX_CHECK_SYNC_DATA, OPEN_SEARCH_GITHUB_PROFILE_INDEX, OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS, OPENSEARCH_INDEX_MAILLISTS
 
 
 class OpenSearchAPIException(Exception):
@@ -111,6 +111,21 @@ class OpensearchAPI:
         logger.info(f"now page:{len(bulk_all_github_issues)} sync github issues success:{success} & failed:{failed}")
 
         return success, failed
+
+    def bulk_maillist(self, opensearch_client, project_name, emails):
+        bulk_all_datas = []
+
+        for val in emails:
+            template = {"_index": OPENSEARCH_INDEX_MAILLISTS,
+                        "_source": {"search_key": {"project_name": project_name},
+                                    "raw_data": None}}
+            append_item = copy.deepcopy(template)
+            append_item["_source"]["raw_data"] = val
+            bulk_all_datas.append(append_item)
+
+        success, failed = opensearch_helpers.bulk(client=opensearch_client, actions=bulk_all_datas)
+        logger.info(f"sync {len(bulk_all_data)} emails of {project_name}, success:{success} & failed:{failed}")
+        pass
 
     def put_profile_into_opensearch(self, github_ids, github_tokens_iter, opensearch_client):
         """Put GitHub user profile into opensearch if it is not in opensearch."""
@@ -298,7 +313,7 @@ class OpensearchAPI:
     def do_opensearch_bulk_error_callback(retry_state):
         postgres_conn = get_postgres_conn()
         sql = '''INSERT INTO retry_data(
-                    owner, repo, type, data) 
+                    owner, repo, type, data)
                     VALUES (%s, %s, %s, %s);'''
         try:
             cur = postgres_conn.cursor()
