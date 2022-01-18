@@ -1,5 +1,6 @@
 import copy
 import datetime
+import time
 import shutil
 import os
 from loguru import logger
@@ -7,6 +8,11 @@ from git import Repo
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_GIT_RAW, OPENSEARCH_INDEX_CHECK_SYNC_DATA
 from oss_know.libs.util.base import get_opensearch_client
 from oss_know.libs.util.opensearch_api import OpensearchAPI
+
+
+def timestamp_to_utc(timestamp):
+    # 10位时间戳
+    return datetime.datetime.utcfromtimestamp(int(timestamp)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 # 用于记录上一次更新的点
@@ -79,7 +85,7 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
                             "owner": owner,
                             "repo": repo,
                             "origin": f"http://github.com/{owner}/{repo}.git",
-                            'updated_at': int(datetime.datetime.now().timestamp()*1000)
+                            'updated_at': int(datetime.datetime.now().timestamp() * 1000)
                         },
                         "raw_data": {
                             "message": "",
@@ -126,9 +132,9 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
         bulk_data["_source"]["raw_data"]["author_email"] = commit.author.email
         bulk_data["_source"]["raw_data"]["committer_name"] = commit.committer.name
         bulk_data["_source"]["raw_data"]["committer_email"] = commit.committer.email
-        bulk_data["_source"]["raw_data"]["authored_date"] = commit.authored_datetime
+        bulk_data["_source"]["raw_data"]["authored_date"] = timestamp_to_utc(commit.authored_datetime.timestamp())
         bulk_data["_source"]["raw_data"]["authored_timestamp"] = commit.authored_date
-        bulk_data["_source"]["raw_data"]["committed_date"] = commit.committed_datetime
+        bulk_data["_source"]["raw_data"]["committed_date"] = timestamp_to_utc(commit.committed_datetime.timestamp())
         bulk_data["_source"]["raw_data"]["committed_timestamp"] = commit.committed_date
         bulk_data["_source"]["raw_data"]["files"] = files_list
         bulk_data["_source"]["raw_data"]["total"] = commit.stats.total
