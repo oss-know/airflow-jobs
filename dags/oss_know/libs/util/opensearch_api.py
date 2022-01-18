@@ -18,7 +18,7 @@ from oss_know.libs.util.github_api import GithubAPI
 
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COMMITS, OPENSEARCH_INDEX_GITHUB_ISSUES, \
     OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE, OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, \
-    OPENSEARCH_INDEX_CHECK_SYNC_DATA, OPEN_SEARCH_GITHUB_PROFILE_INDEX, OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS
+    OPENSEARCH_INDEX_CHECK_SYNC_DATA, OPENSEARCH_INDEX_GITHUB_PROFILE, OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS
 
 
 class OpenSearchAPIException(Exception):
@@ -114,37 +114,39 @@ class OpensearchAPI:
 
     def put_profile_into_opensearch(self, github_ids, github_tokens_iter, opensearch_client):
         """Put GitHub user profile into opensearch if it is not in opensearch."""
-
         # 获取github profile
         for github_id in github_ids:
             logger.info(f'github_profile_user:{github_id}')
             time.sleep(round(random.uniform(0.01, 0.1), 2))
-            has_user_profile = opensearch_client.search(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
+            has_user_profile = opensearch_client.search(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
                                                         body={
                                                             "query": {
-                                                                "term": {
-                                                                    "id": {
-                                                                        "value": github_id
-                                                                    }
+                                                                "bool": {
+                                                                    "must": [
+                                                                        {
+                                                                            "term": {
+                                                                                "raw_data.id": {
+                                                                                    "value": github_id
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    ]
                                                                 }
                                                             }
                                                         }
                                                         )
-
             current_profile_list = has_user_profile["hits"]["hits"]
 
-            if len(current_profile_list) == 0:
+            if not current_profile_list:
                 github_api = GithubAPI()
                 session = requests.Session()
                 now_github_profile = github_api.get_github_profiles(http_session=session,
                                                                     github_tokens_iter=github_tokens_iter,
                                                                     id_info=github_id)
-                for key in ["name", "company", "blog", "location", "email", "hireable", "bio", "twitter_username"]:
-                    print("now_github_profile[key]:", now_github_profile[key])
-                    if now_github_profile[key] is None:
-                        now_github_profile[key] = ''
-                opensearch_client.index(index=OPEN_SEARCH_GITHUB_PROFILE_INDEX,
-                                        body=now_github_profile,
+                opensearch_client.index(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
+                                        body={"search_key": {
+                                            'updated_at': datetime.datetime.now().timestamp()},
+                                            "raw_data": now_github_profile},
                                         refresh=True)
                 logger.info(f"Put the github {github_id}'s profile into opensearch.")
             else:

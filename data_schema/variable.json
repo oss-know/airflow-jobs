@@ -117,7 +117,14 @@
       "order_by": [
         "uuid",
         "search_key.owner",
-        "search_key.repo"
+        "search_key
+          "total": {
+            "insertions": 12,
+            "deletions": 0,
+            "lines": 12,
+            "files": 1
+          },
+          "type": "commit".repo"
       ],
       "parse_data": {
         "search_key": {
@@ -161,5 +168,12 @@
         }
       }
     }
-  ]
+  ],
+  "redis_client_data": {
+    "HOST": "192.168.8.107",
+    "PORT": "6379"
+  },
+  "duration_of_sync_github_profiles": {
+    "seconds": 10800
+  }
 }
