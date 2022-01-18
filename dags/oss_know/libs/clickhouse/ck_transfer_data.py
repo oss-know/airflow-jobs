@@ -8,6 +8,8 @@ from git import Repo
 from clickhouse_driver import Client, connect
 from opensearchpy import helpers
 from pandas import json_normalize
+
+from oss_know.libs.base_dict.clickhouse import CLICKHOUSE_RAW_DATA
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_GIT_RAW, OPENSEARCH_INDEX_CHECK_SYNC_DATA
 from oss_know.libs.util.base import get_opensearch_client
 from oss_know.libs.util.opensearch_api import OpensearchAPI
@@ -117,7 +119,7 @@ def parse_data(df):
     data_is_none_list = []
     for index, row in df.iloc[0].iteritems():
         # 去除以raw_data开头的字段
-        if index.startswith('row_data'):
+        if index.startswith(CLICKHOUSE_RAW_DATA):
             index = index[9:]
         # 第一步的转化
         row = alter_data_type(row)
