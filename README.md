@@ -33,3 +33,13 @@ e.查看airflow用户设置是否成功：ll -a--->cat .env
 f.启动docker镜像: docker-compose up
 ```
 
+# 关于os 数据插入时间
+```
+所有os中的时间都是 2022-01-16T16:21:23Z,时区单独存储,原始时间字符串单独存储
+search_key{
+    .....
+    "updated_at":"时间戳 本条记录更新(包含插入)的时间戳"
+    'updated_at': int(datetime.datetime.now().timestamp() * 1000)
+}
+```
+
