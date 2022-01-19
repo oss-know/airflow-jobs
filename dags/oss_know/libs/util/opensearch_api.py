@@ -124,8 +124,8 @@ class OpensearchAPI:
             bulk_all_datas.append(append_item)
 
         success, failed = opensearch_helpers.bulk(client=opensearch_client, actions=bulk_all_datas)
-        logger.info(f"sync {len(bulk_all_data)} emails of {project_name}, success:{success} & failed:{failed}")
-        pass
+        logger.info(f"sync {len(bulk_all_datas)} emails of {project_name}, success:{success} & failed:{failed}")
+        return success, failed
 
     def put_profile_into_opensearch(self, github_ids, github_tokens_iter, opensearch_client):
         """Put GitHub user profile into opensearch if it is not in opensearch."""
