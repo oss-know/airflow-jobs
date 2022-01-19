@@ -2,43 +2,13 @@ import datetime
 import time
 import numpy
 import json
-import pandas as pd
 from loguru import logger
-from git import Repo
-from clickhouse_driver import Client, connect
 from opensearchpy import helpers
 from pandas import json_normalize
-
 from oss_know.libs.base_dict.clickhouse import CLICKHOUSE_RAW_DATA
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_GIT_RAW, OPENSEARCH_INDEX_CHECK_SYNC_DATA
 from oss_know.libs.util.base import get_opensearch_client
-from oss_know.libs.util.opensearch_api import OpensearchAPI
-
-
-class CKServer:
-    def __init__(self, host, port, user, password, database):
-        self.client = Client(host=host, port=port, user=user, password=password, database=database)
-        self.connect = connect(host=host, port=port, user=user, password=password, database=database)
-        self.cursor = self.connect.cursor()
-
-    def execute(self, sql: object, params: list) -> object:
-        # self.cursor.execute(sql)
-        # result = self.cursor.fetchall()
-        result = self.client.execute(sql, params)
-        # print(result)
-        return result
-
-    def execute_no_params(self, sql: object):
-        result = self.client.execute(sql)
-        # print(result)
-        return result
-
-    def fetchall(self, sql):
-        result = self.client.execute(sql)
-        print(result)
-
-    def close(self):
-        self.client.disconnect()
+from oss_know.libs.util.clickhouse_driver import CKServer
 
 
 def clickhouse_type(data_type):
@@ -76,20 +46,12 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
     for os_data in opensearch_datas:
         df = json_normalize(os_data["_source"])
         dict_data = parse_data(df)
-        # ck.execute(sql, [dict_data])
         fields_have_no_data = []
-        # if data_is_none_list:
-        #     for i in data_is_none_list:
-        #         for k in fields:
-        #             if k.startswith(i):
-        #                 fields_have_no_data.append(f'`{k}`')
         for field in fields:
             if not dict_data.get(field):
                 fields_have_no_data.append(f'`{field}`')
             if dict_data.get(field) and fields.get(field) == 'DateTime64(3)':
                 dict_data[field] = iso8601_to_timestamp(dict_data[field])
-            print(dict_data.get(field), type(dict_data.get(field)),
-                  "***********************************************************************")
 
         # 这里fields_have_no_data 里存储的就是表结构中有的fields 而数据中没有的字段
         if fields_have_no_data:
@@ -99,8 +61,6 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
         else:
             sql = f"INSERT INTO {table_name} VALUES"
         logger.info(f'执行的sql语句: {sql} ({dict_data})')
-        for key in dict_data:
-            print(key,dict_data[key])
         result = ck.execute(sql, [dict_data])
         logger.info(f'执行sql后受影响的行数: {result}')
     ck.close()
@@ -163,22 +123,17 @@ def parse_data(df):
 def get_table_structure(table_name, ck: CKServer):
     sql = f"DESC {table_name}"
     fields_structure = ck.execute_no_params(sql)
-    # print(type(fields_structure[0]))
     fields_structure_dict = {}
     # 将表结构中的字段名拿出来
     for field_structure in fields_structure:
         if field_structure:
             fields_structure_dict[field_structure[0]] = field_structure[1]
         else:
-            print("i为空")
+            logger.info("表结构中没有数据")
     logger.info(fields_structure_dict)
-    # try:
-    #     print(fields_list.index('login1'))
-    # except ValueError as e:
-    #     logger.error(e)
     return fields_structure_dict
 
 
 def iso8601_to_timestamp(date):
-    format_date = time.strptime(date, "%Y-%m-%dT%H:%M:%S%z")
+    format_date = time.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
     return int(time.mktime(format_date) * 1000)

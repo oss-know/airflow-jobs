@@ -24,12 +24,12 @@ with DAG(
 
     def do_ck_transfer_data(params):
         from airflow.models import Variable
-        from oss_know.libs.clickhouse import ck_transfer_data
+        from oss_know.libs.clickhouse import init_ck_transfer_data
         opensearch_index = params["OPENSEARCH_INDEX"]
         table_name = params["CK_TABLE_NAME"]
         opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
         clickhouse_server_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
-        transfer_data = ck_transfer_data.transfer_data(clickhouse_server_info=clickhouse_server_info,
+        transfer_data = init_ck_transfer_data.transfer_data(clickhouse_server_info=clickhouse_server_info,
                                                        opensearch_index=opensearch_index,
                                                        table_name=table_name,
                                                        opensearch_conn_datas=opensearch_conn_datas)

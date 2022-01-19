@@ -1,44 +1,11 @@
-import copy
 import datetime
-import shutil
-import os
 import re
 import numpy
 import json
 import pandas as pd
 from loguru import logger
-from git import Repo
-from clickhouse_driver import Client, connect
 from pandas import json_normalize
-from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_GIT_RAW, OPENSEARCH_INDEX_CHECK_SYNC_DATA
-from oss_know.libs.util.base import get_opensearch_client
-from oss_know.libs.util.opensearch_api import OpensearchAPI
-
-
-
-
-class CKServer:
-    def __init__(self, host, port, user, password, database):
-        self.client = Client(host=host, port=port, user=user, password=password, database=database)
-        self.connect = connect(host=host, port=port, user=user, password=password, database=database)
-        self.cursor = self.connect.cursor()
-
-    def execute(self, sql: object, params: list) -> object:
-        # self.cursor.execute(sql)
-        # result = self.cursor.fetchall()
-        result = self.client.execute(sql, params)
-        print(result)
-
-    def execute_no_params(self, sql: object):
-        result = self.client.execute(sql)
-        print(result)
-
-    def fetchall(self, sql):
-        result = self.client.execute(sql)
-        print(result)
-
-    def close(self):
-        self.client.disconnect()
+from oss_know.libs.util.clickhouse_driver import CKServer
 
 
 # 这个方法是映射ck中的数据类型
@@ -63,6 +30,7 @@ def alter_data_type(row):
     elif isinstance(row, bool):
         row = int(row)
     return row
+
 
 regex = r'^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\.[0-9]+)?(Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])?$'
 
@@ -100,7 +68,6 @@ def create_ck_table(df,
     for index, row in df.iloc[0].iteritems():
         # 去除包含raw_data的前缀
         if index.startswith('raw_data'):
-            # print(index)
             index = index[9:]
         # ck中单个字段的字段名称和字段的类型 拼接的字符串
         data_type_outer = f"`{index}` String"
@@ -136,7 +103,7 @@ def create_ck_table(df,
             data_type_outer = f"`{index}` Int64"
         elif isinstance(row, str):
             if validate_iso8601(row):
-                data_type_outer= f"`{index}` DateTime64(3)"
+                data_type_outer = f"`{index}` DateTime64(3)"
         # 将所有的类型都放入这个存储器列表
         ck_data_type.append(data_type_outer)
         # dict1[index] = row
@@ -147,13 +114,17 @@ def create_ck_table(df,
     if order_by:
         order_by_str = ""
         for i in range(len(order_by)):
-            if i != len(order_by)-1:
+            if i != len(order_by) - 1:
                 order_by_str = f'{order_by_str}{order_by[i]},'
             else:
                 order_by_str = f'{order_by_str}{order_by[i]}'
         create_table_ddl = f'{create_table_ddl} ORDER BY ({order_by_str})'
     logger.info(f'ddl sql::{create_table_ddl}')
-    ck = CKServer(host=clickhouse_server_info["HOST"], port=clickhouse_server_info["PORT"], user=clickhouse_server_info["USER"], password=clickhouse_server_info["PASSWD"], database=clickhouse_server_info["DATABASE"])
+    ck = CKServer(host=clickhouse_server_info["HOST"],
+                  port=clickhouse_server_info["PORT"],
+                  user=clickhouse_server_info["USER"],
+                  password=clickhouse_server_info["PASSWD"],
+                  database=clickhouse_server_info["DATABASE"])
     execute_ddl(ck, create_table_ddl)
     ck.close()
     return create_table_ddl
