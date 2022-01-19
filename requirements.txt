@@ -10,3 +10,5 @@ psycopg2-binary==2.9.2
 urllib3==1.26.7
 tenacity==8.0.1
 requests==2.26.0
+python-dateutil==2.8.2
+perceval==2.26.0

@@ -14,3 +14,4 @@ NEED_SYNC_GITHUB_COMMITS_REPOS = "need_init_github_commits_repos"
 
 NEED_INIT_GITS = "need_init_gits"
 
+MAIL_LISTS = "mail_lists"
