@@ -18,12 +18,36 @@ def clickhouse_type(data_type):
     return type_init
 
 
+def ck_check_point(opensearch_client, opensearch_index, clickhouse_table, updated_at):
+    now_time = datetime.datetime.now()
+    check_info = {
+        "search_key": {
+            "type": "os_ck",
+            "update_time": now_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "update_timestamp": now_time.timestamp(),
+            "opensearch_index": opensearch_index,
+            "clickhouse_table": clickhouse_table
+        },
+        "os_ck": {
+            "type": "os_ck",
+            "opensearch_index": opensearch_index,
+            "clickhouse_table": clickhouse_table,
+            "last_data": {
+                "updated_at": updated_at
+            }
+        }
+    }
+    # 插入一条数据
+    response = opensearch_client.index(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA, body=check_info)
+    logger.info(response)
+
+
 # 转换为基本数据类型
 def alter_data_type(row):
     if isinstance(row, numpy.int64):
         row = int(row)
     elif isinstance(row, dict):
-        row = str(row).replace(": ",":")
+        row = str(row).replace(": ", ":")
     elif isinstance(row, numpy.bool_):
         row = int(bool(row))
     elif row is None:
@@ -43,7 +67,11 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
     opensearch_datas = get_data_from_opensearch(index=opensearch_index,
                                                 opensearch_conn_datas=opensearch_conn_datas)
     # sql = f"INSERT INTO {table_name} VALUES"
-    for os_data in opensearch_datas:
+    max_timestamp = 0
+    for os_data in opensearch_datas[0]:
+        updated_at = os_data["_source"]["search_key"]["updated_at"]
+        if updated_at > max_timestamp:
+            max_timestamp = updated_at
         df = json_normalize(os_data["_source"])
         dict_data = parse_data(df)
         fields_have_no_data = []
@@ -63,16 +91,41 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
         logger.info(f'执行的sql语句: {sql} ({dict_data})')
         result = ck.execute(sql, [dict_data])
         logger.info(f'执行sql后受影响的行数: {result}')
+
+    # 将检查点放在这里插入
+    ck_check_point(opensearch_client=opensearch_datas[1],
+                   opensearch_index=opensearch_index,
+                   clickhouse_table=table_name,
+                   updated_at=max_timestamp)
     ck.close()
 
 
 def get_data_from_opensearch(index, opensearch_conn_datas):
     opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+    # # 获取本次scan拿取数据时间戳最大的时间戳
+    # response = opensearch_client.search(index=index, body={
+    #     "size": 1,
+    #     "sort": [
+    #         {
+    #             "search_key.updated_at": {
+    #                 "order": "desc"
+    #             }
+    #         }
+    #     ]
+    #     , "_source": ["search_key.updated_at"]
+    # })
+    # hits = response['hits']['hits']
+    # last_timestamp = 0
+    # if hits:
+    #     last_timestamp = hits[0]["_source"]["search_key"]["updated_at"]
+    # else:
+    #     logger.error(f"本条索引中没有相关数据")
+
     results = helpers.scan(client=opensearch_client, query={
         "query": {"match_all": {}}
     },
                            index=index)
-    return results
+    return results, opensearch_client
 
 
 def parse_data(df):

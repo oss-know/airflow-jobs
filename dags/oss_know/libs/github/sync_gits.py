@@ -21,7 +21,7 @@ def sync_git_check_update_info(opensearch_client, owner, repo, head_commit):
     check_update_info = {
         "search_key": {
             "type": "git_commits",
-            "update_time": now_time.strftime('%Y-%m-%dT00:00:00Z'),
+            "update_time": now_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
             "update_timestamp": now_time.timestamp(),
             "owner": owner,
             "repo": repo
@@ -74,6 +74,13 @@ def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, gi
                                                            "size": 1,
                                                            "query": {
                                                                "bool": {"must": [
+                                                                   {
+                                                                       "term": {
+                                                                           "search_key.type.keyword": {
+                                                                               "value": "git_commits"
+                                                                           }
+                                                                       }
+                                                                   },
                                                                    {"term": {
                                                                        "search_key.owner.keyword": {
                                                                            "value": owner
@@ -102,7 +109,7 @@ def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, gi
                             "owner": owner,
                             "repo": repo,
                             "origin": f"http://github.com/{owner}/{repo}.git",
-                            'updated_at': int(datetime.datetime.now().timestamp() * 1000)
+                            'updated_at': 0
                         },
                         "raw_data": {
                             "message": "",
@@ -153,6 +160,7 @@ def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, gi
                 file_dict["file_name"] = file
                 files_list.append(file_dict)
             bulk_data = copy.deepcopy(bulk_data_tp)
+            bulk_data["_source"]["search_key"]["updated_at"] = int(datetime.datetime.now().timestamp() * 1000)
             bulk_data["_source"]["raw_data"]["message"] = commit.message
             bulk_data["_source"]["raw_data"]["hexsha"] = commit.hexsha
             bulk_data["_source"]["raw_data"]["type"] = commit.type
