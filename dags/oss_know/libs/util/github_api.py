@@ -51,8 +51,12 @@ class GithubAPI:
             now_github_profile = req.json()
         except TypeError as e:
             logger.error(f"捕获airflow抛出的TypeError:{e}")
-            return {'id': id_info, 'status': 'User status is abnormal.', 'company': '', 'location': '',
-                    'email':''}
+            return {'login': '', 'id': id_info, 'node_id': '', 'avatar_url': '', 'gravatar_id': '', 'url': '', 'html_url': '',
+           'followers_url': '', 'following_url': '', 'gists_url': '', 'starred_url': '', 'subscriptions_url': '',
+           'organizations_url': '', 'repos_url': '', 'events_url': '', 'received_events_url': '', 'type': '',
+           'site_admin': False, 'name': '', 'company': '', 'blog': '', 'location': '', 'email': '', 'hireable': False,
+           'bio': '', 'twitter_username': '', 'public_repos': 0, 'public_gists': 0, 'followers': 0, 'following': 0,
+           'created_at': '', 'updated_at': ''}
         logger.info(f"Get GitHub {id_info}'s latest profile from GitHUb.")
         return now_github_profile
 

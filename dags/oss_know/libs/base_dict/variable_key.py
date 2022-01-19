@@ -23,3 +23,5 @@ TRANSFER_DATA_OS_INDEX_AND_CK_TBNAME="transfer_data_os_index_and_ck_tbname"
 REDIS_CLIENT_DATA = "redis_client_data"
 
 DURATION_OF_SYNC_GITHUB_PROFILES = "duration_of_sync_github_profiles"
+
+SYNC_PROFILES_TASK_NUM = "sync_profiles_task_num"

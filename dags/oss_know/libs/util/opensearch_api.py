@@ -145,7 +145,7 @@ class OpensearchAPI:
                                                                     id_info=github_id)
                 opensearch_client.index(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
                                         body={"search_key": {
-                                            'updated_at': datetime.datetime.now().timestamp()},
+                                            'updated_at': int(datetime.datetime.now().timestamp()*1000)},
                                             "raw_data": now_github_profile},
                                         refresh=True)
                 logger.info(f"Put the github {github_id}'s profile into opensearch.")
