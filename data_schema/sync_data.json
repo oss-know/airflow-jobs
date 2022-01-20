@@ -26,10 +26,6 @@
         "sync_timestamp": "1609430400",
         "sync_since_datetime": "2021-01-01T00:00:00+00:00",
         "sync_until_datetime": "2021-01-01T00:00:00+00:00"
-      },
-      "profiles": {
-        "sync_timestamp": "1609430400",
-        "sync_since_datetime": "2021-01-01T00:00:00+00:00"
       }
     },
     "gitee": {

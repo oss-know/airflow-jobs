@@ -144,9 +144,9 @@
             "author_email" : "fivestarsky@gmail.com",
             "committer_name" : "fivestarsky",
             "committer_email" : "fivestarsky@gmail.com",
-            "authored_date" : "2022-01-18T15:23:03+08:00",
+            "authored_date" : "2022-01-18T15:23:03Z",
             "authored_timestamp" : 1642490583,
-            "committed_date" : "2022-01-18T15:23:03+08:00",
+            "committed_date" : "2022-01-18T15:23:03Z",
             "committed_timestamp" : 1642490583,
             "files" : [
               {

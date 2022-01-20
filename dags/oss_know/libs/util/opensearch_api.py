@@ -140,13 +140,13 @@ class OpensearchAPI:
             if not current_profile_list:
                 github_api = GithubAPI()
                 session = requests.Session()
-                now_github_profile = github_api.get_github_profiles(http_session=session,
-                                                                    github_tokens_iter=github_tokens_iter,
-                                                                    id_info=github_id)
+                latest_github_profile = github_api.get_latest_github_profile(http_session=session,
+                                                                             github_tokens_iter=github_tokens_iter,
+                                                                             user_id=github_id)
                 opensearch_client.index(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
                                         body={"search_key": {
                                             'updated_at': int(datetime.datetime.now().timestamp()*1000)},
-                                            "raw_data": now_github_profile},
+                                            "raw_data": latest_github_profile},
                                         refresh=True)
                 logger.info(f"Put the github {github_id}'s profile into opensearch.")
             else:
@@ -273,33 +273,6 @@ class OpensearchAPI:
                                 body=check_update_info,
                                 refresh=True)
 
-    # 建立 github profile更新基准
-    def set_sync_github_profiles_check(self, opensearch_client, login, id):
-        now_time = datetime.datetime.now()
-        check_update_info = {
-            "search_key": {
-                "type": "github_profiles",
-                "update_time": now_time.strftime('%Y-%m-%dT00:00:00Z'),
-                "update_timestamp": now_time.timestamp(),
-                "login": login,
-                "id": id,
-            },
-            "github": {
-                "type": "github_profiles",
-                "login": login,
-                "id": id,
-                "profiles": {
-                    "login": login,
-                    "id": id,
-                    "sync_datetime": now_time.strftime('%Y-%m-%dT00:00:00Z'),
-                    "sync_timestamp": now_time.timestamp()
-                }
-            }
-        }
-
-        opensearch_client.index(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA,
-                                body=check_update_info,
-                                refresh=True)
 
     def bulk_github_pull_requests(self, github_pull_requests, opensearch_client, owner, repo):
         bulk_all_github_pull_requests = []

@@ -9,9 +9,7 @@ from airflow.models import Variable
 
 with DAG(
         dag_id='github_sync_profiles_v1',
-        schedule_interval=None,
-        # TODO：生产环境设定定时,更改schedule_interval的值
-        # schedule_interval='0 0 * * *',
+        schedule_interval='0 0 * * *',
         start_date=datetime(2000, 1, 1),
         catchup=False,
         tags=['github'],

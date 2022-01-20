@@ -6,7 +6,7 @@ from pandas import json_normalize
 from oss_know.libs.base_dict.variable_key import NEED_CK_TABLE_INFOS, CLICKHOUSE_DRIVER_INFO, TRANSFER_DATA_OS_INDEX_AND_CK_TBNAME
 
 with DAG(
-        dag_id='ck_transfer_data',
+        dag_id='init_ck_transfer_data',
         schedule_interval=None,
         start_date=datetime(2021, 1, 1),
         catchup=False,

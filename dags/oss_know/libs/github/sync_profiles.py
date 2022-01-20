@@ -1,8 +1,7 @@
 import datetime
-import redis
 import itertools
 import requests
-from oss_know.libs.util.base import get_opensearch_client
+from oss_know.libs.util.base import get_opensearch_client, get_redis_client
 from oss_know.libs.util.github_api import GithubAPI
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_PROFILE, OPENSEARCH_INDEX_CHECK_SYNC_DATA
 from oss_know.libs.base_dict.redis import STORAGE_HASH, STORAGE_IDS_SET, WORKING_HASH
@@ -10,16 +9,11 @@ from oss_know.libs.util.log import logger
 from opensearchpy import helpers as opensearch_helpers
 
 
-def get_redis_client(redis_client_infos):
-    redis_client = redis.Redis(host=redis_client_infos["HOST"], port=redis_client_infos["PORT"], db=0, decode_responses=True)
-    return redis_client
-
-
 def init_storage_pipeline(opensearch_conn_info, redis_client_info):
     '''Put GitHub profiles that need to be updated into dict named sync_github_profiles:storage_updated_hash of redis.'''
     opensearch_client = get_opensearch_client(opensearch_conn_info)
     redis_client = get_redis_client(redis_client_info)
-    working_updated_hash=redis_client.hgetall(WORKING_HASH)
+    working_updated_hash = redis_client.hgetall(WORKING_HASH)
 
     if not redis_client.hgetall(STORAGE_HASH) and not redis_client.hgetall(WORKING_HASH):
         existing_github_profiles = opensearch_helpers.scan(opensearch_client,
@@ -43,7 +37,8 @@ def init_storage_pipeline(opensearch_conn_info, redis_client_info):
                                                            )
         with redis_client.pipeline(transaction=False) as p:
             for existing_github_profile in existing_github_profiles:
-                if "updated_at" in existing_github_profile["_source"]['raw_data'] and existing_github_profile["_source"]['raw_data']["updated_at"]\
+                if "updated_at" in existing_github_profile["_source"]['raw_data'] and \
+                        existing_github_profile["_source"]['raw_data']["updated_at"] \
                         and existing_github_profile['_source']['raw_data']['id']:
                     p.hset(name=STORAGE_HASH, key=existing_github_profile['_source']['raw_data']['id'],
                            value=existing_github_profile['_source']['raw_data']['updated_at'])
@@ -61,14 +56,12 @@ def init_storage_pipeline(opensearch_conn_info, redis_client_info):
         redis_client.delete(WORKING_HASH)
 
 
-
 def sync_github_profiles(github_tokens, opensearch_conn_info, redis_client_info, duration_of_sync_github_profiles):
     '''Update GitHub profiles in dict named sync_github_profiles:storage_updated_hash of redis.'''
     github_tokens_iter = itertools.cycle(github_tokens)
     opensearch_client = get_opensearch_client(opensearch_conn_info)
     redis_client = get_redis_client(redis_client_info)
-    # end_time = (datetime.datetime.now() + datetime.timedelta(seconds=duration_of_sync_github_profiles["seconds"])).timestamp()
-    end_time = (datetime.datetime.now() + datetime.timedelta(milliseconds=5000)).timestamp()
+    end_time = (datetime.datetime.now() + datetime.timedelta(seconds=duration_of_sync_github_profiles["seconds"])).timestamp()
     while True:
         lua_cmd = redis_client.register_script(
             """
@@ -91,15 +84,15 @@ def sync_github_profiles(github_tokens, opensearch_conn_info, redis_client_info,
         try:
             github_api = GithubAPI()
             session = requests.Session()
-            latest_github_profile = github_api.get_github_profiles(http_session=session,
-                                                                   github_tokens_iter=github_tokens_iter,
-                                                                   id_info=storage_id)
+            latest_github_profile = github_api.get_latest_github_profile(http_session=session,
+                                                                         github_tokens_iter=github_tokens_iter,
+                                                                         user_id=storage_id)
             latest_profile_updated_at = latest_github_profile["updated_at"]
             if storage_updated_at != latest_profile_updated_at:
                 opensearch_client.index(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
                                         body={"search_key": {
-                                                   'updated_at': (datetime.datetime.now().timestamp()*1000)},
-                                    "raw_data": latest_github_profile},
+                                            'updated_at': (datetime.datetime.now().timestamp() * 1000)},
+                                            "raw_data": latest_github_profile},
                                         refresh=True)
                 logger.info(f"Success put updated {storage_id}'s github profiles into opensearch.")
             else:
@@ -112,4 +105,3 @@ def sync_github_profiles(github_tokens, opensearch_conn_info, redis_client_info,
             if datetime.datetime.now().timestamp() > end_time:
                 logger.info('The connection has timed out.')
                 break
-

@@ -39,26 +39,27 @@ class GithubAPI:
 
         return res
 
-    def get_github_profiles(self, http_session, github_tokens_iter, id_info):
+    def get_latest_github_profile(self, http_session, github_tokens_iter, user_id):
         """Get GitHub user's latest profile from GitHUb."""
         url = "https://api.github.com/user/{id_info}".format(
-            id_info=id_info)
+            id_info=user_id)
         headers = copy.deepcopy(self.github_headers)
         headers.update({'Authorization': 'token %s' % next(github_tokens_iter)})
         params = {}
         try:
             req = do_get_result(http_session, url, headers, params)
-            now_github_profile = req.json()
+            latest_github_profile = req.json()
         except TypeError as e:
             logger.error(f"捕获airflow抛出的TypeError:{e}")
-            return {'login': '', 'id': id_info, 'node_id': '', 'avatar_url': '', 'gravatar_id': '', 'url': '', 'html_url': '',
+            return {'login': '', 'id': user_id, 'node_id': '', 'avatar_url': '', 'gravatar_id': '', 'url': '', 'html_url': '',
            'followers_url': '', 'following_url': '', 'gists_url': '', 'starred_url': '', 'subscriptions_url': '',
            'organizations_url': '', 'repos_url': '', 'events_url': '', 'received_events_url': '', 'type': '',
            'site_admin': False, 'name': '', 'company': '', 'blog': '', 'location': '', 'email': '', 'hireable': False,
            'bio': '', 'twitter_username': '', 'public_repos': 0, 'public_gists': 0, 'followers': 0, 'following': 0,
            'created_at': '', 'updated_at': ''}
-        logger.info(f"Get GitHub {id_info}'s latest profile from GitHUb.")
-        return now_github_profile
+        else:
+            logger.info(f"Get GitHub {user_id}'s latest profile from GitHUb.")
+            return latest_github_profile
 
     def get_github_issues_timeline(self, http_session, github_tokens_iter, owner, repo, number, page):
         url = "https://api.github.com/repos/{owner}/{repo}/issues/{number}/timeline".format(
