@@ -1,198 +1,107 @@
-import time
 import datetime
 import itertools
 import requests
-from opensearchpy import OpenSearch
+from oss_know.libs.util.base import get_opensearch_client, get_redis_client
 from oss_know.libs.util.github_api import GithubAPI
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_PROFILE, OPENSEARCH_INDEX_CHECK_SYNC_DATA
+from oss_know.libs.base_dict.redis import STORAGE_HASH, STORAGE_IDS_SET, WORKING_HASH
 from oss_know.libs.util.log import logger
-from oss_know.libs.util.opensearch_api import OpensearchAPI
+from opensearchpy import helpers as opensearch_helpers
 
 
-class SyncGithubProfilesException(Exception):
-    def __init__(self, message, status):
-        super().__init__(message, status)
-        self.message = message
-        self.status = status
+def init_storage_pipeline(opensearch_conn_info, redis_client_info):
+    '''Put GitHub profiles that need to be updated into dict named sync_github_profiles:storage_updated_hash of redis.'''
+    opensearch_client = get_opensearch_client(opensearch_conn_info)
+    redis_client = get_redis_client(redis_client_info)
+    working_updated_hash = redis_client.hgetall(WORKING_HASH)
+
+    if not redis_client.hgetall(STORAGE_HASH) and not redis_client.hgetall(WORKING_HASH):
+        existing_github_profiles = opensearch_helpers.scan(opensearch_client,
+                                                           scroll="30m",
+                                                           preserve_order=True,
+                                                           index=OPENSEARCH_INDEX_GITHUB_PROFILE,
+                                                           query={
+                                                               "query": {
+                                                                   "match_all": {}
+                                                               },
+                                                               "_source": ["raw_data.id", "raw_data.updated_at"],
+                                                               "sort": [
+                                                                   {
+                                                                       "raw_data.updated_at": {
+                                                                           "order": "asc"
+                                                                       }
+                                                                   }
+                                                               ]
+                                                           },
+                                                           doc_type="_doc"
+                                                           )
+        with redis_client.pipeline(transaction=False) as p:
+            for existing_github_profile in existing_github_profiles:
+                if "updated_at" in existing_github_profile["_source"]['raw_data'] and \
+                        existing_github_profile["_source"]['raw_data']["updated_at"] \
+                        and existing_github_profile['_source']['raw_data']['id']:
+                    p.hset(name=STORAGE_HASH, key=existing_github_profile['_source']['raw_data']['id'],
+                           value=existing_github_profile['_source']['raw_data']['updated_at'])
+                    p.sadd(STORAGE_IDS_SET, existing_github_profile['_source']['raw_data']['id'])
+            p.execute()
+
+    elif working_updated_hash:
+        redis_client.hmset(name=STORAGE_HASH, mapping=working_updated_hash)
+        storage_updated_ids_set = redis_client.hkeys(WORKING_HASH)
+
+        with redis_client.pipeline(transaction=False) as p:
+            for storage_updated_id in storage_updated_ids_set:
+                p.sadd(STORAGE_IDS_SET, storage_updated_id)
+            p.execute()
+        redis_client.delete(WORKING_HASH)
 
 
-def sync_github_profiles(github_tokens, opensearch_conn_info):
-    """Update existing GitHub profiles by id."""
-
+def sync_github_profiles(github_tokens, opensearch_conn_info, redis_client_info, duration_of_sync_github_profiles):
+    '''Update GitHub profiles in dict named sync_github_profiles:storage_updated_hash of redis.'''
     github_tokens_iter = itertools.cycle(github_tokens)
-
-    opensearch_client = OpenSearch(
-        hosts=[{'host': opensearch_conn_info["HOST"], 'port': opensearch_conn_info["PORT"]}],
-        http_compress=True,
-        http_auth=(opensearch_conn_info["USER"], opensearch_conn_info["PASSWD"]),
-        use_ssl=True,
-        verify_certs=False,
-        ssl_assert_hostname=False,
-        ssl_show_warn=False
-    )
-    #
-    the_last_profile = opensearch_client.search(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
-                                                body={
-                                                    "query": {
-                                                        "match_all": {}
-                                                    },
-                                                    "collapse": {
-                                                        "field": "login.keyword"
-                                                    },
-                                                    "size": 1,
-                                                    "sort": [
-                                                        {
-                                                            "id": {
-                                                                "order": "asc"
-                                                            }
-                                                        }
-                                                    ]
-                                                }
-                                                )
-    the_last_github_id = the_last_profile["hits"]["hits"][0]["_source"]["id"]
-
-    # 取得上次更新github profile 的位置
-    has_profile_check = opensearch_client.search(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA,
-                                                 body={
-                                                     "size": 1,
-                                                     "track_total_hits": True,
-                                                     "query": {
-                                                         "bool": {
-                                                             "must": [
-                                                                 {
-                                                                     "term": {
-                                                                         "search_key.type.keyword": {
-                                                                             "value": "github_profiles"
-                                                                         }
-                                                                     }
-                                                                 }
-                                                             ]
-                                                         }
-                                                     },
-                                                     "sort": [
-                                                         {
-                                                             "search_key.update_timestamp": {
-                                                                 "order": "desc"
-                                                             }
-                                                         }
-                                                     ]
-                                                 }
-                                                 )
-
-    existing_github_id = None
-    if len(has_profile_check["hits"]["hits"]) != 0:
-        existing_github_id = has_profile_check["hits"]["hits"][0]["_source"]["github"]["id"]
-        if the_last_github_id == existing_github_id:
-            existing_github_id = None
-    else:
-        raise SyncGithubProfilesException("没有得到上次github profiles同步时间")
-    # 将折叠（collapse）查询opensearch（去重排序）的结果作为查询更新的数据源
-    existing_github_profiles = opensearch_client.search(
-        index=OPENSEARCH_INDEX_GITHUB_PROFILE,
-        body={
-            "query": {
-                "match_all": {}
-            },
-            "collapse": {
-                "field": "id"
-            },
-            "sort": [
-                {
-                    "id": {
-                        "order": "desc"
-                    }
-                },
-                {
-                    "updated_at": {
-                        "order": "desc"
-                    }
-                }
-            ]
-        }
-    )
-    if not existing_github_profiles:
-        logger.error("There's no  existing github profiles")
-        return "There's no  existing github profiles"
-
-    import json
-    existing_github_profiles = json.dumps(existing_github_profiles)
-    existing_github_profiles = json.loads(existing_github_profiles)["hits"]["hits"]
-    next_profile_login = None
-
-    nowTime = datetime.datetime.now() + datetime.timedelta(0)
-    start_time = nowTime.strftime("%Y-%m-%d") + " {}:00:00".format(0)
-    end_time = nowTime.strftime("%Y-%m-%d") + " {}:00:00".format(2)
-    timeArray_start_time = time.strptime(start_time, "%Y-%m-%d %H:%M:%S")
-    timeArray_end_time = time.strptime(end_time, "%Y-%m-%d %H:%M:%S")
-
-    github_api = GithubAPI()
-    session = requests.Session()
-    opensearch_api = OpensearchAPI()
-
-    for existing_github_profile in existing_github_profiles:
-        next_profile_id = existing_github_profile["_source"]["id"]
-        # 获取当前时间的时间戳
-        timeArray_nowTime = time.strptime(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                                          "%Y-%m-%d %H:%M:%S")
-        # 判断当前时间是否为查询有效时间（当日零点到凌晨两点之间）
-        flag = time.mktime(timeArray_start_time) < time.mktime(timeArray_nowTime) and time.mktime(
-            timeArray_nowTime) < time.mktime(timeArray_end_time)
-        if not flag or the_last_github_id == next_profile_id:
-            opensearch_api.set_sync_github_profiles_check(opensearch_client=opensearch_client, login=next_profile_login,
-                                           id=next_profile_id)
-            logger.info("Invalid Runtime")
-            return "Invalid Runtime"
-
-        if (existing_github_id is None) or (existing_github_id <= next_profile_id):
-            # 获取OpenSearch中最新的profile的"updated_at"信息
-            existing_github_profile_user_updated_at = existing_github_profile["_source"]["updated_at"]
-            # 根据上述"login"信息获取git上的profile信息中的"updated_at1"信息
-            next_profile_login = existing_github_profile["_source"]["login"]
-
-            now_github_profile = github_api.get_github_profiles(http_session=session,
-                                                                github_tokens_iter=github_tokens_iter,
-                                                                id_info=next_profile_id)
-
-            now_github_profile = json.dumps(now_github_profile)
-            now_github_profile_user_updated_at = json.loads(now_github_profile)["updated_at"]
-
-            # 将获取两次的"updated_at"信息对比
-            # 一致：不作处理
-            # 不一致：将新的清洗过的profile信息添加到OpenSearch中
-            if existing_github_profile_user_updated_at != now_github_profile_user_updated_at:
-                for key in ["name", "company", "blog", "location", "email", "hireable", "bio", "twitter_username"]:
-                    if now_github_profile[key] is None:
-                        now_github_profile[key]= ''
+    opensearch_client = get_opensearch_client(opensearch_conn_info)
+    redis_client = get_redis_client(redis_client_info)
+    end_time = (datetime.datetime.now() + datetime.timedelta(seconds=duration_of_sync_github_profiles["seconds"])).timestamp()
+    while True:
+        lua_cmd = redis_client.register_script(
+            """
+            local storage_id = redis.pcall('spop',KEYS[1])
+            if storage_id == "nil" then
+                return storage_id
+            end
+            local updated_at =  redis.pcall('hget',KEYS[2],storage_id)
+            redis.pcall('hset',KEYS[3],storage_id,updated_at)
+            redis.pcall('hdel',KEYS[2],storage_id)
+            return storage_id
+            """
+        )
+        storage_id = lua_cmd(keys=[STORAGE_IDS_SET, STORAGE_HASH, WORKING_HASH])
+        if not storage_id:
+            logger.info("There's no more id in storage_ids_set.")
+            break
+        logger.info(f'storage_id:{storage_id}')
+        storage_updated_at = redis_client.hget(WORKING_HASH, storage_id)
+        try:
+            github_api = GithubAPI()
+            session = requests.Session()
+            latest_github_profile = github_api.get_latest_github_profile(http_session=session,
+                                                                         github_tokens_iter=github_tokens_iter,
+                                                                         user_id=storage_id)
+            latest_profile_updated_at = latest_github_profile["updated_at"]
+            if storage_updated_at != latest_profile_updated_at:
                 opensearch_client.index(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
-                                        body=now_github_profile,
+                                        body={"search_key": {
+                                            'updated_at': (datetime.datetime.now().timestamp() * 1000)},
+                                            "raw_data": latest_github_profile},
                                         refresh=True)
-                logger.info(f"Success put updated {next_profile_login}'s github profiles into opensearch.")
+                logger.info(f"Success put updated {storage_id}'s github profiles into opensearch.")
             else:
-                logger.info(f"{next_profile_login}'s github profiles of opensearch is latest.")
-
-    return "END::sync_github_profiles"
-
-
-# TODO: 传入用户的profile信息，获取用户的location、company、email，与晨琪对接
-def github_profile_data_source(now_github_profile):
-    import json
-    now_github_profile = json.dumps(now_github_profile)
-    # todo: the print statements just for testing, w can ignore them
-    now_github_profile_user_company = json.loads(now_github_profile)["company"]
-    if now_github_profile_user_company is not None:
-        print("now_github_profile_user_company")
-        print(now_github_profile_user_company)
-
-    now_github_profile_user_location = json.loads(now_github_profile)["location"]
-    if now_github_profile_user_location is not None:
-        print("now_github_profile_user_location")
-        print(now_github_profile_user_location)
-
-    now_github_profile_user_email = json.loads(now_github_profile)["email"]
-    if now_github_profile_user_email is not None:
-        print("now_github_profile_user_email")
-        print(now_github_profile_user_email)
-    return "与晨琪对接哈"
-
-
-
+                logger.info(f"{storage_id}'s github profiles of opensearch is latest.")
+        except Exception as e:
+            logger.error(f"Failed sync_github_profiles,the exception message: {e}")
+        else:
+            redis_client.hdel(WORKING_HASH, storage_id)
+        finally:
+            if datetime.datetime.now().timestamp() > end_time:
+                logger.info('The connection has timed out.')
+                break
