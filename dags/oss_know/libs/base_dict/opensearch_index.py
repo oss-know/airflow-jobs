@@ -7,8 +7,6 @@ OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS = "github_issues_comments"
 OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE = "github_issues_timeline"
 OPENSEARCH_INDEX_CHECK_SYNC_DATA = "check_sync_data"
 OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS = "github_pull_requests"
-
-
 OPENSEARCH_INDEX_GITHUB_PROFILE = "github_profile"
-OPEN_SEARCH_GITHUB_PROFILE_INDEX = "github_profile"
+
 
