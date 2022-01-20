@@ -84,6 +84,7 @@ def init_sync_github_issues_timeline(github_tokens, opensearch_conn_info, owner,
         number = now_item["_source"]["raw_data"]["number"]
         for page in range(1, 10000):
             time.sleep(random.uniform(0.01, 0.02))
+            
             req = github_api.get_github_issues_timeline(req_session, github_tokens_iter, owner, repo, number,
                                                         page)
             one_page_github_issues_timeline = req.json()
