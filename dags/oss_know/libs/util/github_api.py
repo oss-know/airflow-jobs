@@ -41,8 +41,7 @@ class GithubAPI:
 
     def get_latest_github_profile(self, http_session, github_tokens_iter, user_id):
         """Get GitHub user's latest profile from GitHUb."""
-        url = "https://api.github.com/user/{id_info}".format(
-            id_info=user_id)
+        url = f"https://api.github.com/user/{user_id}"
         headers = copy.deepcopy(self.github_headers)
         headers.update({'Authorization': 'token %s' % next(github_tokens_iter)})
         params = {}
