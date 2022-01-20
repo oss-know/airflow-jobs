@@ -55,7 +55,7 @@ class GithubAPI:
            'organizations_url': '', 'repos_url': '', 'events_url': '', 'received_events_url': '', 'type': '',
            'site_admin': False, 'name': '', 'company': '', 'blog': '', 'location': '', 'email': '', 'hireable': False,
            'bio': '', 'twitter_username': '', 'public_repos': 0, 'public_gists': 0, 'followers': 0, 'following': 0,
-           'created_at': '', 'updated_at': ''}
+           'created_at': '1970-01-01T00:00:00Z', 'updated_at': '1970-01-01T00:00:00Z'}
         else:
             logger.info(f"Get GitHub {user_id}'s latest profile from GitHUb.")
             return latest_github_profile
