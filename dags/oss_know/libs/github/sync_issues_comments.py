@@ -71,8 +71,8 @@ def sync_github_issues_comments(github_tokens, opensearch_conn_info, owner, repo
 
         for page in range(1, 10000):
             # Token sleep
-            time.sleep(random.uniform(0.1, 0.2))
-
+            time.sleep(random.uniform(0.01, 0.02))
+            
             req = github_api.get_github_issues_comments(session, github_tokens_iter, owner, repo, issues_number, page)
             one_page_github_issues_comments = req.json()
 
