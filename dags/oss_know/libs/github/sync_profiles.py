@@ -37,8 +37,7 @@ def init_storage_pipeline(opensearch_conn_info, redis_client_info):
                                                            )
         with redis_client.pipeline(transaction=False) as p:
             for existing_github_profile in existing_github_profiles:
-                if "updated_at" in existing_github_profile["_source"]['raw_data'] and \
-                        existing_github_profile["_source"]['raw_data']["updated_at"] \
+                if existing_github_profile["_source"]['raw_data']["updated_at"] != '1970-01-01T00:00:00Z' \
                         and existing_github_profile['_source']['raw_data']['id']:
                     p.hset(name=STORAGE_HASH, key=existing_github_profile['_source']['raw_data']['id'],
                            value=existing_github_profile['_source']['raw_data']['updated_at'])
@@ -61,7 +60,8 @@ def sync_github_profiles(github_tokens, opensearch_conn_info, redis_client_info,
     github_tokens_iter = itertools.cycle(github_tokens)
     opensearch_client = get_opensearch_client(opensearch_conn_info)
     redis_client = get_redis_client(redis_client_info)
-    end_time = (datetime.datetime.now() + datetime.timedelta(seconds=duration_of_sync_github_profiles["seconds"])).timestamp()
+    end_time = (datetime.datetime.now() + datetime.timedelta(
+        seconds=duration_of_sync_github_profiles["seconds"])).timestamp()
     while True:
         lua_cmd = redis_client.register_script(
             """
