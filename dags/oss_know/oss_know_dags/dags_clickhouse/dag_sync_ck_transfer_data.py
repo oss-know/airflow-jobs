@@ -31,10 +31,10 @@ with DAG(
         table_name = params["CK_TABLE_NAME"]
         opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
         clickhouse_server_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
-        transfer_data = sync_ck_transfer_data.transfer_data(clickhouse_server_info=clickhouse_server_info,
-                                                            opensearch_index=opensearch_index,
-                                                            table_name=table_name,
-                                                            opensearch_conn_datas=opensearch_conn_datas)
+        transfer_data = sync_ck_transfer_data.sync_transfer_data(clickhouse_server_info=clickhouse_server_info,
+                                                                 opensearch_index=opensearch_index,
+                                                                 table_name=table_name,
+                                                                 opensearch_conn_datas=opensearch_conn_datas)
         # sync_ck_transfer_data.get_data_from_opensearch(opensearch_index=opensearch_index,
         #                                                opensearch_conn_datas=opensearch_conn_datas,
         #                                                clickhouse_table=table_name

@@ -1,7 +1,6 @@
 import datetime
 import time
 import numpy
-import json
 from loguru import logger
 from opensearchpy import helpers
 from pandas import json_normalize
@@ -54,6 +53,8 @@ def alter_data_type(row):
         row = "null"
     elif isinstance(row, bool):
         row = int(row)
+    else:
+        pass
     return row
 
 
@@ -66,7 +67,6 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
     fields = get_table_structure(table_name=table_name, ck=ck)
     opensearch_datas = get_data_from_opensearch(index=opensearch_index,
                                                 opensearch_conn_datas=opensearch_conn_datas)
-    # sql = f"INSERT INTO {table_name} VALUES"
     max_timestamp = 0
     for os_data in opensearch_datas[0]:
         updated_at = os_data["_source"]["search_key"]["updated_at"]
@@ -74,17 +74,17 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
             max_timestamp = updated_at
         df = json_normalize(os_data["_source"])
         dict_data = parse_data(df)
-        fields_have_no_data = []
+        except_fields = []
         for field in fields:
             if not dict_data.get(field):
-                fields_have_no_data.append(f'`{field}`')
+                except_fields.append(f'`{field}`')
             if dict_data.get(field) and fields.get(field) == 'DateTime64(3)':
-                dict_data[field] = iso8601_to_timestamp(dict_data[field])
+                dict_data[field] = utc_timestamp(dict_data[field])
 
-        # 这里fields_have_no_data 里存储的就是表结构中有的fields 而数据中没有的字段
-        if fields_have_no_data:
-            logger.info(f'缺失的字段列表：{fields_have_no_data}')
-            except_fields = f'EXCEPT({",".join(fields_have_no_data)})'
+        # 这里except_fields 里存储的就是表结构中有的fields 而数据中没有的字段
+        if except_fields:
+            logger.info(f'缺失的字段列表：{except_fields}')
+            except_fields = f'EXCEPT({",".join(except_fields)})'
             sql = f"INSERT INTO {table_name} (* {except_fields}) VALUES"
         else:
             sql = f"INSERT INTO {table_name} VALUES"
@@ -123,53 +123,44 @@ def get_data_from_opensearch(index, opensearch_conn_datas):
 
     results = helpers.scan(client=opensearch_client, query={
         "query": {"match_all": {}}
-    },
-                           index=index)
+    }, index=index)
     return results, opensearch_client
 
 
 def parse_data(df):
     # 这个是最终插入ck的数据字典
     dict_data = {}
-    data_is_none_list = []
     for index, row in df.iloc[0].iteritems():
         # 去除以raw_data开头的字段
         if index.startswith(CLICKHOUSE_RAW_DATA):
             index = index[9:]
+        # 只要是空的就跳过
+        if not row:
+            continue
         # 第一步的转化
         row = alter_data_type(row)
-        # 这里的字符串都转换成在ck中能够使用函数解析json的标准格式
-        if isinstance(row, str):
-            row.replace(": ", ":")
-        data_name = ""
+        # # 这里的字符串都转换成在ck中能够使用函数解析json的标准格式
+        # if isinstance(row, str):
+        #     row.replace(": ", ":")
         # 解决嵌套array
         if isinstance(row, list):
             # 数组中是字典
-            # 这里会先判断解析的第一层列表是否为空的
-            if row:
-                if isinstance(row[0], dict):
-                    for key in row[0]:
-                        data_name = f'{index}.{key}'
-                        dict_data[data_name] = []
-                    for dictt in row:
-                        for key in dictt:
-                            dictt_data = alter_data_type(dictt.get(key))
-                            dict_data.get(f'{index}.{key}').append(dictt_data)
-                else:
-                    # 这种是数组类型
-                    data_name = f'{index}'
-                    dict_data[data_name] = row
+            if isinstance(row[0], dict):
+                for key in row[0]:
+                    data_name = f'{index}.{key}'
+                    dict_data[data_name] = []
+                for data in row:
+                    for key in data:
+                        filter_data = alter_data_type(data.get(key))
+                        dict_data.get(f'{index}.{key}').append(filter_data)
             else:
-                # list为空
-                # list为空那么 这里的所有key和value 都会有问题
-                # 所以key和value不会记录在dict_data 的数据中
-                # 这种把index记录下来
-                data_is_none_list.append(index)
+                # 这种是数组类型
+                data_name = f'{index}'
+                dict_data[data_name] = row
         else:
             # 这种是非list类型
             data_name = f'{index}'
             dict_data[data_name] = row
-
     return dict_data
 
 
@@ -187,6 +178,6 @@ def get_table_structure(table_name, ck: CKServer):
     return fields_structure_dict
 
 
-def iso8601_to_timestamp(date):
+def utc_timestamp(date):
     format_date = time.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
     return int(time.mktime(format_date) * 1000)
