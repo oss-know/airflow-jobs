@@ -172,18 +172,19 @@ class OpensearchAPI:
     def bulk_github_issues_comments(self, opensearch_client, issues_comments, owner, repo, number):
         bulk_all_github_issues_comments = []
 
-        template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS,
-                    "_source": {"search_key": {"owner": owner, "repo": repo, "number": number,
-                                               'updated_at': int(datetime.datetime.now().timestamp() * 1000)},
-                                "raw_data": None}}
-        commit_comment_item = copy.deepcopy(template)
-        commit_comment_item["_source"]["raw_data"] = issues_comments
-        bulk_all_github_issues_comments.append(commit_comment_item)
-        logger.info(f"add init sync github issues comments number:{number}")
+        for val in issues_comments:
+            template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS,
+                        "_source": {"search_key": {"owner": owner, "repo": repo, "number": number,
+                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000)},
+                                    "raw_data": None}}
+            commit_comment_item = copy.deepcopy(template)
+            commit_comment_item["_source"]["raw_data"] = val
+            bulk_all_github_issues_comments.append(commit_comment_item)
+            logger.info(f"add init sync github issues comments number:{number}")
 
-        success, failed = opensearch_helpers.bulk(client=opensearch_client, actions=bulk_all_github_issues_comments)
-        logger.info(
-            f"now page:{len(bulk_all_github_issues_comments)} sync github issues comments success:{success} & failed:{failed}")
+            success, failed = opensearch_helpers.bulk(client=opensearch_client, actions=bulk_all_github_issues_comments)
+            logger.info(
+                f"now page:{len(bulk_all_github_issues_comments)} sync github issues comments success:{success} & failed:{failed}")
 
     # 建立 owner/repo github issues 更新基准
     def set_sync_github_issues_check(self, opensearch_client, owner, repo):
