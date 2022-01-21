@@ -42,10 +42,12 @@ def sync_git_check_update_info(opensearch_client, owner, repo, head_commit):
 
 def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, git_save_local_path=None):
     repo_path = f'{git_save_local_path["PATH"]}/{owner}/{repo}'
+
     git_repo = None
     # 判断有没有这个仓库
     try:
         if os.path.exists(repo_path):
+            print(repo_path, "-----------------------------------------------------")
             git_repo = Repo(repo_path)
             # 如果本地已经有之前克隆的项目，执行pull
             git_repo.git.pull()
