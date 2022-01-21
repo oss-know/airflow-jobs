@@ -78,9 +78,9 @@ def init_github_issues_comments(github_tokens, opensearch_conn_info, owner, repo
                                             },
                                             doc_type="_doc"
                                             )
-    need_init_sync_all_issues = []
+    need_init_comments_all_issues = []
     for issues_item in issues_results:
-        need_init_sync_all_issues.append(issues_item)
+        need_init_comments_all_issues.append(issues_item)
 
     # 提取需要同步的所有issues
 
@@ -108,11 +108,10 @@ def init_github_issues_comments(github_tokens, opensearch_conn_info, owner, repo
     opensearch_api = OpensearchAPI()
     github_api = GithubAPI()
 
-    for issue_item in need_init_sync_all_issues:
+    for issue_item in need_init_comments_all_issues:
         number = issue_item["_source"]["raw_data"]["number"]
         for page in range(1, 10000):
-            time.sleep(random.uniform(0.1, 0.2))
-
+            time.sleep(random.uniform(0.01, 0.02))
             req = github_api.get_github_issues_comments(http_session=req_session,
                                                         github_tokens_iter=github_tokens_iter,
                                                         owner=owner, repo=repo, number=number, page=page)
