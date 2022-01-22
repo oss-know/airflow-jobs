@@ -10,8 +10,6 @@ from oss_know.libs.base_dict.variable_key import NEED_INIT_GITHUB_PROFILES_REPOS
 @provide_session
 def cleanup_xcom(session=None):
     dag_id = 'github_init_profile_v1'
-    print("===========================================testXCom")
-    print(XCom.dag_id)
     session.query(XCom).filter(XCom.dag_id == dag_id).delete()
 
 

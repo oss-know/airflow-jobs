@@ -1,9 +1,10 @@
 import urllib3
-
+import redis
 from tenacity import *
 from opensearchpy import OpenSearch
 
 from ..util.log import logger
+
 
 class HttpGetException(Exception):
     def __init__(self, message, status):
@@ -45,3 +46,9 @@ def get_opensearch_client(opensearch_conn_infos):
         ssl_show_warn=False
     )
     return client
+
+
+def get_redis_client(redis_client_info):
+    redis_client = redis.Redis(host=redis_client_info["HOST"], port=redis_client_info["PORT"], db=0,
+                               decode_responses=True)
+    return redis_client
