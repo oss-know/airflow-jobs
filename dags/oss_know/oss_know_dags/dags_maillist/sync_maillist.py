@@ -45,10 +45,9 @@ with DAG(
         task_name = mail_list["project_name"]
         i = 0
         for mail in mail_list["mail_lists"]:
-            i += 1
             op_do_sync_maillist = PythonOperator(
-                task_id=f'sync_maillist_{task_name + str(i)}',
-                python_callable=do_sync_maillist,
+                task_id=f'sync_maillist_{mail["list_name"]}',
+            python_callable=do_sync_maillist,
                 op_kwargs={'params': dict({"project_name": task_name}.items() | mail.items())},
             )
             op_scheduler_init_sync_maillist >> op_do_sync_maillist
