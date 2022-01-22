@@ -30,6 +30,7 @@ with DAG(
         opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
 
 
+
         sync_archive(opensearch_conn_info, **params)
         return 'End::sync_maillist'
 
@@ -41,9 +42,13 @@ with DAG(
     mail_lists = Variable.get(MAIL_LISTS, deserialize_json=True)
 
     for mail_list in mail_lists:
-        op_do_sync_maillist = PythonOperator(
-            task_id=f'sync_maillist_{mail_list["project_name"]}',
-            python_callable=do_sync_maillist,
-            op_kwargs={'params': mail_list},
-        )
-        op_scheduler_init_sync_maillist >> op_do_sync_maillist
+        task_name = mail_list["project_name"]
+        i = 0
+        for mail in mail_list["mail_lists"]:
+            i += 1
+            op_do_sync_maillist = PythonOperator(
+                task_id=f'sync_maillist_{task_name + str(i)}',
+                python_callable=do_sync_maillist,
+                op_kwargs={'params': dict({"project_name": task_name}.items() | mail.items())},
+            )
+            op_scheduler_init_sync_maillist >> op_do_sync_maillist
