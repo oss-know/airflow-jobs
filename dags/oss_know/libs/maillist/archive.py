@@ -3,7 +3,7 @@ import requests
 import shutil
 import gzip
 import json
-from os import makedirs, remove
+from os import makedirs, remove, path
 from opensearchpy import OpenSearch
 
 from dateutil.relativedelta import relativedelta
@@ -13,19 +13,21 @@ from oss_know.libs.util.opensearch_api import OpensearchAPI
 
 
 class EmailArchive:
-    def __init__(self, project_name, url_prefix, start_since=None):
+    def __init__(self, project_name, list_name, url_prefix, start_since=None):
         self.project_name = project_name
-        self.dirpath = project_name  # TODO Is this proper?(dirpath should just be temp)
+        self.dirpath = path.join(project_name, list_name)  # TODO Is this proper?(dirpath should just be temp)
         self.url_prefix = url_prefix
         self.start_since = start_since
+        self.list_name = list_name
+
 
     def get_res(self, since=None, until=None):
         pass
 
 
 class FileArchive(EmailArchive):
-    def __init__(self, project_name, url_prefix, months=[], url_format='', start_since=None, file_ext=None):
-        super().__init__(project_name, url_prefix, start_since)
+    def __init__(self, project_name, list_name, url_prefix, months=[], url_format='', start_since=None, file_ext=None):
+        super().__init__(project_name, list_name, url_prefix, start_since)
 
         self.url_format = url_format
         self.file_ext = file_ext
@@ -97,7 +99,7 @@ def sync_archive(opensearch_conn_info, **maillist_params):
     archive_type = maillist_params['archive_type']
 
     kwargs = {}
-    for essential_key in ['project_name', 'url_prefix']:
+    for essential_key in ['project_name', 'list_name','url_prefix']:
         kwargs[essential_key] = maillist_params[essential_key]
 
     repo = None
@@ -113,11 +115,12 @@ def sync_archive(opensearch_conn_info, **maillist_params):
             kwargs['file_ext'] = maillist_params['file_ext']
         archive = FileArchive(**kwargs)
         archive.get_res()
-        repo = MBox(uri=archive.url_prefix, dirpath=archive.project_name)
+        repo = MBox(uri=archive.url_prefix, dirpath=archive.dirpath)
     elif archive_type == 'pipermail':
+
         archive = EmailArchive(**kwargs)
         archive.get_res()
-        repo = Pipermail(url=archive.url_prefix, dirpath=archive)
+        repo = Pipermail(url=archive.url_prefix, dirpath=archive.dirpath)
 
 
     opensearch_api = OpensearchAPI()
@@ -136,10 +139,10 @@ def sync_archive(opensearch_conn_info, **maillist_params):
         messages.append(message)
         num += 1
         if num >= 1000:
-            opensearch_api.bulk_maillist(opensearch_client, archive.project_name, messages)
+            opensearch_api.bulk_maillist(opensearch_client, archive.project_name, archive.list_name, messages)
             num = 0
             messages = []
 
     if messages:
-        opensearch_api.bulk_maillist(opensearch_client, archive.project_name, messages)
+        opensearch_api.bulk_maillist(opensearch_client, archive.project_name, archive.list_name, messages)
 

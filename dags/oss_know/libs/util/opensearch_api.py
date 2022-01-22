@@ -110,13 +110,18 @@ class OpensearchAPI:
 
         return success, failed
 
-    def bulk_maillist(self, opensearch_client, project_name, emails):
+    def bulk_maillist(self, opensearch_client, project_name, list_name, emails):
         bulk_all_datas = []
+        now_time = datetime.datetime.now()
 
         for val in emails:
             template = {"_index": OPENSEARCH_INDEX_MAILLISTS,
-                        "_source": {"search_key": {"project_name": project_name},
-                                    "raw_data": None}}
+                        "_source": {"search_key": {
+                            "project_name": project_name,
+                            "list_name": list_name,
+                            "update_time": now_time.strftime('%Y-%m-%dT00:00:00Z'),
+                            "update_timestamp": now_time.timestamp()},
+                            "raw_data": None}}
             append_item = copy.deepcopy(template)
             append_item["_source"]["raw_data"] = val
             bulk_all_datas.append(append_item)
