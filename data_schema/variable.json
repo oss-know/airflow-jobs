@@ -116,7 +116,14 @@
       "partition_by": "",
       "order_by": [
         "search_key.owner",
-        "search_key.repo"
+        "search_key
+          "total": {
+            "insertions": 12,
+            "deletions": 0,
+            "lines": 12,
+            "files": 1
+          },
+          "type": "commit".repo"
       ],
       "parse_data": {
           "search_key" : {

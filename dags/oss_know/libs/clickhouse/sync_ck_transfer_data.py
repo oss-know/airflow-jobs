@@ -13,6 +13,7 @@ from oss_know.libs.util.clickhouse_driver import CKServer
 
 
 
+
 def get_data_from_opensearch(opensearch_index, opensearch_conn_datas, clickhouse_table):
     opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
     # 获取上一次的检查点
@@ -64,7 +65,9 @@ def get_data_from_opensearch(opensearch_index, opensearch_conn_datas, clickhouse
             "bool": {
                 "filter": [
                     {"range": {
+
                         "search_key.updated_at": {
+
 
                             "gt": last_check_timestamp
                         }
@@ -74,6 +77,7 @@ def get_data_from_opensearch(opensearch_index, opensearch_conn_datas, clickhouse
         }
     }, index=opensearch_index)
     return results, opensearch_client
+
 
 
 
@@ -120,8 +124,3 @@ def sync_transfer_data(clickhouse_server_info, opensearch_index, table_name, ope
                    clickhouse_table=table_name,
                    updated_at=max_timestamp)
     ck.close()
-    # transfer_data(clickhouse_server_info, opensearch_index, table_name, opensearch_conn_datas)
-
-
-
-
