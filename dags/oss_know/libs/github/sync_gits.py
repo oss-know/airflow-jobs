@@ -29,13 +29,13 @@ def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, gi
             for commit in git_repo.iter_commits():
                 before_pull.append(commit.hexsha)
             # 如果本地已经有之前克隆的项目，执行pull
-            print(f'{len(before_pull)}********************************************************before{before_pull}')
-            xx = git_repo.git.pull()
-            # time.sleep(1)
-            print(f'xx:{xx}-------------------------------------------------------')
+            logger.info(f'在git pull之前的commit数量:{len(before_pull)}')
+            pull_response = git_repo.git.pull()
+            print(f'git pull 之后的返回结果:{pull_response}')
             for commit in git_repo.iter_commits():
                 after_pull.append(commit.hexsha)
-            print(f'{len(after_pull)}********************************************************after{after_pull}')
+            logger.info(f'在git pull之后的commit数量:{len(after_pull)}')
+
         else:
             logger.warning("This project does not exist in this file directory. Attempting to clone this project")
             # 在这个位置调用init
