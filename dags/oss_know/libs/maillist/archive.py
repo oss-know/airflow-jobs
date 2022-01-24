@@ -20,10 +20,8 @@ class EmailArchive:
         self.start_since = start_since
         self.list_name = list_name
 
-
     def get_res(self, since=None, until=None):
         pass
-
 
 class FileArchive(EmailArchive):
     def __init__(self, project_name, list_name, url_prefix, months=[], url_format='', start_since=None, file_ext=None):
