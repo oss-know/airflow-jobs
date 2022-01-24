@@ -15,7 +15,6 @@ def timestamp_to_utc(timestamp):
     return datetime.datetime.utcfromtimestamp(int(timestamp)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-
 def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, git_save_local_path=None):
     repo_path = f'{git_save_local_path["PATH"]}/{owner}/{repo}'
     git_repo = None
@@ -31,7 +30,7 @@ def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, gi
             # 如果本地已经有之前克隆的项目，执行pull
             logger.info(f'在git pull之前的commit数量:{len(before_pull)}')
             pull_response = git_repo.git.pull()
-            print(f'git pull 之后的返回结果:{pull_response}')
+            logger.info(f'git pull 之后的返回结果:{pull_response}')
             for commit in git_repo.iter_commits():
                 after_pull.append(commit.hexsha)
             logger.info(f'在git pull之后的commit数量:{len(after_pull)}')
