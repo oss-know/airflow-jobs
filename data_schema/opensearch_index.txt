@@ -10,7 +10,7 @@ DELETE github_issues
 
 DELETE github_commits
 
-DELETE git_raw
+DELETE gits
 
 DELETE check_sync_data
 
@@ -28,7 +28,7 @@ PUT github_issues
 
 PUT github_commits
 
-PUT git_raw
+PUT gits
 
 PUT check_sync_data
 

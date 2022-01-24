@@ -1,5 +1,6 @@
 import copy
 import datetime
+import time
 import shutil
 import os
 from loguru import logger
@@ -9,13 +10,18 @@ from oss_know.libs.util.base import get_opensearch_client
 from oss_know.libs.util.opensearch_api import OpensearchAPI
 
 
+def timestamp_to_utc(timestamp):
+    # 10位时间戳
+    return datetime.datetime.utcfromtimestamp(int(timestamp)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 # 用于记录上一次更新的点
 def sync_git_check_update_info(opensearch_client, owner, repo, head_commit):
     now_time = datetime.datetime.now()
     check_update_info = {
         "search_key": {
             "type": "git_commits",
-            "update_time": now_time.strftime('%Y-%m-%dT00:00:00Z'),
+            "update_time": now_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
             "update_timestamp": now_time.timestamp(),
             "owner": owner,
             "repo": repo
@@ -73,15 +79,15 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
     opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
     # 删除在数据库中已经存在的此项目数据
     delete_old_data(owner=owner, repo=repo, client=opensearch_client)
-
-    bulk_data_tp = {"_index": "git_raw",
+    bulk_data_tp = {"_index": OPENSEARCH_GIT_RAW,
                     "_source": {
                         "search_key": {
                             "owner": owner,
                             "repo": repo,
                             "origin": f"http://github.com/{owner}/{repo}.git",
+                            'updated_at': 0
                         },
-                        "row_data": {
+                        "raw_data": {
                             "message": "",
                             "hexsha": "",
                             "parents": "",
@@ -96,7 +102,8 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
                             "committed_date": "",
                             "committed_timestamp": "",
                             "files": "",
-                            "total": ""
+                            "total": "",
+                            "if_merged": False
                         }
                     }}
     repo_iter_commits = repo_info.iter_commits()
@@ -108,27 +115,31 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
         files = commit.stats.files
         files_list = []
         for file in files:
-            file_dict = {}
+            file_dict = files[file]
             file_dict["file_name"] = file
-            file_dict["stats"] = files[file]
             files_list.append(file_dict)
         bulk_data = copy.deepcopy(bulk_data_tp)
-        bulk_data["_source"]["row_data"]["message"] = commit.message
-        bulk_data["_source"]["row_data"]["hexsha"] = commit.hexsha
-        bulk_data["_source"]["row_data"]["type"] = commit.type
-        bulk_data["_source"]["row_data"]["parents"] = [i.hexsha for i in commit.parents]
-        bulk_data["_source"]["row_data"]["author_tz"] = int(commit.author_tz_offset / 3600)
-        bulk_data["_source"]["row_data"]["committer_tz"] = int(commit.committer_tz_offset / 3600)
-        bulk_data["_source"]["row_data"]["author_name"] = commit.author.name
-        bulk_data["_source"]["row_data"]["author_email"] = commit.author.email
-        bulk_data["_source"]["row_data"]["committer_name"] = commit.committer.name
-        bulk_data["_source"]["row_data"]["committer_email"] = commit.committer.email
-        bulk_data["_source"]["row_data"]["authored_date"] = commit.authored_datetime
-        bulk_data["_source"]["row_data"]["authored_timestamp"] = commit.authored_date
-        bulk_data["_source"]["row_data"]["committed_date"] = commit.committed_datetime
-        bulk_data["_source"]["row_data"]["committed_timestamp"] = commit.committed_date
-        bulk_data["_source"]["row_data"]["files"] = files_list
-        bulk_data["_source"]["row_data"]["total"] = commit.stats.total
+        bulk_data["_source"]["search_key"]["updated_at"] = int(datetime.datetime.now().timestamp() * 1000)
+        bulk_data["_source"]["raw_data"]["message"] = commit.message
+        bulk_data["_source"]["raw_data"]["hexsha"] = commit.hexsha
+        bulk_data["_source"]["raw_data"]["type"] = commit.type
+        bulk_data["_source"]["raw_data"]["parents"] = [i.hexsha for i in commit.parents]
+        bulk_data["_source"]["raw_data"]["author_tz"] = -int(commit.author_tz_offset / 3600)
+        bulk_data["_source"]["raw_data"]["committer_tz"] = -int(commit.committer_tz_offset / 3600)
+        bulk_data["_source"]["raw_data"]["author_name"] = commit.author.name
+        bulk_data["_source"]["raw_data"]["author_email"] = commit.author.email
+        bulk_data["_source"]["raw_data"]["committer_name"] = commit.committer.name
+        bulk_data["_source"]["raw_data"]["committer_email"] = commit.committer.email
+        bulk_data["_source"]["raw_data"]["authored_date"] = timestamp_to_utc(commit.authored_datetime.timestamp())
+        bulk_data["_source"]["raw_data"]["authored_timestamp"] = commit.authored_date
+        bulk_data["_source"]["raw_data"]["committed_date"] = timestamp_to_utc(commit.committed_datetime.timestamp())
+        bulk_data["_source"]["raw_data"]["committed_timestamp"] = commit.committed_date
+        bulk_data["_source"]["raw_data"]["files"] = files_list
+        bulk_data["_source"]["raw_data"]["total"] = commit.stats.total
+        if_merged = False
+        if len(bulk_data["_source"]["raw_data"]["parents"]) == 2:
+            if_merged = True
+        bulk_data["_source"]["raw_data"]["if_merged"] = if_merged
 
         now_count = now_count + 1
         all_git_list.append(bulk_data)
