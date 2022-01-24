@@ -15,6 +15,10 @@ def timestamp_to_utc(timestamp):
     return datetime.datetime.utcfromtimestamp(int(timestamp)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> upstream/development
 def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, git_save_local_path=None):
     repo_path = f'{git_save_local_path["PATH"]}/{owner}/{repo}'
     git_repo = None
@@ -28,12 +32,14 @@ def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, gi
             for commit in git_repo.iter_commits():
                 before_pull.append(commit.hexsha)
             # 如果本地已经有之前克隆的项目，执行pull
+
             logger.info(f'git pull 之前的commit数量:{len(before_pull)}')
             pull_response = git_repo.git.pull()
             logger.info(f'git pull 之后返回的结果:{pull_response}')
             for commit in git_repo.iter_commits():
                 after_pull.append(commit.hexsha)
             logger.info(f'git pull 之后的commit数量:{len(after_pull)}')
+
         else:
             logger.warning("This project does not exist in this file directory. Attempting to clone this project")
             # 在这个位置调用init
