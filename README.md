@@ -55,4 +55,9 @@ search_key{
 3、数据中不能出现空列表 如[]
 4、数据中如果出现[]中嵌套多层json结构需要说明提醒（一层的json可以），或者再嵌套列表也需要说明提醒
 ```
-测试同步clickhouse
+
+# 关于启动airflow需添加.env文件
+```
+在airflow-jobs目录下执行
+echo -e "AIRFLOW_UID=$(id -u) AIRFLOW_GID=0" > .env
+```
