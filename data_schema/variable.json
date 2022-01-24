@@ -116,14 +116,7 @@
       "partition_by": "",
       "order_by": [
         "search_key.owner",
-        "search_key
-          "total": {
-            "insertions": 12,
-            "deletions": 0,
-            "lines": 12,
-            "files": 1
-          },
-          "type": "commit".repo"
+        "search_key.repo"
       ],
       "parse_data": {
           "search_key" : {
@@ -174,5 +167,6 @@
   },
   "duration_of_sync_github_profiles": {
     "seconds": 10800
-  }
+  },
+  "sync_profiles_task_num":{ "num": 10 }
 }

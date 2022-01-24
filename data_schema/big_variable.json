@@ -1,0 +1,1742 @@
+{
+    "git_save_local_path": {
+        "PATH": "/tmp/gits"
+    },
+    "github_tokens": [
+        "123123",
+        "asdfasdf",
+        "asdfasdf",
+        "asdfasdf"
+    ],
+    "need_init_github_commits_repos": [
+        {
+            "owner": "torvalds",
+            "repo": "linux",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "bminor",
+            "repo": "glibc",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "gvlx",
+            "repo": "gawk",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "gnutls",
+            "repo": "gnutls",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "bminor",
+            "repo": "bash",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "ClickHouse-Extras",
+            "repo": "libgsasl",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "coreutils",
+            "repo": "coreutils",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "gpg",
+            "repo": "gnupg",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "GNOME",
+            "repo": "libxml2",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "freedesktop",
+            "repo": "dbus",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "wayland-project",
+            "repo": "wayland",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "bminor",
+            "repo": "binutils-gdb",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "libffi",
+            "repo": "libffi",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "linux-pam",
+            "repo": "linux-pam",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "rpm-software-management",
+            "repo": "rpm",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "boostorg",
+            "repo": "boost",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "xz-mirror",
+            "repo": "xz",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "sqlite",
+            "repo": "sqlite",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "openssl",
+            "repo": "openssl",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "nginx",
+            "repo": "nginx",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "pingcap",
+            "repo": "tidb",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "google",
+            "repo": "leveldb",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "facebook",
+            "repo": "zstd",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "mirror",
+            "repo": "ncurses",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        },
+        {
+            "owner": "glennrp",
+            "repo": "libpng",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-01-24T10:15:07Z"
+        }
+    ],
+    "need_init_github_issues_comments_repos": [
+        {
+            "owner": "torvalds",
+            "repo": "linux"
+        },
+        {
+            "owner": "bminor",
+            "repo": "glibc"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc"
+        },
+        {
+            "owner": "gvlx",
+            "repo": "gawk"
+        },
+        {
+            "owner": "gnutls",
+            "repo": "gnutls"
+        },
+        {
+            "owner": "bminor",
+            "repo": "bash"
+        },
+        {
+            "owner": "ClickHouse-Extras",
+            "repo": "libgsasl"
+        },
+        {
+            "owner": "coreutils",
+            "repo": "coreutils"
+        },
+        {
+            "owner": "gpg",
+            "repo": "gnupg"
+        },
+        {
+            "owner": "GNOME",
+            "repo": "libxml2"
+        },
+        {
+            "owner": "freedesktop",
+            "repo": "dbus"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd"
+        },
+        {
+            "owner": "wayland-project",
+            "repo": "wayland"
+        },
+        {
+            "owner": "bminor",
+            "repo": "binutils-gdb"
+        },
+        {
+            "owner": "libffi",
+            "repo": "libffi"
+        },
+        {
+            "owner": "linux-pam",
+            "repo": "linux-pam"
+        },
+        {
+            "owner": "rpm-software-management",
+            "repo": "rpm"
+        },
+        {
+            "owner": "boostorg",
+            "repo": "boost"
+        },
+        {
+            "owner": "xz-mirror",
+            "repo": "xz"
+        },
+        {
+            "owner": "sqlite",
+            "repo": "sqlite"
+        },
+        {
+            "owner": "openssl",
+            "repo": "openssl"
+        },
+        {
+            "owner": "nginx",
+            "repo": "nginx"
+        },
+        {
+            "owner": "pingcap",
+            "repo": "tidb"
+        },
+        {
+            "owner": "google",
+            "repo": "leveldb"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
+        },
+        {
+            "owner": "facebook",
+            "repo": "zstd"
+        },
+        {
+            "owner": "mirror",
+            "repo": "ncurses"
+        },
+        {
+            "owner": "glennrp",
+            "repo": "libpng"
+        }
+    ],
+    "need_init_github_issues_repos": [
+        {
+            "owner": "torvalds",
+            "repo": "linux"
+        },
+        {
+            "owner": "bminor",
+            "repo": "glibc"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc"
+        },
+        {
+            "owner": "gvlx",
+            "repo": "gawk"
+        },
+        {
+            "owner": "gnutls",
+            "repo": "gnutls"
+        },
+        {
+            "owner": "bminor",
+            "repo": "bash"
+        },
+        {
+            "owner": "ClickHouse-Extras",
+            "repo": "libgsasl"
+        },
+        {
+            "owner": "coreutils",
+            "repo": "coreutils"
+        },
+        {
+            "owner": "gpg",
+            "repo": "gnupg"
+        },
+        {
+            "owner": "GNOME",
+            "repo": "libxml2"
+        },
+        {
+            "owner": "freedesktop",
+            "repo": "dbus"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd"
+        },
+        {
+            "owner": "wayland-project",
+            "repo": "wayland"
+        },
+        {
+            "owner": "bminor",
+            "repo": "binutils-gdb"
+        },
+        {
+            "owner": "libffi",
+            "repo": "libffi"
+        },
+        {
+            "owner": "linux-pam",
+            "repo": "linux-pam"
+        },
+        {
+            "owner": "rpm-software-management",
+            "repo": "rpm"
+        },
+        {
+            "owner": "boostorg",
+            "repo": "boost"
+        },
+        {
+            "owner": "xz-mirror",
+            "repo": "xz"
+        },
+        {
+            "owner": "sqlite",
+            "repo": "sqlite"
+        },
+        {
+            "owner": "openssl",
+            "repo": "openssl"
+        },
+        {
+            "owner": "nginx",
+            "repo": "nginx"
+        },
+        {
+            "owner": "pingcap",
+            "repo": "tidb"
+        },
+        {
+            "owner": "google",
+            "repo": "leveldb"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
+        },
+        {
+            "owner": "facebook",
+            "repo": "zstd"
+        },
+        {
+            "owner": "mirror",
+            "repo": "ncurses"
+        },
+        {
+            "owner": "glennrp",
+            "repo": "libpng"
+        }
+    ],
+    "need_init_github_issues_timeline_repos": [
+        {
+            "owner": "torvalds",
+            "repo": "linux"
+        },
+        {
+            "owner": "bminor",
+            "repo": "glibc"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc"
+        },
+        {
+            "owner": "gvlx",
+            "repo": "gawk"
+        },
+        {
+            "owner": "gnutls",
+            "repo": "gnutls"
+        },
+        {
+            "owner": "bminor",
+            "repo": "bash"
+        },
+        {
+            "owner": "ClickHouse-Extras",
+            "repo": "libgsasl"
+        },
+        {
+            "owner": "coreutils",
+            "repo": "coreutils"
+        },
+        {
+            "owner": "gpg",
+            "repo": "gnupg"
+        },
+        {
+            "owner": "GNOME",
+            "repo": "libxml2"
+        },
+        {
+            "owner": "freedesktop",
+            "repo": "dbus"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd"
+        },
+        {
+            "owner": "wayland-project",
+            "repo": "wayland"
+        },
+        {
+            "owner": "bminor",
+            "repo": "binutils-gdb"
+        },
+        {
+            "owner": "libffi",
+            "repo": "libffi"
+        },
+        {
+            "owner": "linux-pam",
+            "repo": "linux-pam"
+        },
+        {
+            "owner": "rpm-software-management",
+            "repo": "rpm"
+        },
+        {
+            "owner": "boostorg",
+            "repo": "boost"
+        },
+        {
+            "owner": "xz-mirror",
+            "repo": "xz"
+        },
+        {
+            "owner": "sqlite",
+            "repo": "sqlite"
+        },
+        {
+            "owner": "openssl",
+            "repo": "openssl"
+        },
+        {
+            "owner": "nginx",
+            "repo": "nginx"
+        },
+        {
+            "owner": "pingcap",
+            "repo": "tidb"
+        },
+        {
+            "owner": "google",
+            "repo": "leveldb"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
+        },
+        {
+            "owner": "facebook",
+            "repo": "zstd"
+        },
+        {
+            "owner": "mirror",
+            "repo": "ncurses"
+        },
+        {
+            "owner": "glennrp",
+            "repo": "libpng"
+        }
+    ],
+    "need_init_github_pull_requests_repos": [
+        {
+            "owner": "torvalds",
+            "repo": "linux"
+        },
+        {
+            "owner": "bminor",
+            "repo": "glibc"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc"
+        },
+        {
+            "owner": "gvlx",
+            "repo": "gawk"
+        },
+        {
+            "owner": "gnutls",
+            "repo": "gnutls"
+        },
+        {
+            "owner": "bminor",
+            "repo": "bash"
+        },
+        {
+            "owner": "ClickHouse-Extras",
+            "repo": "libgsasl"
+        },
+        {
+            "owner": "coreutils",
+            "repo": "coreutils"
+        },
+        {
+            "owner": "gpg",
+            "repo": "gnupg"
+        },
+        {
+            "owner": "GNOME",
+            "repo": "libxml2"
+        },
+        {
+            "owner": "freedesktop",
+            "repo": "dbus"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd"
+        },
+        {
+            "owner": "wayland-project",
+            "repo": "wayland"
+        },
+        {
+            "owner": "bminor",
+            "repo": "binutils-gdb"
+        },
+        {
+            "owner": "libffi",
+            "repo": "libffi"
+        },
+        {
+            "owner": "linux-pam",
+            "repo": "linux-pam"
+        },
+        {
+            "owner": "rpm-software-management",
+            "repo": "rpm"
+        },
+        {
+            "owner": "boostorg",
+            "repo": "boost"
+        },
+        {
+            "owner": "xz-mirror",
+            "repo": "xz"
+        },
+        {
+            "owner": "sqlite",
+            "repo": "sqlite"
+        },
+        {
+            "owner": "openssl",
+            "repo": "openssl"
+        },
+        {
+            "owner": "nginx",
+            "repo": "nginx"
+        },
+        {
+            "owner": "pingcap",
+            "repo": "tidb"
+        },
+        {
+            "owner": "google",
+            "repo": "leveldb"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
+        },
+        {
+            "owner": "facebook",
+            "repo": "zstd"
+        },
+        {
+            "owner": "mirror",
+            "repo": "ncurses"
+        },
+        {
+            "owner": "glennrp",
+            "repo": "libpng"
+        }
+    ],
+    "need_init_gits": [
+        {
+            "owner": "torvalds",
+            "repo": "linux",
+            "url": "https://github.com/torvalds/linux.git"
+        },
+        {
+            "owner": "bminor",
+            "repo": "glibc",
+            "url": "https://github.com/bminor/glibc.git"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc",
+            "url": "https://github.com/gcc-mirror/gcc.git"
+        },
+        {
+            "owner": "gvlx",
+            "repo": "gawk",
+            "url": "https://github.com/gvlx/gawk.git"
+        },
+        {
+            "owner": "gnutls",
+            "repo": "gnutls",
+            "url": "https://github.com/gnutls/gnutls.git"
+        },
+        {
+            "owner": "bminor",
+            "repo": "bash",
+            "url": "https://github.com/bminor/bash.git"
+        },
+        {
+            "owner": "ClickHouse-Extras",
+            "repo": "libgsasl",
+            "url": "https://github.com/ClickHouse-Extras/libgsasl.git"
+        },
+        {
+            "owner": "coreutils",
+            "repo": "coreutils",
+            "url": "https://github.com/coreutils/coreutils.git"
+        },
+        {
+            "owner": "gpg",
+            "repo": "gnupg",
+            "url": "https://github.com/gpg/gnupg.git"
+        },
+        {
+            "owner": "GNOME",
+            "repo": "libxml2",
+            "url": "https://github.com/GNOME/libxml2.git"
+        },
+        {
+            "owner": "freedesktop",
+            "repo": "dbus",
+            "url": "https://github.com/freedesktop/dbus.git"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd",
+            "url": "https://github.com/systemd/systemd.git"
+        },
+        {
+            "owner": "wayland-project",
+            "repo": "wayland",
+            "url": "https://github.com/wayland-project/wayland.git"
+        },
+        {
+            "owner": "bminor",
+            "repo": "binutils-gdb",
+            "url": "https://github.com/bminor/binutils-gdb.git"
+        },
+        {
+            "owner": "libffi",
+            "repo": "libffi",
+            "url": "https://github.com/libffi/libffi.git"
+        },
+        {
+            "owner": "linux-pam",
+            "repo": "linux-pam",
+            "url": "https://github.com/linux-pam/linux-pam.git"
+        },
+        {
+            "owner": "rpm-software-management",
+            "repo": "rpm",
+            "url": "https://github.com/rpm-software-management/rpm.git"
+        },
+        {
+            "owner": "boostorg",
+            "repo": "boost",
+            "url": "https://github.com/boostorg/boost.git"
+        },
+        {
+            "owner": "xz-mirror",
+            "repo": "xz",
+            "url": "https://github.com/xz-mirror/xz.git"
+        },
+        {
+            "owner": "sqlite",
+            "repo": "sqlite",
+            "url": "https://github.com/sqlite/sqlite.git"
+        },
+        {
+            "owner": "openssl",
+            "repo": "openssl",
+            "url": "https://github.com/openssl/openssl.git"
+        },
+        {
+            "owner": "nginx",
+            "repo": "nginx",
+            "url": "https://github.com/nginx/nginx.git"
+        },
+        {
+            "owner": "pingcap",
+            "repo": "tidb",
+            "url": "https://github.com/pingcap/tidb.git"
+        },
+        {
+            "owner": "google",
+            "repo": "leveldb",
+            "url": "https://github.com/google/leveldb.git"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim",
+            "url": "https://github.com/vim/vim.git"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl",
+            "url": "https://github.com/curl/curl.git"
+        },
+        {
+            "owner": "facebook",
+            "repo": "zstd",
+            "url": "https://github.com/facebook/zstd.git"
+        },
+        {
+            "owner": "mirror",
+            "repo": "ncurses",
+            "url": "https://github.com/mirror/ncurses.git"
+        },
+        {
+            "owner": "glennrp",
+            "repo": "libpng",
+            "url": "https://github.com/glennrp/libpng.git"
+        }
+    ],
+    "need_sync_github_commits_repos": [
+        {
+            "owner": "torvalds",
+            "repo": "linux"
+        },
+        {
+            "owner": "bminor",
+            "repo": "glibc"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc"
+        },
+        {
+            "owner": "gvlx",
+            "repo": "gawk"
+        },
+        {
+            "owner": "gnutls",
+            "repo": "gnutls"
+        },
+        {
+            "owner": "bminor",
+            "repo": "bash"
+        },
+        {
+            "owner": "ClickHouse-Extras",
+            "repo": "libgsasl"
+        },
+        {
+            "owner": "coreutils",
+            "repo": "coreutils"
+        },
+        {
+            "owner": "gpg",
+            "repo": "gnupg"
+        },
+        {
+            "owner": "GNOME",
+            "repo": "libxml2"
+        },
+        {
+            "owner": "freedesktop",
+            "repo": "dbus"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd"
+        },
+        {
+            "owner": "wayland-project",
+            "repo": "wayland"
+        },
+        {
+            "owner": "bminor",
+            "repo": "binutils-gdb"
+        },
+        {
+            "owner": "libffi",
+            "repo": "libffi"
+        },
+        {
+            "owner": "linux-pam",
+            "repo": "linux-pam"
+        },
+        {
+            "owner": "rpm-software-management",
+            "repo": "rpm"
+        },
+        {
+            "owner": "boostorg",
+            "repo": "boost"
+        },
+        {
+            "owner": "xz-mirror",
+            "repo": "xz"
+        },
+        {
+            "owner": "sqlite",
+            "repo": "sqlite"
+        },
+        {
+            "owner": "openssl",
+            "repo": "openssl"
+        },
+        {
+            "owner": "nginx",
+            "repo": "nginx"
+        },
+        {
+            "owner": "pingcap",
+            "repo": "tidb"
+        },
+        {
+            "owner": "google",
+            "repo": "leveldb"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
+        },
+        {
+            "owner": "facebook",
+            "repo": "zstd"
+        },
+        {
+            "owner": "mirror",
+            "repo": "ncurses"
+        },
+        {
+            "owner": "glennrp",
+            "repo": "libpng"
+        }
+    ],
+    "need_sync_github_issues_comments_repos": [
+        {
+            "owner": "torvalds",
+            "repo": "linux"
+        },
+        {
+            "owner": "bminor",
+            "repo": "glibc"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc"
+        },
+        {
+            "owner": "gvlx",
+            "repo": "gawk"
+        },
+        {
+            "owner": "gnutls",
+            "repo": "gnutls"
+        },
+        {
+            "owner": "bminor",
+            "repo": "bash"
+        },
+        {
+            "owner": "ClickHouse-Extras",
+            "repo": "libgsasl"
+        },
+        {
+            "owner": "coreutils",
+            "repo": "coreutils"
+        },
+        {
+            "owner": "gpg",
+            "repo": "gnupg"
+        },
+        {
+            "owner": "GNOME",
+            "repo": "libxml2"
+        },
+        {
+            "owner": "freedesktop",
+            "repo": "dbus"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd"
+        },
+        {
+            "owner": "wayland-project",
+            "repo": "wayland"
+        },
+        {
+            "owner": "bminor",
+            "repo": "binutils-gdb"
+        },
+        {
+            "owner": "libffi",
+            "repo": "libffi"
+        },
+        {
+            "owner": "linux-pam",
+            "repo": "linux-pam"
+        },
+        {
+            "owner": "rpm-software-management",
+            "repo": "rpm"
+        },
+        {
+            "owner": "boostorg",
+            "repo": "boost"
+        },
+        {
+            "owner": "xz-mirror",
+            "repo": "xz"
+        },
+        {
+            "owner": "sqlite",
+            "repo": "sqlite"
+        },
+        {
+            "owner": "openssl",
+            "repo": "openssl"
+        },
+        {
+            "owner": "nginx",
+            "repo": "nginx"
+        },
+        {
+            "owner": "pingcap",
+            "repo": "tidb"
+        },
+        {
+            "owner": "google",
+            "repo": "leveldb"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
+        },
+        {
+            "owner": "facebook",
+            "repo": "zstd"
+        },
+        {
+            "owner": "mirror",
+            "repo": "ncurses"
+        },
+        {
+            "owner": "glennrp",
+            "repo": "libpng"
+        }
+    ],
+    "need_sync_github_issues_repos": [
+        {
+            "owner": "torvalds",
+            "repo": "linux"
+        },
+        {
+            "owner": "bminor",
+            "repo": "glibc"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc"
+        },
+        {
+            "owner": "gvlx",
+            "repo": "gawk"
+        },
+        {
+            "owner": "gnutls",
+            "repo": "gnutls"
+        },
+        {
+            "owner": "bminor",
+            "repo": "bash"
+        },
+        {
+            "owner": "ClickHouse-Extras",
+            "repo": "libgsasl"
+        },
+        {
+            "owner": "coreutils",
+            "repo": "coreutils"
+        },
+        {
+            "owner": "gpg",
+            "repo": "gnupg"
+        },
+        {
+            "owner": "GNOME",
+            "repo": "libxml2"
+        },
+        {
+            "owner": "freedesktop",
+            "repo": "dbus"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd"
+        },
+        {
+            "owner": "wayland-project",
+            "repo": "wayland"
+        },
+        {
+            "owner": "bminor",
+            "repo": "binutils-gdb"
+        },
+        {
+            "owner": "libffi",
+            "repo": "libffi"
+        },
+        {
+            "owner": "linux-pam",
+            "repo": "linux-pam"
+        },
+        {
+            "owner": "rpm-software-management",
+            "repo": "rpm"
+        },
+        {
+            "owner": "boostorg",
+            "repo": "boost"
+        },
+        {
+            "owner": "xz-mirror",
+            "repo": "xz"
+        },
+        {
+            "owner": "sqlite",
+            "repo": "sqlite"
+        },
+        {
+            "owner": "openssl",
+            "repo": "openssl"
+        },
+        {
+            "owner": "nginx",
+            "repo": "nginx"
+        },
+        {
+            "owner": "pingcap",
+            "repo": "tidb"
+        },
+        {
+            "owner": "google",
+            "repo": "leveldb"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
+        },
+        {
+            "owner": "facebook",
+            "repo": "zstd"
+        },
+        {
+            "owner": "mirror",
+            "repo": "ncurses"
+        },
+        {
+            "owner": "glennrp",
+            "repo": "libpng"
+        }
+    ],
+    "need_sync_github_pull_repuests_repos": [
+        {
+            "owner": "torvalds",
+            "repo": "linux"
+        },
+        {
+            "owner": "bminor",
+            "repo": "glibc"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc"
+        },
+        {
+            "owner": "gvlx",
+            "repo": "gawk"
+        },
+        {
+            "owner": "gnutls",
+            "repo": "gnutls"
+        },
+        {
+            "owner": "bminor",
+            "repo": "bash"
+        },
+        {
+            "owner": "ClickHouse-Extras",
+            "repo": "libgsasl"
+        },
+        {
+            "owner": "coreutils",
+            "repo": "coreutils"
+        },
+        {
+            "owner": "gpg",
+            "repo": "gnupg"
+        },
+        {
+            "owner": "GNOME",
+            "repo": "libxml2"
+        },
+        {
+            "owner": "freedesktop",
+            "repo": "dbus"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd"
+        },
+        {
+            "owner": "wayland-project",
+            "repo": "wayland"
+        },
+        {
+            "owner": "bminor",
+            "repo": "binutils-gdb"
+        },
+        {
+            "owner": "libffi",
+            "repo": "libffi"
+        },
+        {
+            "owner": "linux-pam",
+            "repo": "linux-pam"
+        },
+        {
+            "owner": "rpm-software-management",
+            "repo": "rpm"
+        },
+        {
+            "owner": "boostorg",
+            "repo": "boost"
+        },
+        {
+            "owner": "xz-mirror",
+            "repo": "xz"
+        },
+        {
+            "owner": "sqlite",
+            "repo": "sqlite"
+        },
+        {
+            "owner": "openssl",
+            "repo": "openssl"
+        },
+        {
+            "owner": "nginx",
+            "repo": "nginx"
+        },
+        {
+            "owner": "pingcap",
+            "repo": "tidb"
+        },
+        {
+            "owner": "google",
+            "repo": "leveldb"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
+        },
+        {
+            "owner": "facebook",
+            "repo": "zstd"
+        },
+        {
+            "owner": "mirror",
+            "repo": "ncurses"
+        },
+        {
+            "owner": "glennrp",
+            "repo": "libpng"
+        }
+    ],
+    "need_init_github_profiles_repos": [
+        {
+            "owner": "torvalds",
+            "repo": "linux"
+        },
+        {
+            "owner": "bminor",
+            "repo": "glibc"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc"
+        },
+        {
+            "owner": "gvlx",
+            "repo": "gawk"
+        },
+        {
+            "owner": "gnutls",
+            "repo": "gnutls"
+        },
+        {
+            "owner": "bminor",
+            "repo": "bash"
+        },
+        {
+            "owner": "ClickHouse-Extras",
+            "repo": "libgsasl"
+        },
+        {
+            "owner": "coreutils",
+            "repo": "coreutils"
+        },
+        {
+            "owner": "gpg",
+            "repo": "gnupg"
+        },
+        {
+            "owner": "GNOME",
+            "repo": "libxml2"
+        },
+        {
+            "owner": "freedesktop",
+            "repo": "dbus"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd"
+        },
+        {
+            "owner": "wayland-project",
+            "repo": "wayland"
+        },
+        {
+            "owner": "bminor",
+            "repo": "binutils-gdb"
+        },
+        {
+            "owner": "libffi",
+            "repo": "libffi"
+        },
+        {
+            "owner": "linux-pam",
+            "repo": "linux-pam"
+        },
+        {
+            "owner": "rpm-software-management",
+            "repo": "rpm"
+        },
+        {
+            "owner": "boostorg",
+            "repo": "boost"
+        },
+        {
+            "owner": "xz-mirror",
+            "repo": "xz"
+        },
+        {
+            "owner": "sqlite",
+            "repo": "sqlite"
+        },
+        {
+            "owner": "openssl",
+            "repo": "openssl"
+        },
+        {
+            "owner": "nginx",
+            "repo": "nginx"
+        },
+        {
+            "owner": "pingcap",
+            "repo": "tidb"
+        },
+        {
+            "owner": "google",
+            "repo": "leveldb"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
+        },
+        {
+            "owner": "facebook",
+            "repo": "zstd"
+        },
+        {
+            "owner": "mirror",
+            "repo": "ncurses"
+        },
+        {
+            "owner": "glennrp",
+            "repo": "libpng"
+        }
+    ],
+    "need_sync_github_profile_repo_list": [
+        {
+            "owner": "torvalds",
+            "repo": "linux"
+        },
+        {
+            "owner": "bminor",
+            "repo": "glibc"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc"
+        },
+        {
+            "owner": "gvlx",
+            "repo": "gawk"
+        },
+        {
+            "owner": "gnutls",
+            "repo": "gnutls"
+        },
+        {
+            "owner": "bminor",
+            "repo": "bash"
+        },
+        {
+            "owner": "ClickHouse-Extras",
+            "repo": "libgsasl"
+        },
+        {
+            "owner": "coreutils",
+            "repo": "coreutils"
+        },
+        {
+            "owner": "gpg",
+            "repo": "gnupg"
+        },
+        {
+            "owner": "GNOME",
+            "repo": "libxml2"
+        },
+        {
+            "owner": "freedesktop",
+            "repo": "dbus"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd"
+        },
+        {
+            "owner": "wayland-project",
+            "repo": "wayland"
+        },
+        {
+            "owner": "bminor",
+            "repo": "binutils-gdb"
+        },
+        {
+            "owner": "libffi",
+            "repo": "libffi"
+        },
+        {
+            "owner": "linux-pam",
+            "repo": "linux-pam"
+        },
+        {
+            "owner": "rpm-software-management",
+            "repo": "rpm"
+        },
+        {
+            "owner": "boostorg",
+            "repo": "boost"
+        },
+        {
+            "owner": "xz-mirror",
+            "repo": "xz"
+        },
+        {
+            "owner": "sqlite",
+            "repo": "sqlite"
+        },
+        {
+            "owner": "openssl",
+            "repo": "openssl"
+        },
+        {
+            "owner": "nginx",
+            "repo": "nginx"
+        },
+        {
+            "owner": "pingcap",
+            "repo": "tidb"
+        },
+        {
+            "owner": "google",
+            "repo": "leveldb"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
+        },
+        {
+            "owner": "facebook",
+            "repo": "zstd"
+        },
+        {
+            "owner": "mirror",
+            "repo": "ncurses"
+        },
+        {
+            "owner": "glennrp",
+            "repo": "libpng"
+        }
+    ],
+    "need_sync_gits": [
+        {
+            "owner": "torvalds",
+            "repo": "linux",
+            "url": "https://github.com/torvalds/linux.git"
+        },
+        {
+            "owner": "bminor",
+            "repo": "glibc",
+            "url": "https://github.com/bminor/glibc.git"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc",
+            "url": "https://github.com/gcc-mirror/gcc.git"
+        },
+        {
+            "owner": "gvlx",
+            "repo": "gawk",
+            "url": "https://github.com/gvlx/gawk.git"
+        },
+        {
+            "owner": "gnutls",
+            "repo": "gnutls",
+            "url": "https://github.com/gnutls/gnutls.git"
+        },
+        {
+            "owner": "bminor",
+            "repo": "bash",
+            "url": "https://github.com/bminor/bash.git"
+        },
+        {
+            "owner": "ClickHouse-Extras",
+            "repo": "libgsasl",
+            "url": "https://github.com/ClickHouse-Extras/libgsasl.git"
+        },
+        {
+            "owner": "coreutils",
+            "repo": "coreutils",
+            "url": "https://github.com/coreutils/coreutils.git"
+        },
+        {
+            "owner": "gpg",
+            "repo": "gnupg",
+            "url": "https://github.com/gpg/gnupg.git"
+        },
+        {
+            "owner": "GNOME",
+            "repo": "libxml2",
+            "url": "https://github.com/GNOME/libxml2.git"
+        },
+        {
+            "owner": "freedesktop",
+            "repo": "dbus",
+            "url": "https://github.com/freedesktop/dbus.git"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd",
+            "url": "https://github.com/systemd/systemd.git"
+        },
+        {
+            "owner": "wayland-project",
+            "repo": "wayland",
+            "url": "https://github.com/wayland-project/wayland.git"
+        },
+        {
+            "owner": "bminor",
+            "repo": "binutils-gdb",
+            "url": "https://github.com/bminor/binutils-gdb.git"
+        },
+        {
+            "owner": "libffi",
+            "repo": "libffi",
+            "url": "https://github.com/libffi/libffi.git"
+        },
+        {
+            "owner": "linux-pam",
+            "repo": "linux-pam",
+            "url": "https://github.com/linux-pam/linux-pam.git"
+        },
+        {
+            "owner": "rpm-software-management",
+            "repo": "rpm",
+            "url": "https://github.com/rpm-software-management/rpm.git"
+        },
+        {
+            "owner": "boostorg",
+            "repo": "boost",
+            "url": "https://github.com/boostorg/boost.git"
+        },
+        {
+            "owner": "xz-mirror",
+            "repo": "xz",
+            "url": "https://github.com/xz-mirror/xz.git"
+        },
+        {
+            "owner": "sqlite",
+            "repo": "sqlite",
+            "url": "https://github.com/sqlite/sqlite.git"
+        },
+        {
+            "owner": "openssl",
+            "repo": "openssl",
+            "url": "https://github.com/openssl/openssl.git"
+        },
+        {
+            "owner": "nginx",
+            "repo": "nginx",
+            "url": "https://github.com/nginx/nginx.git"
+        },
+        {
+            "owner": "pingcap",
+            "repo": "tidb",
+            "url": "https://github.com/pingcap/tidb.git"
+        },
+        {
+            "owner": "google",
+            "repo": "leveldb",
+            "url": "https://github.com/google/leveldb.git"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim",
+            "url": "https://github.com/vim/vim.git"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl",
+            "url": "https://github.com/curl/curl.git"
+        },
+        {
+            "owner": "facebook",
+            "repo": "zstd",
+            "url": "https://github.com/facebook/zstd.git"
+        },
+        {
+            "owner": "mirror",
+            "repo": "ncurses",
+            "url": "https://github.com/mirror/ncurses.git"
+        },
+        {
+            "owner": "glennrp",
+            "repo": "libpng",
+            "url": "https://github.com/glennrp/libpng.git"
+        }
+    ],
+    "opensearch_conn_data": {
+        "HOST": "192.168.8.10",
+        "PASSWD": "admin",
+        "PORT": "9200",
+        "USER": "admin"
+    },
+    "transfer_data_os_index_and_ck_tbname": [
+        {
+            "OPENSEARCH_INDEX": "github_profile",
+            "CK_TABLE_NAME": "table1"
+        }
+    ],
+    "clickhouse_driver_info": {
+        "HOST": "192.168.8.102",
+        "PASSWD": "",
+        "PORT": "19001",
+        "USER": "default",
+        "DATABASE": "default"
+    },
+    "ck_table_infos": [
+        {
+            "table_name": "gits",
+            "table_engine": "MergeTree",
+            "partition_by": "",
+            "order_by": [
+                "search_key.owner",
+                "search_key.repo"
+            ],
+            "parse_data": {
+                "search_key": {
+                    "owner": "fivestarsky",
+                    "repo": "airflow-jobs",
+                    "origin": "http://github.com/fivestarsky/airflow-jobs.git",
+                    "updated_at": 1642497888444
+                },
+                "raw_data": {
+                    "message": "fix init_gits.py index name",
+                    "hexsha": "d1dacc4a3f6745a8560a31f8f702044a66b3a4fd",
+                    "parents": [
+                        "bd282015e9cd9c19fa72a98952e785e0b5efaeb7"
+                    ],
+                    "author_tz": 8,
+                    "committer_tz": 8,
+                    "author_name": "fivestarsky",
+                    "author_email": "fivestarsky@gmail.com",
+                    "committer_name": "fivestarsky",
+                    "committer_email": "fivestarsky@gmail.com",
+                    "authored_date": "2022-01-18T15:23:03Z",
+                    "authored_timestamp": 1642490583,
+                    "committed_date": "2022-01-18T15:23:03Z",
+                    "committed_timestamp": 1642490583,
+                    "files": [
+                        {
+                            "insertions": 1,
+                            "deletions": 1,
+                            "lines": 2,
+                            "file_name": "dags/oss_know/libs/github/init_gits.py"
+                        }
+                    ],
+                    "total": {
+                        "insertions": 1,
+                        "deletions": 1,
+                        "lines": 2,
+                        "files": 1
+                    },
+                    "if_merged": false,
+                    "type": "commit"
+                }
+            }
+        }
+    ],
+    "redis_client_data": {
+        "HOST": "192.168.8.107",
+        "PORT": "6379"
+    },
+    "duration_of_sync_github_profiles": {
+        "seconds": 10800
+    },
+    "sync_profiles_task_num": {
+        "num": 10
+    }
+}
