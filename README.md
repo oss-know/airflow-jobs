@@ -1,5 +1,6 @@
 # airflow-jobs
-airflow-jobs
+
+请注意: 项目默认分支为 development, 所有pr默认提交到 development 分支
 
 # Dag 测试同步 github commit
 ```
