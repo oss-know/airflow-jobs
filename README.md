@@ -2,6 +2,8 @@
 
 请注意: 项目默认分支为 development, 所有pr默认提交到 development 分支
 
+[git 操作文档](./git-guide.md)
+
 # Dag 测试同步 github commit
 ```
 {
@@ -60,5 +62,5 @@ search_key{
 # 关于启动airflow需添加.env文件
 ```
 在airflow-jobs目录下执行
-echo -e "AIRFLOW_UID=$(id -u) AIRFLOW_GID=0" > .env
+echo -e "AIRFLOW_UID=$(id -u)\nAIRFLOW_GID=0" > .env
 ```
