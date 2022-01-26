@@ -68,6 +68,7 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
     opensearch_datas = get_data_from_opensearch(index=opensearch_index,
                                                 opensearch_conn_datas=opensearch_conn_datas)
     max_timestamp = 0
+    count = 0
     for os_data in opensearch_datas[0]:
         updated_at = os_data["_source"]["search_key"]["updated_at"]
         if updated_at > max_timestamp:
@@ -83,14 +84,16 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
 
         # 这里except_fields 里存储的就是表结构中有的fields 而数据中没有的字段
         if except_fields:
-            logger.info(f'缺失的字段列表：{except_fields}')
+            # logger.info(f'缺失的字段列表：{except_fields}')
             except_fields = f'EXCEPT({",".join(except_fields)})'
             sql = f"INSERT INTO {table_name} (* {except_fields}) VALUES"
         else:
             sql = f"INSERT INTO {table_name} VALUES"
-        logger.info(f'执行的sql语句: {sql} ({dict_data})')
+        # logger.info(f'执行的sql语句: {sql} ({dict_data})')
+        count += 1
+        logger.info(f'已经插入的数据的条数为:{count}')
         result = ck.execute(sql, [dict_data])
-        logger.info(f'执行sql后受影响的行数: {result}')
+        # logger.info(f'执行sql后受影响的行数: {result}')
 
     # 将检查点放在这里插入
     ck_check_point(opensearch_client=opensearch_datas[1],
@@ -102,28 +105,13 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
 
 def get_data_from_opensearch(index, opensearch_conn_datas):
     opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
-    # # 获取本次scan拿取数据时间戳最大的时间戳
-    # response = opensearch_client.search(index=index, body={
-    #     "size": 1,
-    #     "sort": [
-    #         {
-    #             "search_key.updated_at": {
-    #                 "order": "desc"
-    #             }
-    #         }
-    #     ]
-    #     , "_source": ["search_key.updated_at"]
-    # })
-    # hits = response['hits']['hits']
-    # last_timestamp = 0
-    # if hits:
-    #     last_timestamp = hits[0]["_source"]["search_key"]["updated_at"]
-    # else:
-    #     logger.error(f"本条索引中没有相关数据")
-
-    results = helpers.scan(client=opensearch_client, query={
-        "query": {"match_all": {}}
-    }, index=index)
+    results = helpers.scan(client=opensearch_client,
+                           query={
+                               "query": {"match_all": {}}
+                           },
+                           index=index,
+                           size=5000,
+                           request_timeout=100)
     return results, opensearch_client
 
 
