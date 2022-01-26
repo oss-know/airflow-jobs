@@ -4,7 +4,7 @@
 
 [git 操作文档](./git-guide.md)
 
-[clickhouse建表 自定义字段值](./clickhouse-customFields.md)
+[clickhouse建表未明确字段自定义值记录](./clickhouse-customFields.md)
 
 # Dag 测试同步 github commit
 ```
