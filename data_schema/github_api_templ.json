@@ -1,3 +1,28 @@
+# 除特殊情况外 建立jk table 请严谨填写 key:value 确保数据类型准确
+# 差不到的默认值 请建立 md 文档用于记录
+github_issues:{
+  "search_key":{
+      "owner" : "oss-know",
+      "repo" : "airflow-jobs",
+      "number" : 11,
+      "updated_at" : 1643182425789
+  },
+  "raw_data":{}
+}
+
+# github_issues_timeline 特殊情况 raw_data 设置为空字符串，实际为json字符串必须是key:value(冒号前后不带空格)
+github_issues_timeline:{
+        "search_key":{
+            "owner" : "oss-know",
+            "repo" : "airflow-jobs",
+            "number" : 11,
+            "updated_at" : 1643182425789
+        },
+        "raw_data":""
+}
+
+
+{
 gits: {
     "message": "",
     "hexsha": "",
@@ -27,9 +52,13 @@ gits: {
         "lines": 0,
         "files": 0
     },
-    "if_merged": False,
+    "if_merged": false,
     "type": ""
 }
+
+}
+
+
 github_commits: {
     "sha": "",
 "node_id": "",
@@ -820,10 +849,7 @@ github_pull_request:{"url": "",
  "active_lock_reason": ""
  }
 
-
-
-# github_issue_timeline
-committed:{
+{
     "sha": "",
     "node_id": "",
     "url": "",

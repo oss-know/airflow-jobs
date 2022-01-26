@@ -10,7 +10,7 @@
   ],
   "need_init_github_commits_repos": [
     {
-      "owner": "fivestarsky",
+      "owner": "oss-know",
       "repo": "airflow-jobs",
       "since": "1980-01-01T00:00:00Z",
       "until": "2021-12-20T00:00:00Z"
@@ -18,76 +18,76 @@
   ],
   "need_init_github_issues_comments_repos": [
     {
-      "owner": "fivestarsky",
+      "owner": "oss-know",
       "repo": "airflow-jobs"
     }
   ],
   "need_init_github_issues_repos": [
     {
-      "owner": "fivestarsky",
+      "owner": "oss-know",
       "repo": "airflow-jobs"
     }
   ],
   "need_init_github_issues_timeline_repos": [
     {
-      "owner": "fivestarsky",
+      "owner": "oss-know",
       "repo": "airflow-jobs"
     }
   ],
   "need_init_github_pull_requests_repos": [
     {
-      "owner": "fivestarsky",
+      "owner": "oss-know",
       "repo": "airflow-jobs"
     }
   ],
   "need_init_gits": [
     {
-      "owner": "fivestarsky",
+      "owner": "oss-know",
       "repo": "airflow-jobs",
-      "url": "git://github.com/fivestarsky/airflow-jobs.git"
+      "url": "git://github.com/oss-know/airflow-jobs.git"
     }
   ],
   "need_sync_github_commits_repos": [
     {
-      "owner": "fivestarsky",
+      "owner": "oss-know",
       "repo": "airflow-jobs"
     }
   ],
   "need_sync_github_issues_comments_repos": [
     {
-      "owner": "fivestarsky",
+      "owner": "oss-know",
       "repo": "airflow-jobs"
     }
   ],
   "need_sync_github_issues_repos": [
     {
-      "owner": "fivestarsky",
+      "owner": "oss-know",
       "repo": "airflow-jobs"
     }
   ],
   "need_sync_github_pull_repuests_repos": [
     {
-      "owner": "fivestarsky",
+      "owner": "oss-know",
       "repo": "airflow-jobs"
     }
   ],
   "need_init_github_profiles_repos": [
     {
-      "owner": "fivestarsky",
+      "owner": "oss-know",
       "repo": "airflow-jobs"
     }
   ],
   "need_sync_github_profile_repo_list": [
     {
-      "owner": "fivestarsky",
+      "owner": "oss-know",
       "repo": "airflow-jobs"
     }
   ],
   "need_sync_gits": [
     {
-      "owner": "fivestarsky",
+      "owner": "oss-know",
       "repo": "airflow-jobs",
-      "url": "git://github.com/fivestarsky/airflow-jobs.git"
+      "url": "git://github.com/oss-know/airflow-jobs.git"
     }
   ],
   "opensearch_conn_data": {
@@ -103,7 +103,7 @@
     }
   ],
   "clickhouse_driver_info": {
-    "HOST": "192.168.8.102",
+    "HOST": "192.168.8.10",
     "PASSWD": "",
     "PORT": "19001",
     "USER": "default",
@@ -111,62 +111,186 @@
   },
   "ck_table_infos": [
     {
-      "table_name": "gits",
+      "table_name": "github_issues",
       "table_engine": "MergeTree",
       "partition_by": "",
       "order_by": [
         "search_key.owner",
-        "search_key.repo"
+        "search_key.repo",
+        "search_key.number"
       ],
       "parse_data": {
-          "search_key" : {
-            "owner" : "fivestarsky",
-            "repo" : "airflow-jobs",
-            "origin" : "http://github.com/fivestarsky/airflow-jobs.git",
-            "updated_at" : 1642497888444
+        "search_key": {
+          "owner": "oss-know",
+          "repo": "airflow-jobs",
+          "origin": "http://github.com/oss-know/airflow-jobs.git",
+          "updated_at": 1642497888444
+        },
+        "raw_data": {
+          "url": "",
+          "repository_url": "",
+          "labels_url": "",
+          "comments_url": "",
+          "events_url": "",
+          "html_url": "",
+          "id": 0,
+          "node_id": "",
+          "number": 0,
+          "title": "",
+          "user": {
+            "login": "",
+            "id": 0,
+            "node_id": "",
+            "avatar_url": "",
+            "gravatar_id": "",
+            "url": "",
+            "html_url": "",
+            "followers_url": "",
+            "following_url": "",
+            "gists_url": "",
+            "starred_url": "",
+            "subscriptions_url": "",
+            "organizations_url": "",
+            "repos_url": "",
+            "events_url": "",
+            "received_events_url": "",
+            "type": "",
+            "site_admin": false
           },
-          "raw_data" : {
-            "message" : "fix init_gits.py index name",
-            "hexsha" : "d1dacc4a3f6745a8560a31f8f702044a66b3a4fd",
-            "parents" : [
-              "bd282015e9cd9c19fa72a98952e785e0b5efaeb7"
-            ],
-            "author_tz" : 8,
-            "committer_tz" : 8,
-            "author_name" : "fivestarsky",
-            "author_email" : "fivestarsky@gmail.com",
-            "committer_name" : "fivestarsky",
-            "committer_email" : "fivestarsky@gmail.com",
-            "authored_date" : "2022-01-18T15:23:03Z",
-            "authored_timestamp" : 1642490583,
-            "committed_date" : "2022-01-18T15:23:03Z",
-            "committed_timestamp" : 1642490583,
-            "files" : [
-              {
-                "insertions" : 1,
-                "deletions" : 1,
-                "lines" : 2,
-                "file_name" : "dags/oss_know/libs/github/init_gits.py"
-              }
-            ],
-            "total" : {
-              "insertions" : 1,
-              "deletions" : 1,
-              "lines" : 2,
-              "files" : 1
+          "labels": [
+            {
+              "id": 0,
+              "node_id": "",
+              "url": "",
+              "name": "",
+              "color": "",
+              "default": false,
+              "description": ""
+            }
+          ],
+          "state": "",
+          "locked": false,
+          "assignee": {
+            "login": "",
+            "id": 0,
+            "node_id": "",
+            "avatar_url": "",
+            "gravatar_id": "",
+            "url": "",
+            "html_url": "",
+            "followers_url": "",
+            "following_url": "",
+            "gists_url": "",
+            "starred_url": "",
+            "subscriptions_url": "",
+            "organizations_url": "",
+            "repos_url": "",
+            "events_url": "",
+            "received_events_url": "",
+            "type": "",
+            "site_admin": false
+          },
+          "assignees": [
+            {
+              "login": "",
+              "id": 0,
+              "node_id": "",
+              "avatar_url": "",
+              "gravatar_id": "",
+              "url": "",
+              "html_url": "",
+              "followers_url": "",
+              "following_url": "",
+              "gists_url": "",
+              "starred_url": "",
+              "subscriptions_url": "",
+              "organizations_url": "",
+              "repos_url": "",
+              "events_url": "",
+              "received_events_url": "",
+              "type": "",
+              "site_admin": false
+            }
+          ],
+          "milestone": {
+            "url": "",
+            "html_url": "",
+            "labels_url": "",
+            "id": 0,
+            "node_id": "",
+            "number": 1,
+            "state": "",
+            "title": "",
+            "description": "",
+            "creator": {
+              "login": "",
+              "id": 0,
+              "node_id": "",
+              "avatar_url": "",
+              "gravatar_id": "",
+              "url": "",
+              "html_url": "",
+              "followers_url": "",
+              "following_url": "",
+              "gists_url": "",
+              "starred_url": "",
+              "subscriptions_url": "",
+              "organizations_url": "",
+              "repos_url": "",
+              "events_url": "",
+              "received_events_url": "",
+              "type": "",
+              "site_admin": false
             },
-            "if_merged" : false,
-            "type" : "commit"
-          }
+            "open_issues": 0,
+            "closed_issues": 0,
+            "created_at": "",
+            "updated_at": "",
+            "closed_at": "",
+            "due_on": ""
+          },
+          "comments": 0,
+          "created_at": "",
+          "updated_at": "",
+          "closed_at": "",
+          "author_association": "",
+          "active_lock_reason": "",
+          "draft": false,
+          "pull_request": {
+            "url": "",
+            "html_url": "",
+            "diff_url": "",
+            "patch_url": "",
+            "merged_at": ""
+          },
+          "body": "",
+          "reactions": {
+            "url": "",
+            "total_count": 0,
+            "+1": 0,
+            "-1": 0,
+            "laugh": 0,
+            "hooray": 0,
+            "confused": 0,
+            "heart": 0,
+            "rocket": 0,
+            "eyes": 0
+          },
+          "timeline_url": "",
+          "performed_via_github_app": ""
         }
-    }
+      }
+    },
+    {}
   ],
   "redis_client_data": {
-    "HOST": "192.168.8.107",
+    "HOST": "192.168.8.10",
     "PORT": "6379"
   },
   "duration_of_sync_github_profiles": {
     "seconds": 10800
   },
-  "sync_profiles_task_num":{ "num": 10 }
+  "sync_profiles_task_num": {
+    "num": 10
+  }
 }
