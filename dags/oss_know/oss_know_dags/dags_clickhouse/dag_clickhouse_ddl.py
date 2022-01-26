@@ -3,7 +3,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from pandas import json_normalize
 # clickhouse_init_sync_v0.0.1
-from oss_know.libs.base_dict.variable_key import NEED_CK_TABLE_INFOS,CLICKHOUSE_DRIVER_INFO
+from oss_know.libs.base_dict.variable_key import NEED_CK_TABLE_INFOS, CLICKHOUSE_DRIVER_INFO
 
 with DAG(
         dag_id='ck_create_tables',
@@ -34,13 +34,19 @@ with DAG(
         from airflow.models import Variable
         from oss_know.libs.clickhouse import ck_create_table
         table_name = params["table_name"]
+        cluster_name = params["cluster_name"]
         table_engine = params["table_engine"]
         partition_by = params["partition_by"]
         order_by = params.get("order_by")
         parse_data = params.get("parse_data")
+        database_name = params.get("database_name")
+        distributed_key = params.get("distributed_key")
         df = json_normalize(parse_data)
         clickhouse_server_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
         create_table = ck_create_table.create_ck_table(df=df,
+                                                       database_name=database_name,
+                                                       distributed_key=distributed_key,
+                                                       cluster_name=cluster_name,
                                                        table_name=table_name,
                                                        table_engine=table_engine,
                                                        partition_by=partition_by,

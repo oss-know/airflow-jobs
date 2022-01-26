@@ -1,10 +1,7 @@
 import datetime
 import re
 import numpy
-import json
-import pandas as pd
 from loguru import logger
-from pandas import json_normalize
 from oss_know.libs.util.clickhouse_driver import CKServer
 
 
@@ -57,11 +54,18 @@ def datetime_valid(dt_str):
 
 
 def create_ck_table(df,
+                    distributed_key="rand()",
+                    database_name="default",
                     table_name="default_table",
+                    cluster_name="",
                     table_engine="MergeTree",
                     order_by=[],
                     partition_by="",
                     clickhouse_server_info=None):
+    if not distributed_key:
+        distributed_key = "rand()"
+    if not database_name:
+        database_name="default"
     # 存储最终的字段
     ck_data_type = []
     # 确定每个字段的类型 然后建表
@@ -108,9 +112,10 @@ def create_ck_table(df,
         ck_data_type.append(data_type_outer)
         # dict1[index] = row
     result = ",\r\n".join(ck_data_type)
-    create_table_ddl = f'CREATE TABLE IF NOT EXISTS {table_name} ({result}) Engine={table_engine}'
+    create_local_table_ddl = f'CREATE TABLE IF NOT EXISTS {database_name}.{table_name}_local on cluster {cluster_name}({result}) Engine={table_engine}'
+    create_distributed_ddl = f'CREATE TABLE IF NOT EXISTS {database_name}.{table_name} on cluster {cluster_name} ({result}) Engine= Distributed({cluster_name},{database_name},{table_name}_local,{distributed_key})'
     if partition_by:
-        create_table_ddl = f'{create_table_ddl} PARTITION BY {partition_by}'
+        create_local_table_ddl = f'{create_local_table_ddl} PARTITION BY {partition_by}'
     if order_by:
         order_by_str = ""
         for i in range(len(order_by)):
@@ -118,16 +123,17 @@ def create_ck_table(df,
                 order_by_str = f'{order_by_str}{order_by[i]},'
             else:
                 order_by_str = f'{order_by_str}{order_by[i]}'
-        create_table_ddl = f'{create_table_ddl} ORDER BY ({order_by_str})'
-    logger.info(f'ddl sql::{create_table_ddl}')
+        create_local_table_ddl = f'{create_local_table_ddl} ORDER BY ({order_by_str})'
+    logger.info(f'ddl sql::{create_local_table_ddl}')
     ck = CKServer(host=clickhouse_server_info["HOST"],
                   port=clickhouse_server_info["PORT"],
                   user=clickhouse_server_info["USER"],
                   password=clickhouse_server_info["PASSWD"],
                   database=clickhouse_server_info["DATABASE"])
-    execute_ddl(ck, create_table_ddl)
+    execute_ddl(ck, create_local_table_ddl)
+    execute_ddl(ck, create_distributed_ddl)
     ck.close()
-    return create_table_ddl
+    return create_local_table_ddl
 
 
 def execute_ddl(ck: CKServer, sql):
