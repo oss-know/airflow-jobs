@@ -62,5 +62,5 @@ search_key{
 # 关于启动airflow需添加.env文件
 ```
 在airflow-jobs目录下执行
-echo -e "AIRFLOW_UID=$(id -u) \n AIRFLOW_GID=0" > .env
+echo -e "AIRFLOW_UID=$(id -u)\nAIRFLOW_GID=0" > .env
 ```
