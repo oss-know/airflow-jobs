@@ -1,7 +1,9 @@
-import urllib3
+from datetime import datetime
+
 import redis
-from tenacity import *
+import urllib3
 from opensearchpy import OpenSearch
+from tenacity import *
 
 from ..util.log import logger
 
@@ -52,3 +54,7 @@ def get_redis_client(redis_client_info):
     redis_client = redis.Redis(host=redis_client_info["HOST"], port=redis_client_info["PORT"], db=0,
                                decode_responses=True)
     return redis_client
+
+
+def get_updated_at():
+    return int(datetime.now().timestamp() * 1000)
