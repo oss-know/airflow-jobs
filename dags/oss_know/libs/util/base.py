@@ -56,6 +56,7 @@ def get_redis_client(redis_client_info):
                                decode_responses=True)
     return redis_client
 
+
 def infer_country_from_emailcctld(email):
     """
         :param  company: the company given by github
@@ -67,25 +68,26 @@ def infer_country_from_emailcctld(email):
     else:
         return None
 
+
 def infer_country_from_emaildomain(email):
     """
         :param  company: the company given by github
         :return country_name  : the english name of a country
         """
-    emaildomain = company.split("@")[1].split(".")[0].lower().strip()
+    emaildomain = email.split("@")[1].split(".")[0].lower().strip()
     if emaildomain in COMPANY_COUNTRY.keys():
         return COMPANY_COUNTRY[emaildomain]
     else:
         return None
 
+
 def infer_country_from_location(githubLocation):
-    from airflow.models import Variable
     """
         :param  githubLocation: the location given by github
         :return country_name  : the english name of a country
         """
     from airflow.models import Variable
-    api_token = Variable.get(LOCATIONGEO_TOKEN, deserialize_json=True)
+    api_token = Variable.get("LocationGeo_token", deserialize_json=True)
     geolocator = GoogleV3(api_key=api_token)
     return geolocator.geocode(githubLocation, language='en').address.split(',')[-1].strip()
 
