@@ -52,3 +52,10 @@ git rebase upstream/development
 ``` bash
 git push
 ```
+
+# 最重要的三个git操作
+``` bash
+git remote add upstream git@github.com:oss-know/airflow-jobs.git
+git fetch upstream
+git merge upstream/development
+```
