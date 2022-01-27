@@ -1,3 +1,4 @@
+import http
 from datetime import datetime
 import requests
 import shutil
@@ -12,14 +13,50 @@ from grimoire_elk.raw.pipermail import PipermailOcean
 from grimoire_elk.enriched.pipermail import PipermailEnrich
 from grimoire_elk.utils import get_elastic
 from perceval.backends.core.mbox import MBox
+from oss_know.libs.util.base import get_updated_at
 import os
+
+from loguru import logger
 
 from dateutil.relativedelta import relativedelta
 from perceval.backends.core.mbox import MBox
 from perceval.backends.core.pipermail import Pipermail
 from oss_know.libs.util.opensearch_api import OpensearchAPI
-from oss_know.libs.base_dict.opensearch_index import NSEARCH_INDEX_MAILLISTS
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_MAILLISTS
 
+
+class OSSKnowMBoxEnrich(MBoxEnrich):
+    ESSENTIAL_KEYS = ['Reference', 'In-Reply-To']
+
+    def __init__(self, project_name, list_name, **kwargs):
+        super().__init__(**kwargs)
+        self.project_name = project_name
+        self.mail_list_name = list_name
+
+    def get_rich_item(self, item):
+        eitem = super().get_rich_item(item)
+        eitem['search_key'] = {
+            'message_id': item['data']['Message-ID'],
+            'project_name': self.project_name,
+            'mail_list_name': self.mail_list_name,
+            'updated_at': get_updated_at()
+        }
+
+        for essential_key in OSSKnowMBoxEnrich.ESSENTIAL_KEYS:
+            if essential_key in item:
+                eitem[essential_key] = item[essential_key]
+        return eitem
+
+    def get_connector_name(self):
+        return 'mbox'
+
+
+# PipermailEnrich also inherits from MBoxEnrich
+# This makes a 'diamond inherits', which brings complexity
+# TODO Make sure OSSKnowPipermailEnrich performs as expected
+class OSSKnowPipermailEnrich(OSSKnowMBoxEnrich, PipermailEnrich):
+    def get_connector_name(self):
+        return 'pipermail'
 
 
 class EmailArchive:
@@ -32,6 +69,7 @@ class EmailArchive:
 
     def get_res(self, since=None, until=None):
         pass
+
 
 class FileArchive(EmailArchive):
     def __init__(self, project_name, list_name, url_prefix, months=[], url_format='', start_since=None, file_ext=None):
@@ -47,10 +85,17 @@ class FileArchive(EmailArchive):
         for url in urls:
             filename = url.split('/')[-1]
             filepath = f'{self.dirpath}/{filename}'
-            print(f'Downloading {url} to {filepath}')
             self.file_paths.append(filepath)
             makedirs(self.dirpath, exist_ok=True)
-            with requests.get(url, stream=True) as res:
+            # TODO 404 is not an error(there might not be archive for a particular month)
+            # So we should extend do_get_result and replace the logic here
+            # res = do_get_result(requests.Session(), url)
+            res = requests.get(url, stream=True)
+            if res.status_code == http.HTTPStatus.NOT_FOUND:
+                logger.info(f'{url} not found, might not be archive for that period')
+            elif res.status_code >= 300:
+                logger.error(f'Failed to fetch archive from {url}: {res.status_code}, {res.text}')
+            else:  # Only when status_code is within [200, 299], save file
                 with open(filepath, 'wb') as f:
                     shutil.copyfileobj(res.raw, f)
 
@@ -104,13 +149,20 @@ class GZipArchive(FileArchive):
 
 def sync_archive(opensearch_conn_info, **maillist_params):
     archive_type = maillist_params['archive_type']
+    project_name = maillist_params['project_name']
+    list_name = maillist_params['list_name']
+
+    clear_existing_indices = True
+    if 'clear_exist' in maillist_params:
+        clear_existing_indices = bool(maillist_params['clear_exist'])
 
     kwargs = {}
-    for essential_key in ['project_name', 'list_name','url_prefix']:
+    for essential_key in ['project_name', 'list_name', 'url_prefix']:
         kwargs[essential_key] = maillist_params[essential_key]
 
     repo = None
-    archive = None
+    enrich_backend = None
+    ocean_backend = None
     # TODO Receive 'since' and 'until' param from the caller
     if archive_type == 'txt' or archive_type == 'gzip':
         date_format = maillist_params['date_format']
@@ -124,53 +176,75 @@ def sync_archive(opensearch_conn_info, **maillist_params):
         archive.get_res()
         repo = MBox(uri=archive.url_prefix, dirpath=archive.dirpath)
         ocean_backend = MBoxOcean(None)
-        enrich_backend = MBoxEnrich()
+        enrich_backend = OSSKnowMBoxEnrich(project_name, list_name)
     elif archive_type == 'pipermail':
         archive = EmailArchive(**kwargs)
         archive.get_res()
         repo = Pipermail(url=archive.url_prefix, dirpath=archive.dirpath)
         ocean_backend = PipermailOcean(None)
-        enrich_backend = PipermailEnrich()
+        enrich_backend = OSSKnowPipermailEnrich(project_name, list_name)
 
-    # Store original data to raw opensearch index
-    data2es(repo.fetch(), ocean_backend)
-    OS_USER = opensearch_conn_info["USER"]
-    OS_PASS = opensearch_conn_info["PASSWD"]
-    OS_HOST = opensearch_conn_info["HOST"]
-    OS_PORT = opensearch_conn_info["PORT"]
-    OS_URL = f'https://{OS_USER}:{OS_PASS}@{OS_HOST}:{OS_PORT}'
-    elastic_ocean = get_elastic(OS_URL, OPENSEARCH_INDEX_MAILLISTS, True, ocean_backend, [])
+    os_user = opensearch_conn_info["USER"]
+    os_pass = opensearch_conn_info["PASSWD"]
+    os_host = opensearch_conn_info["HOST"]
+    os_port = opensearch_conn_info["PORT"]
+    os_url = f'https://{os_user}:{os_pass}@{os_host}:{os_port}'
+    # grimoire_elk will create mapping automatically, which is not necessary
+    # And mapping creation will fail
+    ocean_backend.mapping = None
+    elastic_ocean = get_elastic(os_url, OPENSEARCH_INDEX_MAILLISTS, clear_existing_indices, ocean_backend)
     ocean_backend.set_elastic(elastic_ocean)
+
+    num_raw = _data2es(repo.fetch(), ocean_backend, project_name, list_name)
+    logger.info(f'{num_raw} records for mail list {project_name}/{list_name}')
+
+    enrich_backend.mapping = None
+    elastic_enrich = get_elastic(os_url, f'{OPENSEARCH_INDEX_MAILLISTS}_enriched', clear_existing_indices,
+                                 enrich_backend)
+    enrich_backend.set_elastic(elastic_enrich)
 
     # TODO What does the param [sortinghat] and [projects] do here?
     num_enriched = enrich_backend.enrich_items(ocean_backend)
-    print(f'num_enriched: {num_enriched}')
+    logger.info(f'{num_enriched} enriched records for mail list {project_name}/{list_name}')
 
-def data2es(items, ocean):
-    def ocean_item(item):
-        # Hack until we decide when to drop this field
-        if 'updated_on' in item:
-            updated = datetime.fromtimestamp(item['updated_on'])
-            item['metadata__updated_on'] = updated.isoformat()
-        if 'timestamp' in item:
-            ts = datetime.fromtimestamp(item['timestamp'])
-            item['metadata__timestamp'] = ts.isoformat()
 
-        # the _fix_item does not apply to the test data for Twitter
-        try:
-            ocean._fix_item(item)
-        except KeyError:
-            pass
+# The 2 helpers are yanked from:
+# https://github.com/chaoss/grimoirelab-elk/blob/6fa82bd1550257f74c13bb11bcae58f895291ca9/tests/base.py#L54
+def _ocean_item(item, ocean):
+    # TODO By <juzhen@huawei.com>: We may not need the expansions here
+    # Hack until we decide when to drop this field
+    if 'updated_on' in item:
+        updated = datetime.fromtimestamp(item['updated_on'])
+        item['metadata__updated_on'] = updated.isoformat()
+    if 'timestamp' in item:
+        ts = datetime.fromtimestamp(item['timestamp'])
+        item['metadata__timestamp'] = ts.isoformat()
 
-        if ocean.anonymize:
-            ocean.identities.anonymize_item(item)
+    # the _fix_item does not apply to the test data for Twitter
+    try:
+        ocean._fix_item(item)
+    except KeyError:
+        pass
 
-        return item
+    if ocean.anonymize:
+        ocean.identities.anonymize_item(item)
 
+    return item
+
+
+def _data2es(items, ocean, project_name, mail_list_name):
     items_pack = []  # to feed item in packs
 
     for item in items:
-        item = ocean_item(item)
+        item = _ocean_item(item, ocean)
+        # By <juzhen@huawei.com> Insert the customized search_key:
+        item['search_key'] = {
+            'message_id': item['data']['Message-ID'],
+            'project_name': project_name,
+            'mail_list_name': mail_list_name,
+            'updated_at': get_updated_at()
+        }
+        # End::Insert the customized search_key:
         if len(items_pack) >= ocean.elastic.max_items_bulk:
             ocean._items_to_es(items_pack)
             items_pack = []
@@ -178,4 +252,3 @@ def data2es(items, ocean):
     inserted = ocean._items_to_es(items_pack)
 
     return inserted
-
