@@ -1,5 +1,6 @@
 import urllib3
 import redis
+import re
 from tenacity import *
 from opensearchpy import OpenSearch
 from geopy.geocoders import GoogleV3
@@ -74,7 +75,7 @@ def infer_country_from_emaildomain(email):
         :param  company: the company given by github
         :return country_name  : the english name of a country
         """
-    emaildomain = email.split("@")[1].split(".")[0].lower().strip()
+    emaildomain = str(re.findall(r"@(.+?)\.",email))
     if emaildomain in COMPANY_COUNTRY.keys():
         return COMPANY_COUNTRY[emaildomain]
     else:
