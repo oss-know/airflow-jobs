@@ -6,8 +6,6 @@
 
 [clickhouse建表未明确字段自定义值记录](./clickhouse-customFields.md)
 
-
-
 # Dag 测试同步 github commit
 ```
 {
