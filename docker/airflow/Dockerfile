@@ -20,5 +20,3 @@ RUN pip install --no-cache-dir  'loguru>=0.5.3' \
 RUN pip install --no-cache-dir  'grimoire-elk>=0.98.0'
 
 RUN pip install --no-cache-dir 'apache-airflow[password]==2.2.3'
-
-
