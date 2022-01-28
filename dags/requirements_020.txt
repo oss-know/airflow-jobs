@@ -1,3 +1,5 @@
+# 请使用 ./install_requirements.sh 安装依赖
+
 apache-airflow>=2.2.3
 apache-airflow-providers-postgres==2.4.0
 apache-airflow-providers-redis==2.0.1
@@ -14,12 +16,9 @@ PyGithub>=1.54.1
 GitPython>=3.1.24
 opensearch-py>=1.0.0
 clickhouse-driver>=0.2.2
-clickhouse-driver[lz4,zstd,numpy]>=0.2.2
 mysqlclient>=2.1.0
 
 loguru>=0.5.3
 psycopg2-binary>=2.9.2
 tenacity>=8.0.1
-
 geopy>=2.2.0
-grimoire-elk>=0.98.0
