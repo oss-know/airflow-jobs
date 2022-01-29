@@ -116,7 +116,7 @@ def get_country_from_developer_profile(latest_github_profile):
         latest_github_profile["infer_country_from_company"] = infer_country_from_company(
             latest_github_profile["company"]) if latest_github_profile["company"] else None
     except Exception as error:
-        logger.error(f"psycopg2.DatabaseError:{error}")
+        logger.error(f"error occurs when inferring country, {error}")
         latest_github_profile["infer_country_from_email_cctld"] = None
         latest_github_profile["infer_country_from_email_domain_company"] = None
         latest_github_profile["infer_country_from_location"] = None
