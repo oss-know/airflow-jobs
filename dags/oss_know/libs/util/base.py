@@ -2,6 +2,7 @@ import urllib3
 import redis
 import re
 from tenacity import *
+from multidict import CIMultiDict
 from opensearchpy import OpenSearch
 from geopy.geocoders import GoogleV3
 from oss_know.libs.base_dict.infer_file import CCTLD, COMPANY_COUNTRY
@@ -89,7 +90,7 @@ def infer_country_from_location(githubLocation):
         """
     from airflow.models import Variable
     api_token = Variable.get("LocationGeo_token", deserialize_json=True)
-    geolocator = GoogleV3(api_key=api_token)
+    geolocator = GoogleV3(api_key=str(api_token))
     return geolocator.geocode(githubLocation, language='en').address.split(',')[-1].strip()
 
 def infer_country_from_company(company):
@@ -98,7 +99,27 @@ def infer_country_from_company(company):
         :return country_name  : the english name of a country
         """
     company = company.replace("@"," ").lower().strip()
-    if company in COMPANY_COUNTRY.keys():
-        return COMPANY_COUNTRY[company]
+    company_country= CIMultiDict(COMPANY_COUNTRY)
+    if company in company_country.keys():
+        return company_country[company]
     else:
         return None
+
+def get_country_from_developer_profile(latest_github_profile):
+    try:
+        latest_github_profile["infer_country_from_email_cctld"] = infer_country_from_emailcctld(
+            latest_github_profile["email"]) if latest_github_profile["email"] else None
+        latest_github_profile["infer_country_from_email_domain_company"] = infer_country_from_emaildomain(
+            latest_github_profile["email"]) if latest_github_profile["email"] else None
+        latest_github_profile["infer_country_from_location"] = infer_country_from_location(
+            latest_github_profile["location"]) if latest_github_profile["location"] else None
+        latest_github_profile["infer_country_from_company"] = infer_country_from_company(
+            latest_github_profile["company"]) if latest_github_profile["company"] else None
+    except Exception as error:
+        logger.error(f"psycopg2.DatabaseError:{error}")
+        latest_github_profile["infer_country_from_email_cctld"] = None
+        latest_github_profile["infer_country_from_email_domain_company"] = None
+        latest_github_profile["infer_country_from_location"] = None
+        latest_github_profile["infer_country_from_company"] = None
+
+

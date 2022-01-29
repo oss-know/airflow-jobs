@@ -15,7 +15,7 @@ import requests
 from oss_know.libs.util.airflow import get_postgres_conn
 from oss_know.libs.util.log import logger
 from oss_know.libs.util.github_api import GithubAPI
-from oss_know.libs.util.base import infer_country_from_emailcctld, infer_country_from_emaildomain, infer_country_from_location, infer_country_from_company
+from oss_know.libs.util.base import get_country_from_developer_profile
 
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COMMITS, OPENSEARCH_INDEX_GITHUB_ISSUES, \
     OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE, OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, \
@@ -144,10 +144,7 @@ class OpensearchAPI:
                 latest_github_profile = github_api.get_latest_github_profile(http_session=session,
                                                                              github_tokens_iter=github_tokens_iter,
                                                                              user_id=github_id)
-                latest_github_profile["country_from_email_cctld"] = infer_country_from_emailcctld(latest_github_profile["email"]) if latest_github_profile["email"] else None
-                latest_github_profile["country_from_emaildomain"] = infer_country_from_emaildomain(latest_github_profile["email"]) if latest_github_profile["email"] else None
-                latest_github_profile["country_from_location"] = infer_country_from_location(latest_github_profile["location"]) if latest_github_profile["location"] else None
-                latest_github_profile["country_from_company"] = infer_country_from_company(latest_github_profile["company"]) if latest_github_profile["company"] else None
+                get_country_from_developer_profile(latest_github_profile)
                 opensearch_client.index(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
                                         body={"search_key": {
                                             'updated_at': int(datetime.datetime.now().timestamp()*1000)},
