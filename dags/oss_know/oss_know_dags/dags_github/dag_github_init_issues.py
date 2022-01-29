@@ -16,13 +16,13 @@ with DAG(
         return 'End:scheduler_init_sync_github_issues'
 
 
-    op_scheduler_init_sync_github_issues = PythonOperator(
-        task_id='scheduler_init_sync_github_issues',
+    op_scheduler_init_github_issues = PythonOperator(
+        task_id='op_scheduler_init_github_issues',
         python_callable=scheduler_init_sync_github_issues
     )
 
 
-    def do_init_sync_github_issues(params):
+    def do_init_github_issues(params):
         from airflow.models import Variable
         from oss_know.libs.github import init_issues
 
@@ -46,11 +46,11 @@ with DAG(
     need_init_github_issues_repos = Variable.get(NEED_INIT_GITHUB_ISSUES_REPOS, deserialize_json=True)
 
     for init_github_issues_repo in need_init_github_issues_repos:
-        op_do_init_sync_github_issues = PythonOperator(
-            task_id='do_init_sync_github_commit_{owner}_{repo}'.format(
+        op_do_init_github_issues = PythonOperator(
+            task_id='do_init_github_issues_{owner}_{repo}'.format(
                 owner=init_github_issues_repo["owner"],
                 repo=init_github_issues_repo["repo"]),
-            python_callable=do_init_sync_github_issues,
+            python_callable=do_init_github_issues,
             op_kwargs={'params': init_github_issues_repo},
         )
-        op_scheduler_init_sync_github_issues >> op_do_init_sync_github_issues
+        op_scheduler_init_github_issues >> op_do_init_github_issues
