@@ -118,12 +118,14 @@ def init_github_issues_comments(github_tokens, opensearch_conn_info, owner, repo
 
             one_page_github_issues_comments = req.json()
 
+            logger.debug(f"one_page_github_issues_comments:{one_page_github_issues_comments}")
+
             if (one_page_github_issues_comments is not None) and len(one_page_github_issues_comments) == 0:
-                logger.info(f"init sync github issues end to break:{owner}/{repo} page_index:{page}")
+                logger.info(f"init sync github issues end to break:{owner}/{repo}/#{number} page_index:{page}")
                 break
 
             opensearch_api.bulk_github_issues_comments(opensearch_client=opensearch_client,
                                                        issues_comments=one_page_github_issues_comments,
                                                        owner=owner, repo=repo, number=number)
 
-            logger.info(f"success get github issues page:{owner}/{repo} page_index:{page}")
+            logger.info(f"success get github issues page:{owner}/{repo}/#{number} page_index:{page}")
