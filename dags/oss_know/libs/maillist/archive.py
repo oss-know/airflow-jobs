@@ -183,6 +183,14 @@ def sync_archive(opensearch_conn_info, **maillist_params):
         repo = Pipermail(url=archive.url_prefix, dirpath=archive.dirpath)
         ocean_backend = PipermailOcean(None)
         enrich_backend = OSSKnowPipermailEnrich(project_name, list_name)
+    elif archive_type == 'mbox':
+        path.join(project_name, list_name)
+        project_name = maillist_params['project_name']
+        list_name = maillist_params['list_name']
+        url_prefix = maillist_params['url_prefix']
+        repo = MBox(uri=url_prefix, dirpath=path.join(project_name, list_name))
+        ocean_backend = MBoxOcean(None)
+        enrich_backend = OSSKnowMBoxEnrich(project_name, list_name)
 
     os_user = opensearch_conn_info["USER"]
     os_pass = opensearch_conn_info["PASSWD"]
