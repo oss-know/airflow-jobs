@@ -73,6 +73,7 @@ def create_ck_table(df,
         # 去除包含raw_data的前缀
         if index.startswith('raw_data'):
             index = index[9:]
+        index = index.replace('.', '__')
         # ck中单个字段的字段名称和字段的类型 拼接的字符串
         data_type_outer = f"`{index}` String"
         # 将数据进行类型的转换，有些类型但是pandas中独有的类型

@@ -1,13 +1,10 @@
-import time
-import datetime
-import numpy
+import json
 from loguru import logger
 from opensearchpy import helpers
-from pandas import json_normalize
-from oss_know.libs.base_dict.clickhouse import CLICKHOUSE_RAW_DATA
+import pandas as pd
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_CHECK_SYNC_DATA
 from oss_know.libs.clickhouse.init_ck_transfer_data import parse_data, get_table_structure, ck_check_point, \
-    utc_timestamp, transfer_data
+    utc_timestamp
 from oss_know.libs.util.base import get_opensearch_client
 from oss_know.libs.util.clickhouse_driver import CKServer
 
@@ -66,7 +63,6 @@ def get_data_from_opensearch(opensearch_index, opensearch_conn_datas, clickhouse
 
                         "search_key.updated_at": {
 
-
                             "gt": last_check_timestamp
                         }
                     }}
@@ -77,7 +73,43 @@ def get_data_from_opensearch(opensearch_index, opensearch_conn_datas, clickhouse
     return results, opensearch_client
 
 
-
+def sync_transfer_data_spacial(clickhouse_server_info, opensearch_index, table_name, opensearch_conn_datas):
+    ck = CKServer(host=clickhouse_server_info["HOST"],
+                  port=clickhouse_server_info["PORT"],
+                  user=clickhouse_server_info["USER"],
+                  password=clickhouse_server_info["PASSWD"],
+                  database=clickhouse_server_info["DATABASE"])
+    fields = get_table_structure(table_name=table_name, ck=ck)
+    opensearch_datas = get_data_from_opensearch(opensearch_index=opensearch_index,
+                                                opensearch_conn_datas=opensearch_conn_datas,
+                                                clickhouse_table=table_name)
+    max_timestamp = 0
+    count = 0
+    # 把os中的数据一条一条拿出来
+    for os_data in opensearch_datas[0]:
+        updated_at = os_data["_source"]["search_key"]["updated_at"]
+        if updated_at > max_timestamp:
+            max_timestamp = updated_at
+        insert_data = {}
+        insert_data['search_key__owner'] = os_data["_source"]["search_key"]['owner']
+        insert_data['search_key__repo'] = os_data["_source"]["search_key"]['repo']
+        insert_data['search_key__number'] = os_data["_source"]["search_key"]['number']
+        insert_data['search_key__updated_at'] = os_data["_source"]["search_key"]['updated_at']
+        raw_data = os_data["_source"]["raw_data"]
+        standard_data = json.dumps(raw_data, separators=(',', ':'), ensure_ascii=False)
+        insert_data['timeline_raw'] = standard_data
+        sql = f"INSERT INTO {table_name} (*) VALUES"
+        count += 1
+        if count % 5000 == 0:
+            logger.info(f"已经插入的数据条数:{count}")
+        result = ck.execute(sql, [insert_data])
+    logger.info(f"已经插入的数据条数:{count}")
+    # 将检查点放在这里插入
+    ck_check_point(opensearch_client=opensearch_datas[1],
+                   opensearch_index=opensearch_index,
+                   clickhouse_table=table_name,
+                   updated_at=max_timestamp)
+    ck.close()
 
 
 def sync_transfer_data(clickhouse_server_info, opensearch_index, table_name, opensearch_conn_datas):
@@ -96,7 +128,7 @@ def sync_transfer_data(clickhouse_server_info, opensearch_index, table_name, ope
         updated_at = os_data["_source"]["search_key"]["updated_at"]
         if updated_at > max_timestamp:
             max_timestamp = updated_at
-        df = json_normalize(os_data["_source"])
+        df = pd.json_normalize(os_data["_source"])
         dict_data = parse_data(df)
         fields_have_no_data = []
         for field in fields:

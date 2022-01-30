@@ -1,9 +1,9 @@
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from pandas import json_normalize
 # clickhouse_init_sync_v0.0.1
-from oss_know.libs.base_dict.variable_key import NEED_CK_TABLE_INFOS, CLICKHOUSE_DRIVER_INFO, TRANSFER_DATA_OS_INDEX_AND_CK_TBNAME
+from oss_know.libs.base_dict.variable_key import NEED_CK_TABLE_INFOS, CLICKHOUSE_DRIVER_INFO, \
+    TRANSFER_DATA_OS_INDEX_AND_CK_TBNAME
 
 with DAG(
         dag_id='init_ck_transfer_data',
@@ -29,10 +29,17 @@ with DAG(
         table_name = params["CK_TABLE_NAME"]
         opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
         clickhouse_server_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
-        transfer_data = init_ck_transfer_data.transfer_data(clickhouse_server_info=clickhouse_server_info,
-                                                       opensearch_index=opensearch_index,
-                                                       table_name=table_name,
-                                                       opensearch_conn_datas=opensearch_conn_datas)
+        if table_name == 'github_issues_timeline':
+            transfer_data = init_ck_transfer_data.transfer_data_special(clickhouse_server_info=clickhouse_server_info,
+                                                                        opensearch_index=opensearch_index,
+                                                                        table_name=table_name,
+                                                                        opensearch_conn_datas=opensearch_conn_datas)
+        else:
+
+            transfer_data = init_ck_transfer_data.transfer_data(clickhouse_server_info=clickhouse_server_info,
+                                                                opensearch_index=opensearch_index,
+                                                                table_name=table_name,
+                                                                opensearch_conn_datas=opensearch_conn_datas)
         return 'do_ck_transfer_data:::end'
 
 
