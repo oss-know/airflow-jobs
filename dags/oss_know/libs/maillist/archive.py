@@ -203,17 +203,20 @@ def sync_archive(opensearch_conn_info, **maillist_params):
     elastic_ocean = get_elastic(os_url, OPENSEARCH_INDEX_MAILLISTS, clear_existing_indices, ocean_backend)
     ocean_backend.set_elastic(elastic_ocean)
 
-    num_raw = _data2es(repo.fetch(), ocean_backend, project_name, list_name)
-    logger.info(f'{num_raw} records for mail list {project_name}/{list_name}')
+    try:
+        num_raw = _data2es(repo.fetch(), ocean_backend, project_name, list_name)
+        logger.info(f'{num_raw} records for mail list {project_name}/{list_name}')
 
-    enrich_backend.mapping = None
-    elastic_enrich = get_elastic(os_url, f'{OPENSEARCH_INDEX_MAILLISTS}_enriched', clear_existing_indices,
-                                 enrich_backend)
-    enrich_backend.set_elastic(elastic_enrich)
+        enrich_backend.mapping = None
+        elastic_enrich = get_elastic(os_url, f'{OPENSEARCH_INDEX_MAILLISTS}_enriched', clear_existing_indices,
+                                    enrich_backend)
+        enrich_backend.set_elastic(elastic_enrich)
 
-    # TODO What does the param [sortinghat] and [projects] do here?
-    num_enriched = enrich_backend.enrich_items(ocean_backend)
-    logger.info(f'{num_enriched} enriched records for mail list {project_name}/{list_name}')
+        # TODO What does the param [sortinghat] and [projects] do here?
+        num_enriched = enrich_backend.enrich_items(ocean_backend)
+        logger.info(f'{num_enriched} enriched records for mail list {project_name}/{list_name}')
+    except Exception as e:
+        logger.error(f'Failed to sync archive of {project_name}/{list_name}: {e}')
 
 
 # The 2 helpers are yanked from:
