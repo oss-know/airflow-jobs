@@ -100,7 +100,7 @@ def infer_country_from_location(githubLocation):
         """
     from airflow.models import Variable
     api_token = Variable.get(LOCATIONGEO_TOKEN, deserialize_json=True)
-    geolocator = GoogleV3(api_key=str(api_token))
+    geolocator = GoogleV3(api_key=api_token)
     return geolocator.geocode(githubLocation, language='en').address.split(',')[-1].strip()
 
 
