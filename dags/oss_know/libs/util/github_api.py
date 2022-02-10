@@ -60,8 +60,9 @@ class GithubAPI:
                     'bio': '', 'twitter_username': '', 'public_repos': 0, 'public_gists': 0, 'followers': 0,
                     'following': 0,
                     'created_at': '1970-01-01T00:00:00Z', 'updated_at': '1970-01-01T00:00:00Z',
-                    'country_from_email_cctld': '', 'country_from_email_domain_company': '',
-                    'country_from_location': '', 'country_from_company': ''}
+                    'country_inferred_from_email_cctld': '', 'country_inferred_from_email_domain_company': '',
+                    'country_inferred_from_location': '', 'country_inferred_from_company': '',
+                    'company_inferred_from_email_domain_company': '', 'inferred_from_location': ''}
         else:
             logger.info(f"Get GitHub {user_id}'s latest profile from GitHUb.")
             return latest_github_profile

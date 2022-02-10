@@ -1,13 +1,15 @@
-import urllib3
-import redis
 import re
-from tenacity import *
+
+import redis
+import requests
+import urllib3
+from geopy.geocoders import GoogleV3
 from multidict import CIMultiDict
 from opensearchpy import OpenSearch
-from geopy.geocoders import GoogleV3
+from tenacity import *
+
 from oss_know.libs.base_dict.infer_file import CCTLD, COMPANY_COUNTRY
 from oss_know.libs.base_dict.variable_key import LOCATIONGEO_TOKEN
-
 from ..util.log import logger
 
 
@@ -93,6 +95,7 @@ def infer_company_from_emaildomain(email):
     else:
         return None
 
+
 def infer_country_from_location(githubLocation):
     """
         :param  githubLocation: the location given by github
@@ -101,7 +104,25 @@ def infer_country_from_location(githubLocation):
     from airflow.models import Variable
     api_token = Variable.get(LOCATIONGEO_TOKEN, deserialize_json=True)
     geolocator = GoogleV3(api_key=api_token)
-    return geolocator.geocode(githubLocation, language='en').address.split(',')[-1].strip()
+    geo_res = geolocator.geocode(githubLocation, language='en')
+    if geo_res:
+        return geo_res.address.split(',')[-1].strip()
+    return None
+
+
+def infer_all_info_from_location(githubLocation):
+    """
+           :param  githubLocation: the location given by github
+           :return country_name  : the english name of a country
+           """
+    from airflow.models import Variable
+    api_token = Variable.get(LOCATIONGEO_TOKEN, deserialize_json=True)
+    geolocator = GoogleV3(api_key=api_token)
+    geo_res = geolocator.geocode(githubLocation, language='en')
+    if geo_res:
+        return geo_res.address
+    return None
+
 
 
 def infer_country_from_company(company):
@@ -123,7 +144,8 @@ def infer_country_insert_into_profile(latest_github_profile):
             ("country_inferred_from_email_domain_company", "email", infer_country_from_emaildomain),
             ("country_inferred_from_location", "location", infer_country_from_location),
             ("country_inferred_from_company", "company", infer_country_from_company),
-            ("company_inferred_from_email_domain_company", "email", infer_company_from_emaildomain)
+            ("company_inferred_from_email_domain_company", "email", infer_company_from_emaildomain),
+            ("inferred_from_location", "location", infer_all_info_from_location)
         ]
 
         for tup in inferiors:
@@ -131,10 +153,11 @@ def infer_country_insert_into_profile(latest_github_profile):
             original_property = latest_github_profile[original_key]
             latest_github_profile[key] = infer(original_property) if original_property else None
 
-    except HttpGetException as error:
+    except (urllib3.exceptions.MaxRetryError, requests.exceptions.ProxyError) as error:
         logger.error(f"error occurs when inferring country, {error}")
         latest_github_profile["country_inferred_from_email_cctld"] = None
         latest_github_profile["country_inferred_from_email_domain_company"] = None
         latest_github_profile["country_inferred_from_location"] = None
         latest_github_profile["country_inferred_from_company"] = None
         latest_github_profile["company_inferred_from_email_domain_company"] = None
+        latest_github_profile["inferred_from_location"] = None
