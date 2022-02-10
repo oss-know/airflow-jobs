@@ -117,22 +117,22 @@ def infer_country_from_company(company):
 
 
 def infer_country_insert_into_profile(latest_github_profile):
-    # try:
-    inferiors = [
-        ("country_from_email_cctld", "email", infer_country_from_emailcctld),
-        ("country_from_email_domain_company", "email", infer_country_from_emaildomain),
-        ("country_from_location", "location", infer_country_from_location),
-        ("country_from_company", "company", infer_country_from_company)
-    ]
+    try:
+        inferiors = [
+            ("country_from_email_cctld", "email", infer_country_from_emailcctld),
+            ("country_from_email_domain_company", "email", infer_country_from_emaildomain),
+            ("country_from_location", "location", infer_country_from_location),
+            ("country_from_company", "company", infer_country_from_company)
+        ]
 
-    for tup in inferiors:
-        key, original_key, infer = tup
-        original_property = latest_github_profile[original_key]
-        latest_github_profile[key] = infer(original_property) if original_property else None
+        for tup in inferiors:
+            key, original_key, infer = tup
+            original_property = latest_github_profile[original_key]
+            latest_github_profile[key] = infer(original_property) if original_property else None
 
-    # except Exception as error:
-        # logger.error(f"error occurs when inferring country, {error}")
-        # latest_github_profile["country_from_email_cctld"] = None
-        # latest_github_profile["country_from_email_domain_company"] = None
-        # latest_github_profile["country_from_location"] = None
-        # latest_github_profile["country_from_company"] = None
+    except HttpGetException as error:
+        logger.error(f"error occurs when inferring country, {error}")
+        latest_github_profile["country_from_email_cctld"] = None
+        latest_github_profile["country_from_email_domain_company"] = None
+        latest_github_profile["country_from_location"] = None
+        latest_github_profile["country_from_company"] = None
