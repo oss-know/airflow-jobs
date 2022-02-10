@@ -76,12 +76,22 @@ def infer_country_from_emaildomain(email):
         :param  company: the company given by github
         :return country_name  : the english name of a country
         """
-    emaildomain = str(re.findall(r"@(.+?)\.",email))
+    emaildomain = str(re.findall(r"@(.+?)\.", email))
     if emaildomain in COMPANY_COUNTRY.keys():
         return COMPANY_COUNTRY[emaildomain]
     else:
         return None
 
+def infer_company_from_emaildomain(email):
+    """
+        :param  company: the company given by github
+        :return country_name  : the english name of a country
+        """
+    emaildomain = str(re.findall(r"@(.+?)\.", email))
+    if emaildomain in COMPANY_COUNTRY.keys():
+        return emaildomain
+    else:
+        return None
 
 def infer_country_from_location(githubLocation):
     """
@@ -89,37 +99,40 @@ def infer_country_from_location(githubLocation):
         :return country_name  : the english name of a country
         """
     from airflow.models import Variable
-    api_token = Variable.get("LocationGeo_token", deserialize_json=True)
+    api_token = Variable.get(LOCATIONGEO_TOKEN, deserialize_json=True)
     geolocator = GoogleV3(api_key=str(api_token))
     return geolocator.geocode(githubLocation, language='en').address.split(',')[-1].strip()
+
 
 def infer_country_from_company(company):
     """
         :param  company: the company given by github
         :return country_name  : the english name of a country
         """
-    company = company.replace("@"," ").lower().strip()
-    company_country= CIMultiDict(COMPANY_COUNTRY)
+    company = company.replace("@", " ").lower().strip()
+    company_country = CIMultiDict(COMPANY_COUNTRY)
     if company in company_country.keys():
         return company_country[company]
-    else:
-        return None
-
-def get_country_from_developer_profile(latest_github_profile):
-    try:
-        latest_github_profile["infer_country_from_email_cctld"] = infer_country_from_emailcctld(
-            latest_github_profile["email"]) if latest_github_profile["email"] else None
-        latest_github_profile["infer_country_from_email_domain_company"] = infer_country_from_emaildomain(
-            latest_github_profile["email"]) if latest_github_profile["email"] else None
-        latest_github_profile["infer_country_from_location"] = infer_country_from_location(
-            latest_github_profile["location"]) if latest_github_profile["location"] else None
-        latest_github_profile["infer_country_from_company"] = infer_country_from_company(
-            latest_github_profile["company"]) if latest_github_profile["company"] else None
-    except Exception as error:
-        logger.error(f"error occurs when inferring country, {error}")
-        latest_github_profile["infer_country_from_email_cctld"] = None
-        latest_github_profile["infer_country_from_email_domain_company"] = None
-        latest_github_profile["infer_country_from_location"] = None
-        latest_github_profile["infer_country_from_company"] = None
+    return None
 
 
+def infer_country_insert_into_profile(latest_github_profile):
+    # try:
+    inferiors = [
+        ("country_from_email_cctld", "email", infer_country_from_emailcctld),
+        ("country_from_email_domain_company", "email", infer_country_from_emaildomain),
+        ("country_from_location", "location", infer_country_from_location),
+        ("country_from_company", "company", infer_country_from_company)
+    ]
+
+    for tup in inferiors:
+        key, original_key, infer = tup
+        original_property = latest_github_profile[original_key]
+        latest_github_profile[key] = infer(original_property) if original_property else None
+
+    # except Exception as error:
+        # logger.error(f"error occurs when inferring country, {error}")
+        # latest_github_profile["country_from_email_cctld"] = None
+        # latest_github_profile["country_from_email_domain_company"] = None
+        # latest_github_profile["country_from_location"] = None
+        # latest_github_profile["country_from_company"] = None
