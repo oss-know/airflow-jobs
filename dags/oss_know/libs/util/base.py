@@ -130,7 +130,19 @@ def infer_country_from_company(company):
     company = company.replace("@", " ").lower().strip()
     company_country = CIMultiDict(COMPANY_COUNTRY)
     if company in company_country:
-        return company_country[company]
+        return company_country[company][0]
+    return None
+
+
+def infer_final_company_from_company(company):
+    """
+        :param  company: the company given by github
+        :return country_name  : the english name of a country
+        """
+    company = company.replace("@", " ").lower().strip()
+    company_country = CIMultiDict(COMPANY_COUNTRY)
+    if company in company_country:
+        return company_country[company][1]
     return None
 
 
@@ -139,6 +151,7 @@ inferrers = [
         ("country_inferred_from_email_domain_company", "email", infer_country_from_emaildomain),
         ("country_inferred_from_location", "location", infer_country_from_location),
         ("country_inferred_from_company", "company", infer_country_from_company),
+        ("final_company_inferred_from_company", "company", infer_final_company_from_company),
         ("company_inferred_from_email_domain_company", "email", infer_company_from_emaildomain),
         ("inferred_from_location", "location", infer_all_info_from_location)
     ]
