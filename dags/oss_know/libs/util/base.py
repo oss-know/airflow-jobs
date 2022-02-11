@@ -67,10 +67,9 @@ def infer_country_from_emailcctld(email):
         :return country_name  : the english name of a country
         """
     profile_domain = email.split(".")[-1].upper()
-    if profile_domain in CCTLD.keys():
+    if profile_domain in CCTLD:
         return CCTLD[profile_domain]
-    else:
-        return None
+    return None
 
 
 def infer_country_from_emaildomain(email):
@@ -79,10 +78,9 @@ def infer_country_from_emaildomain(email):
         :return country_name  : the english name of a country
         """
     emaildomain = str(re.findall(r"@(.+?)\.", email))
-    if emaildomain in COMPANY_COUNTRY.keys():
+    if emaildomain in COMPANY_COUNTRY:
         return COMPANY_COUNTRY[emaildomain]
-    else:
-        return None
+    return None
 
 def infer_company_from_emaildomain(email):
     """
@@ -90,10 +88,9 @@ def infer_company_from_emaildomain(email):
         :return country_name  : the english name of a country
         """
     emaildomain = str(re.findall(r"@(.+?)\.", email))
-    if emaildomain in COMPANY_COUNTRY.keys():
+    if emaildomain in COMPANY_COUNTRY:
         return emaildomain
-    else:
-        return None
+    return None
 
 
 def infer_country_from_location(githubLocation):
@@ -132,32 +129,28 @@ def infer_country_from_company(company):
         """
     company = company.replace("@", " ").lower().strip()
     company_country = CIMultiDict(COMPANY_COUNTRY)
-    if company in company_country.keys():
+    if company in company_country:
         return company_country[company]
     return None
 
 
 def infer_country_insert_into_profile(latest_github_profile):
+    inferrers = [
+        ("country_inferred_from_email_cctld", "email", infer_country_from_emailcctld),
+        ("country_inferred_from_email_domain_company", "email", infer_country_from_emaildomain),
+        ("country_inferred_from_location", "location", infer_country_from_location),
+        ("country_inferred_from_company", "company", infer_country_from_company),
+        ("company_inferred_from_email_domain_company", "email", infer_company_from_emaildomain),
+        ("inferred_from_location", "location", infer_all_info_from_location)
+    ]
     try:
-        inferiors = [
-            ("country_inferred_from_email_cctld", "email", infer_country_from_emailcctld),
-            ("country_inferred_from_email_domain_company", "email", infer_country_from_emaildomain),
-            ("country_inferred_from_location", "location", infer_country_from_location),
-            ("country_inferred_from_company", "company", infer_country_from_company),
-            ("company_inferred_from_email_domain_company", "email", infer_company_from_emaildomain),
-            ("inferred_from_location", "location", infer_all_info_from_location)
-        ]
-
-        for tup in inferiors:
+        for tup in inferrers:
             key, original_key, infer = tup
             original_property = latest_github_profile[original_key]
             latest_github_profile[key] = infer(original_property) if original_property else None
 
     except (urllib3.exceptions.MaxRetryError, requests.exceptions.ProxyError) as error:
         logger.error(f"error occurs when inferring country, {error}")
-        latest_github_profile["country_inferred_from_email_cctld"] = None
-        latest_github_profile["country_inferred_from_email_domain_company"] = None
-        latest_github_profile["country_inferred_from_location"] = None
-        latest_github_profile["country_inferred_from_company"] = None
-        latest_github_profile["company_inferred_from_email_domain_company"] = None
-        latest_github_profile["inferred_from_location"] = None
+        for inferrer in inferrers:
+            latest_github_profile[inferrer[0]] = None
+   
