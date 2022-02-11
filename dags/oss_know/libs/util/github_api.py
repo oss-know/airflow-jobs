@@ -50,12 +50,19 @@ class GithubAPI:
             latest_github_profile = req.json()
         except TypeError as e:
             logger.error(f"捕获airflow抛出的TypeError:{e}")
-            return {'login': '', 'id': user_id, 'node_id': '', 'avatar_url': '', 'gravatar_id': '', 'url': '', 'html_url': '',
-           'followers_url': '', 'following_url': '', 'gists_url': '', 'starred_url': '', 'subscriptions_url': '',
-           'organizations_url': '', 'repos_url': '', 'events_url': '', 'received_events_url': '', 'type': '',
-           'site_admin': False, 'name': '', 'company': '', 'blog': '', 'location': '', 'email': '', 'hireable': False,
-           'bio': '', 'twitter_username': '', 'public_repos': 0, 'public_gists': 0, 'followers': 0, 'following': 0,
-           'created_at': '1970-01-01T00:00:00Z', 'updated_at': '1970-01-01T00:00:00Z'}
+            return {'login': '', 'id': user_id, 'node_id': '', 'avatar_url': '', 'gravatar_id': '', 'url': '',
+                    'html_url': '',
+                    'followers_url': '', 'following_url': '', 'gists_url': '', 'starred_url': '',
+                    'subscriptions_url': '',
+                    'organizations_url': '', 'repos_url': '', 'events_url': '', 'received_events_url': '', 'type': '',
+                    'site_admin': False, 'name': '', 'company': '', 'blog': '', 'location': '', 'email': '',
+                    'hireable': False,
+                    'bio': '', 'twitter_username': '', 'public_repos': 0, 'public_gists': 0, 'followers': 0,
+                    'following': 0,
+                    'created_at': '1970-01-01T00:00:00Z', 'updated_at': '1970-01-01T00:00:00Z',
+                    'country_inferred_from_email_cctld': '', 'country_inferred_from_email_domain_company': '',
+                    'country_inferred_from_location': '', 'country_inferred_from_company': '',
+                    'company_inferred_from_email_domain_company': '', 'inferred_from_location': ''}
         else:
             logger.info(f"Get GitHub {user_id}'s latest profile from GitHUb.")
             return latest_github_profile
