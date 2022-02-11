@@ -1,7 +1,8 @@
 import datetime
 import itertools
 import requests
-from oss_know.libs.util.base import get_opensearch_client, get_redis_client, infer_info_insert_into_profile
+from oss_know.libs.util.base import get_opensearch_client, get_redis_client, \
+    infer_country_company_geo_insert_into_profile
 from oss_know.libs.util.github_api import GithubAPI
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_PROFILE, OPENSEARCH_INDEX_CHECK_SYNC_DATA
 from oss_know.libs.base_dict.redis import STORAGE_HASH, STORAGE_IDS_SET, WORKING_HASH
@@ -89,12 +90,7 @@ def sync_github_profiles(github_tokens, opensearch_conn_info, redis_client_info,
                                                                          user_id=storage_id)
             latest_profile_updated_at = latest_github_profile["updated_at"]
             if storage_updated_at != latest_profile_updated_at:
-                try:
-                    infer_info_insert_into_profile(latest_github_profile)
-                except Exception as e:
-                    logger.error(
-                        f"Failed to infer info insert into profile when sync github profiles,the exception message: {e}，"
-                        f"the type of exception: {type(e)}")
+                infer_country_company_geo_insert_into_profile(latest_github_profile)
                 opensearch_client.index(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
                                         body={"search_key": {
                                             'updated_at': (datetime.datetime.now().timestamp() * 1000)},
