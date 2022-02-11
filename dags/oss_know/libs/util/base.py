@@ -63,9 +63,9 @@ def get_redis_client(redis_client_info):
 
 def infer_country_from_emailcctld(email):
     """
-        :param  company: the company given by github
-        :return country_name  : the english name of a country
-        """
+    :param  email: the email address
+    :return country_name  : the english name of a country
+    """
     profile_domain = email.split(".")[-1].upper()
     if profile_domain in CCTLD:
         return CCTLD[profile_domain]
@@ -74,48 +74,49 @@ def infer_country_from_emailcctld(email):
 
 def infer_country_from_emaildomain(email):
     """
-        :param  company: the company given by github
-        :return country_name  : the english name of a country
-        """
+    :param  email: the email address
+    :return country_name  : the english name of a country
+    """
     emaildomain = str(re.findall(r"@(.+?)\.", email))
     if emaildomain in COMPANY_COUNTRY:
         return COMPANY_COUNTRY[emaildomain]
     return None
 
+
 def infer_company_from_emaildomain(email):
     """
-        :param  company: the company given by github
-        :return company_name  : the english name of a company
-        """
+    :param  email: the email address
+    :return company_name  : the english name of a company
+    """
     emaildomain = str(re.findall(r"@(.+?)\.", email))
     if emaildomain in COMPANY_COUNTRY:
         return emaildomain
     return None
 
 
-def infer_country_from_location(githubLocation):
+def infer_country_from_location(github_location):
     """
-        :param  githubLocation: the location given by github
-        :return country_name  : the english name of a country
-        """
+    :param  github_location: location from a GitHub profile
+    :return country_name  : the english name of a country
+    """
     from airflow.models import Variable
     api_token = Variable.get(LOCATIONGEO_TOKEN, deserialize_json=True)
     geolocator = GoogleV3(api_key=api_token)
-    geo_res = geolocator.geocode(githubLocation, language='en')
+    geo_res = geolocator.geocode(github_location, language='en')
     if geo_res:
         return geo_res.address.split(',')[-1].strip()
     return None
 
 
-def infer_all_info_from_location(githubLocation):
+def infer_all_info_from_location(github_location):
     """
-           :param  githubLocation: the location given by github
-           :return address  : e address message got from GoogleV3API
-           """
+    :param  github_location: location from a GitHub profile
+    :return address  : raw address message got from GoogleV3API, return a string containing city, country and so on
+    """
     from airflow.models import Variable
     api_token = Variable.get(LOCATIONGEO_TOKEN, deserialize_json=True)
     geolocator = GoogleV3(api_key=api_token)
-    geo_res = geolocator.geocode(githubLocation, language='en')
+    geo_res = geolocator.geocode(github_location, language='en')
     if geo_res:
         return geo_res.address
     return None
@@ -123,9 +124,9 @@ def infer_all_info_from_location(githubLocation):
 
 def infer_country_from_company(company):
     """
-        :param  company: the company given by github
-        :return country_name  : the english name of a country
-        """
+    :param  company: the company message
+    :return country_name  : the english name of a country
+    """
     company = company.replace("@", " ").lower().strip()
     company_country = CIMultiDict(COMPANY_COUNTRY)
     if company in company_country:
@@ -135,9 +136,9 @@ def infer_country_from_company(company):
 
 def infer_final_company_from_company(company):
     """
-        :param  company: the company given by github
-        :return country_name  : the english name of a country
-        """
+    :param  company: the company message
+    :return company_name  : the english name of a company
+    """
     company = company.replace("@", " ").lower().strip()
     company_country = CIMultiDict(COMPANY_COUNTRY)
     if company in company_country:
@@ -157,7 +158,6 @@ inferrers = [
 
 
 def infer_country_insert_into_profile(latest_github_profile):
-
     try:
         for tup in inferrers:
             key, original_key, infer = tup
@@ -168,4 +168,3 @@ def infer_country_insert_into_profile(latest_github_profile):
         logger.error(f"error occurs when inferring country, {error}")
         for inferrer in inferrers:
             latest_github_profile[inferrer[0]] = None
-   
