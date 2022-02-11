@@ -41,17 +41,13 @@ with DAG(
         repo = params["repo"]
         init_ids = init_profiles.load_github_ids_by_repo(opensearch_conn_infos, owner, repo)
         kwargs['ti'].xcom_push(key=f'{owner}_{repo}_ids', value=init_ids)
-        # todo: need clean just for test
-        # github_tokens = Variable.get("github_tokens", deserialize_json=True)
-        # do_add_updated_github_profiles = sync_profiles.add_updated_github_profiles(github_tokens,
-        # opensearch_conn_infos)
 
 
     def load_github_repo_profiles(params, **kwargs):
         from airflow.models import Variable
         github_tokens = Variable.get("github_tokens", deserialize_json=True)
         opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
-        github_users_ids =[]
+        github_users_ids = []
         for param in params:
             owner = param["owner"]
             repo = param["repo"]
