@@ -85,7 +85,7 @@ def infer_country_from_emaildomain(email):
 def infer_company_from_emaildomain(email):
     """
         :param  company: the company given by github
-        :return country_name  : the english name of a country
+        :return company_name  : the english name of a company
         """
     emaildomain = str(re.findall(r"@(.+?)\.", email))
     if emaildomain in COMPANY_COUNTRY:
@@ -110,7 +110,7 @@ def infer_country_from_location(githubLocation):
 def infer_all_info_from_location(githubLocation):
     """
            :param  githubLocation: the location given by github
-           :return country_name  : the english name of a country
+           :return address  : e address message got from GoogleV3API
            """
     from airflow.models import Variable
     api_token = Variable.get(LOCATIONGEO_TOKEN, deserialize_json=True)
@@ -119,7 +119,6 @@ def infer_all_info_from_location(githubLocation):
     if geo_res:
         return geo_res.address
     return None
-
 
 
 def infer_country_from_company(company):

@@ -249,7 +249,7 @@ CCTLD = {
     }
 
 COMPANY_COUNTRY = {
-  " https://github.com/google": [
+  "https://github.com/google": [
     "USA",
     "google"
   ],
@@ -273,893 +273,725 @@ COMPANY_COUNTRY = {
     "free",
     "indepentent"
   ],
-  "@10gen ": [
+  "10gen": [
     "USA",
     "mongodb"
   ],
-  "@adobe": [
+  "adobe": [
     "USA",
     "adobe"
   ],
-  "@airbnb": [
+  "airbnb": [
     "USA",
     "airbnb"
   ],
-  "@alfresco": [
+  "alfresco": [
     "USA",
     "hyland"
   ],
-  "@Alfresco ": [
+  "Alfresco": [
     "USA",
     "hyland"
   ],
-  "@alibaba": [
+  "alibaba": [
     "China",
     "alibaba"
   ],
-  "@alibaba ": [
+  "alibaba cloud": [
     "China",
     "alibaba"
   ],
-  "@alibaba cloud": [
+  "alipay": [
     "China",
     "alibaba"
   ],
-  "@alipay": [
-    "China",
-    "alibaba"
-  ],
-  "@amzn": [
+  "amzn": [
     "USA",
     "amazon"
   ],
-  "@Ansible @ Red Hat, Inc.": [
+  "Ansible   Red Hat, Inc.": [
     "USA",
     "red hat"
   ],
-  "@apache": [
+  "apache": [
     "USA",
     "apache"
   ],
-  "@apache ": [
-    "USA",
-    "apache"
-  ],
-  "@apple": [
+  "apple": [
     "USA",
     "apple"
   ],
-  "@apple ": [
+  "apple  apache": [
     "USA",
     "apple"
   ],
-  "@apple @apache": [
-    "USA",
-    "apple"
-  ],
-  "@arangodb ": [
+  "arangodb": [
     "USA",
     "arangodb"
   ],
-  "@ARM-software": [
+  "ARM-software": [
     "UK",
     "arm"
   ],
-  "@ARM-software ": [
+  "ARM-software  ARMmbed": [
     "UK",
     "arm"
   ],
-  "@ARM-software @ARMmbed": [
+  "ARMmbed": [
     "UK",
     "arm"
   ],
-  "@ARMmbed": [
-    "UK",
-    "arm"
-  ],
-  "@atlassian": [
+  "atlassian": [
     "Sydney",
     "atlassian"
   ],
-  "@atlassian ": [
-    "Sydney",
-    "atlassian"
-  ],
-  "@auth0": [
+  "auth0": [
     "USA",
     "auth0"
   ],
-  "@auth0 ": [
-    "USA",
-    "auth0"
-  ],
-  "@aws": [
+  "aws": [
     "USA",
     "amazon"
   ],
-  "@aws ": [
+  "awslabs": [
     "USA",
     "amazon"
   ],
-  "@awslabs ": [
-    "USA",
-    "amazon"
-  ],
-  "@Azure @Microsoft ": [
+  "Azure  Microsoft": [
     "USA",
     "microsoft"
   ],
-  "@BackMarket ": [
+  "BackMarket": [
     "France",
     "back market"
   ],
-  "@bbc": [
+  "bbc": [
     "UK",
     "bbc"
   ],
-  "@Bloomberg": [
+  "Bloomberg": [
     "USA",
     "bloomberg"
   ],
-  "@brain-research @Google-Research": [
+  "brain-research  Google-Research": [
     "USA",
     "google"
   ],
-  "@Bytedance": [
+  "Bytedance": [
     "China",
     "bytedance"
   ],
-  "@camunda ": [
+  "camunda": [
     "Germany",
     "camunda"
   ],
-  "@CanonicalLtd": [
+  "CanonicalLtd": [
     "UK",
     "canonical"
   ],
-  "@Canva ": [
+  "Canva": [
     "USA",
     "canva"
   ],
-  "@CapitalOne": [
+  "CapitalOne": [
     "USA",
     "capital one"
   ],
-  "@cerner": [
+  "cerner": [
     "USA",
     "cerner"
   ],
-  "@cloudera": [
+  "cloudera": [
     "USA",
     "cloudera"
   ],
-  "@Cloudera @apache": [
+  "Cloudera  apache": [
     "USA",
     "cloudera"
   ],
-  "@cloudflare": [
+  "cloudflare": [
     "USA",
     "cloudflare"
   ],
-  "@cloudflare ": [
+  "cloudflare": [
     "USA",
     "cloudflare"
   ],
-  "@codecentric ": [
+  "codecentric": [
     "Germany",
     "codecentric"
   ],
-  "@cohere-ai @VectorInstitute @Google": [
+  "cohere-ai  VectorInstitute  Google": [
     "USA",
     "google"
   ],
-  "@collabora": [
+  "collabora": [
     "UK",
     "collabora"
   ],
-  "@Comcast": [
+  "Comcast": [
     "USA",
     "comcast"
   ],
-  "@confluentinc": [
+  "confluentinc": [
     "USA",
     "confluent"
   ],
-  "@confluentinc ": [
-    "USA",
-    "confluent"
-  ],
-  "@cookpad": [
+  "cookpad": [
     "UK",
     "cookpad"
   ],
-  "@dailymotion ": [
+  "dailymotion": [
     "France",
     "dailymotion"
   ],
-  "@dart-lang @flutter @google": [
+  "dart-lang  flutter  google": [
     "USA",
     "google"
   ],
-  "@databricks": [
+  "databricks": [
     "USA",
     "databricks"
   ],
-  "@databricks ": [
-    "USA",
-    "databricks"
-  ],
-  "@Datadog": [
+  "Datadog": [
     "USA",
     "datadog"
   ],
-  "@DataDog ": [
+  "DataDog": [
     "USA",
     "datadog"
   ],
-  "@datastax": [
+  "datastax": [
     "USA",
     "datastax"
   ],
-  "@digitalocean ": [
+  "digitalocean": [
     "USA",
     "digitalocean"
   ],
-  "@docker ": [
+  "docker": [
     "USA",
     "docker"
   ],
-  "@dropbox": [
+  "dropbox": [
     "USA",
     "dropbox"
   ],
-  "@dropbox ": [
-    "USA",
-    "dropbox"
-  ],
-  "@Dynatrace ": [
+  "Dynatrace": [
     "USA",
     "dynatrace"
   ],
-  "@eBay": [
+  "eBay": [
     "USA",
     "ebay"
   ],
-  "@elastic": [
+  "elastic": [
     "USA/Dytch",
     "elastic"
   ],
-  "@elastic ": [
+  "elastic": [
     "USA/Dytch",
     "elastic"
   ],
-  "@eldonlabs @google @devcolor": [
+  "eldonlabs  google  devcolor": [
     "USA",
     "google"
   ],
-  "@EPAM": [
+  "EPAM": [
     "USA",
     "epam system"
   ],
-  "@Facebook": [
+  "Facebook": [
     "USA",
     "facebook"
   ],
-  "@facebook ": [
+  "facebook": [
     "USA",
     "facebook"
   ],
-  "@facebookresearch": [
+  "facebookresearch": [
     "USA",
     "facebook"
   ],
-  "@fastly": [
+  "fastly": [
     "USA",
     "fastly"
   ],
-  "@fastly ": [
-    "USA",
-    "fastly"
-  ],
-  "@getsentry ": [
+  "getsentry": [
     "USA",
     "sentry"
   ],
-  "@github": [
+  "github": [
     "USA",
     "github"
   ],
-  "@github ": [
-    "USA",
-    "github"
-  ],
-  "@godaddy": [
+  "godaddy": [
     "USA",
     "godaddy"
   ],
-  "@google": [
+  "google": [
     "USA",
     "google"
   ],
-  "@google ": [
+  "google  android": [
     "USA",
     "google"
   ],
-  "@google  ": [
+  "google  bazelbuild": [
     "USA",
     "google"
   ],
-  "@google @android": [
+  "google  dart-lang  flutter": [
     "USA",
     "google"
   ],
-  "@google @bazelbuild ": [
+  "google  golang": [
     "USA",
     "google"
   ],
-  "@google @dart-lang @flutter ": [
+  "google  GoogleCloudPlatform": [
     "USA",
     "google"
   ],
-  "@google @golang ": [
+  "google  spinnaker": [
     "USA",
     "google"
   ],
-  "@google @GoogleCloudPlatform ": [
+  "google  tensorflow": [
     "USA",
     "google"
   ],
-  "@google @spinnaker ": [
+  "google Switzerland GmbH": [
     "USA",
     "google"
   ],
-  "@google @tensorflow ": [
+  "google working on  android": [
     "USA",
     "google"
   ],
-  "@google Switzerland GmbH": [
+  "Google,  Dart-Lang": [
     "USA",
     "google"
   ],
-  "@google working on @android": [
+  "google,  gorilla": [
     "USA",
     "google"
   ],
-  "@Google, @Dart-Lang": [
+  "Google, Go team": [
     "USA",
     "google"
   ],
-  "@google, @gorilla ": [
+  "googleapis": [
     "USA",
     "google"
   ],
-  "@Google, Go team": [
+  "GoogleCloudPlatform": [
     "USA",
     "google"
   ],
-  "@googleapis": [
+  "GoogleCloudPlatform": [
     "USA",
     "google"
   ],
-  "@GoogleCloudPlatform": [
+  "GoogleCloudPlatform  googleapis  open-telemetry  cloudevents": [
     "USA",
     "google"
   ],
-  "@GoogleCloudPlatform ": [
+  "googlers": [
     "USA",
     "google"
   ],
-  "@GoogleCloudPlatform @googleapis @open-telemetry @cloudevents ": [
-    "USA",
-    "google"
-  ],
-  "@googlers ": [
-    "USA",
-    "google"
-  ],
-  "@Gradle": [
+  "Gradle": [
     "USA",
     "gradle"
   ],
-  "@gradle ": [
+  "gradle": [
     "USA",
     "gradle"
   ],
-  "@grafana": [
+  "grafana": [
     "USA",
     "grafana"
   ],
-  "@grafana ": [
+  "grafana": [
     "USA",
     "grafana"
   ],
-  "@h2oai ": [
+  "h2oai": [
     "USA",
     "h2oai"
   ],
-  "@hashicorp": [
+  "hashicorp": [
     "USA",
     "hashicorp"
   ],
-  "@hashicorp ": [
-    "USA",
-    "hashicorp"
-  ],
-  "@heroku": [
+  "heroku": [
     "USA",
     "heroku"
   ],
-  "@hortonworks ": [
+  "hortonworks": [
     "USA",
     "hortonworks"
   ],
-  "@huawei": [
+  "huawei": [
     "China",
     "huawei"
   ],
-  "@IBM": [
+  "IBM": [
     "USA",
     "ibm"
   ],
-  "@IBM ": [
+  "IBMResearch": [
     "USA",
     "ibm"
   ],
-  "@IBMResearch ": [
-    "USA",
-    "ibm"
-  ],
-  "@Igalia ": [
+  "Igalia": [
     "Galicia",
     "igalia"
   ],
-  "@implydata": [
+  "implydata": [
     "USA",
     "implydata"
   ],
-  "@implydata ": [
-    "USA",
-    "implydata"
-  ],
-  "@influxdata": [
+  "influxdata": [
     "USA",
     "influxdata"
   ],
-  "@influxdata ": [
-    "USA",
-    "influxdata"
-  ],
-  "@instacart ": [
+  "instacart": [
     "USA",
     "instacart"
   ],
-  "@intel": [
+  "intel": [
     "USA",
     "intel"
   ],
-  "@intel ": [
-    "USA",
-    "intel"
-  ],
-  "@JetBrains": [
+  "JetBrains": [
     "USA",
     "jetbrains"
   ],
-  "@JetBrains ": [
-    "USA",
-    "jetbrains"
-  ],
-  "@jetstack": [
+  "jetstack": [
     "UK",
     "jetstack"
   ],
-  "@kakao": [
+  "kakao": [
     "Korea",
     "kakao"
   ],
-  "@kinvolk ": [
+  "kinvolk": [
     "Germany",
     "kinvolk"
   ],
-  "@Kitware": [
+  "Kitware": [
     "USA",
     "kitware"
   ],
-  "@Kitware ": [
-    "USA",
-    "kitware"
-  ],
-  "@Kong": [
+  "Kong": [
     "USA",
     "kong"
   ],
-  "@Kong ": [
-    "USA",
-    "kong"
-  ],
-  "@lightbend": [
+  "lightbend": [
     "USA",
     "lightbend"
   ],
-  "@LINAGORA": [
+  "LINAGORA": [
     "France",
     "linagora"
   ],
-  "@Linaro": [
+  "Linaro": [
     "UK",
     "linaro"
   ],
-  "@line": [
+  "line": [
     "Japan",
     "line"
   ],
-  "@line ": [
-    "Japan",
-    "line"
-  ],
-  "@LinkedIn": [
+  "LinkedIn": [
     "USA",
     "linkedin"
   ],
-  "@LLNL": [
+  "LLNL": [
     "USA",
     "LLNL"
   ],
-  "@lyft ": [
+  "lyft": [
     "USA",
     "lyft"
   ],
-  "@mapbox": [
+  "mapbox": [
     "USA",
     "mapbox"
   ],
-  "@mapbox ": [
-    "USA",
-    "mapbox"
-  ],
-  "@meituan-dianping": [
+  "meituan-dianping": [
     "China",
     "meituan"
   ],
-  "@microsoft": [
+  "microsoft": [
     "USA",
     "microsoft"
   ],
-  "@Microsoft ": [
+  "Microsoft": [
     "USA",
     "microsoft"
   ],
-  "@Microsoft @Azure": [
+  "Microsoft  Azure": [
     "USA",
     "microsoft"
   ],
-  "@Mirantis": [
+  "Mirantis": [
     "USA",
     "mirantis"
   ],
-  "@moia-dev ": [
+  "moia-dev": [
     "Germany",
     "moia"
   ],
-  "@mongodb": [
+  "mongodb": [
     "USA",
     "mongodb"
   ],
-  "@mongodb ": [
+  "mongodb  10gen": [
     "USA",
     "mongodb"
   ],
-  "@mongodb @10gen ": [
-    "USA",
-    "mongodb"
-  ],
-  "@Mozilla": [
+  "Mozilla": [
     "USA",
     "mozilla"
   ],
-  "@mozilla ": [
-    "USA",
-    "mozilla"
-  ],
-  "@mulesoft ": [
+  "mulesoft": [
     "USA",
     "mulesoft"
   ],
-  "@mysql": [
+  "mysql": [
     "UK",
     "mysql"
   ],
-  "@mysql @oracle": [
+  "mysql  oracle": [
     "USA",
     "oracle"
   ],
-  "@naver": [
+  "naver": [
     "Korea",
     "naver"
   ],
-  "@naver ": [
-    "Korea",
-    "naver"
-  ],
-  "@NetEase": [
+  "NetEase": [
     "China",
     "netease"
   ],
-  "@netflix": [
+  "netflix": [
     "USA",
     "netflix"
   ],
-  "@Netflix ": [
+  "Netflix": [
     "USA",
     "netflix"
   ],
-  "@newrelic": [
+  "newrelic": [
     "USA",
     "newrelic"
   ],
-  "@Nokia": [
+  "Nokia": [
     "Finland",
     "nokia"
   ],
-  "@nvidia": [
+  "nvidia": [
     "USA",
     "nvidia"
   ],
-  "@NVIDIA ": [
-    "USA",
-    "nvidia"
-  ],
-  "@Oath": [
+  "Oath": [
     "USA",
     "oath"
   ],
-  "@objectcomputing": [
+  "objectcomputing": [
     "USA",
     "objectcomputing"
   ],
-  "@octoml": [
+  "octoml": [
     "USA",
     "octoml"
   ],
-  "@oracle": [
+  "oracle": [
     "USA",
     "oracle"
   ],
-  "@oracle ": [
-    "USA",
-    "oracle"
-  ],
-  "@ovh": [
+  "ovh": [
     "Frace",
     "ovh"
   ],
-  "@paypal": [
+  "paypal": [
     "USA",
     "paypal"
   ],
-  "@pivotal": [
+  "pivotal": [
     "USA",
     "pivotal"
   ],
-  "@planetscale": [
+  "planetscale": [
     "USA",
     "planetscale"
   ],
-  "@planetscale ": [
-    "USA",
-    "planetscale"
-  ],
-  "@projectatomic  Red Hat": [
+  "projectatomic  Red Hat": [
     "USA",
     "red hat"
   ],
-  "@pytorch": [
+  "pytorch": [
     "USA",
     "pytorch"
   ],
-  "@Quansight ": [
+  "Quansight": [
     "USA",
     "quansight"
   ],
-  "@reddit ": [
+  "reddit": [
     "USA",
     "reddit"
   ],
-  "@redhatofficial": [
+  "redhatofficial": [
     "USA",
     "red hat"
   ],
-  "@robinhood": [
+  "robinhood": [
     "USA",
     "robinhood"
   ],
-  "@Salesforce": [
+  "Salesforce": [
     "USA",
     "salesforce"
   ],
-  "@SAP": [
+  "SAP": [
     "Germany",
     "sap"
   ],
-  "@SAP ": [
-    "Germany",
-    "sap"
-  ],
-  "@securekey ": [
+  "securekey": [
     "Canada",
     "securekey"
   ],
-  "@Shopify": [
+  "Shopify": [
     "Canada",
     "shopify"
   ],
-  "@Shopify ": [
-    "Canada",
-    "shopify"
-  ],
-  "@slackhq": [
+  "slackhq": [
     "USA",
     "slack"
   ],
-  "@slalom": [
+  "slalom": [
     "USA",
     "slalom"
   ],
-  "@SpaceExplorationTechnologies, @google, @teslamotors, @bloomberg, @waterloop, @clive-io": [
+  "SpaceExplorationTechnologies,  google,  teslamotors,  bloomberg,  waterloop,  clive-io": [
     "USA",
     "google"
   ],
-  "@splunk": [
+  "splunk": [
     "USA",
     "splunk"
   ],
-  "@spotify": [
+  "spotify": [
     "Sweden",
     "spotify"
   ],
-  "@spotify ": [
-    "Sweden",
-    "spotify"
-  ],
-  "@square": [
+  "square": [
     "Japan",
     "square"
   ],
-  "@starburstdata": [
+  "starburstdata": [
     "USA",
     "starburstdata"
   ],
-  "@starburstdata ": [
-    "USA",
-    "starburstdata"
-  ],
-  "@stripe": [
+  "stripe": [
     "USA",
     "stripe"
   ],
-  "@stripe ": [
-    "USA",
-    "stripe"
-  ],
-  "@SUSE": [
+  "SUSE": [
     "Germany",
     "suse"
   ],
-  "@SUSE ": [
-    "Germany",
-    "suse"
-  ],
-  "@Talend ": [
+  "Talend": [
     "USA",
     "talend"
   ],
-  "@Target": [
+  "Target": [
     "USA",
     "target"
   ],
-  "@target ": [
+  "target": [
     "USA",
     "target"
   ],
-  "@Tencent": [
+  "Tencent": [
     "China",
     "tencent"
   ],
-  "@toptal": [
+  "toptal": [
     "Remote",
     "toptal"
   ],
-  "@twitter": [
+  "twitter": [
     "USA",
     "twitter"
   ],
-  "@twitter ": [
-    "USA",
-    "twitter"
-  ],
-  "@twosigma": [
+  "twosigma": [
     "USA",
     "twosigma"
   ],
-  "@twosigma ": [
+  "twosigma": [
     "USA",
     "twosigma"
   ],
-  "@Uber": [
+  "Uber": [
     "USA",
     "uber"
   ],
-  "@uber ": [
+  "Unity-Technologies": [
     "USA",
-    "uber"
+    "Unity-Technologies"
   ],
-  "@Unity-Technologies": [
-    "USA",
-    "@Unity-Technologies"
-  ],
-  "@vercel": [
+  "vercel": [
     "USA",
     "vercel"
   ],
-  "@VerizonMedia": [
+  "VerizonMedia": [
     "USA",
     "verizon"
   ],
-  "@ververica": [
+  "ververica": [
     "Germany",
     "ververica"
   ],
-  "@ververica (formerly @dataArtisans)": [
+  "ververica (formerly  dataArtisans)": [
     "Germany",
     "ververica"
   ],
-  "@VMware": [
+  "VMware": [
     "USA",
     "vmware"
   ],
-  "@vmware ": [
+  "VMware  heptio": [
     "USA",
     "vmware"
   ],
-  "@VMware @heptio": [
-    "USA",
-    "vmware"
-  ],
-  "@wikimedia": [
+  "wikimedia": [
     "USA",
     "wikimedia"
   ],
-  "@wikimedia ": [
-    "USA",
-    "wikimedia"
-  ],
-  "@xiaomi": [
+  "xiaomi": [
     "China",
     "xiaomi"
   ],
-  "@Yandex": [
+  "Yandex": [
     "Russia",
     "yandex"
   ],
-  "@Yelp ": [
+  "Yelp": [
     "USA",
     "yelp"
   ],
-  "@zalando": [
+  "zalando": [
     "Germany",
     "zalando"
   ],
-  "@zalando ": [
-    "Germany",
-    "zalando"
-  ],
-  "@zendesk ": [
+  "zendesk": [
     "USA",
     "zendesk"
-  ],
-  "⚡": [
-    "China",
-    "⚡"
   ],
   "10gen": [
     "USA",
@@ -1473,7 +1305,7 @@ COMPANY_COUNTRY = {
     "USA",
     "amazon"
   ],
-  "Amazon Web Services (@aws)": [
+  "Amazon Web Services ( aws)": [
     "USA",
     "amazon"
   ],
@@ -1737,7 +1569,7 @@ COMPANY_COUNTRY = {
     "UK",
     "arm"
   ],
-  "Arm @ARMmbed ": [
+  "Arm  ARMmbed": [
     "UK",
     "arm"
   ],
@@ -1797,7 +1629,7 @@ COMPANY_COUNTRY = {
     "China",
     "aspeed"
   ],
-  "At Red Hat working on @openshift ": [
+  "At Red Hat working on  openshift": [
     "USA",
     "red hat"
   ],
@@ -2841,7 +2673,7 @@ COMPANY_COUNTRY = {
     "USA/Dytch",
     "elastic"
   ],
-  "Elastic ": [
+  "Elastic": [
     "USA/Dytch",
     "elastic"
   ],
@@ -2993,7 +2825,7 @@ COMPANY_COUNTRY = {
     "USA",
     "facebook"
   ],
-  "Facebook ": [
+  "Facebook": [
     "USA",
     "facebook"
   ],
@@ -3217,7 +3049,7 @@ COMPANY_COUNTRY = {
     "USA",
     "google"
   ],
-  "Fuchsia @ Google": [
+  "Fuchsia   Google": [
     "USA",
     "google"
   ],
@@ -3333,7 +3165,7 @@ COMPANY_COUNTRY = {
     "USA",
     "google"
   ],
-  "Google @googlestadia ": [
+  "Google  googlestadia": [
     "USA",
     "google"
   ],
@@ -3397,7 +3229,7 @@ COMPANY_COUNTRY = {
     "USA",
     "google"
   ],
-  "Google Japan G.K. @google ": [
+  "Google Japan G.K.  google": [
     "USA",
     "google"
   ],
@@ -4113,7 +3945,7 @@ COMPANY_COUNTRY = {
     "USA",
     "intel"
   ],
-  "Intel ": [
+  "Intel": [
     "USA",
     "intel"
   ],
@@ -4737,7 +4569,7 @@ COMPANY_COUNTRY = {
     "USA",
     "microsoft"
   ],
-  "Microsoft ": [
+  "Microsoft": [
     "USA",
     "microsoft"
   ],
@@ -5769,11 +5601,11 @@ COMPANY_COUNTRY = {
     "USA",
     "red hat"
   ],
-  "Red Hat - @hibernate": [
+  "Red Hat -  hibernate": [
     "USA",
     "red hat"
   ],
-  "Red Hat - @openshift": [
+  "Red Hat -  openshift": [
     "USA",
     "red hat"
   ],
@@ -5793,11 +5625,11 @@ COMPANY_COUNTRY = {
     "USA",
     "red hat"
   ],
-  "Red Hat @AICoE ": [
+  "Red Hat  AICoE": [
     "USA",
     "red hat"
   ],
-  "Red Hat @RedHat": [
+  "Red Hat  RedHat": [
     "USA",
     "red hat"
   ],
@@ -5865,11 +5697,11 @@ COMPANY_COUNTRY = {
     "USA",
     "red hat"
   ],
-  "Red Hat, etcd team ": [
+  "Red Hat, etcd team": [
     "USA",
     "red hat"
   ],
-  "Red Hat, Fedora, @Gluster, @NFS-Ganesha, @CentOS-Storage-SIG and personal": [
+  "Red Hat, Fedora,  Gluster,  NFS-Ganesha,  CentOS-Storage-SIG and personal": [
     "USA",
     "red hat"
   ],
@@ -5885,7 +5717,7 @@ COMPANY_COUNTRY = {
     "USA",
     "red hat"
   ],
-  "Red Hat, Inc @RedHatOfficial": [
+  "Red Hat, Inc  RedHatOfficial": [
     "USA",
     "red hat"
   ],
@@ -6401,7 +6233,7 @@ COMPANY_COUNTRY = {
     "USA",
     "canva"
   ],
-  "Software Engineer @google ": [
+  "Software Engineer  google": [
     "USA",
     "google"
   ],
