@@ -15,7 +15,7 @@ import requests
 from oss_know.libs.util.airflow import get_postgres_conn
 from oss_know.libs.util.log import logger
 from oss_know.libs.util.github_api import GithubAPI
-from oss_know.libs.util.base import infer_country_insert_into_profile
+from oss_know.libs.util.base import infer_country_company_geo_insert_into_profile, inferrers
 
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COMMITS, OPENSEARCH_INDEX_GITHUB_ISSUES, \
     OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE, OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, \
@@ -144,10 +144,13 @@ class OpensearchAPI:
                 latest_github_profile = github_api.get_latest_github_profile(http_session=session,
                                                                              github_tokens_iter=github_tokens_iter,
                                                                              user_id=github_id)
-                infer_country_insert_into_profile(latest_github_profile)
+                for tup in inferrers:
+                    key, original_key, infer = tup
+                    latest_github_profile[key] = None
+                infer_country_company_geo_insert_into_profile(latest_github_profile)
                 opensearch_client.index(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
                                         body={"search_key": {
-                                            'updated_at': int(datetime.datetime.now().timestamp()*1000)},
+                                            'updated_at': int(datetime.datetime.now().timestamp() * 1000)},
                                             "raw_data": latest_github_profile},
                                         refresh=True)
                 logger.info(f"Put the github {github_id}'s profile into opensearch.")
@@ -275,7 +278,6 @@ class OpensearchAPI:
         opensearch_client.index(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA,
                                 body=check_update_info,
                                 refresh=True)
-
 
     def bulk_github_pull_requests(self, github_pull_requests, opensearch_client, owner, repo):
         bulk_all_github_pull_requests = []

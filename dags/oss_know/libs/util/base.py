@@ -1,5 +1,6 @@
 import re
 
+import geopy
 import redis
 import requests
 import urllib3
@@ -108,17 +109,21 @@ def infer_country_from_location(github_location):
     return None
 
 
-def infer_all_info_from_location(github_location):
+def infer_geo_info_from_location(github_location):
     """
-    :param  github_location: location from a GitHub profile
-    :return address  : raw address message got from GoogleV3API, return a string containing city, country and so on
+    :param  github_location: the location given by github
+    :return GoogleGeoInfo  : the information of GoogleGeo inferred by location
     """
     from airflow.models import Variable
     api_token = Variable.get(LOCATIONGEO_TOKEN, deserialize_json=True)
     geolocator = GoogleV3(api_key=api_token)
     geo_res = geolocator.geocode(github_location, language='en')
-    if geo_res:
-        return geo_res.address
+    if geo_res and geo_res.raw["address_components"]:
+        address_components = geo_res.raw["address_components"]
+        geo_info_from_location = {}
+        for address_component in address_components:
+            geo_info_from_location[address_component["types"][0]] = address_component["long_name"]
+        return geo_info_from_location
     return None
 
 
@@ -145,26 +150,25 @@ def infer_final_company_from_company(company):
         return company_country[company][1]
     return None
 
-
 inferrers = [
-        ("country_inferred_from_email_cctld", "email", infer_country_from_emailcctld),
-        ("country_inferred_from_email_domain_company", "email", infer_country_from_emaildomain),
-        ("country_inferred_from_location", "location", infer_country_from_location),
-        ("country_inferred_from_company", "company", infer_country_from_company),
-        ("final_company_inferred_from_company", "company", infer_final_company_from_company),
-        ("company_inferred_from_email_domain_company", "email", infer_company_from_emaildomain),
-        ("inferred_from_location", "location", infer_all_info_from_location)
-    ]
+    ("country_inferred_from_email_cctld", "email", infer_country_from_emailcctld),
+    ("country_inferred_from_email_domain_company", "email", infer_country_from_emaildomain),
+    ("country_inferred_from_location", "location", infer_country_from_location),
+    ("country_inferred_from_company", "company", infer_country_from_company),
+    ("company_inferred_from_email_domain_company", "email", infer_company_from_emaildomain),
+    ("final_company_inferred_from_company", "company", infer_final_company_from_company),
+    ("inferred_from_location", "location", infer_geo_info_from_location),
+]
 
 
-def infer_country_insert_into_profile(latest_github_profile):
+def infer_country_company_geo_insert_into_profile(latest_github_profile):
     try:
         for tup in inferrers:
             key, original_key, infer = tup
             original_property = latest_github_profile[original_key]
             latest_github_profile[key] = infer(original_property) if original_property else None
-
-    except (urllib3.exceptions.MaxRetryError, requests.exceptions.ProxyError) as error:
-        logger.error(f"error occurs when inferring country, {error}")
+    except (urllib3.exceptions.MaxRetryError, requests.exceptions.ProxyError, geopy.exc.GeocoderQueryError) as e:
+        logger.error(
+            f"error occurs when inferring information by github profile, exception message: {e},the type of exception: {type(e)}")
         for inferrer in inferrers:
             latest_github_profile[inferrer[0]] = None
