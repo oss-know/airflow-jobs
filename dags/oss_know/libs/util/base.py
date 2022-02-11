@@ -134,8 +134,7 @@ def infer_country_from_company(company):
     return None
 
 
-def infer_country_insert_into_profile(latest_github_profile):
-    inferrers = [
+inferrers = [
         ("country_inferred_from_email_cctld", "email", infer_country_from_emailcctld),
         ("country_inferred_from_email_domain_company", "email", infer_country_from_emaildomain),
         ("country_inferred_from_location", "location", infer_country_from_location),
@@ -143,6 +142,10 @@ def infer_country_insert_into_profile(latest_github_profile):
         ("company_inferred_from_email_domain_company", "email", infer_company_from_emaildomain),
         ("inferred_from_location", "location", infer_all_info_from_location)
     ]
+
+
+def infer_country_insert_into_profile(latest_github_profile):
+
     try:
         for tup in inferrers:
             key, original_key, infer = tup
