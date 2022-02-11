@@ -2,10 +2,14 @@ import datetime
 import json
 import time
 import numpy
+import pandas as pd
+import psycopg2
 from loguru import logger
 from opensearchpy import helpers
-import pandas as pd
+from airflow.exceptions import AirflowException
+from opensearchpy.exceptions import NotFoundError
 from oss_know.libs.base_dict.clickhouse import CLICKHOUSE_RAW_DATA
+from oss_know.libs.util.airflow import get_postgres_conn
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_GIT_RAW, OPENSEARCH_INDEX_CHECK_SYNC_DATA
 from oss_know.libs.util.base import get_opensearch_client
 from oss_know.libs.util.clickhouse_driver import CKServer
@@ -85,12 +89,11 @@ def transfer_data_special(clickhouse_server_info, opensearch_index, table_name, 
         insert_data['timeline_raw'] = standard_data
         sql = f"INSERT INTO {table_name} (*) VALUES"
         count += 1
-        if count % 5000 == 0 :
-
+        if count % 5000 == 0:
             logger.info(f"已经插入的数据条数:{count}")
         result = ck.execute(sql, [insert_data])
     logger.info(f"已经插入的数据条数:{count}")
-        # 将检查点放在这里插入
+    # 将检查点放在这里插入
     ck_check_point(opensearch_client=opensearch_datas[1],
                    opensearch_index=opensearch_index,
                    clickhouse_table=table_name,
@@ -109,42 +112,65 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
                                                 opensearch_conn_datas=opensearch_conn_datas)
     max_timestamp = 0
     count = 0
-    sum = 0
-    for os_data in opensearch_datas[0]:
-        updated_at = os_data["_source"]["search_key"]["updated_at"]
-        if updated_at > max_timestamp:
-            max_timestamp = updated_at
-        df = pd.json_normalize(os_data["_source"])
-        dict_data = parse_data(df)
-        except_fields = []
-        for field in fields:
-            if not dict_data.get(field):
-                except_fields.append(f'`{field}`')
-            if dict_data.get(field) and fields.get(field) == 'DateTime64(3)':
-                dict_data[field] = utc_timestamp(dict_data[field])
+    try:
+        for os_data in opensearch_datas[0]:
+            updated_at = os_data["_source"]["search_key"]["updated_at"]
+            if updated_at > max_timestamp:
+                max_timestamp = updated_at
+            df = pd.json_normalize(os_data["_source"])
+            dict_data = parse_data(df)
+            except_fields = []
+            for field in fields:
+                if not dict_data.get(field):
+                    except_fields.append(f'`{field}`')
+                if dict_data.get(field) and fields.get(field) == 'DateTime64(3)':
+                    dict_data[field] = utc_timestamp(dict_data[field])
 
-        # 这里except_fields 里存储的就是表结构中有的fields 而数据中没有的字段
-        if except_fields:
-            # logger.info(f'缺失的字段列表：{except_fields}')
-            except_fields = f'EXCEPT({",".join(except_fields)})'
-            sql = f"INSERT INTO {table_name} (* {except_fields}) VALUES"
-        else:
-            sql = f"INSERT INTO {table_name} VALUES"
-        # logger.info(f'执行的sql语句: {sql} ({dict_data})')
-        count += 1
-        if count % 5000 == 0:
-            logger.info(f'已经插入的数据的条数为:{count}')
-        try:
-            result = ck.execute(sql, [dict_data])
-            # sum += result
-            # if sum % 1000 == 0:
-            #     logger.info(f"result返回的sum:{sum}")
-        except Exception as e:
-            logger.info(f"出现问题的数据为{os_data}")
-            logger.info(f"准备向ck中插入的数据为{dict_data}")
-            logger.info(f"不应该插入的字段{except_fields}")
-            logger.info(e)
-            return
+            # 这里except_fields 里存储的就是表结构中有的fields 而数据中没有的字段
+            if except_fields:
+                # logger.info(f'缺失的字段列表：{except_fields}')
+                except_fields = f'EXCEPT({",".join(except_fields)})'
+                sql = f"INSERT INTO {table_name} (* {except_fields}) VALUES"
+            else:
+                sql = f"INSERT INTO {table_name} VALUES"
+            count += 1
+            if count % 5000 == 0:
+                logger.info(f'已经插入的数据的条数为:{count}')
+            try:
+                result = ck.execute(sql, [dict_data])
+            except KeyError as error:
+                logger.error(f'插入数据发现错误 {error}')
+                postgres_conn = get_postgres_conn()
+                sql = '''INSERT INTO os_ck_errar(
+                                    index, data) 
+                                    VALUES (%s, %s);'''
+                try:
+                    cur = postgres_conn.cursor()
+                    os_index = table_name
+                    error_data = json.dumps(os_data['_source'])
+                    cur.execute(sql, (os_index,error_data))
+                    postgres_conn.commit()
+                    cur.close()
+                except (psycopg2.DatabaseError) as error:
+                    logger.error(f"psycopg2.DatabaseError:{error}")
+
+                finally:
+                    if postgres_conn is not None:
+                        postgres_conn.close()
+
+    # airflow dag的中断
+    except AirflowException as error:
+        raise AirflowException(f'airflow interrupt {error}')
+    except NotFoundError as error:
+
+        raise NotFoundError(f'scroll error raise HTTP_EXCEPTIONS.get(status_code, TransportError)(opensearchpy.exceptions.NotFoundError: NotFoundError(404, "search_phase_execution_exception", "No search context found for id [631]"){error}')
+    finally:
+        # 将检查点放在这里插入
+        ck_check_point(opensearch_client=opensearch_datas[1],
+                       opensearch_index=opensearch_index,
+                       clickhouse_table=table_name,
+                       updated_at=max_timestamp)
+        ck.close()
 
     logger.info(f'已经插入的数据的条数为:{count}')
     # 将检查点放在这里插入
@@ -159,10 +185,18 @@ def get_data_from_opensearch(index, opensearch_conn_datas):
     opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
     results = helpers.scan(client=opensearch_client,
                            query={
-                               "query": {"match_all": {}}
+                               "query": {"match_all": {}},
+                               "sort": [
+                                   {
+                                       "search_key.updated_at": {
+                                           "order": "asc"
+                                       }
+                                   }
+                               ]
                            },
                            index=index,
                            size=5000,
+                           scroll="20m",
                            request_timeout=100)
     return results, opensearch_client
 
