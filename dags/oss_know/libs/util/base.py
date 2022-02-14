@@ -118,11 +118,14 @@ def infer_geo_info_from_location(github_location):
     api_token = Variable.get(LOCATIONGEO_TOKEN, deserialize_json=True)
     geolocator = GoogleV3(api_key=api_token)
     geo_res = geolocator.geocode(github_location, language='en')
-    if geo_res and geo_res.raw["address_components"]:
+    if geo_res and geo_res.raw and ("address_components" in geo_res.raw) and geo_res.raw["address_components"]:
         address_components = geo_res.raw["address_components"]
         geo_info_from_location = {}
         for address_component in address_components:
-            geo_info_from_location[address_component["types"][0]] = address_component["long_name"]
+            try:
+                geo_info_from_location[address_component["types"][0]] = address_component["long_name"]
+            except KeyError as e:
+                logger.info(f"The key not exists in address_component :{e}")
         return geo_info_from_location
     return None
 
@@ -149,6 +152,7 @@ def infer_final_company_from_company(company):
     if company in company_country:
         return company_country[company][1]
     return None
+
 
 inferrers = [
     ("country_inferred_from_email_cctld", "email", infer_country_from_emailcctld),

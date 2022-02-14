@@ -11,7 +11,7 @@ def load_github_ids_by_repo(opensearch_conn_infos, owner, repo):
     """Get GitHub users' ids from GitHub assigned owner and repo."""
     opensearch_client = get_opensearch_client(opensearch_conn_infos)
     init_profile_ids = load_ids_from_issues_timeline(opensearch_client, owner,
-                                                          repo)
+                                                     repo)
     init_profile_ids += load_ids_from_commits(opensearch_client, owner, repo)
     return init_profile_ids
 
@@ -20,7 +20,7 @@ def load_ids_from_commits(opensearch_client, owner, repo):
     """Get GitHub users' ids from GitHub commits."""
     logger.debug(f'calling load_ids_by_github_commits for {owner}/{repo}')
     res = get_profiles_from_os(opensearch_client, owner, repo,
-                                                      index=OPENSEARCH_INDEX_GITHUB_COMMITS)
+                               index=OPENSEARCH_INDEX_GITHUB_COMMITS)
     if not res:
         logger.info(f"There's no github commits in {repo}")
         return []
@@ -31,7 +31,7 @@ def load_ids_from_commits(opensearch_client, owner, repo):
         raw_data = commit["_source"]["raw_data"]
         if ("author" in raw_data) and raw_data["author"] and ("id" in raw_data["author"]):
             all_commits_ids.add(raw_data["author"]["id"])
-        if ("committer" in raw_data) and raw_data["committer"] and  ("id" in raw_data["committer"]):
+        if ("committer" in raw_data) and raw_data["committer"] and ("id" in raw_data["committer"]):
             all_commits_ids.add(raw_data["committer"]["id"])
 
     return list(all_commits_ids)
@@ -43,7 +43,7 @@ def load_ids_from_issues_timeline(opensearch_client, owner, repo):
     logger.debug(f'calling load_ids_by_github_issues_timeline for {owner}/{repo}')
 
     res = get_profiles_from_os(opensearch_client, owner, repo,
-                                                      index=OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE)
+                               index=OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE)
 
     if not res:
         logger.info(f"There's no github issues' timeline in {repo}")
@@ -53,12 +53,22 @@ def load_ids_from_issues_timeline(opensearch_client, owner, repo):
     for issue_timeline in res:
         issue_timeline_raw_data = issue_timeline["_source"]["raw_data"]
         if issue_timeline_raw_data["event"] == "cross-referenced":
-            all_issues_timeline_users.add(issue_timeline_raw_data["actor"]["id"])
-            all_issues_timeline_users.add(issue_timeline_raw_data["source"]["issue"]["user"]["id"])
+            try:
+                all_issues_timeline_users.add(issue_timeline_raw_data["actor"]["id"])
+                all_issues_timeline_users.add(issue_timeline_raw_data["source"]["issue"]["user"]["id"])
+            except KeyError as e:
+                logger.info(f"The key not exists in issue_timeline_raw_data :{e}")
+            except TypeError as e:
+                logger.info(f"The value is null in issue_timeline_raw_data :{e}")
         elif issue_timeline_raw_data["event"] != "committed":
             for key in ["user", "actor", "assignee"]:
                 if key in issue_timeline_raw_data:
-                    all_issues_timeline_users.add(issue_timeline_raw_data[key]["id"])
+                    try:
+                        all_issues_timeline_users.add(issue_timeline_raw_data[key]["id"])
+                    except KeyError as e:
+                        logger.info(f"The key not exists in {issue_timeline_raw_data[key]}:{e}")
+                    except TypeError as e:
+                        logger.info(f"The value is null in {issue_timeline_raw_data[key]}:{e}")
 
     return list(all_issues_timeline_users)
 
