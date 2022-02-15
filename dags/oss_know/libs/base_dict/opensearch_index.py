@@ -9,4 +9,6 @@ OPENSEARCH_INDEX_CHECK_SYNC_DATA = "check_sync_data"
 OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS = "github_pull_requests"
 OPENSEARCH_INDEX_GITHUB_PROFILE = "github_profile"
 
+OPENSEARCH_INDEX_EMAIL_ADDRESS = "email_address"
+
 

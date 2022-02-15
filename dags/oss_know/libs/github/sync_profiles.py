@@ -4,7 +4,7 @@ import requests
 from oss_know.libs.util.base import get_opensearch_client, get_redis_client, \
     infer_country_company_geo_insert_into_profile
 from oss_know.libs.util.github_api import GithubAPI
-from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_PROFILE, OPENSEARCH_INDEX_CHECK_SYNC_DATA
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_PROFILE
 from oss_know.libs.base_dict.redis import STORAGE_HASH, STORAGE_IDS_SET, WORKING_HASH
 from oss_know.libs.util.log import logger
 from opensearchpy import helpers as opensearch_helpers
