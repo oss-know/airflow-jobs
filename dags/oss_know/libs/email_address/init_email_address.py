@@ -70,16 +70,23 @@ def load_email_address(opensearch_conn_info):
     #     },
     #     "raw_data": {
     #         "email": "",
-    #         "country_inferred_from_cctld": "",
-    #         "country_inferred_from_company": "",
-    #         "company_inferred_from_domain": "",
+    #         "country_inferred_from_email": "",
+    #         "company_inferred_from_email": "",
+    #         "country_inferred_from_company": ""
     #         "git": [
     #             {
     #                 "owner": "",
     #                 "repo": "",
     #                 "commit_count": 0,
-    #                 "commit_timezon_+8": 0,
-    #                 "commit_timezon_-10": 0
+    #                 "commit_timezone_+8": 0,
+    #                 "commit_timezone_-10": 0
+    #             },
+    #             {
+    #                 "owner": "",
+    #                 "repo": "",
+    #                 "commit_count": 0,
+    #                 "commit_timezone_+8": 0,
+    #                 "commit_timezone_-10": 0
     #             }
     #         ],
     #         "github": [],
