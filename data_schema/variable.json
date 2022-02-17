@@ -237,7 +237,26 @@
           "followers": 0,
           "following": 0,
           "created_at": "",
-          "updated_at": ""
+          "updated_at": "",
+          "country_inferred_from_email_cctld": "",
+          "country_inferred_from_email_domain_company": "",
+          "country_inferred_from_location": "",
+          "country_inferred_from_company": "",
+          "final_company_inferred_from_company": "",
+          "company_inferred_from_email_domain_company": "",
+          "inferred_from_location": {"administrative_area_level_1": "",
+                                     "administrative_area_level_2": "",
+                                     "administrative_area_level_3": "",
+                                     "colloquial_area": "",
+                                     "continent": "",
+                                     "country": "",
+                                     "locality": "",
+                                     "political": "",
+                                     "postal_code": "",
+                                     "postal_code_suffix": "",
+                                     "postal_town": "",
+                                     "route": "",
+                                     "street_number": ""}
         }
       }
     },
