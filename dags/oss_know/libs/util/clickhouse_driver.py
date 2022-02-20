@@ -13,6 +13,12 @@ class CKServer:
         result = self.client.execute(sql, params)
         return result
 
+    def execute_use_setting(self, sql: object, params: list, settings) -> object:
+        # self.cursor.execute(sql)
+        # result = self.cursor.fetchall()
+        result = self.client.execute(sql, params, settings=settings)
+        return result
+
     def execute_no_params(self, sql: object):
         result = self.client.execute(sql)
         return result
