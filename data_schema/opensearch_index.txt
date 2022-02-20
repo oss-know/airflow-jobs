@@ -1,35 +1,21 @@
-DELETE github_pull_requests
-
-DELETE github_profile
-
-DELETE github_issues_timeline
-
-DELETE github_issues_comments
-
-DELETE github_issues
-
-DELETE github_commits
-
-DELETE gits
-
-DELETE check_sync_data
-
 #--------------------------------------------------------------------
-
-PUT github_profile
-
-PUT github_pull_requests
-
-PUT github_issues_timeline
-
-PUT github_issues_comments
-
-PUT github_issues
-
-PUT github_commits
-
+DELETE gits
+DELETE maillists
+DELETE github_commits
+DELETE github_issues
+DELETE github_pull_requests
+DELETE github_issues_comments
+DELETE github_issues_timeline
+DELETE github_profile
+DELETE check_sync_data
+#--------------------------------------------------------------------
 PUT gits
-
+PUT maillists
+PUT github_commits
+PUT github_issues
+PUT github_pull_requests
+PUT github_issues_comments
+PUT github_issues_timeline
+PUT github_profile
 PUT check_sync_data
-
 #--------------------------------------------------------------------
