@@ -6,7 +6,7 @@ services:
     container_name: ch-cluster-0-0
     hostname: ch-cluster-0-0
     image: yandex/clickhouse-server:21.12
-    restart: always
+    restart: on-failure
     volumes:
       - ./CH/configuration/ch-cluster-0-0/config.d/local.xml:/etc/clickhouse-server/config.d/config.xml
       - ./CH/configuration/ch-cluster-0-0/config.d/macros.xml:/etc/clickhouse-server/config.d/macros.xml
