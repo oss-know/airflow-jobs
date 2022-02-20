@@ -13,175 +13,169 @@
             "owner": "torvalds",
             "repo": "linux",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "bminor",
             "repo": "glibc",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "gcc-mirror",
             "repo": "gcc",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "gvlx",
             "repo": "gawk",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "gnutls",
             "repo": "gnutls",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "bminor",
             "repo": "bash",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
-        },
-        {
-            "owner": "ClickHouse-Extras",
-            "repo": "libgsasl",
-            "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "coreutils",
             "repo": "coreutils",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "gpg",
             "repo": "gnupg",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "GNOME",
             "repo": "libxml2",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "freedesktop",
             "repo": "dbus",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "systemd",
             "repo": "systemd",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "wayland-project",
             "repo": "wayland",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "bminor",
             "repo": "binutils-gdb",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "libffi",
             "repo": "libffi",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "linux-pam",
             "repo": "linux-pam",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "rpm-software-management",
             "repo": "rpm",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "boostorg",
             "repo": "boost",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "xz-mirror",
             "repo": "xz",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "sqlite",
             "repo": "sqlite",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "openssl",
             "repo": "openssl",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "nginx",
             "repo": "nginx",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "pingcap",
             "repo": "tidb",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "google",
             "repo": "leveldb",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "vim",
             "repo": "vim",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "curl",
             "repo": "curl",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "facebook",
             "repo": "zstd",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "mirror",
             "repo": "ncurses",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         },
         {
             "owner": "glennrp",
             "repo": "libpng",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-01-30T08:13:03Z"
+            "until": "2022-02-18T11:20:26Z"
         }
     ],
     "need_init_github_issues_comments_repos": [
@@ -208,10 +202,6 @@
         {
             "owner": "bminor",
             "repo": "bash"
-        },
-        {
-            "owner": "ClickHouse-Extras",
-            "repo": "libgsasl"
         },
         {
             "owner": "coreutils",
@@ -328,10 +318,6 @@
             "repo": "bash"
         },
         {
-            "owner": "ClickHouse-Extras",
-            "repo": "libgsasl"
-        },
-        {
             "owner": "coreutils",
             "repo": "coreutils"
         },
@@ -446,10 +432,6 @@
             "repo": "bash"
         },
         {
-            "owner": "ClickHouse-Extras",
-            "repo": "libgsasl"
-        },
-        {
             "owner": "coreutils",
             "repo": "coreutils"
         },
@@ -562,10 +544,6 @@
         {
             "owner": "bminor",
             "repo": "bash"
-        },
-        {
-            "owner": "ClickHouse-Extras",
-            "repo": "libgsasl"
         },
         {
             "owner": "coreutils",
@@ -686,11 +664,6 @@
             "owner": "bminor",
             "repo": "bash",
             "url": "https://github.com/bminor/bash.git"
-        },
-        {
-            "owner": "ClickHouse-Extras",
-            "repo": "libgsasl",
-            "url": "https://github.com/ClickHouse-Extras/libgsasl.git"
         },
         {
             "owner": "coreutils",
@@ -829,10 +802,6 @@
             "repo": "bash"
         },
         {
-            "owner": "ClickHouse-Extras",
-            "repo": "libgsasl"
-        },
-        {
             "owner": "coreutils",
             "repo": "coreutils"
         },
@@ -945,10 +914,6 @@
         {
             "owner": "bminor",
             "repo": "bash"
-        },
-        {
-            "owner": "ClickHouse-Extras",
-            "repo": "libgsasl"
         },
         {
             "owner": "coreutils",
@@ -1065,10 +1030,6 @@
             "repo": "bash"
         },
         {
-            "owner": "ClickHouse-Extras",
-            "repo": "libgsasl"
-        },
-        {
             "owner": "coreutils",
             "repo": "coreutils"
         },
@@ -1181,10 +1142,6 @@
         {
             "owner": "bminor",
             "repo": "bash"
-        },
-        {
-            "owner": "ClickHouse-Extras",
-            "repo": "libgsasl"
         },
         {
             "owner": "coreutils",
@@ -1301,10 +1258,6 @@
             "repo": "bash"
         },
         {
-            "owner": "ClickHouse-Extras",
-            "repo": "libgsasl"
-        },
-        {
             "owner": "coreutils",
             "repo": "coreutils"
         },
@@ -1417,10 +1370,6 @@
         {
             "owner": "bminor",
             "repo": "bash"
-        },
-        {
-            "owner": "ClickHouse-Extras",
-            "repo": "libgsasl"
         },
         {
             "owner": "coreutils",
@@ -1541,11 +1490,6 @@
             "owner": "bminor",
             "repo": "bash",
             "url": "https://github.com/bminor/bash.git"
-        },
-        {
-            "owner": "ClickHouse-Extras",
-            "repo": "libgsasl",
-            "url": "https://github.com/ClickHouse-Extras/libgsasl.git"
         },
         {
             "owner": "coreutils",
@@ -1700,11 +1644,11 @@
     "ck_table_infos": [
         {
             "table_name": "gits",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
-            "distributed_key": "rand()",
+            "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/gits','{replica}')",
-            "partition_by": "",
+            "partition_by": "search_key__owner",
             "order_by": [
                 "search_key__owner",
                 "search_key__repo",
@@ -1761,9 +1705,9 @@
         },
         {
             "table_name": "github_profile",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
-            "distributed_key": "rand()",
+            "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_profile','{replica}')",
             "partition_by": "",
             "order_by": [
@@ -1805,17 +1749,38 @@
                     "followers": 0,
                     "following": 0,
                     "created_at": "",
-                    "updated_at": ""
+                    "updated_at": "",
+                    "country_inferred_from_email_cctld": "",
+                    "country_inferred_from_email_domain_company": "",
+                    "country_inferred_from_location": "",
+                    "country_inferred_from_company": "",
+                    "final_company_inferred_from_company": "",
+                    "company_inferred_from_email_domain_company": "",
+                    "inferred_from_location": {
+                        "administrative_area_level_1": "",
+                        "administrative_area_level_2": "",
+                        "administrative_area_level_3": "",
+                        "colloquial_area": "",
+                        "continent": "",
+                        "country": "",
+                        "locality": "",
+                        "political": "",
+                        "postal_code": "",
+                        "postal_code_suffix": "",
+                        "postal_town": "",
+                        "route": "",
+                        "street_number": ""
+                    }
                 }
             }
         },
         {
             "table_name": "github_commits",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
-            "distributed_key": "rand()",
+            "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_commits','{replica}')",
-            "partition_by": "",
+            "partition_by": "search_key__owner",
             "order_by": [
                 "search_key__owner",
                 "search_key__repo"
@@ -1908,11 +1873,11 @@
         },
         {
             "table_name": "github_issues_comments",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
-            "distributed_key": "rand()",
+            "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_issues_comments','{replica}')",
-            "partition_by": "",
+            "partition_by": "search_key__owner",
             "order_by": [
                 "search_key__owner",
                 "search_key__repo",
@@ -1973,11 +1938,11 @@
         },
         {
             "table_name": "github_issues",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
-            "distributed_key": "rand()",
+            "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_issues','{replica}')",
-            "partition_by": "",
+            "partition_by": "search_key__owner",
             "order_by": [
                 "search_key__owner",
                 "search_key__repo"
@@ -2145,11 +2110,11 @@
         },
         {
             "table_name": "github_pull_requests",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
-            "distributed_key": "rand()",
+            "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_pull_requests','{replica}')",
-            "partition_by": "",
+            "partition_by": "search_key__owner",
             "order_by": [
                 "search_key__owner",
                 "search_key__repo"
@@ -2634,11 +2599,11 @@
         },
         {
             "table_name": "github_issues_timeline",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
-            "distributed_key": "rand()",
+            "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_issues_timeline','{replica}')",
-            "partition_by": "",
+            "partition_by": "search_key__owner",
             "order_by": [
                 "search_key__owner",
                 "search_key__repo",
@@ -2666,5 +2631,6 @@
     },
     "sync_profiles_task_num": {
         "num": 10
-    }
+    },
+    "LocationGeo_token": "123456"
 }
