@@ -19,44 +19,43 @@ def load_all_email_address(clickhouse_server_info):
         for item in author_email, committer_email:
             if item:
                 all_email_address_dict[item] = 0
-    if all_email_address_dict:
-        for k, v in all_email_address_dict.items():
-            github_committer_id_from_committer_email_sql = f"SELECT DISTINCT author__id,commit__author__email from github_commits WHERE commit__author__email = '{k}'"
-            github_committer_id_from_committer_email = ck.execute_no_params(
-                github_committer_id_from_committer_email_sql)
-            github_author_id_from_author_email_sql = f"SELECT DISTINCT committer__id,commit__committer__email from github_commits WHERE commit__committer__email = '{k}'"
-            github_author_id_from_author_email = ck.execute_no_params(github_author_id_from_author_email_sql)
-            for item in github_committer_id_from_committer_email, github_author_id_from_author_email:
-                if item and item[0][0]:
-                    all_email_address_dict[item[0][1]] = item[0][0]
+    for k, v in all_email_address_dict.items():
+        github_committer_id_from_committer_email_sql = f"SELECT DISTINCT committer__id,commit__committer__email from github_commits WHERE commit__committer__email = '{k}'"
+        github_committer_id_from_committer_email = ck.execute_no_params(
+            github_committer_id_from_committer_email_sql)
+        github_author_id_from_author_email_sql = f"SELECT DISTINCT author__id,commit__author__email from github_commits WHERE commit__author__email = '{k}'"
+        github_author_id_from_author_email = ck.execute_no_params(github_author_id_from_author_email_sql)
+        for item in github_committer_id_from_committer_email, github_author_id_from_author_email:
+            if item and item[0][0]:
+                all_email_address_dict[item[0][1]] = item[0][0]
 
     github_profile_sql = "SELECT DISTINCT email,id FROM github_profile"
-    github_profile_email_from_ck = ck.execute_no_params(github_profile_sql)
-    for email, id in github_profile_email_from_ck:
+    github_profile_email_id_pair = ck.execute_no_params(github_profile_sql)
+    for email, id in github_profile_email_id_pair:
         if email:
             all_email_address_dict[email] = id
 
     # count = 0
-    insert_email_address_data_params = []
+    values_to_insert = []
     if all_email_address_dict:
         for k, v in all_email_address_dict.items():
-            insert_email_address_data = []
-            insert_email_address_data.append(int(datetime.datetime.now().timestamp() * 1000))
-            insert_email_address_data.extend([k, k])
+            value = []
+            value.append(int(datetime.datetime.now().timestamp() * 1000))
+            value.extend([k, k])
             country_inferred_from_emailcctld = infer_country_from_emailcctld(k)
             country_inferred_from_emaildomain = infer_country_from_emaildomain(k)
             company_inferred_from_email = infer_company_from_emaildomain(k)
             for item in country_inferred_from_emailcctld, country_inferred_from_emaildomain, company_inferred_from_email:
                 if not item:
                     item = ''
-                insert_email_address_data.append(item)
+                value.append(item)
             if company_inferred_from_email:
                 country_inferred_from_company = infer_country_from_company(company_inferred_from_email)
                 if not country_inferred_from_company:
                     country_inferred_from_company = ''
-                insert_email_address_data.append(country_inferred_from_company)
+                value.append(country_inferred_from_company)
             else:
-                insert_email_address_data.append('')
+                value.append('')
             github_profile_by_id_sql = f"select * from github_profile where search_key__updated_at = (select MAX(search_key__updated_at) from github_profile where github_profile.id = '{v}'); "
             github_profile_by_id = ck.execute_no_params(github_profile_by_id_sql)
             if github_profile_by_id:
@@ -68,10 +67,10 @@ def load_all_email_address(clickhouse_server_info):
                     github_profile_by_id_item = github_profile_by_id[0][index]
                     if isinstance(github_profile_by_id_item, str):
                         github_profile_by_id_item = github_profile_by_id_item.replace('\'', '\"')
-                    insert_email_address_data.append(github_profile_by_id_item)
-                insert_email_address_data_params.append(tuple(insert_email_address_data))
+                    value.append(github_profile_by_id_item)
+                values_to_insert.append(tuple(value))
             insert_email_address_sql = "INSERT INTO email_address_test03_easy (*) VALUES"
-            ck.execute(insert_email_address_sql, insert_email_address_data_params)
+            ck.execute(insert_email_address_sql, values_to_insert)
 
     # todo: 从clickhouse中的gits中根据指定email获取该email参与过的owner、repo
     # for email_address in all_email_address:
@@ -118,8 +117,62 @@ def load_all_email_address(clickhouse_server_info):
     #                 print(country_inferred_from_company)
 
     # github_profile_sql = "select * from github_profile where id = 3309585"
-    # github_profile_email_from_ck = ck.execute_no_params(github_profile_sql)
-    # print(type(github_profile_email_from_ck))
-    # print(github_profile_email_from_ck)
+    # github_profile_email_id_pair = ck.execute_no_params(github_profile_sql)
+    # print(type(github_profile_email_id_pair))
+    # print(github_profile_email_id_pair)
 
+    # todo: table columns
+    # "raw_data": {
+    #     "email": "",
+    #     "country_inferred_from_emailcctld": "",
+    #     "country_inferred_from_emaildomain": "",
+    #     "company_inferred_from_email": "",
+    #     "country_inferred_from_company": "",
+    #     "github": {
+    #         "profile": {
+    #             "login": "",
+    #             "id": 0,
+    #             "node_id": "",
+    #             "avatar_url": "",
+    #             "gravatar_id": "",
+    #             "url": "",
+    #             "html_url": "",
+    #             "followers_url": "",
+    #             "following_url": "",
+    #             "gists_url": "",
+    #             "starred_url": "",
+    #             "subscriptions_url": "",
+    #             "organizations_url": "",
+    #             "repos_url": "",
+    #             "events_url": "",
+    #             "received_events_url": "",
+    #             "type": "",
+    #             "site_admin": false,
+    #             "name": "",
+    #             "company": "",
+    #             "blog": "",
+    #             "location": "",
+    #             "email": "",
+    #             "hireable": false,
+    #             "bio": "",
+    #             "twitter_username": "",
+    #             "public_repos": 0,
+    #             "public_gists": 0,
+    #             "followers": 0,
+    #             "following": 0,
+    #             "created_at": "",
+    #             "updated_at": "",
+    #             "country_inferred_from_email_cctld": "",
+    #             "country_inferred_from_email_domain_company": "",
+    #             "country_inferred_from_location": "",
+    #             "country_inferred_from_company": "",
+    #             "final_company_inferred_from_company": "",
+    #             "company_inferred_from_email_domain_company": "",
+    #             "inferred_from_location": {"administrative_area_level_1": "", "administrative_area_level_2": "",
+    #                                        "administrative_area_level_3": "", "colloquial_area": "",
+    #                                        "continent": "", "country": "", "locality": "", "political": "",
+    #                                        "postal_code": "", "postal_code_suffix": "", "postal_town": "",
+    #                                        "route": "", "street_number": ""}
+    #         }
+    #     }}
     ck.close()
