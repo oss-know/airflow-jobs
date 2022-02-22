@@ -1,3 +1,6 @@
+import json
+
+import pandas as pd
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
@@ -29,6 +32,16 @@ with DAG(
         table_name = params["CK_TABLE_NAME"]
         opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
         clickhouse_server_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
+        table_temples = Variable.get("clickhouse_tb_temp", deserialize_json=True)
+        # temp = {}
+        for table_temple in table_temples:
+            if table_temple.get("table_name") == table_name:
+                temp = table_temple.get("temp")
+                break
+        df = pd.json_normalize(temp)
+        temp = init_ck_transfer_data.parse_data_init(df)
+        # print(json.dumps(temp))
+        # raise Exception("我想看看初始化的结果")
         if table_name == 'github_issues_timeline':
             transfer_data = init_ck_transfer_data.transfer_data_special(clickhouse_server_info=clickhouse_server_info,
                                                                         opensearch_index=opensearch_index,
@@ -39,7 +52,8 @@ with DAG(
             transfer_data = init_ck_transfer_data.transfer_data(clickhouse_server_info=clickhouse_server_info,
                                                                 opensearch_index=opensearch_index,
                                                                 table_name=table_name,
-                                                                opensearch_conn_datas=opensearch_conn_datas)
+                                                                opensearch_conn_datas=opensearch_conn_datas,
+                                                                temp=temp)
         return 'do_ck_transfer_data:::end'
 
 

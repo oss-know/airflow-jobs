@@ -5,6 +5,7 @@ import numpy
 import pandas as pd
 import psycopg2
 import warnings
+import copy
 from clickhouse_driver.columns.exceptions import StructPackException
 from clickhouse_driver.errors import ServerException
 from loguru import logger
@@ -109,7 +110,7 @@ def transfer_data_special(clickhouse_server_info, opensearch_index, table_name, 
 warnings.filterwarnings('ignore')
 
 
-def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensearch_conn_datas):
+def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensearch_conn_datas, temp):
     # if opensearch_index == 'maillists' or opensearch_index == 'maillists_enriched':
     #     settings = {'strings_encoding': 'unicode_escape'}
     # else:
@@ -124,39 +125,44 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
                                                 opensearch_conn_datas=opensearch_conn_datas)
     max_timestamp = 0
     count = 0
+    bulk_data = []
     try:
         for os_data in opensearch_datas[0]:
             updated_at = os_data["_source"]["search_key"]["updated_at"]
             if updated_at > max_timestamp:
                 max_timestamp = updated_at
             df_data = os_data["_source"]
-            # encode_json = json.dumps(df_data)
-            # decode_dict = json.loads(encode_json)
 
             df = pd.json_normalize(df_data)
-            dict_data = parse_data(df)
-            except_fields = []
+            dict_data = parse_data(df, temp)
+            bulk_data.append(dict_data)
+            # except_fields = []
             for field in fields:
-                if not dict_data.get(field):
-                    except_fields.append(f'`{field}`')
+                # if not dict_data.get(field):
+                #     except_fields.append(f'`{field}`')
                 if dict_data.get(field) and fields.get(field) == 'DateTime64(3)':
                     dict_data[field] = utc_timestamp(dict_data[field])
 
             # 这里except_fields 里存储的就是表结构中有的fields 而数据中没有的字段
-            if except_fields:
-                # logger.info(f'缺失的字段列表：{except_fields}')
-                except_fields = f'EXCEPT({",".join(except_fields)})'
-                sql = f"INSERT INTO {table_name} (* {except_fields}) VALUES"
-            else:
-                sql = f"INSERT INTO {table_name} VALUES"
-
+            # if except_fields:
+            #     # logger.info(f'缺失的字段列表：{except_fields}')
+            #     except_fields = f'EXCEPT({",".join(except_fields)})'
+            #     sql = f"INSERT INTO {table_name} (* {except_fields}) VALUES"
+            # else:
+            #     sql = f"INSERT INTO {table_name} VALUES"
+            sql = f"INSERT INTO {table_name} VALUES"
             try:
-                result = ck.execute(sql, [dict_data])
+                # result = ck.execute(sql, [dict_data])
                 count += 1
-                if count % 5000 == 0:
+                if count % 50000 == 0:
+                    result = ck.execute(sql, bulk_data)
+                    bulk_data.clear()
                     logger.info(f'已经插入的数据的条数为:{count}')
+                    # print(bulk_data)
+                    # raise Exception("运行一就停")
                 # ck.execute_use_setting(sql=sql, params=[dict_data], settings=settings)
             except KeyError as error:
+                print("---------------------------------------------KeyError")
                 logger.error(f'插入数据发现错误 {error}')
                 logger.error(f'出现问题的数据是{dict_data}')
                 postgres_conn = get_postgres_conn()
@@ -173,6 +179,7 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
                 except (psycopg2.DatabaseError) as error:
                     logger.error(f"psycopg2.DatabaseError:{error}")
             except ServerException as error:
+                print(f'----------------------------Server')
                 logger.error(f'插入数据发现错误 {error}')
                 logger.error(f'出现问题的数据是{dict_data}')
                 # postgres_conn = get_postgres_conn()
@@ -207,6 +214,10 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
                 #     logger.error(f'使用Unicode编码还是出现问题')
                 #     logger.error(f'插入数据发现错误 {error}')
                 #     logger.error(f'出现问题的数据是{dict_data}')
+            except AttributeError as error:
+                logger.error(f'插入数据发现错误 {error}')
+                logger.error(f'出现问题的数据是{json.dumps(dict_data)}')
+                raise AttributeError(error)
 
 
     # airflow dag的中断
@@ -256,9 +267,9 @@ def get_data_from_opensearch(index, opensearch_conn_datas):
     return results, opensearch_client
 
 
-def parse_data(df):
+def parse_data(df, temp):
     # 这个是最终插入ck的数据字典
-    dict_data = {}
+    dict_data = copy.deepcopy(temp)
     for index, row in df.iloc[0].iteritems():
         # 去除以raw_data开头的字段
         if index.startswith(CLICKHOUSE_RAW_DATA):
@@ -267,6 +278,43 @@ def parse_data(df):
         # 只要是空的就跳过
         if not row:
             continue
+        # 第一步的转化
+        row = alter_data_type(row)
+        # # 这里的字符串都转换成在ck中能够使用函数解析json的标准格式
+        # if isinstance(row, str):
+        #     row.replace(": ", ":")
+        # 解决嵌套array
+        if isinstance(row, list):
+            # 数组中是字典
+            if isinstance(row[0], dict):
+                for key in row[0]:
+                    data_name = f'{index}.{key}'
+                    dict_data[data_name] = []
+                for data in row:
+                    for key in data:
+                        filter_data = alter_data_type(data.get(key))
+                        dict_data.get(f'{index}.{key}').append(filter_data)
+            else:
+                # 这种是数组类型
+                data_name = f'{index}'
+                dict_data[data_name] = row
+        else:
+            # 这种是非list类型
+            data_name = f'{index}'
+            dict_data[data_name] = row
+    return dict_data
+
+
+def parse_data_init(df):
+    dict_data = {}
+    for index, row in df.iloc[0].iteritems():
+        # 去除以raw_data开头的字段
+        if index.startswith(CLICKHOUSE_RAW_DATA):
+            index = index[9:]
+        index = index.replace('.', '__')
+        # 只要是空的就跳过
+        # if not row:
+        #     continue
         # 第一步的转化
         row = alter_data_type(row)
         # # 这里的字符串都转换成在ck中能够使用函数解析json的标准格式
