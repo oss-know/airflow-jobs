@@ -13,11 +13,8 @@ def load_all_email_address(clickhouse_server_info):
                   database=clickhouse_server_info["DATABASE"])
 
     gits_sql = "SELECT DISTINCT author_email,committer_email FROM gits"
-    github_profile_sql = "SELECT DISTINCT email,id FROM github_profile"
     gits_email_from_ck = ck.execute_no_params(gits_sql)
-    github_profile_email_from_ck = ck.execute_no_params(github_profile_sql)
     all_email_address_dict = {}
-
     for author_email, committer_email in gits_email_from_ck:
         for item in author_email, committer_email:
             if item:
@@ -32,14 +29,17 @@ def load_all_email_address(clickhouse_server_info):
             for item in github_committer_id_from_committer_email, github_author_id_from_author_email:
                 if item and item[0][0]:
                     all_email_address_dict[item[0][1]] = item[0][0]
+
+    github_profile_sql = "SELECT DISTINCT email,id FROM github_profile"
+    github_profile_email_from_ck = ck.execute_no_params(github_profile_sql)
     for email, id in github_profile_email_from_ck:
         if email:
             all_email_address_dict[email] = id
 
     # count = 0
+    insert_email_address_data_params = []
     if all_email_address_dict:
         for k, v in all_email_address_dict.items():
-
             insert_email_address_data = []
             insert_email_address_data.append(int(datetime.datetime.now().timestamp() * 1000))
             insert_email_address_data.extend([k, k])
@@ -67,13 +67,11 @@ def load_all_email_address(clickhouse_server_info):
                 for index in range(1, tuple_length):
                     github_profile_by_id_item = github_profile_by_id[0][index]
                     if isinstance(github_profile_by_id_item, str):
-                        print(github_profile_by_id_item)
                         github_profile_by_id_item = github_profile_by_id_item.replace('\'', '\"')
-                        print(github_profile_by_id_item)
                     insert_email_address_data.append(github_profile_by_id_item)
-                print(tuple(insert_email_address_data))
-                insert_email_address_sql = f"INSERT INTO table email_address_test03_easy values {tuple(insert_email_address_data)}"
-                ck.execute_no_params(insert_email_address_sql)
+                insert_email_address_data_params.append(tuple(insert_email_address_data))
+            insert_email_address_sql = "INSERT INTO email_address_test03_easy (*) VALUES"
+            ck.execute(insert_email_address_sql, insert_email_address_data_params)
 
     # todo: 从clickhouse中的gits中根据指定email获取该email参与过的owner、repo
     # for email_address in all_email_address:
