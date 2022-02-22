@@ -35,42 +35,52 @@ def load_all_email_address(clickhouse_server_info):
         if email:
             all_email_address_dict[email] = id
 
+    github_profile_columns_sql = "select distinct name from system.columns where database = 'default' AND table = 'github_profile'"
+    github_profile_columns = ck.execute_no_params(github_profile_columns_sql)
+    github_profile_columns_len = len(github_profile_columns)
+    github_profile_value = {}
+
     # count = 0
     values_to_insert = []
     if all_email_address_dict:
         for k, v in all_email_address_dict.items():
-            value = []
-            value.append(int(datetime.datetime.now().timestamp() * 1000))
-            value.extend([k, k])
+            value = {}
+            value['search_key__updated_at'] = int(datetime.datetime.now().timestamp() * 1000)
+            value['search_key__email'] = k
+            value['email'] = k
             country_inferred_from_emailcctld = infer_country_from_emailcctld(k)
             country_inferred_from_emaildomain = infer_country_from_emaildomain(k)
             company_inferred_from_email = infer_company_from_emaildomain(k)
-            for item in country_inferred_from_emailcctld, country_inferred_from_emaildomain, company_inferred_from_email:
-                if not item:
-                    item = ''
-                value.append(item)
+            for m, n in ('country_inferred_from_emailcctld', country_inferred_from_emailcctld), (
+                    'country_inferred_from_emaildomain', country_inferred_from_emaildomain), (
+                                'company_inferred_from_email', company_inferred_from_email):
+                if n:
+                    value[m] = n
+                else:
+                    value[m] = ''
             if company_inferred_from_email:
                 country_inferred_from_company = infer_country_from_company(company_inferred_from_email)
                 if not country_inferred_from_company:
-                    country_inferred_from_company = ''
-                value.append(country_inferred_from_company)
+                    value['country_inferred_from_company'] = country_inferred_from_company
             else:
-                value.append('')
+                value['country_inferred_from_company'] = ''
+
             github_profile_by_id_sql = f"select * from github_profile where search_key__updated_at = (select MAX(search_key__updated_at) from github_profile where github_profile.id = '{v}'); "
             github_profile_by_id = ck.execute_no_params(github_profile_by_id_sql)
             if github_profile_by_id:
                 # count = count + 1
-                # if count == 10:
+                # if count == 5:
                 #     break
-                tuple_length = len(github_profile_by_id[0])
-                for index in range(1, tuple_length):
+                for index in range(1, github_profile_columns_len):
                     github_profile_by_id_item = github_profile_by_id[0][index]
                     if isinstance(github_profile_by_id_item, str):
                         github_profile_by_id_item = github_profile_by_id_item.replace('\'', '\"')
-                    value.append(github_profile_by_id_item)
-                values_to_insert.append(tuple(value))
-            insert_email_address_sql = "INSERT INTO email_address_test03_easy (*) VALUES"
-            ck.execute(insert_email_address_sql, values_to_insert)
+                    github_profile_value[
+                        'github__profile__' + github_profile_columns[index][0]] = github_profile_by_id_item
+                value = dict(value, **github_profile_value)
+                values_to_insert.append(value)
+    insert_email_address_sql = "INSERT INTO email_address_test03_easy (*) VALUES"
+    ck.execute(insert_email_address_sql, values_to_insert)
 
     # todo: 从clickhouse中的gits中根据指定email获取该email参与过的owner、repo
     # for email_address in all_email_address:
