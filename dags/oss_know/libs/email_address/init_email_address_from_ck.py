@@ -95,4 +95,7 @@ def load_all_email_address(clickhouse_server_info):
                 insert_email_address_sql = f"INSERT INTO {CLICKHOUSE_EMAIL_ADDRESS} (*) VALUES"
                 ck.execute(insert_email_address_sql, values_to_insert)
                 values_to_insert = []
+    if values_to_insert:
+        insert_email_address_sql = f"INSERT INTO {CLICKHOUSE_EMAIL_ADDRESS} (*) VALUES"
+        ck.execute(insert_email_address_sql, values_to_insert)
     ck.close()
