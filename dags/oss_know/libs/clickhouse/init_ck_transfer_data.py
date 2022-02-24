@@ -150,19 +150,18 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
             #     sql = f"INSERT INTO {table_name} (* {except_fields}) VALUES"
             # else:
             #     sql = f"INSERT INTO {table_name} VALUES"
-            sql = f"INSERT INTO {table_name} VALUES"
+            ck_sql = f"INSERT INTO {table_name} VALUES"
             try:
                 # result = ck.execute(sql, [dict_data])
                 count += 1
                 if count % 50000 == 0:
-                    result = ck.execute(sql, bulk_data)
+                    result = ck.execute(ck_sql, bulk_data)
                     bulk_data.clear()
                     logger.info(f'已经插入的数据的条数为:{count}')
                     # print(bulk_data)
                     # raise Exception("运行一就停")
                 # ck.execute_use_setting(sql=sql, params=[dict_data], settings=settings)
             except KeyError as error:
-                print("---------------------------------------------KeyError")
                 logger.error(f'插入数据发现错误 {error}')
                 logger.error(f'出现问题的数据是{dict_data}')
                 postgres_conn = get_postgres_conn()
@@ -237,7 +236,8 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
                        clickhouse_table=table_name,
                        updated_at=max_timestamp)
         ck.close()
-
+    if bulk_data:
+        result = ck.execute(ck_sql, bulk_data)
     logger.info(f'已经插入的数据的条数为:{count}')
     # 将检查点放在这里插入
     ck_check_point(opensearch_client=opensearch_datas[1],
