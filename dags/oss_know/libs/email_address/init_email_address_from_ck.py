@@ -45,8 +45,14 @@ def load_all_email_address(clickhouse_server_info):
     profile_columns_len = len(profile_columns)
     profile_value = {}
 
-    count = 0
     values_to_insert = []
+    total_count = len(all_email_address_dict)
+    page_count = 5000
+    total_page = total_count // page_count
+    if total_count % page_count:
+        total_page = total_page + 1
+    count = 1
+    page_num = 1
     for k, v in all_email_address_dict.items():
         value = {}
         value[EMAIL_ADDRESS_SEARCH_KEY__UPDATED_AT] = int(datetime.datetime.now().timestamp() * 1000)
@@ -73,9 +79,6 @@ def load_all_email_address(clickhouse_server_info):
         github_profile_list = ck.execute_no_params(github_profile_sql)
         if github_profile_list:
             github_profile = github_profile_list[0]
-            count = count + 1
-            if count == 5:
-                break
             for index in range(1, profile_columns_len):
                 profile_property = github_profile[index]
                 if isinstance(profile_property, str):
@@ -83,6 +86,13 @@ def load_all_email_address(clickhouse_server_info):
                 profile_value['github__profile__' + profile_columns[index][0]] = profile_property
             value = dict(value, **profile_value)
             values_to_insert.append(value)
-    insert_email_address_sql = f"INSERT INTO {CLICKHOUSE_EMAIL_ADDRESS} (*) VALUES"
-    ck.execute(insert_email_address_sql, values_to_insert)
+            if (page_num < total_page and count < page_count) or (
+                    page_num == total_page and count < total_count - (page_num - 1) * page_count):
+                count = count + 1
+            else:
+                page_num = page_num + 1
+                count = 1
+                insert_email_address_sql = f"INSERT INTO {CLICKHOUSE_EMAIL_ADDRESS} (*) VALUES"
+                ck.execute(insert_email_address_sql, values_to_insert)
+                values_to_insert = []
     ck.close()
