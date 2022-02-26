@@ -1,13 +1,15 @@
 FROM apache/airflow:2.2.3-python3.8
 
+ENV DEBIAN_FRONTEND noninteractive
+
 USER root
-RUN sudo apt-get update \
-  && sudo apt full-upgrade -y \
-  && sudo apt-get install git gcc -y
+RUN sudo apt-get update && sudo ACCEPT_EULA=Y apt-get upgrade -y -q --assume-yes
+RUN sudo apt-get install git gcc -y -q
 
 USER airflow
 RUN /usr/local/bin/python -m pip install --upgrade pip
-RUN pip install --no-cache-dir  'grimoire-elk>=0.98.0'
+RUN pip install --no-cache-dir  'grimoire-elk>=0.99.0'
+RUN pip install --no-cache-dir git+https://github.com/oss-know/grimoirelab-perceval@development
 RUN pip install --no-cache-dir  'pandas>=1.4.0' 'scikit-learn>=1.0.2' 'numpy>=1.21'
 RUN pip install --no-cache-dir  'loguru>=0.5.3' \
                                 'opensearch-py>=1.0.0' \
