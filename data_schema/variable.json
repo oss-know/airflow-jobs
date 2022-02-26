@@ -1656,7 +1656,7 @@
       }
     },
     {
-      "table_name": "github_commits__1",
+      "table_name": "github_commits",
       "temp": {
         "search_key": {
           "owner": "",

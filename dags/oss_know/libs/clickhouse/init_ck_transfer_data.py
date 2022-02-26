@@ -71,6 +71,19 @@ def alter_data_type(row):
 
 # 特殊情况
 def transfer_data_special(clickhouse_server_info, opensearch_index, table_name, opensearch_conn_datas):
+    bulk_datas=[]
+    template = {
+      "search_key": {
+        "owner": "",
+        "repo": "",
+        "number": 0,
+        "updated_at": 0
+      },
+      "raw_data": {
+        "timeline_raw": "",
+        "event": ""
+      }
+    }
     ck = CKServer(host=clickhouse_server_info["HOST"],
                   port=clickhouse_server_info["PORT"],
                   user=clickhouse_server_info["USER"],
@@ -85,20 +98,26 @@ def transfer_data_special(clickhouse_server_info, opensearch_index, table_name, 
         updated_at = os_data["_source"]["search_key"]["updated_at"]
         if updated_at > max_timestamp:
             max_timestamp = updated_at
-        insert_data = {}
+        insert_data = copy.deepcopy(template)
         insert_data['search_key__owner'] = os_data["_source"]["search_key"]['owner']
         insert_data['search_key__repo'] = os_data["_source"]["search_key"]['repo']
         insert_data['search_key__number'] = os_data["_source"]["search_key"]['number']
         insert_data['search_key__updated_at'] = os_data["_source"]["search_key"]['updated_at']
+        insert_data['event'] = os_data["_source"]["raw_data"]['event']
         raw_data = os_data["_source"]["raw_data"]
         standard_data = json.dumps(raw_data, separators=(',', ':'), ensure_ascii=False)
         insert_data['timeline_raw'] = standard_data
+        bulk_datas.append(insert_data)
         sql = f"INSERT INTO {table_name} (*) VALUES"
         count += 1
-        if count % 5000 == 0:
+        if count % 50000 == 0:
+            result = ck.execute(sql, bulk_datas)
             logger.info(f"已经插入的数据条数:{count}")
-        result = ck.execute(sql, [insert_data])
+            bulk_datas.clear()
+    if bulk_datas:
+        result = ck.execute(sql, bulk_datas)
     logger.info(f"已经插入的数据条数:{count}")
+
     # 将检查点放在这里插入
     ck_check_point(opensearch_client=opensearch_datas[1],
                    opensearch_index=opensearch_index,
@@ -110,7 +129,7 @@ def transfer_data_special(clickhouse_server_info, opensearch_index, table_name, 
 warnings.filterwarnings('ignore')
 
 
-def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensearch_conn_datas, temp):
+def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensearch_conn_datas, template):
     # if opensearch_index == 'maillists' or opensearch_index == 'maillists_enriched':
     #     settings = {'strings_encoding': 'unicode_escape'}
     # else:
@@ -129,12 +148,15 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
     try:
         for os_data in opensearch_datas[0]:
             updated_at = os_data["_source"]["search_key"]["updated_at"]
+            # 特殊情况要记得删掉
+            if isinstance(updated_at,float):
+                continue
             if updated_at > max_timestamp:
                 max_timestamp = updated_at
             df_data = os_data["_source"]
 
             df = pd.json_normalize(df_data)
-            dict_data = parse_data(df, temp)
+            dict_data = parse_data(df, template)
             bulk_data.append(dict_data)
             # except_fields = []
             for field in fields:
