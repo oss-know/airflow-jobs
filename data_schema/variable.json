@@ -103,14 +103,14 @@
   "LocationGeo_token": "123456",
 
   "opensearch_conn_data": {
-    "HOST": "192.168.8.10",
+    "HOST": "192.168.8.108",
     "PASSWD": "admin",
     "PORT": "9200",
     "USER": "admin"
   },
 
   "clickhouse_driver_info": {
-    "HOST": "192.168.8.10",
+    "HOST": "192.168.8.108",
     "PASSWD": "",
     "PORT": "19001",
     "USER": "default",
@@ -119,7 +119,7 @@
   "clickhouse_conn_info":"clickhouse_driver_info",
 
   "redis_client_data": {
-    "HOST": "192.168.8.10",
+    "HOST": "192.168.8.108",
     "PORT": "6379"
   },
   "redis_conn_data":"redis_client_data",

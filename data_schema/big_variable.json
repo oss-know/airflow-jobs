@@ -13,139 +13,139 @@
             "owner": "bminor",
             "repo": "glibc",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:17:37Z"
+            "until": "2022-02-26T08:29:20Z"
         },
         {
             "owner": "gvlx",
             "repo": "gawk",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:17:37Z"
+            "until": "2022-02-26T08:29:20Z"
         },
         {
             "owner": "gnutls",
             "repo": "gnutls",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:17:37Z"
+            "until": "2022-02-26T08:29:20Z"
         },
         {
             "owner": "bminor",
             "repo": "bash",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:17:37Z"
+            "until": "2022-02-26T08:29:20Z"
         },
         {
             "owner": "coreutils",
             "repo": "coreutils",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:17:37Z"
+            "until": "2022-02-26T08:29:20Z"
         },
         {
             "owner": "gpg",
             "repo": "gnupg",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:17:37Z"
+            "until": "2022-02-26T08:29:20Z"
         },
         {
             "owner": "GNOME",
             "repo": "libxml2",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:17:37Z"
+            "until": "2022-02-26T08:29:20Z"
         },
         {
             "owner": "freedesktop",
             "repo": "dbus",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:17:37Z"
+            "until": "2022-02-26T08:29:20Z"
         },
         {
             "owner": "systemd",
             "repo": "systemd",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:17:37Z"
+            "until": "2022-02-26T08:29:20Z"
         },
         {
             "owner": "wayland-project",
             "repo": "wayland",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:17:37Z"
+            "until": "2022-02-26T08:29:20Z"
         },
         {
             "owner": "bminor",
             "repo": "binutils-gdb",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:17:37Z"
+            "until": "2022-02-26T08:29:20Z"
         },
         {
             "owner": "libffi",
             "repo": "libffi",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:17:37Z"
+            "until": "2022-02-26T08:29:20Z"
         },
         {
             "owner": "linux-pam",
             "repo": "linux-pam",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:17:37Z"
+            "until": "2022-02-26T08:29:20Z"
         },
         {
             "owner": "rpm-software-management",
             "repo": "rpm",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:17:37Z"
+            "until": "2022-02-26T08:29:20Z"
         },
         {
             "owner": "boostorg",
             "repo": "boost",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:17:37Z"
+            "until": "2022-02-26T08:29:20Z"
         },
         {
             "owner": "xz-mirror",
             "repo": "xz",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:17:37Z"
+            "until": "2022-02-26T08:29:20Z"
         },
         {
             "owner": "sqlite",
             "repo": "sqlite",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:17:37Z"
+            "until": "2022-02-26T08:29:20Z"
         },
         {
             "owner": "openssl",
             "repo": "openssl",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:17:37Z"
+            "until": "2022-02-26T08:29:20Z"
         },
         {
             "owner": "nginx",
             "repo": "nginx",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:17:37Z"
+            "until": "2022-02-26T08:29:20Z"
         },
         {
             "owner": "google",
             "repo": "leveldb",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:17:37Z"
+            "until": "2022-02-26T08:29:20Z"
         },
         {
             "owner": "facebook",
             "repo": "zstd",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:17:37Z"
+            "until": "2022-02-26T08:29:20Z"
         },
         {
             "owner": "mirror",
             "repo": "ncurses",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:17:37Z"
+            "until": "2022-02-26T08:29:20Z"
         },
         {
             "owner": "glennrp",
             "repo": "libpng",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:17:37Z"
+            "until": "2022-02-26T08:29:20Z"
         }
     ],
     "need_init_github_issues_comments_repos": [
@@ -3501,5 +3501,153 @@
             }
         }
     ],
-    "alter_table_cols": "alter_table_infos"
+    "ck_alter_table_cols": "alter_table_infos",
+    "mail_lists": [
+        {
+            "project_name": "gawk",
+            "mail_lists": [
+                {
+                    "list_name": "bug-gawk",
+                    "archive_type": "txt",
+                    "url_prefix": "https://lists.gnu.org/archive/mbox/bug-gawk",
+                    "start_since": "2021-07",
+                    "date_format": "%Y-%m",
+                    "interval": "month"
+                },
+                {
+                    "list_name": "gawk-diffs",
+                    "archive_type": "txt",
+                    "url_prefix": "https://lists.gnu.org/archive/mbox/gawk-diffs",
+                    "start_since": "2011-02",
+                    "date_format": "%Y-%m",
+                    "interval": "month"
+                },
+                {
+                    "list_name": "help-gawk",
+                    "archive_type": "txt",
+                    "url_prefix": "https://lists.gnu.org/archive/mbox/help-gawk",
+                    "start_since": "2021-07",
+                    "date_format": "%Y-%m",
+                    "interval": "month"
+                }
+            ]
+        },
+        {
+            "project_name": "gnutls",
+            "mail_lists": [
+                {
+                    "list_name": "gnutls-devel",
+                    "archive_type": "pipermail",
+                    "url_prefix": "https://lists.gnu.org/mailman/listinfo/gnutls-devel"
+                },
+                {
+                    "list_name": "gnutls-help",
+                    "archive_type": "pipermail",
+                    "url_prefix": "https://lists.gnutls.org/pipermail/gnutls-help"
+                }
+            ]
+        },
+        {
+            "project_name": "bash",
+            "mail_lists": [
+                {
+                    "list_name": "bash-announce",
+                    "archive_type": "txt",
+                    "url_prefix": "https://lists.gnu.org/archive/html/bash-announce/",
+                    "start_since": "2007-08",
+                    "date_format": "%Y-%m",
+                    "interval": "month"
+                },
+                {
+                    "list_name": "help-bash",
+                    "archive_type": "txt",
+                    "url_prefix": "https://lists.gnu.org/archive/mbox/help-bash",
+                    "start_since": "2011-11",
+                    "date_format": "%Y-%m",
+                    "interval": "month"
+                }
+            ]
+        },
+        {
+            "project_name": "coreutils",
+            "mail_lists": [
+                {
+                    "list_name": "bug-coreutils",
+                    "archive_type": "txt",
+                    "url_prefix": "https://lists.gnu.org/archive/mbox/bug-coreutils",
+                    "start_since": "2002-09",
+                    "date_format": "%Y-%m",
+                    "interval": "month"
+                },
+                {
+                    "list_name": "coreutils",
+                    "archive_type": "txt",
+                    "url_prefix": "https://lists.gnu.org/archive/mbox/coreutils",
+                    "start_since": "2010-03",
+                    "date_format": "%Y-%m",
+                    "interval": "month"
+                }
+            ]
+        },
+        {
+            "project_name": "gnupg",
+            "mail_lists": [
+                {
+                    "list_name": "gnupg-announce",
+                    "archive_type": "pipermail",
+                    "url_prefix": "https://lists.gnupg.org/pipermail/gnupg-announce"
+                },
+                {
+                    "list_name": "gnupg-users",
+                    "archive_type": "pipermail",
+                    "url_prefix": "https://lists.gnupg.org/pipermail/gnupg-users"
+                }
+            ]
+        },
+        {
+            "project_name": "dbus",
+            "mail_lists": [
+                {
+                    "list_name": "dbus",
+                    "archive_type": "pipermail",
+                    "url_prefix": "https://lists.freedesktop.org/archives/dbus"
+                }
+            ]
+        },
+        {
+            "project_name": "systemd",
+            "mail_lists": [
+                {
+                    "list_name": "systemd-devel",
+                    "archive_type": "pipermail",
+                    "url_prefix": "https://lists.freedesktop.org/archives/systemd-devel"
+                },
+                {
+                    "list_name": "systemd-bugs",
+                    "archive_type": "pipermail",
+                    "url_prefix": "https://lists.freedesktop.org/archives/systemd-bugs"
+                },
+                {
+                    "list_name": "systemd-commits",
+                    "archive_type": "pipermail",
+                    "url_prefix": "https://lists.freedesktop.org/archives/systemd-commits"
+                }
+            ]
+        },
+        {
+            "project_name": "wayland",
+            "mail_lists": [
+                {
+                    "list_name": "wayland-devel",
+                    "archive_type": "pipermail",
+                    "url_prefix": "https://lists.freedesktop.org/archives/wayland-devel"
+                },
+                {
+                    "list_name": "wayland-bugs",
+                    "archive_type": "pipermail",
+                    "url_prefix": "https://lists.freedesktop.org/archives/wayland-bugs"
+                }
+            ]
+        }
+    ]
 }
