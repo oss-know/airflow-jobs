@@ -10,186 +10,148 @@
     ],
     "need_init_github_commits_repos": [
         {
-            "owner": "torvalds",
-            "repo": "linux",
-            "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
-        },
-        {
-            "owner": "gcc-mirror",
-            "repo": "gcc",
-            "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
+            "until": "2022-02-26T08:17:37Z"
         },
         {
             "owner": "gvlx",
             "repo": "gawk",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
+            "until": "2022-02-26T08:17:37Z"
         },
         {
             "owner": "gnutls",
             "repo": "gnutls",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
+            "until": "2022-02-26T08:17:37Z"
         },
         {
             "owner": "bminor",
             "repo": "bash",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
+            "until": "2022-02-26T08:17:37Z"
         },
         {
             "owner": "coreutils",
             "repo": "coreutils",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
+            "until": "2022-02-26T08:17:37Z"
         },
         {
             "owner": "gpg",
             "repo": "gnupg",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
+            "until": "2022-02-26T08:17:37Z"
         },
         {
             "owner": "GNOME",
             "repo": "libxml2",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
+            "until": "2022-02-26T08:17:37Z"
         },
         {
             "owner": "freedesktop",
             "repo": "dbus",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
+            "until": "2022-02-26T08:17:37Z"
         },
         {
             "owner": "systemd",
             "repo": "systemd",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
+            "until": "2022-02-26T08:17:37Z"
         },
         {
             "owner": "wayland-project",
             "repo": "wayland",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
+            "until": "2022-02-26T08:17:37Z"
         },
         {
             "owner": "bminor",
             "repo": "binutils-gdb",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
+            "until": "2022-02-26T08:17:37Z"
         },
         {
             "owner": "libffi",
             "repo": "libffi",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
+            "until": "2022-02-26T08:17:37Z"
         },
         {
             "owner": "linux-pam",
             "repo": "linux-pam",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
+            "until": "2022-02-26T08:17:37Z"
         },
         {
             "owner": "rpm-software-management",
             "repo": "rpm",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
+            "until": "2022-02-26T08:17:37Z"
         },
         {
             "owner": "boostorg",
             "repo": "boost",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
+            "until": "2022-02-26T08:17:37Z"
         },
         {
             "owner": "xz-mirror",
             "repo": "xz",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
+            "until": "2022-02-26T08:17:37Z"
         },
         {
             "owner": "sqlite",
             "repo": "sqlite",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
+            "until": "2022-02-26T08:17:37Z"
         },
         {
             "owner": "openssl",
             "repo": "openssl",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
+            "until": "2022-02-26T08:17:37Z"
         },
         {
             "owner": "nginx",
             "repo": "nginx",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
-        },
-        {
-            "owner": "pingcap",
-            "repo": "tidb",
-            "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
+            "until": "2022-02-26T08:17:37Z"
         },
         {
             "owner": "google",
             "repo": "leveldb",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim",
-            "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl",
-            "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
+            "until": "2022-02-26T08:17:37Z"
         },
         {
             "owner": "facebook",
             "repo": "zstd",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
+            "until": "2022-02-26T08:17:37Z"
         },
         {
             "owner": "mirror",
             "repo": "ncurses",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
+            "until": "2022-02-26T08:17:37Z"
         },
         {
             "owner": "glennrp",
             "repo": "libpng",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-18T11:20:26Z"
+            "until": "2022-02-26T08:17:37Z"
         }
     ],
     "need_init_github_issues_comments_repos": [
         {
-            "owner": "torvalds",
-            "repo": "linux"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc"
-        },
-        {
-            "owner": "gcc-mirror",
-            "repo": "gcc"
         },
         {
             "owner": "gvlx",
@@ -264,20 +226,8 @@
             "repo": "nginx"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb"
-        },
-        {
             "owner": "google",
             "repo": "leveldb"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -294,16 +244,8 @@
     ],
     "need_init_github_issues_repos": [
         {
-            "owner": "torvalds",
-            "repo": "linux"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc"
-        },
-        {
-            "owner": "gcc-mirror",
-            "repo": "gcc"
         },
         {
             "owner": "gvlx",
@@ -378,20 +320,8 @@
             "repo": "nginx"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb"
-        },
-        {
             "owner": "google",
             "repo": "leveldb"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -408,16 +338,8 @@
     ],
     "need_init_github_issues_timeline_repos": [
         {
-            "owner": "torvalds",
-            "repo": "linux"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc"
-        },
-        {
-            "owner": "gcc-mirror",
-            "repo": "gcc"
         },
         {
             "owner": "gvlx",
@@ -492,20 +414,8 @@
             "repo": "nginx"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb"
-        },
-        {
             "owner": "google",
             "repo": "leveldb"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -522,16 +432,8 @@
     ],
     "need_init_github_pull_requests_repos": [
         {
-            "owner": "torvalds",
-            "repo": "linux"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc"
-        },
-        {
-            "owner": "gcc-mirror",
-            "repo": "gcc"
         },
         {
             "owner": "gvlx",
@@ -606,20 +508,8 @@
             "repo": "nginx"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb"
-        },
-        {
             "owner": "google",
             "repo": "leveldb"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -636,19 +526,9 @@
     ],
     "need_init_gits": [
         {
-            "owner": "torvalds",
-            "repo": "linux",
-            "url": "https://github.com/torvalds/linux.git"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc",
             "url": "https://github.com/bminor/glibc.git"
-        },
-        {
-            "owner": "gcc-mirror",
-            "repo": "gcc",
-            "url": "https://github.com/gcc-mirror/gcc.git"
         },
         {
             "owner": "gvlx",
@@ -741,24 +621,9 @@
             "url": "https://github.com/nginx/nginx.git"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb",
-            "url": "https://github.com/pingcap/tidb.git"
-        },
-        {
             "owner": "google",
             "repo": "leveldb",
             "url": "https://github.com/google/leveldb.git"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim",
-            "url": "https://github.com/vim/vim.git"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl",
-            "url": "https://github.com/curl/curl.git"
         },
         {
             "owner": "facebook",
@@ -778,16 +643,8 @@
     ],
     "need_sync_github_commits_repos": [
         {
-            "owner": "torvalds",
-            "repo": "linux"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc"
-        },
-        {
-            "owner": "gcc-mirror",
-            "repo": "gcc"
         },
         {
             "owner": "gvlx",
@@ -862,20 +719,8 @@
             "repo": "nginx"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb"
-        },
-        {
             "owner": "google",
             "repo": "leveldb"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -892,16 +737,8 @@
     ],
     "need_sync_github_issues_comments_repos": [
         {
-            "owner": "torvalds",
-            "repo": "linux"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc"
-        },
-        {
-            "owner": "gcc-mirror",
-            "repo": "gcc"
         },
         {
             "owner": "gvlx",
@@ -976,20 +813,8 @@
             "repo": "nginx"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb"
-        },
-        {
             "owner": "google",
             "repo": "leveldb"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -1006,16 +831,8 @@
     ],
     "need_sync_github_issues_repos": [
         {
-            "owner": "torvalds",
-            "repo": "linux"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc"
-        },
-        {
-            "owner": "gcc-mirror",
-            "repo": "gcc"
         },
         {
             "owner": "gvlx",
@@ -1090,20 +907,8 @@
             "repo": "nginx"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb"
-        },
-        {
             "owner": "google",
             "repo": "leveldb"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -1120,16 +925,8 @@
     ],
     "need_sync_github_pull_repuests_repos": [
         {
-            "owner": "torvalds",
-            "repo": "linux"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc"
-        },
-        {
-            "owner": "gcc-mirror",
-            "repo": "gcc"
         },
         {
             "owner": "gvlx",
@@ -1204,20 +1001,8 @@
             "repo": "nginx"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb"
-        },
-        {
             "owner": "google",
             "repo": "leveldb"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -1234,16 +1019,8 @@
     ],
     "need_init_github_profiles_repos": [
         {
-            "owner": "torvalds",
-            "repo": "linux"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc"
-        },
-        {
-            "owner": "gcc-mirror",
-            "repo": "gcc"
         },
         {
             "owner": "gvlx",
@@ -1318,20 +1095,8 @@
             "repo": "nginx"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb"
-        },
-        {
             "owner": "google",
             "repo": "leveldb"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -1348,16 +1113,8 @@
     ],
     "need_sync_github_profile_repo_list": [
         {
-            "owner": "torvalds",
-            "repo": "linux"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc"
-        },
-        {
-            "owner": "gcc-mirror",
-            "repo": "gcc"
         },
         {
             "owner": "gvlx",
@@ -1432,20 +1189,8 @@
             "repo": "nginx"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb"
-        },
-        {
             "owner": "google",
             "repo": "leveldb"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -1462,19 +1207,9 @@
     ],
     "need_sync_gits": [
         {
-            "owner": "torvalds",
-            "repo": "linux",
-            "url": "https://github.com/torvalds/linux.git"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc",
             "url": "https://github.com/bminor/glibc.git"
-        },
-        {
-            "owner": "gcc-mirror",
-            "repo": "gcc",
-            "url": "https://github.com/gcc-mirror/gcc.git"
         },
         {
             "owner": "gvlx",
@@ -1567,24 +1302,9 @@
             "url": "https://github.com/nginx/nginx.git"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb",
-            "url": "https://github.com/pingcap/tidb.git"
-        },
-        {
             "owner": "google",
             "repo": "leveldb",
             "url": "https://github.com/google/leveldb.git"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim",
-            "url": "https://github.com/vim/vim.git"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl",
-            "url": "https://github.com/curl/curl.git"
         },
         {
             "owner": "facebook",
@@ -1602,12 +1322,32 @@
             "url": "https://github.com/glennrp/libpng.git"
         }
     ],
+    "duration_of_sync_github_profiles": {
+        "seconds": 10800
+    },
+    "sync_profiles_task_num": {
+        "num": 10
+    },
+    "LocationGeo_token": "123456",
     "opensearch_conn_data": {
         "HOST": "192.168.8.10",
         "PASSWD": "admin",
         "PORT": "9200",
         "USER": "admin"
     },
+    "clickhouse_driver_info": {
+        "HOST": "192.168.8.10",
+        "PASSWD": "",
+        "PORT": "19001",
+        "USER": "default",
+        "DATABASE": "default"
+    },
+    "clickhouse_conn_info": "clickhouse_driver_info",
+    "redis_client_data": {
+        "HOST": "192.168.8.10",
+        "PORT": "6379"
+    },
+    "redis_conn_data": "redis_client_data",
     "transfer_data_os_index_and_ck_tbname": [
         {
             "OPENSEARCH_INDEX": "github_issues",
@@ -1634,13 +1374,988 @@
             "CK_TABLE_NAME": "github_issues_timeline"
         }
     ],
-    "clickhouse_driver_info": {
-        "HOST": "192.168.8.10",
-        "PASSWD": "",
-        "PORT": "19001",
-        "USER": "default",
-        "DATABASE": "default"
-    },
+    "ck_table_os_index_mapping": "transfer_data_os_index_and_ck_tbname",
+    "clickhouse_tb_temp": [
+        {
+            "table_name": "github_pull_requests",
+            "temp": {
+                "search_key": {
+                    "owner": "",
+                    "repo": "",
+                    "updated_at": 0
+                },
+                "raw_data": {
+                    "url": "",
+                    "id": 0,
+                    "node_id": "",
+                    "html_url": "",
+                    "diff_url": "",
+                    "patch_url": "",
+                    "issue_url": "",
+                    "number": 0,
+                    "state": "",
+                    "locked": false,
+                    "title": "",
+                    "user": {
+                        "login": "",
+                        "id": 0,
+                        "node_id": "",
+                        "avatar_url": "",
+                        "gravatar_id": "",
+                        "url": "",
+                        "html_url": "",
+                        "followers_url": "",
+                        "following_url": "",
+                        "gists_url": "",
+                        "starred_url": "",
+                        "subscriptions_url": "",
+                        "organizations_url": "",
+                        "repos_url": "",
+                        "events_url": "",
+                        "received_events_url": "",
+                        "type": "",
+                        "site_admin": false
+                    },
+                    "body": "",
+                    "created_at": "",
+                    "updated_at": "",
+                    "closed_at": "",
+                    "merged_at": "",
+                    "merge_commit_sha": "",
+                    "assignee": {
+                        "login": "",
+                        "id": 0,
+                        "node_id": "",
+                        "avatar_url": "",
+                        "gravatar_id": "",
+                        "url": "",
+                        "html_url": "",
+                        "followers_url": "",
+                        "following_url": "",
+                        "gists_url": "",
+                        "starred_url": "",
+                        "subscriptions_url": "",
+                        "organizations_url": "",
+                        "repos_url": "",
+                        "events_url": "",
+                        "received_events_url": "",
+                        "type": "",
+                        "site_admin": false
+                    },
+                    "assignees": [
+                        {
+                            "login": "",
+                            "id": 0,
+                            "node_id": "",
+                            "avatar_url": "",
+                            "gravatar_id": "",
+                            "url": "",
+                            "html_url": "",
+                            "followers_url": "",
+                            "following_url": "",
+                            "gists_url": "",
+                            "starred_url": "",
+                            "subscriptions_url": "",
+                            "organizations_url": "",
+                            "repos_url": "",
+                            "events_url": "",
+                            "received_events_url": "",
+                            "type": "",
+                            "site_admin": false
+                        }
+                    ],
+                    "requested_reviewers": [
+                        {
+                            "login": "",
+                            "id": 0,
+                            "node_id": "",
+                            "avatar_url": "",
+                            "gravatar_id": "",
+                            "url": "",
+                            "html_url": "",
+                            "followers_url": "",
+                            "following_url": "",
+                            "gists_url": "",
+                            "starred_url": "",
+                            "subscriptions_url": "",
+                            "organizations_url": "",
+                            "repos_url": "",
+                            "events_url": "",
+                            "received_events_url": "",
+                            "type": "",
+                            "site_admin": false
+                        }
+                    ],
+                    "requested_teams": [
+                        {
+                            "id": 0,
+                            "node_id": "",
+                            "url": "",
+                            "html_url": "",
+                            "name": "",
+                            "slug": "",
+                            "description": "",
+                            "privacy": "",
+                            "permission": "",
+                            "members_url": "",
+                            "repositories_url": "",
+                            "parent": [
+                                "",
+                                "",
+                                ""
+                            ]
+                        }
+                    ],
+                    "labels": [
+                        {
+                            "id": 0,
+                            "node_id": "",
+                            "url": "",
+                            "name": "",
+                            "color": "",
+                            "default": false,
+                            "description": ""
+                        }
+                    ],
+                    "milestone": {
+                        "url": "",
+                        "html_url": "",
+                        "labels_url": "",
+                        "id": 0,
+                        "node_id": "",
+                        "number": 1,
+                        "state": "",
+                        "title": "",
+                        "description": "",
+                        "creator": {
+                            "login": "",
+                            "id": 0,
+                            "node_id": "",
+                            "avatar_url": "",
+                            "gravatar_id": "",
+                            "url": "",
+                            "html_url": "",
+                            "followers_url": "",
+                            "following_url": "",
+                            "gists_url": "",
+                            "starred_url": "",
+                            "subscriptions_url": "",
+                            "organizations_url": "",
+                            "repos_url": "",
+                            "events_url": "",
+                            "received_events_url": "",
+                            "type": "",
+                            "site_admin": false
+                        },
+                        "open_issues": 0,
+                        "closed_issues": 0,
+                        "created_at": "",
+                        "updated_at": "",
+                        "closed_at": "",
+                        "due_on": ""
+                    },
+                    "draft": false,
+                    "commits_url": "",
+                    "review_comments_url": "",
+                    "review_comment_url": "",
+                    "comments_url": "",
+                    "statuses_url": "",
+                    "head": {
+                        "label": "",
+                        "ref": "",
+                        "sha": "",
+                        "user": {
+                            "login": "",
+                            "id": 0,
+                            "node_id": "",
+                            "avatar_url": "",
+                            "gravatar_id": "",
+                            "url": "",
+                            "html_url": "",
+                            "followers_url": "",
+                            "following_url": "",
+                            "gists_url": "",
+                            "starred_url": "",
+                            "subscriptions_url": "",
+                            "organizations_url": "",
+                            "repos_url": "",
+                            "events_url": "",
+                            "received_events_url": "",
+                            "type": "",
+                            "site_admin": false
+                        },
+                        "repo": {
+                            "id": 0,
+                            "node_id": "",
+                            "name": "",
+                            "full_name": "",
+                            "private": false,
+                            "owner": {
+                                "login": "",
+                                "id": 0,
+                                "node_id": "",
+                                "avatar_url": "",
+                                "gravatar_id": "",
+                                "url": "",
+                                "html_url": "",
+                                "followers_url": "",
+                                "following_url": "",
+                                "gists_url": "",
+                                "starred_url": "",
+                                "subscriptions_url": "",
+                                "organizations_url": "",
+                                "repos_url": "",
+                                "events_url": "",
+                                "received_events_url": "",
+                                "type": "",
+                                "site_admin": false
+                            },
+                            "html_url": "",
+                            "description": "",
+                            "fork": false,
+                            "url": "",
+                            "forks_url": "",
+                            "keys_url": "",
+                            "collaborators_url": "",
+                            "teams_url": "",
+                            "hooks_url": "",
+                            "issue_events_url": "",
+                            "events_url": "",
+                            "assignees_url": "",
+                            "branches_url": "",
+                            "tags_url": "",
+                            "blobs_url": "",
+                            "git_tags_url": "",
+                            "git_refs_url": "",
+                            "trees_url": "",
+                            "statuses_url": "",
+                            "languages_url": "",
+                            "stargazers_url": "",
+                            "contributors_url": "",
+                            "subscribers_url": "",
+                            "subscription_url": "",
+                            "commits_url": "",
+                            "git_commits_url": "",
+                            "comments_url": "",
+                            "issue_comment_url": "",
+                            "contents_url": "",
+                            "compare_url": "",
+                            "merges_url": "",
+                            "archive_url": "",
+                            "downloads_url": "",
+                            "issues_url": "",
+                            "pulls_url": "",
+                            "milestones_url": "",
+                            "notifications_url": "",
+                            "labels_url": "",
+                            "releases_url": "",
+                            "deployments_url": "",
+                            "created_at": "",
+                            "updated_at": "",
+                            "pushed_at": "",
+                            "git_url": "",
+                            "ssh_url": "",
+                            "clone_url": "",
+                            "svn_url": "",
+                            "homepage": "",
+                            "size": 0,
+                            "stargazers_count": 0,
+                            "watchers_count": 0,
+                            "language": "",
+                            "has_issues": false,
+                            "has_projects": false,
+                            "has_downloads": false,
+                            "has_wiki": false,
+                            "has_pages": false,
+                            "forks_count": 0,
+                            "mirror_url": "",
+                            "archived": false,
+                            "disabled": false,
+                            "open_issues_count": 0,
+                            "license": {
+                                "key": "",
+                                "name": "",
+                                "spdx_id": "",
+                                "url": "",
+                                "node_id": ""
+                            },
+                            "allow_forking": false,
+                            "is_template": false,
+                            "topics": [
+                                "",
+                                ""
+                            ],
+                            "visibility": "",
+                            "forks": 0,
+                            "open_issues": 0,
+                            "watchers": 0,
+                            "default_branch": ""
+                        }
+                    },
+                    "base": {
+                        "label": "",
+                        "ref": "",
+                        "sha": "",
+                        "user": {
+                            "login": "",
+                            "id": 0,
+                            "node_id": "",
+                            "avatar_url": "",
+                            "gravatar_id": "",
+                            "url": "",
+                            "html_url": "",
+                            "followers_url": "",
+                            "following_url": "",
+                            "gists_url": "",
+                            "starred_url": "",
+                            "subscriptions_url": "",
+                            "organizations_url": "",
+                            "repos_url": "",
+                            "events_url": "",
+                            "received_events_url": "",
+                            "type": "",
+                            "site_admin": false
+                        },
+                        "repo": {
+                            "id": 0,
+                            "node_id": "",
+                            "name": "",
+                            "full_name": "",
+                            "private": false,
+                            "owner": {
+                                "login": "",
+                                "id": 0,
+                                "node_id": "",
+                                "avatar_url": "",
+                                "gravatar_id": "",
+                                "url": "",
+                                "html_url": "",
+                                "followers_url": "",
+                                "following_url": "",
+                                "gists_url": "",
+                                "starred_url": "",
+                                "subscriptions_url": "",
+                                "organizations_url": "",
+                                "repos_url": "",
+                                "events_url": "",
+                                "received_events_url": "",
+                                "type": "",
+                                "site_admin": false
+                            },
+                            "html_url": "",
+                            "description": "",
+                            "fork": false,
+                            "url": "",
+                            "forks_url": "",
+                            "keys_url": "",
+                            "collaborators_url": "",
+                            "teams_url": "",
+                            "hooks_url": "",
+                            "issue_events_url": "",
+                            "events_url": "",
+                            "assignees_url": "",
+                            "branches_url": "",
+                            "tags_url": "",
+                            "blobs_url": "",
+                            "git_tags_url": "",
+                            "git_refs_url": "",
+                            "trees_url": "",
+                            "statuses_url": "",
+                            "languages_url": "",
+                            "stargazers_url": "",
+                            "contributors_url": "",
+                            "subscribers_url": "",
+                            "subscription_url": "",
+                            "commits_url": "",
+                            "git_commits_url": "",
+                            "comments_url": "",
+                            "issue_comment_url": "",
+                            "contents_url": "",
+                            "compare_url": "",
+                            "merges_url": "",
+                            "archive_url": "",
+                            "downloads_url": "",
+                            "issues_url": "",
+                            "pulls_url": "",
+                            "milestones_url": "",
+                            "notifications_url": "",
+                            "labels_url": "",
+                            "releases_url": "",
+                            "deployments_url": "",
+                            "created_at": "",
+                            "updated_at": "",
+                            "pushed_at": "",
+                            "git_url": "",
+                            "ssh_url": "",
+                            "clone_url": "",
+                            "svn_url": "",
+                            "homepage": "",
+                            "size": 0,
+                            "stargazers_count": 0,
+                            "watchers_count": 0,
+                            "language": "",
+                            "has_issues": false,
+                            "has_projects": false,
+                            "has_downloads": false,
+                            "has_wiki": false,
+                            "has_pages": false,
+                            "forks_count": 0,
+                            "mirror_url": "",
+                            "archived": false,
+                            "disabled": false,
+                            "open_issues_count": 0,
+                            "license": {
+                                "key": "",
+                                "name": "",
+                                "spdx_id": "",
+                                "url": "",
+                                "node_id": ""
+                            },
+                            "allow_forking": false,
+                            "is_template": false,
+                            "topics": [
+                                "",
+                                ""
+                            ],
+                            "visibility": "",
+                            "forks": 0,
+                            "open_issues": 0,
+                            "watchers": 0,
+                            "default_branch": ""
+                        }
+                    },
+                    "_links": {
+                        "self": {
+                            "href": ""
+                        },
+                        "html": {
+                            "href": ""
+                        },
+                        "issue": {
+                            "href": ""
+                        },
+                        "comments": {
+                            "href": ""
+                        },
+                        "review_comments": {
+                            "href": ""
+                        },
+                        "review_comment": {
+                            "href": ""
+                        },
+                        "commits": {
+                            "href": ""
+                        },
+                        "statuses": {
+                            "href": ""
+                        }
+                    },
+                    "author_association": "",
+                    "auto_merge": "",
+                    "active_lock_reason": ""
+                }
+            }
+        },
+        {
+            "table_name": "github_commits",
+            "temp": {
+                "search_key": {
+                    "owner": "",
+                    "repo": "",
+                    "updated_at": 0
+                },
+                "raw_data": {
+                    "sha": "",
+                    "node_id": "",
+                    "commit": {
+                        "author": {
+                            "name": "",
+                            "email": "",
+                            "date": ""
+                        },
+                        "committer": {
+                            "name": "",
+                            "email": "",
+                            "date": ""
+                        },
+                        "message": "",
+                        "tree": {
+                            "sha": "",
+                            "url": ""
+                        },
+                        "url": "",
+                        "comment_count": 0,
+                        "verification": {
+                            "verified": false,
+                            "reason": "",
+                            "signature": "",
+                            "payload": ""
+                        }
+                    },
+                    "url": "",
+                    "html_url": "",
+                    "comments_url": "",
+                    "author": {
+                        "login": "",
+                        "id": 0,
+                        "node_id": "",
+                        "avatar_url": "",
+                        "gravatar_id": "",
+                        "url": "",
+                        "html_url": "",
+                        "followers_url": "",
+                        "following_url": "",
+                        "gists_url": "",
+                        "starred_url": "",
+                        "subscriptions_url": "",
+                        "organizations_url": "",
+                        "repos_url": "",
+                        "events_url": "",
+                        "received_events_url": "",
+                        "type": "",
+                        "site_admin": false
+                    },
+                    "committer": {
+                        "login": "",
+                        "id": 0,
+                        "node_id": "",
+                        "avatar_url": "",
+                        "gravatar_id": "",
+                        "url": "",
+                        "html_url": "",
+                        "followers_url": "",
+                        "following_url": "",
+                        "gists_url": "",
+                        "starred_url": "",
+                        "subscriptions_url": "",
+                        "organizations_url": "",
+                        "repos_url": "",
+                        "events_url": "",
+                        "received_events_url": "",
+                        "type": "",
+                        "site_admin": false
+                    },
+                    "parents": [
+                        {
+                            "sha": "",
+                            "url": "",
+                            "html_url": ""
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "table_name": "gits",
+            "temp": {
+                "search_key": {
+                    "owner": "",
+                    "repo": "",
+                    "origin": "",
+                    "updated_at": 0
+                },
+                "raw_data": {
+                    "message": "",
+                    "hexsha": "",
+                    "parents": [
+                        "",
+                        ""
+                    ],
+                    "author_tz": 0,
+                    "committer_tz": 0,
+                    "author_name": "",
+                    "author_email": "",
+                    "committer_name": "",
+                    "committer_email": "",
+                    "authored_date": "1970-01-01T00:00:00Z",
+                    "authored_timestamp": 0,
+                    "committed_date": "1970-01-01T00:00:00Z",
+                    "committed_timestamp": 0,
+                    "files": [
+                        {
+                            "insertions": 0,
+                            "deletions": 0,
+                            "lines": 0,
+                            "file_name": ""
+                        },
+                        {
+                            "insertions": 0,
+                            "deletions": 0,
+                            "lines": 0,
+                            "file_name": ""
+                        }
+                    ],
+                    "total": {
+                        "insertions": 0,
+                        "deletions": 0,
+                        "lines": 0,
+                        "files": 0
+                    },
+                    "if_merged": false,
+                    "type": ""
+                }
+            }
+        },
+        {
+            "table_name": "github_issues",
+            "temp": {
+                "search_key": {
+                    "owner": "",
+                    "repo": "",
+                    "updated_at": 0
+                },
+                "raw_data": {
+                    "url": "",
+                    "repository_url": "",
+                    "labels_url": "",
+                    "comments_url": "",
+                    "events_url": "",
+                    "html_url": "",
+                    "id": 0,
+                    "node_id": "",
+                    "number": 0,
+                    "title": "",
+                    "user": {
+                        "login": "",
+                        "id": 0,
+                        "node_id": "",
+                        "avatar_url": "",
+                        "gravatar_id": "",
+                        "url": "",
+                        "html_url": "",
+                        "followers_url": "",
+                        "following_url": "",
+                        "gists_url": "",
+                        "starred_url": "",
+                        "subscriptions_url": "",
+                        "organizations_url": "",
+                        "repos_url": "",
+                        "events_url": "",
+                        "received_events_url": "",
+                        "type": "",
+                        "site_admin": false
+                    },
+                    "labels": [
+                        {
+                            "id": 0,
+                            "node_id": "",
+                            "url": "",
+                            "name": "",
+                            "color": "",
+                            "default": false,
+                            "description": ""
+                        }
+                    ],
+                    "state": "",
+                    "locked": false,
+                    "assignee": {
+                        "login": "",
+                        "id": 0,
+                        "node_id": "",
+                        "avatar_url": "",
+                        "gravatar_id": "",
+                        "url": "",
+                        "html_url": "",
+                        "followers_url": "",
+                        "following_url": "",
+                        "gists_url": "",
+                        "starred_url": "",
+                        "subscriptions_url": "",
+                        "organizations_url": "",
+                        "repos_url": "",
+                        "events_url": "",
+                        "received_events_url": "",
+                        "type": "",
+                        "site_admin": false
+                    },
+                    "assignees": [
+                        {
+                            "login": "",
+                            "id": 0,
+                            "node_id": "",
+                            "avatar_url": "",
+                            "gravatar_id": "",
+                            "url": "",
+                            "html_url": "",
+                            "followers_url": "",
+                            "following_url": "",
+                            "gists_url": "",
+                            "starred_url": "",
+                            "subscriptions_url": "",
+                            "organizations_url": "",
+                            "repos_url": "",
+                            "events_url": "",
+                            "received_events_url": "",
+                            "type": "",
+                            "site_admin": false
+                        }
+                    ],
+                    "milestone": {
+                        "url": "",
+                        "html_url": "",
+                        "labels_url": "",
+                        "id": 0,
+                        "node_id": "",
+                        "number": 1,
+                        "state": "",
+                        "title": "",
+                        "description": "",
+                        "creator": {
+                            "login": "",
+                            "id": 0,
+                            "node_id": "",
+                            "avatar_url": "",
+                            "gravatar_id": "",
+                            "url": "",
+                            "html_url": "",
+                            "followers_url": "",
+                            "following_url": "",
+                            "gists_url": "",
+                            "starred_url": "",
+                            "subscriptions_url": "",
+                            "organizations_url": "",
+                            "repos_url": "",
+                            "events_url": "",
+                            "received_events_url": "",
+                            "type": "",
+                            "site_admin": false
+                        },
+                        "open_issues": 0,
+                        "closed_issues": 0,
+                        "created_at": "",
+                        "updated_at": "",
+                        "closed_at": "",
+                        "due_on": ""
+                    },
+                    "comments": 0,
+                    "created_at": "",
+                    "updated_at": "",
+                    "closed_at": "",
+                    "author_association": "",
+                    "active_lock_reason": "",
+                    "draft": false,
+                    "pull_request": {
+                        "url": "",
+                        "html_url": "",
+                        "diff_url": "",
+                        "patch_url": "",
+                        "merged_at": ""
+                    },
+                    "body": "",
+                    "reactions": {
+                        "url": "",
+                        "total_count": 0,
+                        "+1": 0,
+                        "-1": 0,
+                        "laugh": 0,
+                        "hooray": 0,
+                        "confused": 0,
+                        "heart": 0,
+                        "rocket": 0,
+                        "eyes": 0
+                    },
+                    "timeline_url": "",
+                    "performed_via_github_app": ""
+                }
+            }
+        },
+        {
+            "table_name": "github_issues_comments",
+            "temp": {
+                "search_key": {
+                    "owner": "",
+                    "repo": "",
+                    "number": 0,
+                    "updated_at": 0
+                },
+                "raw_data": {
+                    "url": "",
+                    "html_url": "",
+                    "issue_url": "",
+                    "id": 0,
+                    "node_id": "",
+                    "user": {
+                        "login": "",
+                        "id": 0,
+                        "node_id": "",
+                        "avatar_url": "",
+                        "gravatar_id": "",
+                        "url": "",
+                        "html_url": "",
+                        "followers_url": "",
+                        "following_url": "",
+                        "gists_url": "",
+                        "starred_url": "",
+                        "subscriptions_url": "",
+                        "organizations_url": "",
+                        "repos_url": "",
+                        "events_url": "",
+                        "received_events_url": "",
+                        "type": "",
+                        "site_admin": false
+                    },
+                    "created_at": "",
+                    "updated_at": "",
+                    "author_association": "",
+                    "body": "",
+                    "reactions": {
+                        "url": "",
+                        "total_count": 0,
+                        "+1": 0,
+                        "-1": 0,
+                        "laugh": 0,
+                        "hooray": 0,
+                        "confused": 0,
+                        "heart": 0,
+                        "rocket": 0,
+                        "eyes": 0
+                    },
+                    "performed_via_github_app": ""
+                }
+            }
+        },
+        {
+            "table_name": "github_profile",
+            "temp": {
+                "login": "",
+                "id": 0,
+                "node_id": "",
+                "avatar_url": "",
+                "gravatar_id": "",
+                "url": "",
+                "html_url": "",
+                "followers_url": "",
+                "following_url": "",
+                "gists_url": "",
+                "starred_url": "",
+                "subscriptions_url": "",
+                "organizations_url": "",
+                "repos_url": "",
+                "events_url": "",
+                "received_events_url": "",
+                "type": "",
+                "site_admin": false,
+                "name": "",
+                "company": "",
+                "blog": "",
+                "location": "",
+                "email": "",
+                "hireable": false,
+                "bio": "",
+                "twitter_username": "",
+                "public_repos": 0,
+                "public_gists": 0,
+                "followers": 0,
+                "following": 0,
+                "created_at": "1970-01-01T00:00:00Z",
+                "updated_at": "1970-01-01T00:00:00Z",
+                "country_inferred_from_email_cctld": "",
+                "country_inferred_from_email_domain_company": "",
+                "country_inferred_from_location": "",
+                "country_inferred_from_company": "",
+                "final_company_inferred_from_company": "",
+                "company_inferred_from_email_domain_company": "",
+                "inferred_from_location": {
+                    "administrative_area_level_1": "",
+                    "administrative_area_level_2": "",
+                    "administrative_area_level_3": "",
+                    "colloquial_area": "",
+                    "continent": "",
+                    "country": "",
+                    "locality": "",
+                    "political": "",
+                    "postal_code": "",
+                    "postal_code_suffix": "",
+                    "postal_town": "",
+                    "route": "",
+                    "street_number": ""
+                }
+            }
+        },
+        {
+            "table_name": "maillists",
+            "temp": {
+                "backend_name": "",
+                "backend_version": "",
+                "perceval_version": "",
+                "timestamp": 0.0,
+                "origin": "",
+                "uuid": "",
+                "updated_on": 0.0,
+                "classified_fields_filtered": [
+                    [
+                        ""
+                    ]
+                ],
+                "category": "",
+                "search_fields": {
+                    "item_id": ""
+                },
+                "tag": "",
+                "data": {
+                    "unixfrom": "",
+                    "From": "",
+                    "Subject": "",
+                    "body": {
+                        "plain": ""
+                    },
+                    "Message-ID": "",
+                    "Date": "1970-01-01T00:00:00Z",
+                    "Date_tz": 0
+                },
+                "metadata__updated_on": "1970-01-01T00:00:00Z",
+                "metadata__timestamp": "1970-01-01T00:00:00Z",
+                "search_key": {
+                    "message_id": "",
+                    "project_name": "",
+                    "mail_list_name": "",
+                    "updated_at": 0
+                }
+            }
+        },
+        {
+            "table_name": "maillists_enriched",
+            "temp": {
+                "metadata__updated_on": "1970-01-01T00:00:00Z",
+                "metadata__timestamp": "1970-01-01T00:00:00Z",
+                "offset": 0,
+                "origin": "",
+                "tag": "",
+                "uuid": "",
+                "Date": "1970-01-01T00:00:00Z",
+                "Subject": "",
+                "Message-ID": "",
+                "Subject_analyzed": "",
+                "email_date": "1970-01-01T00:00:00Z",
+                "list": "",
+                "root": true,
+                "body_extract": "",
+                "size": 0,
+                "tz": 0,
+                "mbox_author_domain": "",
+                "repository_labels": [
+                    ""
+                ],
+                "metadata__filter_raw": "",
+                "grimoire_creation_date": "1970-01-01T00:00:00Z",
+                "is_pipermail_message": 0,
+                "metadata__gelk_version": "",
+                "metadata__gelk_backend_name": "",
+                "metadata__enriched_on": "1970-01-01T00:00:00Z",
+                "search_key": {
+                    "message_id": "",
+                    "project_name": "",
+                    "mail_list_name": "",
+                    "updated_at": 0
+                },
+                "Date_tz": 0,
+                "email_date_tz": 0,
+                "metadata__enriched_on_tz": 0,
+                "grimoire_creation_date_tz": 0
+            }
+        }
+    ],
+    "ck_init_sync_os_data_type_templ": "clickhouse_tb_temp",
     "ck_table_infos": [
         {
             "table_name": "gits",
@@ -1674,9 +2389,9 @@
                     "author_email": "",
                     "committer_name": "",
                     "committer_email": "",
-                    "authored_date": "",
+                    "authored_date": "1970-01-01T00:00:00Z",
                     "authored_timestamp": 0,
-                    "committed_date": "",
+                    "committed_date": "1970-01-01T00:00:00Z",
                     "committed_timestamp": 0,
                     "files": [
                         {
@@ -1748,8 +2463,8 @@
                     "public_gists": 0,
                     "followers": 0,
                     "following": 0,
-                    "created_at": "",
-                    "updated_at": "",
+                    "created_at": "1970-01-01T00:00:00Z",
+                    "updated_at": "1970-01-01T00:00:00Z",
                     "country_inferred_from_email_cctld": "",
                     "country_inferred_from_email_domain_company": "",
                     "country_inferred_from_location": "",
@@ -1788,7 +2503,8 @@
             "parse_data": {
                 "search_key": {
                     "owner": "",
-                    "repo": ""
+                    "repo": "",
+                    "updated_at": 0
                 },
                 "raw_data": {
                     "sha": "",
@@ -2620,17 +3336,170 @@
                     "timeline_raw": ""
                 }
             }
+        },
+        {
+            "table_name": "maillists",
+            "cluster_name": "replicated",
+            "database_name": "default",
+            "distributed_key": "search_key__updated_at",
+            "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/maillists','{replica}')",
+            "partition_by": "search_key__mail_list_name",
+            "order_by": [
+                "search_key__updated_at"
+            ],
+            "parse_data": {
+                "backend_name": "Pipermail",
+                "backend_version": "0.11.1",
+                "perceval_version": "0.17.16",
+                "timestamp": 1644287455.908721,
+                "origin": "https://gcc.gnu.org/pipermail/gcc-testresults",
+                "uuid": "bfa601db8237b34c6e83f75518551848b0003e50",
+                "updated_on": 1167580380.0,
+                "classified_fields_filtered": [
+                    [
+                        ""
+                    ]
+                ],
+                "category": "message",
+                "search_fields": {
+                    "item_id": "<200612311552.kBVFqUXc032638@d12av02.megacenter.de.ibm.com>"
+                },
+                "tag": "https://gcc.gnu.org/pipermail/gcc-testresults",
+                "data": {
+                    "unixfrom": "Andreas.Krebbel@de.ibm.com  Sun Dec 31 15:53:00 2006",
+                    "From": "Andreas.Krebbel@de.ibm.com (Andreas Krebbel)",
+                    "Subject": "Results for 4.1.2 20061229 (prerelease) testsuite on s390-ibm-linux-gnu",
+                    "body": {
+                        "plain": ""
+                    },
+                    "Message-ID": "<200612311552.kBVFqUXc032638@d12av02.megacenter.de.ibm.com>",
+                    "Date": "2002-01-20T22:56:00Z",
+                    "Date_tz": 0
+                },
+                "metadata__updated_on": "2002-01-20T22:56:00Z",
+                "metadata__timestamp": "2002-01-20T22:56:00Z",
+                "search_key": {
+                    "message_id": "<200612311552.kBVFqUXc032638@d12av02.megacenter.de.ibm.com>",
+                    "project_name": "Gcc",
+                    "mail_list_name": "gcc-testresults",
+                    "updated_at": 1644287455908
+                }
+            }
+        },
+        {
+            "table_name": "maillists_enriched",
+            "cluster_name": "replicated",
+            "database_name": "default",
+            "distributed_key": "search_key__updated_at",
+            "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/maillists_enriched','{replica}')",
+            "partition_by": "search_key__mail_list_name",
+            "order_by": [
+                "search_key__project_name",
+                "search_key__mail_list_name"
+            ],
+            "parse_data": {
+                "metadata__updated_on": "2001-11-11T18:33:41Z",
+                "metadata__timestamp": "2022-02-19T07:35:00Z",
+                "offset": 0,
+                "origin": "https://gcc.gnu.org/pipermail/gcc-cvs-wwwdocs",
+                "tag": "https://gcc.gnu.org/pipermail/gcc-cvs-wwwdocs",
+                "uuid": "281e0d467ce7d1f5b834467391150d1dafe8995f",
+                "Date": "2001-11-11T18:33:41Z",
+                "Subject": "wwwdocs/htdocs/java/compare java.lang.Double.diff java.lang.Boolean.diff java.lang.Byte.diff java.lang.Float.diff java.lang.Integer.diff java.lang.Long.diff java.lang.Short.diff java.lang.Void.diff",
+                "Message-ID": "<20011111183341.17138.qmail@sourceware.cygnus.com>",
+                "Subject_analyzed": "wwwdocs/htdocs/java/compare java.lang.Double.diff java.lang.Boolean.diff java.lang.Byte.diff java.lang.Float.diff java.lang.Integer.diff java.lang.Long.diff java.lang.Short.diff java.lang.Void.diff",
+                "email_date": "2001-11-11T18:33:41Z",
+                "list": "https://gcc.gnu.org/pipermail/gcc-cvs-wwwdocs",
+                "root": true,
+                "body_extract": "",
+                "size": 94,
+                "tz": 0,
+                "mbox_author_domain": "gcc.gnu.org",
+                "repository_labels": [
+                    ""
+                ],
+                "metadata__filter_raw": "",
+                "grimoire_creation_date": "2001-11-11T18:33:41Z",
+                "is_pipermail_message": 1,
+                "metadata__gelk_version": "0.99.0",
+                "metadata__gelk_backend_name": "OSSKnowPipermailEnrich",
+                "metadata__enriched_on": "2022-02-19T07:57:41Z",
+                "search_key": {
+                    "message_id": "<20011111183341.17138.qmail@sourceware.cygnus.com>",
+                    "project_name": "Gcc",
+                    "mail_list_name": "gcc-help",
+                    "updated_at": 1645257461110
+                },
+                "Date_tz": 0,
+                "email_date_tz": 0,
+                "metadata__enriched_on_tz": 0,
+                "grimoire_creation_date_tz": 0
+            }
         }
     ],
-    "redis_client_data": {
-        "HOST": "192.168.8.10",
-        "PORT": "6379"
-    },
-    "duration_of_sync_github_profiles": {
-        "seconds": 10800
-    },
-    "sync_profiles_task_num": {
-        "num": 10
-    },
-    "LocationGeo_token": "123456"
+    "ck_create_table_templ": "ck_table_infos",
+    "alter_table_infos": [
+        {
+            "table_name": "gits",
+            "cluster_name": "replicated",
+            "database_name": "default",
+            "distributed_key": "search_key__updated_at",
+            "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/gits','{replica}')",
+            "partition_by": "search_key__owner",
+            "order_by": [
+                "search_key__owner",
+                "search_key__repo",
+                "search_key__origin"
+            ],
+            "parse_data": {
+                "search_key": {
+                    "owner": "",
+                    "repo": "",
+                    "origin": "",
+                    "updated_at": 0
+                },
+                "raw_data": {
+                    "message": "",
+                    "hexsha": "",
+                    "parents": [
+                        "",
+                        ""
+                    ],
+                    "author_tz": 0,
+                    "committer_tz": 0,
+                    "author_name": "",
+                    "author_email": "",
+                    "committer_name": "",
+                    "committer_email": "",
+                    "authored_date": "",
+                    "authored_timestamp": 0,
+                    "committed_date": "",
+                    "committed_timestamp": 0,
+                    "files": [
+                        {
+                            "insertions": 0,
+                            "deletions": 0,
+                            "lines": 0,
+                            "file_name": ""
+                        },
+                        {
+                            "insertions": 0,
+                            "deletions": 0,
+                            "lines": 0,
+                            "file_name": ""
+                        }
+                    ],
+                    "total": {
+                        "insertions": 0,
+                        "deletions": 0,
+                        "lines": 0,
+                        "files": 0
+                    },
+                    "if_merged": false,
+                    "type": ""
+                }
+            }
+        }
+    ],
+    "alter_table_cols": "alter_table_infos"
 }
