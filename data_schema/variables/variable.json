@@ -97,7 +97,6 @@
     "num": 10
   },
   "LocationGeo_token": "123456",
-
   "opensearch_conn_data": {
     "HOST": "192.168.8.108",
     "PASSWD": "admin",
@@ -116,7 +115,6 @@
     "PORT": "6379"
   },
   "redis_conn_data": "redis_client_data",
-
   "ck_table_map_from_os_index": [
     {
       "OPENSEARCH_INDEX": "github_issues",
@@ -2206,6 +2204,88 @@
         "metadata__enriched_on_tz": 0,
         "grimoire_creation_date_tz": 0
       }
+    },
+    {
+      "table_name": "email_address",
+      "cluster_name": "replicated",
+      "database_name": "default",
+      "distributed_key": "search_key__updated_at",
+      "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/email_address','{replica}')",
+      "partition_by": "",
+      "order_by": [
+        "search_key__updated_at",
+        "search_key__email"
+      ],
+      "parse_data": {
+        "search_key": {
+          "updated_at": 0,
+          "email": ""
+        },
+        "raw_data": {
+          "email": "",
+          "country_inferred_from_emailcctld": "",
+          "country_inferred_from_emaildomain": "",
+          "company_inferred_from_email": "",
+          "country_inferred_from_company": "",
+          "github": {
+            "profile": {
+              "login": "",
+              "id": 0,
+              "node_id": "",
+              "avatardefault_url": "",
+              "gravatar_id": "",
+              "url": "",
+              "html_url": "",
+              "followers_url": "",
+              "following_url": "",
+              "gists_url": "",
+              "starred_url": "",
+              "subscriptions_url": "",
+              "organizations_url": "",
+              "repos_url": "",
+              "events_url": "",
+              "received_events_url": "",
+              "type": "",
+              "site_admin": false,
+              "name": "",
+              "company": "",
+              "blog": "",
+              "location": "",
+              "email": "",
+              "hireable": false,
+              "bio": "",
+              "twitter_username": "",
+              "public_repos": 0,
+              "public_gists": 0,
+              "followers": 0,
+              "following": 0,
+              "created_at": "1970-01-01T00:00:00Z",
+              "updated_at": "1970-01-01T00:00:00Z",
+              "country_inferred_from_email_cctld": "",
+              "country_inferred_from_email_domain_company": "",
+              "country_inferred_from_location": "",
+              "country_inferred_from_company": "",
+              "final_company_inferred_from_company": "",
+              "company_inferred_from_email_domain_company": "",
+              "inferred_from_location": {
+                "administrative_area_level_1": "",
+                "administrative_area_level_2": "",
+                "administrative_area_level_3": "",
+                "colloquial_area": "",
+                "continent": "",
+                "country": "",
+                "locality": "",
+                "political": "",
+                "postal_code": "",
+                "postal_code_suffix": "",
+                "postal_town": "",
+                "route": "",
+                "street_number": ""
+              }
+            }
+          }
+        }
+      }
     }
   ],
   "ck_alter_table_cols_datatype_tplt": [
@@ -2271,7 +2351,6 @@
       }
     }
   ],
-
   "mail_lists": [
     {
       "project_name": "gawk",

@@ -13,157 +13,139 @@
             "owner": "bminor",
             "repo": "glibc",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
-        },
-        {
-            "owner": "gcc-mirror",
-            "repo": "gcc",
-            "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
+            "until": "2022-02-28T13:09:20Z"
         },
         {
             "owner": "gvlx",
             "repo": "gawk",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
+            "until": "2022-02-28T13:09:20Z"
         },
         {
             "owner": "gnutls",
             "repo": "gnutls",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
+            "until": "2022-02-28T13:09:20Z"
         },
         {
             "owner": "bminor",
             "repo": "bash",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
+            "until": "2022-02-28T13:09:20Z"
         },
         {
             "owner": "coreutils",
             "repo": "coreutils",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
+            "until": "2022-02-28T13:09:20Z"
         },
         {
             "owner": "gpg",
             "repo": "gnupg",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
+            "until": "2022-02-28T13:09:20Z"
         },
         {
             "owner": "GNOME",
             "repo": "libxml2",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
+            "until": "2022-02-28T13:09:20Z"
         },
         {
             "owner": "freedesktop",
             "repo": "dbus",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
+            "until": "2022-02-28T13:09:20Z"
         },
         {
             "owner": "wayland-project",
             "repo": "wayland",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
-        },
-        {
-            "owner": "bminor",
-            "repo": "binutils-gdb",
-            "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
+            "until": "2022-02-28T13:09:20Z"
         },
         {
             "owner": "libffi",
             "repo": "libffi",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
+            "until": "2022-02-28T13:09:20Z"
         },
         {
             "owner": "linux-pam",
             "repo": "linux-pam",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
+            "until": "2022-02-28T13:09:20Z"
         },
         {
             "owner": "rpm-software-management",
             "repo": "rpm",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
+            "until": "2022-02-28T13:09:20Z"
         },
         {
             "owner": "boostorg",
             "repo": "boost",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
+            "until": "2022-02-28T13:09:20Z"
         },
         {
             "owner": "xz-mirror",
             "repo": "xz",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
+            "until": "2022-02-28T13:09:20Z"
         },
         {
             "owner": "sqlite",
             "repo": "sqlite",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
+            "until": "2022-02-28T13:09:20Z"
         },
         {
             "owner": "openssl",
             "repo": "openssl",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
+            "until": "2022-02-28T13:09:20Z"
         },
         {
             "owner": "nginx",
             "repo": "nginx",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
+            "until": "2022-02-28T13:09:20Z"
         },
         {
             "owner": "google",
             "repo": "leveldb",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
+            "until": "2022-02-28T13:09:20Z"
         },
         {
             "owner": "facebook",
             "repo": "zstd",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
+            "until": "2022-02-28T13:09:20Z"
         },
         {
             "owner": "mirror",
             "repo": "ncurses",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
+            "until": "2022-02-28T13:09:20Z"
         },
         {
             "owner": "glennrp",
             "repo": "libpng",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
+            "until": "2022-02-28T13:09:20Z"
         },
         {
             "owner": "vim",
             "repo": "vim",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
+            "until": "2022-02-28T13:09:20Z"
         },
         {
             "owner": "curl",
             "repo": "curl",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd",
-            "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-28T12:08:47Z"
+            "until": "2022-02-28T13:09:20Z"
         }
     ],
     "need_init_github_issues_comments_repos": [
@@ -172,10 +154,6 @@
             "repo": "glibc"
         },
         {
-            "owner": "gcc-mirror",
-            "repo": "gcc"
-        },
-        {
             "owner": "gvlx",
             "repo": "gawk"
         },
@@ -206,10 +184,6 @@
         {
             "owner": "wayland-project",
             "repo": "wayland"
-        },
-        {
-            "owner": "bminor",
-            "repo": "binutils-gdb"
         },
         {
             "owner": "libffi",
@@ -266,10 +240,6 @@
         {
             "owner": "curl",
             "repo": "curl"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd"
         }
     ],
     "need_init_github_issues_repos": [
@@ -278,10 +248,6 @@
             "repo": "glibc"
         },
         {
-            "owner": "gcc-mirror",
-            "repo": "gcc"
-        },
-        {
             "owner": "gvlx",
             "repo": "gawk"
         },
@@ -312,10 +278,6 @@
         {
             "owner": "wayland-project",
             "repo": "wayland"
-        },
-        {
-            "owner": "bminor",
-            "repo": "binutils-gdb"
         },
         {
             "owner": "libffi",
@@ -372,10 +334,6 @@
         {
             "owner": "curl",
             "repo": "curl"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd"
         }
     ],
     "need_init_github_issues_timeline_repos": [
@@ -384,10 +342,6 @@
             "repo": "glibc"
         },
         {
-            "owner": "gcc-mirror",
-            "repo": "gcc"
-        },
-        {
             "owner": "gvlx",
             "repo": "gawk"
         },
@@ -418,10 +372,6 @@
         {
             "owner": "wayland-project",
             "repo": "wayland"
-        },
-        {
-            "owner": "bminor",
-            "repo": "binutils-gdb"
         },
         {
             "owner": "libffi",
@@ -478,10 +428,6 @@
         {
             "owner": "curl",
             "repo": "curl"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd"
         }
     ],
     "need_init_github_pull_requests_repos": [
@@ -490,10 +436,6 @@
             "repo": "glibc"
         },
         {
-            "owner": "gcc-mirror",
-            "repo": "gcc"
-        },
-        {
             "owner": "gvlx",
             "repo": "gawk"
         },
@@ -524,10 +466,6 @@
         {
             "owner": "wayland-project",
             "repo": "wayland"
-        },
-        {
-            "owner": "bminor",
-            "repo": "binutils-gdb"
         },
         {
             "owner": "libffi",
@@ -584,10 +522,6 @@
         {
             "owner": "curl",
             "repo": "curl"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd"
         }
     ],
     "need_init_gits": [
@@ -597,11 +531,6 @@
             "url": "https://github.com/bminor/glibc.git"
         },
         {
-            "owner": "gcc-mirror",
-            "repo": "gcc",
-            "url": "https://github.com/gcc-mirror/gcc.git"
-        },
-        {
             "owner": "gvlx",
             "repo": "gawk",
             "url": "https://github.com/gvlx/gawk.git"
@@ -640,11 +569,6 @@
             "owner": "wayland-project",
             "repo": "wayland",
             "url": "https://github.com/wayland-project/wayland.git"
-        },
-        {
-            "owner": "bminor",
-            "repo": "binutils-gdb",
-            "url": "https://github.com/bminor/binutils-gdb.git"
         },
         {
             "owner": "libffi",
@@ -715,11 +639,6 @@
             "owner": "curl",
             "repo": "curl",
             "url": "https://github.com/curl/curl.git"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd",
-            "url": "https://github.com/systemd/systemd.git"
         }
     ],
     "need_sync_github_commits_repos": [
@@ -728,10 +647,6 @@
             "repo": "glibc"
         },
         {
-            "owner": "gcc-mirror",
-            "repo": "gcc"
-        },
-        {
             "owner": "gvlx",
             "repo": "gawk"
         },
@@ -762,10 +677,6 @@
         {
             "owner": "wayland-project",
             "repo": "wayland"
-        },
-        {
-            "owner": "bminor",
-            "repo": "binutils-gdb"
         },
         {
             "owner": "libffi",
@@ -822,10 +733,6 @@
         {
             "owner": "curl",
             "repo": "curl"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd"
         }
     ],
     "need_sync_github_issues_comments_repos": [
@@ -834,10 +741,6 @@
             "repo": "glibc"
         },
         {
-            "owner": "gcc-mirror",
-            "repo": "gcc"
-        },
-        {
             "owner": "gvlx",
             "repo": "gawk"
         },
@@ -868,10 +771,6 @@
         {
             "owner": "wayland-project",
             "repo": "wayland"
-        },
-        {
-            "owner": "bminor",
-            "repo": "binutils-gdb"
         },
         {
             "owner": "libffi",
@@ -928,10 +827,6 @@
         {
             "owner": "curl",
             "repo": "curl"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd"
         }
     ],
     "need_sync_github_issues_repos": [
@@ -940,10 +835,6 @@
             "repo": "glibc"
         },
         {
-            "owner": "gcc-mirror",
-            "repo": "gcc"
-        },
-        {
             "owner": "gvlx",
             "repo": "gawk"
         },
@@ -974,10 +865,6 @@
         {
             "owner": "wayland-project",
             "repo": "wayland"
-        },
-        {
-            "owner": "bminor",
-            "repo": "binutils-gdb"
         },
         {
             "owner": "libffi",
@@ -1034,10 +921,6 @@
         {
             "owner": "curl",
             "repo": "curl"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd"
         }
     ],
     "need_sync_github_pull_repuests_repos": [
@@ -1046,10 +929,6 @@
             "repo": "glibc"
         },
         {
-            "owner": "gcc-mirror",
-            "repo": "gcc"
-        },
-        {
             "owner": "gvlx",
             "repo": "gawk"
         },
@@ -1080,10 +959,6 @@
         {
             "owner": "wayland-project",
             "repo": "wayland"
-        },
-        {
-            "owner": "bminor",
-            "repo": "binutils-gdb"
         },
         {
             "owner": "libffi",
@@ -1140,10 +1015,6 @@
         {
             "owner": "curl",
             "repo": "curl"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd"
         }
     ],
     "need_init_github_profiles_repos": [
@@ -1152,10 +1023,6 @@
             "repo": "glibc"
         },
         {
-            "owner": "gcc-mirror",
-            "repo": "gcc"
-        },
-        {
             "owner": "gvlx",
             "repo": "gawk"
         },
@@ -1186,10 +1053,6 @@
         {
             "owner": "wayland-project",
             "repo": "wayland"
-        },
-        {
-            "owner": "bminor",
-            "repo": "binutils-gdb"
         },
         {
             "owner": "libffi",
@@ -1246,10 +1109,6 @@
         {
             "owner": "curl",
             "repo": "curl"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd"
         }
     ],
     "need_sync_github_profile_repo_list": [
@@ -1258,10 +1117,6 @@
             "repo": "glibc"
         },
         {
-            "owner": "gcc-mirror",
-            "repo": "gcc"
-        },
-        {
             "owner": "gvlx",
             "repo": "gawk"
         },
@@ -1292,10 +1147,6 @@
         {
             "owner": "wayland-project",
             "repo": "wayland"
-        },
-        {
-            "owner": "bminor",
-            "repo": "binutils-gdb"
         },
         {
             "owner": "libffi",
@@ -1352,10 +1203,6 @@
         {
             "owner": "curl",
             "repo": "curl"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd"
         }
     ],
     "need_sync_gits": [
@@ -1365,11 +1212,6 @@
             "url": "https://github.com/bminor/glibc.git"
         },
         {
-            "owner": "gcc-mirror",
-            "repo": "gcc",
-            "url": "https://github.com/gcc-mirror/gcc.git"
-        },
-        {
             "owner": "gvlx",
             "repo": "gawk",
             "url": "https://github.com/gvlx/gawk.git"
@@ -1408,11 +1250,6 @@
             "owner": "wayland-project",
             "repo": "wayland",
             "url": "https://github.com/wayland-project/wayland.git"
-        },
-        {
-            "owner": "bminor",
-            "repo": "binutils-gdb",
-            "url": "https://github.com/bminor/binutils-gdb.git"
         },
         {
             "owner": "libffi",
@@ -1483,11 +1320,6 @@
             "owner": "curl",
             "repo": "curl",
             "url": "https://github.com/curl/curl.git"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd",
-            "url": "https://github.com/systemd/systemd.git"
         }
     ],
     "duration_of_sync_github_profiles": {
@@ -3603,6 +3435,88 @@
                 "email_date_tz": 0,
                 "metadata__enriched_on_tz": 0,
                 "grimoire_creation_date_tz": 0
+            }
+        },
+        {
+            "table_name": "email_address",
+            "cluster_name": "replicated",
+            "database_name": "default",
+            "distributed_key": "search_key__updated_at",
+            "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/email_address','{replica}')",
+            "partition_by": "",
+            "order_by": [
+                "search_key__updated_at",
+                "search_key__email"
+            ],
+            "parse_data": {
+                "search_key": {
+                    "updated_at": 0,
+                    "email": ""
+                },
+                "raw_data": {
+                    "email": "",
+                    "country_inferred_from_emailcctld": "",
+                    "country_inferred_from_emaildomain": "",
+                    "company_inferred_from_email": "",
+                    "country_inferred_from_company": "",
+                    "github": {
+                        "profile": {
+                            "login": "",
+                            "id": 0,
+                            "node_id": "",
+                            "avatardefault_url": "",
+                            "gravatar_id": "",
+                            "url": "",
+                            "html_url": "",
+                            "followers_url": "",
+                            "following_url": "",
+                            "gists_url": "",
+                            "starred_url": "",
+                            "subscriptions_url": "",
+                            "organizations_url": "",
+                            "repos_url": "",
+                            "events_url": "",
+                            "received_events_url": "",
+                            "type": "",
+                            "site_admin": false,
+                            "name": "",
+                            "company": "",
+                            "blog": "",
+                            "location": "",
+                            "email": "",
+                            "hireable": false,
+                            "bio": "",
+                            "twitter_username": "",
+                            "public_repos": 0,
+                            "public_gists": 0,
+                            "followers": 0,
+                            "following": 0,
+                            "created_at": "1970-01-01T00:00:00Z",
+                            "updated_at": "1970-01-01T00:00:00Z",
+                            "country_inferred_from_email_cctld": "",
+                            "country_inferred_from_email_domain_company": "",
+                            "country_inferred_from_location": "",
+                            "country_inferred_from_company": "",
+                            "final_company_inferred_from_company": "",
+                            "company_inferred_from_email_domain_company": "",
+                            "inferred_from_location": {
+                                "administrative_area_level_1": "",
+                                "administrative_area_level_2": "",
+                                "administrative_area_level_3": "",
+                                "colloquial_area": "",
+                                "continent": "",
+                                "country": "",
+                                "locality": "",
+                                "political": "",
+                                "postal_code": "",
+                                "postal_code_suffix": "",
+                                "postal_town": "",
+                                "route": "",
+                                "street_number": ""
+                            }
+                        }
+                    }
+                }
             }
         }
     ],
