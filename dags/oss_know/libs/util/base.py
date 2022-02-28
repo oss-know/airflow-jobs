@@ -187,3 +187,7 @@ def get_clickhouse_client(clickhouse_server_info):
                   database=clickhouse_server_info["DATABASE"])
 
     return ck
+
+
+def now_timestamp():
+    return int(datetime.now().timestamp() * 1000)
