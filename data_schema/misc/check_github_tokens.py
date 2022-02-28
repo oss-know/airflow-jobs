@@ -27,13 +27,6 @@ def getConnectDemo(token):
 
 
 tokens = [
-"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",
-"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",
-"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",
-"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",
-"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",
-"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",
-"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"
 ]
 
 for token in tokens:
