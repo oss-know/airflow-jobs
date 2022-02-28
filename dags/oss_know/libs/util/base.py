@@ -11,6 +11,7 @@ from tenacity import *
 
 from oss_know.libs.base_dict.infer_file import CCTLD, COMPANY_COUNTRY
 from oss_know.libs.base_dict.variable_key import LOCATIONGEO_TOKEN
+from oss_know.libs.util.clickhouse_driver import CKServer
 from ..util.log import logger
 
 
@@ -176,3 +177,13 @@ def infer_country_company_geo_insert_into_profile(latest_github_profile):
             f"error occurs when inferring information by github profile, exception message: {e},the type of exception: {type(e)}")
         for inferrer in inferrers:
             latest_github_profile[inferrer[0]] = None
+
+
+def get_clickhouse_client(clickhouse_server_info):
+    ck = CKServer(host=clickhouse_server_info["HOST"],
+                  port=clickhouse_server_info["PORT"],
+                  user=clickhouse_server_info["USER"],
+                  password=clickhouse_server_info["PASSWD"],
+                  database=clickhouse_server_info["DATABASE"])
+
+    return ck

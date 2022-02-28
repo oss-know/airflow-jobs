@@ -163,11 +163,12 @@ class OpensearchAPI:
 
         for val in issues_timelines:
             template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE,
-                        "_source": {"search_key": {"owner": owner, "repo": repo, "number": number,
+                        "_source": {"search_key": {"owner": owner, "repo": repo, "number": number, "event": None,
                                                    'updated_at': int(datetime.datetime.now().timestamp() * 1000)},
                                     "raw_data": None}}
             append_item = copy.deepcopy(template)
             append_item["_source"]["raw_data"] = val
+            append_item["_source"]["search_key"]["event"] = val["event"]
             bulk_all_datas.append(append_item)
             logger.info(f"add init sync github issues_timeline number:{number}")
 

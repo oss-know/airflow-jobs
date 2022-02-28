@@ -10,3 +10,4 @@ OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS = "github_pull_requests"
 OPENSEARCH_INDEX_GITHUB_PROFILE = "github_profile"
 
 
+
