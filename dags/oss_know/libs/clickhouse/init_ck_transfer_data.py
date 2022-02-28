@@ -82,8 +82,7 @@ def transfer_data_special(clickhouse_server_info, opensearch_index, table_name, 
         "updated_at": 0
       },
       "raw_data": {
-        "timeline_raw": "",
-        "event": ""
+        "timeline_raw": ""
       }
     }
     ck = CKServer(host=clickhouse_server_info["HOST"],
@@ -105,7 +104,6 @@ def transfer_data_special(clickhouse_server_info, opensearch_index, table_name, 
         insert_data['search_key__repo'] = os_data["_source"]["search_key"]['repo']
         insert_data['search_key__number'] = os_data["_source"]["search_key"]['number']
         insert_data['search_key__updated_at'] = os_data["_source"]["search_key"]['updated_at']
-        insert_data['event'] = os_data["_source"]["raw_data"]['event']
         raw_data = os_data["_source"]["raw_data"]
         standard_data = json.dumps(raw_data, separators=(',', ':'), ensure_ascii=False)
         insert_data['timeline_raw'] = standard_data
@@ -150,9 +148,9 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
     try:
         for os_data in opensearch_datas[0]:
             updated_at = os_data["_source"]["search_key"]["updated_at"]
-            # 特殊情况要记得删掉
-            if isinstance(updated_at,float):
-                continue
+            # # 特殊情况要记得删掉
+            # if isinstance(updated_at,float):
+            #     continue
             if updated_at > max_timestamp:
                 max_timestamp = updated_at
             df_data = os_data["_source"]
