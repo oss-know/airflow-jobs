@@ -97,25 +97,26 @@
     "num": 10
   },
   "LocationGeo_token": "123456",
+
   "opensearch_conn_data": {
     "HOST": "192.168.8.108",
     "PASSWD": "admin",
     "PORT": "9200",
     "USER": "admin"
   },
-  "clickhouse_driver_info": {
+  "clickhouse_conn_data": {
     "HOST": "192.168.8.108",
     "PASSWD": "",
     "PORT": "19001",
     "USER": "default",
     "DATABASE": "default"
   },
-  "clickhouse_conn_info": "clickhouse_driver_info",
   "redis_client_data": {
     "HOST": "192.168.8.108",
     "PORT": "6379"
   },
   "redis_conn_data": "redis_client_data",
+
   "ck_table_map_from_os_index": [
     {
       "OPENSEARCH_INDEX": "github_issues",
@@ -2270,6 +2271,7 @@
       }
     }
   ],
+
   "mail_lists": [
     {
       "project_name": "gawk",

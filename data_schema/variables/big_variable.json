@@ -10,180 +10,164 @@
     ],
     "need_init_github_commits_repos": [
         {
-            "owner": "torvalds",
-            "repo": "linux",
-            "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
+            "until": "2022-02-28T12:08:47Z"
         },
         {
             "owner": "gcc-mirror",
             "repo": "gcc",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
+            "until": "2022-02-28T12:08:47Z"
         },
         {
             "owner": "gvlx",
             "repo": "gawk",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
+            "until": "2022-02-28T12:08:47Z"
         },
         {
             "owner": "gnutls",
             "repo": "gnutls",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
+            "until": "2022-02-28T12:08:47Z"
         },
         {
             "owner": "bminor",
             "repo": "bash",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
+            "until": "2022-02-28T12:08:47Z"
         },
         {
             "owner": "coreutils",
             "repo": "coreutils",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
+            "until": "2022-02-28T12:08:47Z"
         },
         {
             "owner": "gpg",
             "repo": "gnupg",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
+            "until": "2022-02-28T12:08:47Z"
         },
         {
             "owner": "GNOME",
             "repo": "libxml2",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
+            "until": "2022-02-28T12:08:47Z"
         },
         {
             "owner": "freedesktop",
             "repo": "dbus",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd",
-            "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
+            "until": "2022-02-28T12:08:47Z"
         },
         {
             "owner": "wayland-project",
             "repo": "wayland",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
+            "until": "2022-02-28T12:08:47Z"
         },
         {
             "owner": "bminor",
             "repo": "binutils-gdb",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
+            "until": "2022-02-28T12:08:47Z"
         },
         {
             "owner": "libffi",
             "repo": "libffi",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
+            "until": "2022-02-28T12:08:47Z"
         },
         {
             "owner": "linux-pam",
             "repo": "linux-pam",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
+            "until": "2022-02-28T12:08:47Z"
         },
         {
             "owner": "rpm-software-management",
             "repo": "rpm",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
+            "until": "2022-02-28T12:08:47Z"
         },
         {
             "owner": "boostorg",
             "repo": "boost",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
+            "until": "2022-02-28T12:08:47Z"
         },
         {
             "owner": "xz-mirror",
             "repo": "xz",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
+            "until": "2022-02-28T12:08:47Z"
         },
         {
             "owner": "sqlite",
             "repo": "sqlite",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
+            "until": "2022-02-28T12:08:47Z"
         },
         {
             "owner": "openssl",
             "repo": "openssl",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
+            "until": "2022-02-28T12:08:47Z"
         },
         {
             "owner": "nginx",
             "repo": "nginx",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
-        },
-        {
-            "owner": "pingcap",
-            "repo": "tidb",
-            "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
+            "until": "2022-02-28T12:08:47Z"
         },
         {
             "owner": "google",
             "repo": "leveldb",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim",
-            "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl",
-            "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
+            "until": "2022-02-28T12:08:47Z"
         },
         {
             "owner": "facebook",
             "repo": "zstd",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
+            "until": "2022-02-28T12:08:47Z"
         },
         {
             "owner": "mirror",
             "repo": "ncurses",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
+            "until": "2022-02-28T12:08:47Z"
         },
         {
             "owner": "glennrp",
             "repo": "libpng",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T09:15:08Z"
+            "until": "2022-02-28T12:08:47Z"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-02-28T12:08:47Z"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-02-28T12:08:47Z"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-02-28T12:08:47Z"
         }
     ],
     "need_init_github_issues_comments_repos": [
         {
-            "owner": "torvalds",
-            "repo": "linux"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc"
         },
@@ -218,10 +202,6 @@
         {
             "owner": "freedesktop",
             "repo": "dbus"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd"
         },
         {
             "owner": "wayland-project",
@@ -264,20 +244,8 @@
             "repo": "nginx"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb"
-        },
-        {
             "owner": "google",
             "repo": "leveldb"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -290,14 +258,22 @@
         {
             "owner": "glennrp",
             "repo": "libpng"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd"
         }
     ],
     "need_init_github_issues_repos": [
         {
-            "owner": "torvalds",
-            "repo": "linux"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc"
         },
@@ -332,10 +308,6 @@
         {
             "owner": "freedesktop",
             "repo": "dbus"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd"
         },
         {
             "owner": "wayland-project",
@@ -378,20 +350,8 @@
             "repo": "nginx"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb"
-        },
-        {
             "owner": "google",
             "repo": "leveldb"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -404,14 +364,22 @@
         {
             "owner": "glennrp",
             "repo": "libpng"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd"
         }
     ],
     "need_init_github_issues_timeline_repos": [
         {
-            "owner": "torvalds",
-            "repo": "linux"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc"
         },
@@ -446,10 +414,6 @@
         {
             "owner": "freedesktop",
             "repo": "dbus"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd"
         },
         {
             "owner": "wayland-project",
@@ -492,20 +456,8 @@
             "repo": "nginx"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb"
-        },
-        {
             "owner": "google",
             "repo": "leveldb"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -518,14 +470,22 @@
         {
             "owner": "glennrp",
             "repo": "libpng"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd"
         }
     ],
     "need_init_github_pull_requests_repos": [
         {
-            "owner": "torvalds",
-            "repo": "linux"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc"
         },
@@ -560,10 +520,6 @@
         {
             "owner": "freedesktop",
             "repo": "dbus"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd"
         },
         {
             "owner": "wayland-project",
@@ -606,20 +562,8 @@
             "repo": "nginx"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb"
-        },
-        {
             "owner": "google",
             "repo": "leveldb"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -632,15 +576,22 @@
         {
             "owner": "glennrp",
             "repo": "libpng"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd"
         }
     ],
     "need_init_gits": [
         {
-            "owner": "torvalds",
-            "repo": "linux",
-            "url": "https://github.com/torvalds/linux.git"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc",
             "url": "https://github.com/bminor/glibc.git"
@@ -684,11 +635,6 @@
             "owner": "freedesktop",
             "repo": "dbus",
             "url": "https://github.com/freedesktop/dbus.git"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd",
-            "url": "https://github.com/systemd/systemd.git"
         },
         {
             "owner": "wayland-project",
@@ -741,24 +687,9 @@
             "url": "https://github.com/nginx/nginx.git"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb",
-            "url": "https://github.com/pingcap/tidb.git"
-        },
-        {
             "owner": "google",
             "repo": "leveldb",
             "url": "https://github.com/google/leveldb.git"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim",
-            "url": "https://github.com/vim/vim.git"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl",
-            "url": "https://github.com/curl/curl.git"
         },
         {
             "owner": "facebook",
@@ -774,14 +705,25 @@
             "owner": "glennrp",
             "repo": "libpng",
             "url": "https://github.com/glennrp/libpng.git"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim",
+            "url": "https://github.com/vim/vim.git"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl",
+            "url": "https://github.com/curl/curl.git"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd",
+            "url": "https://github.com/systemd/systemd.git"
         }
     ],
     "need_sync_github_commits_repos": [
         {
-            "owner": "torvalds",
-            "repo": "linux"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc"
         },
@@ -816,10 +758,6 @@
         {
             "owner": "freedesktop",
             "repo": "dbus"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd"
         },
         {
             "owner": "wayland-project",
@@ -862,20 +800,8 @@
             "repo": "nginx"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb"
-        },
-        {
             "owner": "google",
             "repo": "leveldb"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -888,14 +814,22 @@
         {
             "owner": "glennrp",
             "repo": "libpng"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd"
         }
     ],
     "need_sync_github_issues_comments_repos": [
         {
-            "owner": "torvalds",
-            "repo": "linux"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc"
         },
@@ -930,10 +864,6 @@
         {
             "owner": "freedesktop",
             "repo": "dbus"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd"
         },
         {
             "owner": "wayland-project",
@@ -976,20 +906,8 @@
             "repo": "nginx"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb"
-        },
-        {
             "owner": "google",
             "repo": "leveldb"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -1002,14 +920,22 @@
         {
             "owner": "glennrp",
             "repo": "libpng"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd"
         }
     ],
     "need_sync_github_issues_repos": [
         {
-            "owner": "torvalds",
-            "repo": "linux"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc"
         },
@@ -1044,10 +970,6 @@
         {
             "owner": "freedesktop",
             "repo": "dbus"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd"
         },
         {
             "owner": "wayland-project",
@@ -1090,20 +1012,8 @@
             "repo": "nginx"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb"
-        },
-        {
             "owner": "google",
             "repo": "leveldb"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -1116,14 +1026,22 @@
         {
             "owner": "glennrp",
             "repo": "libpng"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd"
         }
     ],
     "need_sync_github_pull_repuests_repos": [
         {
-            "owner": "torvalds",
-            "repo": "linux"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc"
         },
@@ -1158,10 +1076,6 @@
         {
             "owner": "freedesktop",
             "repo": "dbus"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd"
         },
         {
             "owner": "wayland-project",
@@ -1204,20 +1118,8 @@
             "repo": "nginx"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb"
-        },
-        {
             "owner": "google",
             "repo": "leveldb"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -1230,14 +1132,22 @@
         {
             "owner": "glennrp",
             "repo": "libpng"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd"
         }
     ],
     "need_init_github_profiles_repos": [
         {
-            "owner": "torvalds",
-            "repo": "linux"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc"
         },
@@ -1272,10 +1182,6 @@
         {
             "owner": "freedesktop",
             "repo": "dbus"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd"
         },
         {
             "owner": "wayland-project",
@@ -1318,20 +1224,8 @@
             "repo": "nginx"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb"
-        },
-        {
             "owner": "google",
             "repo": "leveldb"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -1344,14 +1238,22 @@
         {
             "owner": "glennrp",
             "repo": "libpng"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd"
         }
     ],
     "need_sync_github_profile_repo_list": [
         {
-            "owner": "torvalds",
-            "repo": "linux"
-        },
-        {
             "owner": "bminor",
             "repo": "glibc"
         },
@@ -1386,10 +1288,6 @@
         {
             "owner": "freedesktop",
             "repo": "dbus"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd"
         },
         {
             "owner": "wayland-project",
@@ -1432,20 +1330,8 @@
             "repo": "nginx"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb"
-        },
-        {
             "owner": "google",
             "repo": "leveldb"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -1458,14 +1344,21 @@
         {
             "owner": "glennrp",
             "repo": "libpng"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd"
         }
     ],
     "need_sync_gits": [
-        {
-            "owner": "torvalds",
-            "repo": "linux",
-            "url": "https://github.com/torvalds/linux.git"
-        },
         {
             "owner": "bminor",
             "repo": "glibc",
@@ -1510,11 +1403,6 @@
             "owner": "freedesktop",
             "repo": "dbus",
             "url": "https://github.com/freedesktop/dbus.git"
-        },
-        {
-            "owner": "systemd",
-            "repo": "systemd",
-            "url": "https://github.com/systemd/systemd.git"
         },
         {
             "owner": "wayland-project",
@@ -1567,24 +1455,9 @@
             "url": "https://github.com/nginx/nginx.git"
         },
         {
-            "owner": "pingcap",
-            "repo": "tidb",
-            "url": "https://github.com/pingcap/tidb.git"
-        },
-        {
             "owner": "google",
             "repo": "leveldb",
             "url": "https://github.com/google/leveldb.git"
-        },
-        {
-            "owner": "vim",
-            "repo": "vim",
-            "url": "https://github.com/vim/vim.git"
-        },
-        {
-            "owner": "curl",
-            "repo": "curl",
-            "url": "https://github.com/curl/curl.git"
         },
         {
             "owner": "facebook",
@@ -1600,6 +1473,21 @@
             "owner": "glennrp",
             "repo": "libpng",
             "url": "https://github.com/glennrp/libpng.git"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim",
+            "url": "https://github.com/vim/vim.git"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl",
+            "url": "https://github.com/curl/curl.git"
+        },
+        {
+            "owner": "systemd",
+            "repo": "systemd",
+            "url": "https://github.com/systemd/systemd.git"
         }
     ],
     "duration_of_sync_github_profiles": {
@@ -1615,14 +1503,13 @@
         "PORT": "9200",
         "USER": "admin"
     },
-    "clickhouse_driver_info": {
+    "clickhouse_conn_data": {
         "HOST": "192.168.8.108",
         "PASSWD": "",
         "PORT": "19001",
         "USER": "default",
         "DATABASE": "default"
     },
-    "clickhouse_conn_info": "clickhouse_driver_info",
     "redis_client_data": {
         "HOST": "192.168.8.108",
         "PORT": "6379"
@@ -1653,7 +1540,10 @@
             "OPENSEARCH_INDEX": "github_issues_timeline",
             "CK_TABLE_NAME": "github_issues_timeline"
         },
-
+        {
+            "OPENSEARCH_INDEX": "github_profile",
+            "CK_TABLE_NAME": "github_profile"
+        }
     ],
     "ck_table_default_val_tplt": [
         {
