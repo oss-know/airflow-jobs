@@ -1628,7 +1628,7 @@
         "PORT": "6379"
     },
     "redis_conn_data": "redis_client_data",
-    "transfer_data_os_index_and_ck_tbname": [
+    "ck_table_map_from_os_index": [
         {
             "OPENSEARCH_INDEX": "github_issues",
             "CK_TABLE_NAME": "github_issues"
@@ -1652,10 +1652,10 @@
         {
             "OPENSEARCH_INDEX": "github_issues_timeline",
             "CK_TABLE_NAME": "github_issues_timeline"
-        }
+        },
+
     ],
-    "ck_table_os_index_mapping": "transfer_data_os_index_and_ck_tbname",
-    "clickhouse_tb_temp": [
+    "ck_table_default_val_tplt": [
         {
             "table_name": "github_pull_requests",
             "temp": {
@@ -2635,8 +2635,7 @@
             }
         }
     ],
-    "ck_init_sync_os_data_type_templ": "clickhouse_tb_temp",
-    "ck_table_infos": [
+    "ck_create_table_cols_datatype_tplt": [
         {
             "table_name": "gits",
             "cluster_name": "replicated",
@@ -3717,8 +3716,7 @@
             }
         }
     ],
-    "ck_create_table_templ": "ck_table_infos",
-    "alter_table_infos": [
+    "ck_alter_table_cols_datatype_tplt": [
         {
             "table_name": "gits",
             "cluster_name": "replicated",
@@ -3781,7 +3779,6 @@
             }
         }
     ],
-    "ck_alter_table_cols": "alter_table_infos",
     "mail_lists": [
         {
             "project_name": "gawk",
