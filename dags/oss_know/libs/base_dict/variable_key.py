@@ -6,26 +6,20 @@ NEED_INIT_GITHUB_ISSUES_REPOS = "need_init_github_issues_repos"
 NEED_INIT_GITHUB_PULL_REQUESTS_REPOS = "need_init_github_pull_requests_repos"
 NEED_INIT_GITHUB_ISSUES_TIMELINE_REPOS = "need_init_github_issues_timeline_repos"
 NEED_INIT_GITHUB_PROFILES_REPOS = "need_init_github_profiles_repos"
-
 NEED_SYNC_GITHUB_ISSUES_REPOS = "need_sync_github_issues_repos"
 NEED_SYNC_GITHUB_PULL_REPUESTS_REPOS = "need_sync_github_pull_repuests_repos"
 NEED_SYNC_GITHUB_COMMITS_REPOS = "need_init_github_commits_repos"
-
+DURATION_OF_SYNC_GITHUB_PROFILES = "duration_of_sync_github_profiles"
+SYNC_PROFILES_TASK_NUM = "sync_profiles_task_num"
 
 NEED_INIT_GITS = "need_init_gits"
 
-NEED_CK_TABLE_INFOS = "ck_table_infos"
-
 CLICKHOUSE_DRIVER_INFO = "clickhouse_driver_info"
-
-TRANSFER_DATA_OS_INDEX_AND_CK_TBNAME="transfer_data_os_index_and_ck_tbname"
+CK_TABLE_MAP_FROM_OS_INDEX= "ck_table_map_from_os_index"
+CK_CREATE_TABLE_COLS_DATATYPE_TPLT = "ck_create_table_cols_datatype_tplt"
+CK_ALTER_TABLE_COLS_DATATYPE_TPLT = "ck_alter_table_cols_datatype_tplt"
+CK_TABLE_DEFAULT_VAL_TPLT = "ck_table_default_val_tplt"
 
 REDIS_CLIENT_DATA = "redis_client_data"
 
-DURATION_OF_SYNC_GITHUB_PROFILES = "duration_of_sync_github_profiles"
-
-SYNC_PROFILES_TASK_NUM = "sync_profiles_task_num"
-
 LOCATIONGEO_TOKEN = "LocationGeo_token"
-
-NEED_ALTER_CK_TABLE_INFOS = "alter_table_infos"

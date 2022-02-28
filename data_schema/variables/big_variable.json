@@ -10,148 +10,186 @@
     ],
     "need_init_github_commits_repos": [
         {
+            "owner": "torvalds",
+            "repo": "linux",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-02-26T09:15:08Z"
+        },
+        {
             "owner": "bminor",
             "repo": "glibc",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:29:20Z"
+            "until": "2022-02-26T09:15:08Z"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-02-26T09:15:08Z"
         },
         {
             "owner": "gvlx",
             "repo": "gawk",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:29:20Z"
+            "until": "2022-02-26T09:15:08Z"
         },
         {
             "owner": "gnutls",
             "repo": "gnutls",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:29:20Z"
+            "until": "2022-02-26T09:15:08Z"
         },
         {
             "owner": "bminor",
             "repo": "bash",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:29:20Z"
+            "until": "2022-02-26T09:15:08Z"
         },
         {
             "owner": "coreutils",
             "repo": "coreutils",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:29:20Z"
+            "until": "2022-02-26T09:15:08Z"
         },
         {
             "owner": "gpg",
             "repo": "gnupg",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:29:20Z"
+            "until": "2022-02-26T09:15:08Z"
         },
         {
             "owner": "GNOME",
             "repo": "libxml2",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:29:20Z"
+            "until": "2022-02-26T09:15:08Z"
         },
         {
             "owner": "freedesktop",
             "repo": "dbus",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:29:20Z"
+            "until": "2022-02-26T09:15:08Z"
         },
         {
             "owner": "systemd",
             "repo": "systemd",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:29:20Z"
+            "until": "2022-02-26T09:15:08Z"
         },
         {
             "owner": "wayland-project",
             "repo": "wayland",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:29:20Z"
+            "until": "2022-02-26T09:15:08Z"
         },
         {
             "owner": "bminor",
             "repo": "binutils-gdb",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:29:20Z"
+            "until": "2022-02-26T09:15:08Z"
         },
         {
             "owner": "libffi",
             "repo": "libffi",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:29:20Z"
+            "until": "2022-02-26T09:15:08Z"
         },
         {
             "owner": "linux-pam",
             "repo": "linux-pam",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:29:20Z"
+            "until": "2022-02-26T09:15:08Z"
         },
         {
             "owner": "rpm-software-management",
             "repo": "rpm",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:29:20Z"
+            "until": "2022-02-26T09:15:08Z"
         },
         {
             "owner": "boostorg",
             "repo": "boost",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:29:20Z"
+            "until": "2022-02-26T09:15:08Z"
         },
         {
             "owner": "xz-mirror",
             "repo": "xz",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:29:20Z"
+            "until": "2022-02-26T09:15:08Z"
         },
         {
             "owner": "sqlite",
             "repo": "sqlite",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:29:20Z"
+            "until": "2022-02-26T09:15:08Z"
         },
         {
             "owner": "openssl",
             "repo": "openssl",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:29:20Z"
+            "until": "2022-02-26T09:15:08Z"
         },
         {
             "owner": "nginx",
             "repo": "nginx",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:29:20Z"
+            "until": "2022-02-26T09:15:08Z"
+        },
+        {
+            "owner": "pingcap",
+            "repo": "tidb",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-02-26T09:15:08Z"
         },
         {
             "owner": "google",
             "repo": "leveldb",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:29:20Z"
+            "until": "2022-02-26T09:15:08Z"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-02-26T09:15:08Z"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl",
+            "since": "1970-01-01T00:00:00Z",
+            "until": "2022-02-26T09:15:08Z"
         },
         {
             "owner": "facebook",
             "repo": "zstd",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:29:20Z"
+            "until": "2022-02-26T09:15:08Z"
         },
         {
             "owner": "mirror",
             "repo": "ncurses",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:29:20Z"
+            "until": "2022-02-26T09:15:08Z"
         },
         {
             "owner": "glennrp",
             "repo": "libpng",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-02-26T08:29:20Z"
+            "until": "2022-02-26T09:15:08Z"
         }
     ],
     "need_init_github_issues_comments_repos": [
         {
+            "owner": "torvalds",
+            "repo": "linux"
+        },
+        {
             "owner": "bminor",
             "repo": "glibc"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc"
         },
         {
             "owner": "gvlx",
@@ -226,8 +264,20 @@
             "repo": "nginx"
         },
         {
+            "owner": "pingcap",
+            "repo": "tidb"
+        },
+        {
             "owner": "google",
             "repo": "leveldb"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -244,8 +294,16 @@
     ],
     "need_init_github_issues_repos": [
         {
+            "owner": "torvalds",
+            "repo": "linux"
+        },
+        {
             "owner": "bminor",
             "repo": "glibc"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc"
         },
         {
             "owner": "gvlx",
@@ -320,8 +378,20 @@
             "repo": "nginx"
         },
         {
+            "owner": "pingcap",
+            "repo": "tidb"
+        },
+        {
             "owner": "google",
             "repo": "leveldb"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -338,8 +408,16 @@
     ],
     "need_init_github_issues_timeline_repos": [
         {
+            "owner": "torvalds",
+            "repo": "linux"
+        },
+        {
             "owner": "bminor",
             "repo": "glibc"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc"
         },
         {
             "owner": "gvlx",
@@ -414,8 +492,20 @@
             "repo": "nginx"
         },
         {
+            "owner": "pingcap",
+            "repo": "tidb"
+        },
+        {
             "owner": "google",
             "repo": "leveldb"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -432,8 +522,16 @@
     ],
     "need_init_github_pull_requests_repos": [
         {
+            "owner": "torvalds",
+            "repo": "linux"
+        },
+        {
             "owner": "bminor",
             "repo": "glibc"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc"
         },
         {
             "owner": "gvlx",
@@ -508,8 +606,20 @@
             "repo": "nginx"
         },
         {
+            "owner": "pingcap",
+            "repo": "tidb"
+        },
+        {
             "owner": "google",
             "repo": "leveldb"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -526,9 +636,19 @@
     ],
     "need_init_gits": [
         {
+            "owner": "torvalds",
+            "repo": "linux",
+            "url": "https://github.com/torvalds/linux.git"
+        },
+        {
             "owner": "bminor",
             "repo": "glibc",
             "url": "https://github.com/bminor/glibc.git"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc",
+            "url": "https://github.com/gcc-mirror/gcc.git"
         },
         {
             "owner": "gvlx",
@@ -621,9 +741,24 @@
             "url": "https://github.com/nginx/nginx.git"
         },
         {
+            "owner": "pingcap",
+            "repo": "tidb",
+            "url": "https://github.com/pingcap/tidb.git"
+        },
+        {
             "owner": "google",
             "repo": "leveldb",
             "url": "https://github.com/google/leveldb.git"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim",
+            "url": "https://github.com/vim/vim.git"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl",
+            "url": "https://github.com/curl/curl.git"
         },
         {
             "owner": "facebook",
@@ -643,8 +778,16 @@
     ],
     "need_sync_github_commits_repos": [
         {
+            "owner": "torvalds",
+            "repo": "linux"
+        },
+        {
             "owner": "bminor",
             "repo": "glibc"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc"
         },
         {
             "owner": "gvlx",
@@ -719,8 +862,20 @@
             "repo": "nginx"
         },
         {
+            "owner": "pingcap",
+            "repo": "tidb"
+        },
+        {
             "owner": "google",
             "repo": "leveldb"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -737,8 +892,16 @@
     ],
     "need_sync_github_issues_comments_repos": [
         {
+            "owner": "torvalds",
+            "repo": "linux"
+        },
+        {
             "owner": "bminor",
             "repo": "glibc"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc"
         },
         {
             "owner": "gvlx",
@@ -813,8 +976,20 @@
             "repo": "nginx"
         },
         {
+            "owner": "pingcap",
+            "repo": "tidb"
+        },
+        {
             "owner": "google",
             "repo": "leveldb"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -831,8 +1006,16 @@
     ],
     "need_sync_github_issues_repos": [
         {
+            "owner": "torvalds",
+            "repo": "linux"
+        },
+        {
             "owner": "bminor",
             "repo": "glibc"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc"
         },
         {
             "owner": "gvlx",
@@ -907,8 +1090,20 @@
             "repo": "nginx"
         },
         {
+            "owner": "pingcap",
+            "repo": "tidb"
+        },
+        {
             "owner": "google",
             "repo": "leveldb"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -925,8 +1120,16 @@
     ],
     "need_sync_github_pull_repuests_repos": [
         {
+            "owner": "torvalds",
+            "repo": "linux"
+        },
+        {
             "owner": "bminor",
             "repo": "glibc"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc"
         },
         {
             "owner": "gvlx",
@@ -1001,8 +1204,20 @@
             "repo": "nginx"
         },
         {
+            "owner": "pingcap",
+            "repo": "tidb"
+        },
+        {
             "owner": "google",
             "repo": "leveldb"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -1019,8 +1234,16 @@
     ],
     "need_init_github_profiles_repos": [
         {
+            "owner": "torvalds",
+            "repo": "linux"
+        },
+        {
             "owner": "bminor",
             "repo": "glibc"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc"
         },
         {
             "owner": "gvlx",
@@ -1095,8 +1318,20 @@
             "repo": "nginx"
         },
         {
+            "owner": "pingcap",
+            "repo": "tidb"
+        },
+        {
             "owner": "google",
             "repo": "leveldb"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -1113,8 +1348,16 @@
     ],
     "need_sync_github_profile_repo_list": [
         {
+            "owner": "torvalds",
+            "repo": "linux"
+        },
+        {
             "owner": "bminor",
             "repo": "glibc"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc"
         },
         {
             "owner": "gvlx",
@@ -1189,8 +1432,20 @@
             "repo": "nginx"
         },
         {
+            "owner": "pingcap",
+            "repo": "tidb"
+        },
+        {
             "owner": "google",
             "repo": "leveldb"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl"
         },
         {
             "owner": "facebook",
@@ -1207,9 +1462,19 @@
     ],
     "need_sync_gits": [
         {
+            "owner": "torvalds",
+            "repo": "linux",
+            "url": "https://github.com/torvalds/linux.git"
+        },
+        {
             "owner": "bminor",
             "repo": "glibc",
             "url": "https://github.com/bminor/glibc.git"
+        },
+        {
+            "owner": "gcc-mirror",
+            "repo": "gcc",
+            "url": "https://github.com/gcc-mirror/gcc.git"
         },
         {
             "owner": "gvlx",
@@ -1302,9 +1567,24 @@
             "url": "https://github.com/nginx/nginx.git"
         },
         {
+            "owner": "pingcap",
+            "repo": "tidb",
+            "url": "https://github.com/pingcap/tidb.git"
+        },
+        {
             "owner": "google",
             "repo": "leveldb",
             "url": "https://github.com/google/leveldb.git"
+        },
+        {
+            "owner": "vim",
+            "repo": "vim",
+            "url": "https://github.com/vim/vim.git"
+        },
+        {
+            "owner": "curl",
+            "repo": "curl",
+            "url": "https://github.com/curl/curl.git"
         },
         {
             "owner": "facebook",
@@ -1330,13 +1610,13 @@
     },
     "LocationGeo_token": "123456",
     "opensearch_conn_data": {
-        "HOST": "192.168.8.10",
+        "HOST": "192.168.8.108",
         "PASSWD": "admin",
         "PORT": "9200",
         "USER": "admin"
     },
     "clickhouse_driver_info": {
-        "HOST": "192.168.8.10",
+        "HOST": "192.168.8.108",
         "PASSWD": "",
         "PORT": "19001",
         "USER": "default",
@@ -1344,11 +1624,11 @@
     },
     "clickhouse_conn_info": "clickhouse_driver_info",
     "redis_client_data": {
-        "HOST": "192.168.8.10",
+        "HOST": "192.168.8.108",
         "PORT": "6379"
     },
     "redis_conn_data": "redis_client_data",
-    "transfer_data_os_index_and_ck_tbname": [
+    "ck_table_map_from_os_index": [
         {
             "OPENSEARCH_INDEX": "github_issues",
             "CK_TABLE_NAME": "github_issues"
@@ -1372,10 +1652,10 @@
         {
             "OPENSEARCH_INDEX": "github_issues_timeline",
             "CK_TABLE_NAME": "github_issues_timeline"
-        }
+        },
+
     ],
-    "ck_table_os_index_mapping": "transfer_data_os_index_and_ck_tbname",
-    "clickhouse_tb_temp": [
+    "ck_table_default_val_tplt": [
         {
             "table_name": "github_pull_requests",
             "temp": {
@@ -2355,8 +2635,7 @@
             }
         }
     ],
-    "ck_init_sync_os_data_type_templ": "clickhouse_tb_temp",
-    "ck_table_infos": [
+    "ck_create_table_cols_datatype_tplt": [
         {
             "table_name": "gits",
             "cluster_name": "replicated",
@@ -3437,8 +3716,7 @@
             }
         }
     ],
-    "ck_create_table_templ": "ck_table_infos",
-    "alter_table_infos": [
+    "ck_alter_table_cols_datatype_tplt": [
         {
             "table_name": "gits",
             "cluster_name": "replicated",
@@ -3501,7 +3779,6 @@
             }
         }
     ],
-    "ck_alter_table_cols": "alter_table_infos",
     "mail_lists": [
         {
             "project_name": "gawk",

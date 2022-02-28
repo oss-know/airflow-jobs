@@ -4,7 +4,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 
 # clickhouse_init_sync_v0.0.1
-from oss_know.libs.base_dict.variable_key import NEED_ALTER_CK_TABLE_INFOS, CLICKHOUSE_DRIVER_INFO
+from oss_know.libs.base_dict.variable_key import CK_ALTER_TABLE_COLS_DATATYPE_TPLT, CLICKHOUSE_DRIVER_INFO
 
 with DAG(
         dag_id='ck_alter_tables',
@@ -58,7 +58,7 @@ with DAG(
 
     from airflow.models import Variable
     # NEED_CK_TABLE_INFOS改成NEED_ALTER_CK_TABLE_INFOS
-    ck_table_infos = Variable.get(NEED_ALTER_CK_TABLE_INFOS, deserialize_json=True)
+    ck_table_infos = Variable.get(CK_ALTER_TABLE_COLS_DATATYPE_TPLT, deserialize_json=True)
     for table_info in ck_table_infos:
         op_do_ck_create_table = PythonOperator(
             task_id=f'do_ck_alter_table_table_name_{table_info["table_name"]}',
