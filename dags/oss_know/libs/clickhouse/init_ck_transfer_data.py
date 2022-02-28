@@ -1,6 +1,8 @@
 import datetime
 import json
 import time
+from json import JSONDecodeError
+
 import numpy
 import pandas as pd
 import psycopg2
@@ -157,14 +159,26 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
 
             df = pd.json_normalize(df_data)
             dict_data = parse_data(df, template)
-            bulk_data.append(dict_data)
+            try:
+                dict_dict = json.loads(json.dumps(dict_data))
+            except JSONDecodeError as error:
+                logger.error(error)
+                continue
             # except_fields = []
             for field in fields:
                 # if not dict_data.get(field):
                 #     except_fields.append(f'`{field}`')
-                if dict_data.get(field) and fields.get(field) == 'DateTime64(3)':
-                    dict_data[field] = utc_timestamp(dict_data[field])
-
+                if dict_dict.get(field) and fields.get(field) == 'DateTime64(3)':
+                    # dict_data[field] = utc_timestamp(dict_data[field])
+                    # logger.info(f'dict_data:{dict_data[field]} type:{type(dict_data[field])}')
+                    dict_dict[field] = datetime.datetime.strptime(dict_dict[field], '%Y-%m-%dT%H:%M:%SZ')
+                    # logger.info(f'dict_data--datetime-type:{dict_data[field]} type:{type(dict_data[field])}')
+                elif fields.get(field) == 'String':
+                    try:
+                        dict_dict[field].encode('utf-8')
+                    except UnicodeEncodeError as error:
+                        dict_dict[field] = dict_dict[field].encode('unicode-escape').decode('utf-8')
+            bulk_data.append(dict_dict)
             # 这里except_fields 里存储的就是表结构中有的fields 而数据中没有的字段
             # if except_fields:
             #     # logger.info(f'缺失的字段列表：{except_fields}')
@@ -174,9 +188,10 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
             #     sql = f"INSERT INTO {table_name} VALUES"
             ck_sql = f"INSERT INTO {table_name} VALUES"
             try:
-                # result = ck.execute(sql, [dict_data])
+                # result = ck.execute(ck_sql, [dict_data])
                 count += 1
-                if count % 50000 == 0:
+                if count % 5000 == 0:
+
                     result = ck.execute(ck_sql, bulk_data)
                     bulk_data.clear()
                     logger.info(f'已经插入的数据的条数为:{count}')
@@ -185,7 +200,7 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
                 # ck.execute_use_setting(sql=sql, params=[dict_data], settings=settings)
             except KeyError as error:
                 logger.error(f'插入数据发现错误 {error}')
-                logger.error(f'出现问题的数据是{dict_data}')
+                logger.error(f'出现问题的数据是{dict_dict}')
                 postgres_conn = get_postgres_conn()
                 sql = '''INSERT INTO os_ck_errar(
                                     index, data) 
@@ -202,7 +217,7 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
             except ServerException as error:
                 print(f'----------------------------Server')
                 logger.error(f'插入数据发现错误 {error}')
-                logger.error(f'出现问题的数据是{dict_data}')
+                logger.error(f'出现问题的数据是{dict_dict}')
                 # postgres_conn = get_postgres_conn()
                 # sql = '''INSERT INTO os_ck_errar(
                 #                                     index, data)
@@ -222,9 +237,9 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
                 #         postgres_conn.close()
             except UnicodeEncodeError as error:
                 logger.error(f'插入数据发现错误 {error}')
-                logger.error(f'出现问题的数据是{dict_data}')
+                logger.error(f'出现问题的数据是{dict_dict}')
                 logger.error(f'舍弃这条数据')
-                # logger.error(f'使用unicode进行编码:{json.loads(json.dumps(dict_data))}')
+                # logger.error(f'使用unicode进行编码:{json.loads(json.dumps(dict_dict))}')
                 # settings = {'strings_encoding': 'gbk'}
                 # try:
                 #     ck.execute_use_setting(sql=sql, params=[dict_data], settings=settings)
@@ -237,7 +252,7 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
                 #     logger.error(f'出现问题的数据是{dict_data}')
             except AttributeError as error:
                 logger.error(f'插入数据发现错误 {error}')
-                logger.error(f'出现问题的数据是{json.dumps(dict_data)}')
+                logger.error(f'出现问题的数据是{json.dumps(dict_dict)}')
                 raise AttributeError(error)
 
 
