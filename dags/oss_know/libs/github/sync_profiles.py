@@ -93,7 +93,7 @@ def sync_github_profiles(github_tokens, opensearch_conn_info, redis_client_info,
                 infer_country_company_geo_insert_into_profile(latest_github_profile)
                 opensearch_client.index(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
                                         body={"search_key": {
-                                            'updated_at': (datetime.datetime.now().timestamp() * 1000)},
+                                            'updated_at': int(datetime.datetime.now().timestamp() * 1000)},
                                             "raw_data": latest_github_profile},
                                         refresh=True)
                 logger.info(f"Success put updated {storage_id}'s github profiles into opensearch.")

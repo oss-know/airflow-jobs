@@ -1,5 +1,5 @@
 import datetime
-
+from loguru import logger
 from oss_know.libs.util.clickhouse_driver import CKServer
 from oss_know.libs.util.base import infer_country_from_emailcctld, infer_country_from_emaildomain, \
     infer_company_from_emaildomain, infer_country_from_company
