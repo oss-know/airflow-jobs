@@ -5,8 +5,8 @@ from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 # clickhouse_init_sync_v0.0.1
-from oss_know.libs.base_dict.variable_key import NEED_CK_TABLE_INFOS, CLICKHOUSE_DRIVER_INFO, \
-    TRANSFER_DATA_OS_INDEX_AND_CK_TBNAME
+from oss_know.libs.base_dict.variable_key import CK_CREATE_TABLE_COLS_DATATYPE_TPLT, CLICKHOUSE_DRIVER_INFO, \
+    CK_TABLE_MAP_FROM_OS_INDEX, CK_TABLE_DEFAULT_VAL_TPLT
 
 with DAG(
         dag_id='init_ck_transfer_data',
@@ -42,7 +42,7 @@ with DAG(
                                                                         table_name=table_name,
                                                                         opensearch_conn_datas=opensearch_conn_datas)
         else:
-            table_templates = Variable.get("clickhouse_tb_temp", deserialize_json=True)
+            table_templates = Variable.get(CK_TABLE_DEFAULT_VAL_TPLT, deserialize_json=True)
 
             for table_template in table_templates:
                 if table_template.get("table_name") == table_name:
@@ -61,7 +61,7 @@ with DAG(
 
     from airflow.models import Variable
 
-    os_index_ck_tb_infos = Variable.get(TRANSFER_DATA_OS_INDEX_AND_CK_TBNAME, deserialize_json=True)
+    os_index_ck_tb_infos = Variable.get(CK_TABLE_MAP_FROM_OS_INDEX, deserialize_json=True)
     for os_index_ck_tb_info in os_index_ck_tb_infos:
         op_do_ck_transfer_data = PythonOperator(
             task_id=f'do_ck_transfer_os_index_{os_index_ck_tb_info["OPENSEARCH_INDEX"]}_ck_tb_{os_index_ck_tb_info["CK_TABLE_NAME"]}',

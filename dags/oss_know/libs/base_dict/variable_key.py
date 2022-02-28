@@ -14,11 +14,13 @@ NEED_SYNC_GITHUB_COMMITS_REPOS = "need_init_github_commits_repos"
 
 NEED_INIT_GITS = "need_init_gits"
 
-NEED_CK_TABLE_INFOS = "ck_table_infos"
+CK_CREATE_TABLE_COLS_DATATYPE_TPLT = "ck_create_table_cols_datatype_tplt"
 
 CLICKHOUSE_DRIVER_INFO = "clickhouse_driver_info"
 
-TRANSFER_DATA_OS_INDEX_AND_CK_TBNAME="transfer_data_os_index_and_ck_tbname"
+CK_TABLE_DEFAULT_VAL_TPLT = "ck_table_default_val_tplt"
+
+CK_TABLE_MAP_FROM_OS_INDEX= "ck_table_map_from_os_index"
 
 REDIS_CLIENT_DATA = "redis_client_data"
 
@@ -28,4 +30,4 @@ SYNC_PROFILES_TASK_NUM = "sync_profiles_task_num"
 
 LOCATIONGEO_TOKEN = "LocationGeo_token"
 
-NEED_ALTER_CK_TABLE_INFOS = "alter_table_infos"
+CK_ALTER_TABLE_COLS_DATATYPE_TPLT = "ck_alter_table_cols_datatype_tplt"
