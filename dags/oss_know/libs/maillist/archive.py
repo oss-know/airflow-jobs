@@ -26,7 +26,7 @@ from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_MAILLISTS
 
 
 class OSSKnowMBoxEnrich(MBoxEnrich):
-    ESSENTIAL_KEYS = ['Reference', 'In-Reply-To', 'From', 'To']
+    ESSENTIAL_KEYS = ['References', 'In-Reply-To', 'From', 'To']
 
     def __init__(self, project_name, list_name, **kwargs):
         super().__init__(**kwargs)

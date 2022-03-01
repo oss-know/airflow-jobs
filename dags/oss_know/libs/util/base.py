@@ -4,6 +4,7 @@ import geopy
 import redis
 import requests
 import urllib3
+from datetime import datetime
 from geopy.geocoders import GoogleV3
 from multidict import CIMultiDict
 from opensearchpy import OpenSearch
