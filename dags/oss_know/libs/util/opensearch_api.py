@@ -1,25 +1,24 @@
 import copy
 import datetime
 import json
-from typing import Tuple, Union, List, Any
+import random
+from typing import Tuple
 
 import dateutil
 import psycopg2
+import requests
 import urllib3
-import random
 from opensearchpy import helpers as opensearch_helpers
 from opensearchpy.exceptions import OpenSearchException
 from tenacity import *
-import requests
-
-from oss_know.libs.util.airflow import get_postgres_conn
-from oss_know.libs.util.log import logger
-from oss_know.libs.util.github_api import GithubAPI
-from oss_know.libs.util.base import infer_country_company_geo_insert_into_profile, inferrers
 
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COMMITS, OPENSEARCH_INDEX_GITHUB_ISSUES, \
     OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE, OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, \
     OPENSEARCH_INDEX_CHECK_SYNC_DATA, OPENSEARCH_INDEX_GITHUB_PROFILE, OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS
+from oss_know.libs.util.airflow import get_postgres_conn
+from oss_know.libs.util.base import infer_country_company_geo_insert_into_profile, inferrers
+from oss_know.libs.util.github_api import GithubAPI
+from oss_know.libs.util.log import logger
 
 
 class OpenSearchAPIException(Exception):
@@ -108,7 +107,7 @@ class OpensearchAPI:
             bulk_all_github_issues.append(commit_item)
             logger.info(f"add sync github issues number:{now_issue['number']}")
 
-        success, failed = opensearch_helpers.bulk(client=opensearch_client, actions=bulk_all_github_issues)
+        success, failed = self.do_opensearch_bulk(opensearch_client, bulk_all_github_issues, owner, repo)
         logger.info(f"now page:{len(bulk_all_github_issues)} sync github issues success:{success} & failed:{failed}")
 
         return success, failed
@@ -172,7 +171,7 @@ class OpensearchAPI:
             bulk_all_datas.append(append_item)
             logger.info(f"add init sync github issues_timeline number:{number}")
 
-        success, failed = opensearch_helpers.bulk(client=opensearch_client, actions=bulk_all_datas)
+        success, failed = self.do_opensearch_bulk(opensearch_client, bulk_all_datas, owner, repo)
         logger.info(f"now page:{len(bulk_all_datas)} sync github issues_timeline success:{success} & failed:{failed}")
 
     def bulk_github_issues_comments(self, opensearch_client, issues_comments, owner, repo, number):
@@ -188,7 +187,7 @@ class OpensearchAPI:
             bulk_all_github_issues_comments.append(commit_comment_item)
             logger.info(f"add init sync github issues comments number:{number}")
 
-        success, failed = opensearch_helpers.bulk(client=opensearch_client, actions=bulk_all_github_issues_comments)
+        success, failed = self.do_opensearch_bulk(opensearch_client, bulk_all_github_issues_comments, owner, repo)
         logger.info(
             f"now page:{len(bulk_all_github_issues_comments)} sync github issues comments success:{success} & failed:{failed}")
 
@@ -292,7 +291,7 @@ class OpensearchAPI:
             bulk_all_github_pull_requests.append(pull_requests_item)
             logger.info(f"add init sync github pull_requests number:{now_pr['number']}")
 
-        success, failed = opensearch_helpers.bulk(client=opensearch_client, actions=bulk_all_github_pull_requests)
+        success, failed = self.do_opensearch_bulk(opensearch_client, bulk_all_github_pull_requests, owner, repo)
         logger.info(
             f"now page:{len(bulk_all_github_pull_requests)} sync github pull_requests success:{success} & failed:{failed}")
 
@@ -303,7 +302,7 @@ class OpensearchAPI:
     def do_opensearch_bulk_error_callback(retry_state):
         postgres_conn = get_postgres_conn()
         sql = '''INSERT INTO retry_data(
-                    owner, repo, type, data) 
+                    owner, repo, type, data)
                     VALUES (%s, %s, %s, %s);'''
         try:
             cur = postgres_conn.cursor()
@@ -326,8 +325,9 @@ class OpensearchAPI:
     @retry(stop=stop_after_attempt(3),
            wait=wait_fixed(1),
            retry_error_callback=do_opensearch_bulk_error_callback,
-           retry=(retry_if_exception_type(OSError) | retry_if_exception_type(
-               urllib3.exceptions.HTTPError) | retry_if_exception_type(OpenSearchException))
+           retry=(retry_if_exception_type(OSError) |
+                  retry_if_exception_type(urllib3.exceptions.HTTPError) |
+                  retry_if_exception_type(OpenSearchException))
            )
     def do_opensearch_bulk(self, opensearch_client, bulk_all_data, owner, repo):
         logger.info(f"owner:{owner},repo:{repo}::do_opensearch_bulk")
