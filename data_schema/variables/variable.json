@@ -2878,5 +2878,16 @@
         }
       ]
     }
-  ]
+  ],
+  "proxy_confs": {
+    "api_url": "http://YOUR_PROXY_SVC_API_URL",
+    "orderid": "THIS_FIELD_VARIES_FROM_DIFF_SERVICE_PROVIDERS",
+    "reserved_proxies": [
+      "put",
+      "preserved",
+      "proxies",
+      "if",
+      "any"
+    ]
+  }
 }
