@@ -5,6 +5,7 @@ import random
 from typing import Tuple
 
 import dateutil
+import opensearchpy
 import psycopg2
 import requests
 import urllib3
@@ -327,6 +328,7 @@ class OpensearchAPI:
            retry_error_callback=do_opensearch_bulk_error_callback,
            retry=(retry_if_exception_type(OSError) |
                   retry_if_exception_type(urllib3.exceptions.HTTPError) |
+                  retry_if_exception_type(opensearchpy.exceptions.ConnectionTimeout) |
                   retry_if_exception_type(OpenSearchException))
            )
     def do_opensearch_bulk(self, opensearch_client, bulk_all_data, owner, repo):

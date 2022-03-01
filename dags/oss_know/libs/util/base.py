@@ -1,15 +1,13 @@
 import re
+from datetime import datetime
+from urllib.parse import urlparse
 
 import geopy
 import redis
 import requests
 import urllib3
-from urllib.parse import urlparse
-from datetime import datetime
 from geopy.geocoders import GoogleV3
 from multidict import CIMultiDict
-import opensearchpy
-from opensearchpy import helpers as opensearch_helpers
 from opensearchpy import OpenSearch
 from tenacity import *
 
@@ -233,13 +231,6 @@ def infer_country_company_geo_insert_into_profile(latest_github_profile):
             f"error occurs when inferring information by github profile, exception message: {e},the type of exception: {type(e)}")
         for inferrer in inferrers:
             latest_github_profile[inferrer[0]] = None
-
-
-@retry(stop=stop_after_attempt(5),
-       wait=wait_fixed(1),
-       retry=(retry_if_exception_type(opensearchpy.exceptions.ConnectionTimeout)))
-def opensearch_bulk(client, data):
-    return opensearch_helpers.bulk(client=client, actions=data)
 
 
 def get_clickhouse_client(clickhouse_server_info):
