@@ -164,7 +164,10 @@ class GithubTokenProxyAccommodator:
         This allows some randomity
         """
         self.tokens = token_manager.fetch_all()
-        self.proxies = proxy_manager.fetch_all()
+        num_tokens = len(self.tokens)
+        num_proxies = len(proxy_manager.idle)
+        self.proxies = proxy_manager.fetch_all() if num_tokens >= num_proxies else proxy_manager.fetch(num_tokens)
+
         if shuffle:
             shuffle_list(self.tokens)
             shuffle_list(self.proxies)
