@@ -1,10 +1,13 @@
 from datetime import datetime
+
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+
 from oss_know.libs.base_dict.variable_key import NEED_INIT_GITHUB_ISSUES_REPOS, OPENSEARCH_CONN_DATA, GITHUB_TOKENS
+from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
+from oss_know.libs.util.token import TokenManager
 
 # v0.0.1
-
 with DAG(
         dag_id='github_init_issues_v1',
         schedule_interval=None,
@@ -29,14 +32,22 @@ with DAG(
         github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
         opensearch_conn_infos = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
 
+        proxy_confs = Variable.get('proxy_confs', deserialize_json=True)
+        proxies = []
+        for line in proxy_confs['reserved_proxies']:
+            proxies.append(f'http://{line}')
+
+        proxy_service = KuaiProxyService(proxy_confs['api_url'], proxy_confs['orderid'])
+        proxy_manager = ProxyManager(proxies, proxy_service)
+        token_manager = TokenManager(github_tokens)
+
+        proxy_accommodator = GithubTokenProxyAccommodator(token_manager, proxy_manager, shuffle=True,
+                                                          policy=GithubTokenProxyAccommodator.POLICY_FIXED_MAP)
         owner = params["owner"]
         repo = params["repo"]
         since = None
 
-        do_init_sync_info = init_issues.init_github_issues(
-            github_tokens, opensearch_conn_infos, owner, repo, since)
-
-        return params
+        init_issues.init_github_issues(opensearch_conn_infos, owner, repo, proxy_accommodator, since)
 
 
     need_do_init_sync_ops = []
