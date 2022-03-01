@@ -1,5 +1,7 @@
 import threading
 
+from oss_know.libs.util.log import logger
+
 
 class TokenManager:
 
@@ -47,6 +49,10 @@ class TokenManager:
 
     def on_token_recover(self, token, callback):
         self.cool_pool.remove(token)
+        # TODO It's a bit hard to decide where to put the recovered token
+        # If the outside caller use the token with customized callback, then token should be an item of in_use here.
+        # If the caller dones't handle the token, or pass a None callback, then token should be an item of idle.
+        # Currently, the caller in GithubTokenProxyAccommodator re-use the recovered token
         self.in_use.append(token)
         if callback:
             callback(token)
