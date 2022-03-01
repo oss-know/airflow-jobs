@@ -4,6 +4,7 @@ import geopy
 import redis
 import requests
 import urllib3
+from datetime import datetime
 from geopy.geocoders import GoogleV3
 from multidict import CIMultiDict
 from opensearchpy import OpenSearch
@@ -187,3 +188,7 @@ def get_clickhouse_client(clickhouse_server_info):
                   database=clickhouse_server_info["DATABASE"])
 
     return ck
+
+
+def now_timestamp():
+    return int(datetime.now().timestamp() * 1000)

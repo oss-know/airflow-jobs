@@ -23,3 +23,5 @@ CK_TABLE_DEFAULT_VAL_TPLT = "ck_table_default_val_tplt"
 REDIS_CLIENT_DATA = "redis_client_data"
 
 LOCATIONGEO_TOKEN = "LocationGeo_token"
+
+MAIL_LISTS = "mail_lists"
