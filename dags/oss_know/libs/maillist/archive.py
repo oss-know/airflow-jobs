@@ -1,28 +1,23 @@
-import http
-from dateutil.parser import parse
-import requests
-import shutil
 import gzip
-import json
-from os import makedirs, remove, path
-from opensearchpy import OpenSearch
+import http
+import shutil
 from datetime import datetime
-from grimoire_elk.raw.mbox import MBoxOcean
+from os import makedirs, remove, path
+
+import requests
+from dateutil.parser import parse
+from dateutil.relativedelta import relativedelta
 from grimoire_elk.enriched.mbox import MBoxEnrich
-from grimoire_elk.raw.pipermail import PipermailOcean
 from grimoire_elk.enriched.pipermail import PipermailEnrich
+from grimoire_elk.raw.mbox import MBoxOcean
+from grimoire_elk.raw.pipermail import PipermailOcean
 from grimoire_elk.utils import get_elastic
 from perceval.backends.core.mbox import MBox
-from oss_know.libs.util.base import now_timestamp
-import os
-
-from loguru import logger
-
-from dateutil.relativedelta import relativedelta
-from perceval.backends.core.mbox import MBox
 from perceval.backends.core.pipermail import Pipermail
-from oss_know.libs.util.opensearch_api import OpensearchAPI
+
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_MAILLISTS
+from oss_know.libs.util.base import now_timestamp
+from oss_know.libs.util.log import logger
 
 
 class OSSKnowMBoxEnrich(MBoxEnrich):
