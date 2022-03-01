@@ -10,10 +10,8 @@ from oss_know.libs.util.github_api import GithubAPI
 from oss_know.libs.util.opensearch_api import OpensearchAPI
 
 
-def init_github_commits(github_tokens,
-                        opensearch_conn_info,
-                        owner, repo, since=None, until=None):
-    github_tokens_iter = itertools.cycle(github_tokens)
+def init_github_commits(opensearch_conn_info, owner, repo,
+                        token_proxy_accommodator, since=None, until=None):
 
     opensearch_client = OpenSearch(
         hosts=[{'host': opensearch_conn_info["HOST"], 'port': opensearch_conn_info["PORT"]}],
@@ -30,7 +28,7 @@ def init_github_commits(github_tokens,
     for page in range(1, 99999):
         time.sleep(random.uniform(0.01, 0.02))
         # 获取一页 github commits
-        req = github_api.get_github_commits(http_session=session, github_tokens_iter=github_tokens_iter, owner=owner,
+        req = github_api.get_github_commits(http_session=session, token_proxy_accommodator=token_proxy_accommodator, owner=owner,
                                             repo=repo, page=page, since=since, until=until)
         one_page_github_commits = req.json()
 
