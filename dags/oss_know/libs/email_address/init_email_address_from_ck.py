@@ -11,17 +11,18 @@ from oss_know.libs.base_dict.clickhouse import CLICKHOUSE_EMAIL_ADDRESS, EMAIL_A
 
 from oss_know.libs.email_address.email_address_default_tplt import EMAIL_ADDRESS_DEFAULT_TPLT
 
+
 def load_all_email_address(clickhouse_server_info):
     ck = get_clickhouse_client(clickhouse_server_info)
     init_email_address_dict = {}
     update_email_address = set()
     mbox_helper = MBoxEnrich()
     maillists_enriched_sql = "select DISTINCT From,To from maillists_enriched"
-    get_value = ck.execute_no_params(maillists_enriched_sql)
-    for item in get_value:
-        for origin_email_str in item:
+    email_tuples = ck.execute_no_params(maillists_enriched_sql)
+    for email_tuple in email_tuples:
+        for origin_email_str in email_tuple:
             if origin_email_str:
-                origin_email_list=origin_email_str.split(',')
+                origin_email_list = origin_email_str.split(',')
                 for origin_email in origin_email_list:
                     identity = mbox_helper.get_sh_identity(origin_email)
                     email = identity["email"]
@@ -112,10 +113,9 @@ def load_all_email_address(clickhouse_server_info):
                 page_num = page_num + 1
                 count = 1
                 insert_email_address_sql = f"INSERT INTO {CLICKHOUSE_EMAIL_ADDRESS} (*) VALUES"
-                logger.debug("------------values_to_insert",values_to_insert)
+                logger.debug(f"------------values_to_insert{values_to_insert}")
                 ck.execute(insert_email_address_sql, values_to_insert)
                 values_to_insert = []
-                logger.debug("--------------------insert-----------------------")
     if values_to_insert:
         insert_email_address_sql = f"INSERT INTO {CLICKHOUSE_EMAIL_ADDRESS} (*) VALUES"
         ck.execute(insert_email_address_sql, values_to_insert)
