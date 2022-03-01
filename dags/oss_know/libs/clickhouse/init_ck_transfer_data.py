@@ -188,7 +188,7 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
             try:
                 # result = ck.execute(ck_sql, [dict_data])
                 count += 1
-                if count % 5000 == 0:
+                if count % 20000 == 0:
 
                     result = ck.execute(ck_sql, bulk_data)
                     bulk_data.clear()
