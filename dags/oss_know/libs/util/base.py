@@ -1,10 +1,11 @@
 import re
+from datetime import datetime
+from urllib.parse import urlparse
 
 import geopy
 import redis
 import requests
 import urllib3
-from datetime import datetime
 from geopy.geocoders import GoogleV3
 from multidict import CIMultiDict
 from opensearchpy import OpenSearch
@@ -13,6 +14,7 @@ from tenacity import *
 from oss_know.libs.base_dict.infer_file import CCTLD, COMPANY_COUNTRY
 from oss_know.libs.base_dict.variable_key import LOCATIONGEO_TOKEN
 from oss_know.libs.util.clickhouse_driver import CKServer
+from oss_know.libs.util.proxy import GithubTokenProxyAccommodator
 from ..util.log import logger
 
 
@@ -24,9 +26,12 @@ class HttpGetException(Exception):
 
 
 # retry 防止SSL解密错误，请正确处理是否忽略证书有效性
-@retry(stop=stop_after_attempt(3),
+@retry(stop=stop_after_attempt(10),
        wait=wait_fixed(1),
-       retry=retry_if_exception_type(urllib3.exceptions.HTTPError))
+       retry=(retry_if_exception_type(urllib3.exceptions.HTTPError) |
+              retry_if_exception_type(urllib3.exceptions.MaxRetryError) |
+              retry_if_exception_type(requests.exceptions.ProxyError) |
+              retry_if_exception_type(requests.exceptions.SSLError)))
 def do_get_result(req_session, url, headers, params):
     # 尝试处理网络请求错误
     # session.mount('http://', HTTPAdapter(
@@ -41,7 +46,55 @@ def do_get_result(req_session, url, headers, params):
         logger.warning(f"headers:{headers}")
         logger.warning(f"params:{params}")
         logger.warning(f"text:{res.text}")
-        raise HttpGetException('http get 失败！')
+        raise HttpGetException('http get 失败！', res.status_code)
+    return res
+
+
+# # retry 防止SSL解密错误，请正确处理是否忽略证书有效性
+@retry(stop=stop_after_attempt(10),
+       wait=wait_fixed(1),
+       retry=(retry_if_exception_type(urllib3.exceptions.HTTPError) |
+              retry_if_exception_type(urllib3.exceptions.MaxRetryError) |
+              retry_if_exception_type(requests.exceptions.ProxyError) |
+              retry_if_exception_type(requests.exceptions.ChunkedEncodingError) |
+              retry_if_exception_type(urllib3.exceptions.ProtocolError) |
+              retry_if_exception_type(HttpGetException) |
+              retry_if_exception_type(requests.exceptions.SSLError)))
+def do_get_github_result(req_session, url, headers, params, accommodator: GithubTokenProxyAccommodator):
+    github_token, proxy_url = accommodator.next()
+    logger.debug(f'GitHub request {url} with token {github_token}')
+    req_session.headers.update({'Authorization': 'token %s' % github_token})
+
+    url_scheme, proxy_scheme = urlparse(url), urlparse(proxy_url)
+    if not proxy_scheme or not url_scheme:
+        logger.error(f'At least one scheme not found in urls: {url}, {proxy_url}')
+    # This elif branch is commented because http(s) proxy and request scheme don't have to be the same
+    # elif url_scheme != proxy_scheme:
+    #     logger.warning(f'URL scheme {url_scheme} does not match proxy scheme{proxy_scheme}, skipping')
+    else:
+        req_session.proxies[url_scheme] = proxy_url
+        logger.debug(f'Request url {url} with proxy {proxy_url}')
+
+    res = req_session.get(url, headers=headers, params=params, verify=False)
+    if res.status_code >= 300:
+        logger.warning(f"url:{url}")
+        logger.warning(f"headers:{headers}")
+        logger.warning(f"params:{params}")
+        logger.warning(f"text:{res.text}")
+
+        if res.status_code == 401:
+            # Token no longer invalid
+            logger.warning(f'Token {github_token} no longer available, remove it from token list')
+            accommodator.report_invalid_token(github_token)
+        elif res.status_code == 403:
+            # Token runs out
+            logger.warning(f'Token {github_token} has run out, cooling it down for recovery')
+            accommodator.report_drain_token(github_token)
+        # TODO The proxy service inside accommodator should provide a unified method to check if the proxy dies
+        # elif some_proxy_condition:
+        #     token_proxy_accommodator.report_invalid_proxy(proxy_url)
+
+        raise HttpGetException('http get 失败！', res.status_code)
     return res
 
 

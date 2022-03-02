@@ -44,9 +44,7 @@ from oss_know.libs.util.log import logger
 from oss_know.libs.util.opensearch_api import OpensearchAPI
 
 
-def init_github_issues_comments(github_tokens, opensearch_conn_info, owner, repo, since=None):
-    github_tokens_iter = itertools.cycle(github_tokens)
-
+def init_github_issues_comments(opensearch_conn_info, owner, repo, token_proxy_accommodator, since=None):
     opensearch_client = OpenSearch(
         hosts=[{'host': opensearch_conn_info["HOST"], 'port': opensearch_conn_info["PORT"]}],
         http_compress=True,
@@ -113,7 +111,7 @@ def init_github_issues_comments(github_tokens, opensearch_conn_info, owner, repo
         for page in range(1, 10000):
             time.sleep(random.uniform(0.01, 0.02))
             req = github_api.get_github_issues_comments(http_session=req_session,
-                                                        github_tokens_iter=github_tokens_iter,
+                                                        token_proxy_accommodator=token_proxy_accommodator,
                                                         owner=owner, repo=repo, number=number, page=page)
 
             one_page_github_issues_comments = req.json()

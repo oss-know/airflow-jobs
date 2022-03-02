@@ -12,8 +12,7 @@ from oss_know.libs.util.opensearch_api import OpensearchAPI
 from oss_know.libs.util.log import logger
 
 
-def init_sync_github_pull_requests(github_tokens, opensearch_conn_info, owner, repo, since=None):
-    github_tokens_iter = itertools.cycle(github_tokens)
+def init_sync_github_pull_requests(opensearch_conn_info, owner, repo, token_proxy_accommodator, since=None):
 
     opensearch_client = OpenSearch(
         hosts=[{'host': opensearch_conn_info["HOST"], 'port': opensearch_conn_info["PORT"]}],
@@ -55,7 +54,7 @@ def init_sync_github_pull_requests(github_tokens, opensearch_conn_info, owner, r
         # Token sleep
         time.sleep(random.uniform(0.1, 0.2))
 
-        req = github_api.get_github_pull_requests(http_session=session, github_tokens_iter=github_tokens_iter,
+        req = github_api.get_github_pull_requests(http_session=session, token_proxy_accommodator=token_proxy_accommodator,
                                                   owner=owner, page=page, repo=repo, since=since)
 
         one_page_github_pull_requests = req.json()
