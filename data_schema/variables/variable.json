@@ -2666,6 +2666,70 @@
           }
         }
       }
+    },
+    {
+      "table_name": "metrics",
+      "cluster_name": "replicated",
+      "database_name": "default",
+      "distributed_key": "github_id",
+      "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/metrics','{replica}')",
+      "partition_by": "owner",
+      "order_by": [
+        "owner",
+        "repo",
+        "github_id"
+      ],
+      "parse_data": {
+        "owner": "",
+        "repo": "",
+        "github_id": 0,
+        "github_login": "",
+        "git_author_email": "",
+        "commit_times": 0,
+        "changed_lines": 0,
+        "diff_file_counts": 0,
+        "prs_counts": 0,
+        "pr_body_length_avg": 0.0,
+        "issues_counts": 0,
+        "issue_body_length_avg": 0.0,
+        "issues_comment_count": 0,
+        "issues_comment_body_length_avg": 0.0,
+        "pr_comment_count": 0,
+        "pr_comment_body_length_avg": 0.0,
+        "be_mentioned_times_in_issues": 0,
+        "be_mentioned_times_in_pr": 0,
+        "referred_other_issues_or_prs_in_issue": 0,
+        "referred_other_issues_or_prs_in_pr": 0,
+        "changed_label_times_in_issues": 0,
+        "changed_label_times_in_prs": 0,
+        "closed_issues_times": 0,
+        "closed_prs_times": 0
+      }
+    },
+    {
+      "table_name": "activitys",
+      "cluster_name": "replicated",
+      "database_name": "default",
+      "distributed_key": "github_id",
+      "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/activitys','{replica}')",
+      "partition_by": "owner",
+      "order_by": [
+        "owner",
+        "repo",
+        "github_id"
+      ],
+      "parse_data": {
+        "owner": "",
+        "repo": "",
+        "github_id": 0,
+        "github_login": "",
+        "knowledge_sharing": 0.0,
+        "code_contribution": 0.0,
+        "issue_coordination": 0.0,
+        "progress_control": 0.0,
+        "code_tweaking": 0.0,
+        "issue_reporting": 0.0
+      }
     }
   ],
   "ck_alter_table_cols_datatype_tplt": [
