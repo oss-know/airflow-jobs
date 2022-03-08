@@ -1,10 +1,14 @@
-from airflow.utils.db import provide_session
-from airflow.models import XCom
 from datetime import datetime
+
 from airflow import DAG
-from airflow.operators.python import PythonOperator
 from airflow.models import Variable
-from oss_know.libs.base_dict.variable_key import NEED_INIT_GITHUB_PROFILES_REPOS
+from airflow.models import XCom
+from airflow.operators.python import PythonOperator
+from airflow.utils.db import provide_session
+
+from oss_know.libs.base_dict.variable_key import NEED_INIT_GITHUB_PROFILES_REPOS, LOCATIONGEO_TOKEN
+from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
+from oss_know.libs.util.token import TokenManager
 
 
 @provide_session
@@ -35,7 +39,6 @@ with DAG(
     def load_github_repo_id(params, **kwargs):
         from airflow.models import Variable
         from oss_know.libs.github import init_profiles
-        from oss_know.libs.github import sync_profiles
         opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
         owner = params["owner"]
         repo = params["repo"]
@@ -45,15 +48,39 @@ with DAG(
 
     def load_github_repo_profiles(params, **kwargs):
         from airflow.models import Variable
+        from oss_know.libs.util.base import init_geolocator
+
+        geolocator_token = Variable.get(LOCATIONGEO_TOKEN, deserialize_json=Falsez)
+        init_geolocator(geolocator_token)
+
         github_tokens = Variable.get("github_tokens", deserialize_json=True)
         opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
-        github_users_ids = []
+
+        proxy_confs = Variable.get('proxy_confs', deserialize_json=True)
+        proxies = []
+        for line in proxy_confs['reserved_proxies']:
+            proxies.append(f'http://{line}')
+
+        proxy_service = KuaiProxyService(proxy_confs['api_url'], proxy_confs['orderid'])
+        proxy_manager = ProxyManager(proxies, proxy_service)
+        token_manager = TokenManager(github_tokens)
+
+        proxy_accommodator = GithubTokenProxyAccommodator(token_manager, proxy_manager, shuffle=True,
+                                                          policy=GithubTokenProxyAccommodator.POLICY_FIXED_MAP)
+
+        # github_users_ids = []
+        github_users_ids = set()
         for param in params:
             owner = param["owner"]
             repo = param["repo"]
-            github_users_ids += kwargs['ti'].xcom_pull(key=f'{owner}_{repo}_ids')
+            # github_users_ids += kwargs['ti'].xcom_pull(key=f'{owner}_{repo}_ids')
+            # TODO Not very sure if updating the id set with a smaller list(github ids of a repo) performs better
+            # TODO Need more explorations on this
+            github_users_ids.update(kwargs['ti'].xcom_pull(key=f'{owner}_{repo}_ids'))
         from oss_know.libs.github import init_profiles
-        init_profiles.load_github_profiles(github_tokens=github_tokens, opensearch_conn_infos=opensearch_conn_infos,
+
+        init_profiles.load_github_profiles(token_proxy_accommodator=proxy_accommodator,
+                                           opensearch_conn_infos=opensearch_conn_infos,
                                            github_users_ids=github_users_ids)
         return 'End load_github_repo_profile'
 
@@ -66,11 +93,12 @@ with DAG(
         op_kwargs={'params': need_sync_github_profile_repos},
         provide_context=True
     )
+
     for now_need_sync_github_profile_repos in need_sync_github_profile_repos:
+        owner = now_need_sync_github_profile_repos['owner']
+        repo = now_need_sync_github_profile_repos['repo']
         op_load_github_repo_id = PythonOperator(
-            task_id='op_load_github_repo_id_{owner}_{repo}'.format(
-                owner=now_need_sync_github_profile_repos["owner"],
-                repo=now_need_sync_github_profile_repos["repo"]),
+            task_id=f'op_load_github_repo_id_{owner}_{repo}',
             python_callable=load_github_repo_id,
             op_kwargs={'params': now_need_sync_github_profile_repos},
             provide_context=True
