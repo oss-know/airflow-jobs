@@ -1,0 +1,25 @@
+version: "3"
+services:
+# My grafana service
+  grafana:
+#    build:
+#      context: ./grafana
+    image: airflowjobs/custom-grafana-enterprise:latest
+    container_name: grafana
+    ports:
+      - 53000:3000
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: System797836
+      GF_INSTALL_PLUGINS: grafana-piechart-panel, grafana-worldmap-panel, vertamedia-clickhouse-datasource, snuids-radar-panel
+
+    volumes:
+      - ./grafana.ini:/etc/grafana/grafana.ini
+      - ./GF_DATA:/var/lib/grafana
+      - ./GF_LOGS:/var/log/grafana
+      - ./GF_PLUGINS:/var/lib/grafana/plugins
+      - ./GF_PROVISIONING:/etc/grafana/provisioning
+## Explicitly define the persistent volume for your data storage
+#volumes:
+#  GF_DATA:
+#    external: true

@@ -133,3 +133,4 @@ logs/
 .DS_Store
 
 docker/clickhouse/CH/data
+docker/grafana/GF*
