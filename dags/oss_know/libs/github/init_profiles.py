@@ -18,7 +18,6 @@ def load_github_ids_by_repo(opensearch_conn_infos, owner, repo):
 
 def load_ids_from_commits(opensearch_client, owner, repo):
     """Get GitHub users' ids from GitHub commits."""
-    logger.debug(f'calling load_ids_by_github_commits for {owner}/{repo}')
     res = get_profiles_from_os(opensearch_client, owner, repo,
                                index=OPENSEARCH_INDEX_GITHUB_COMMITS)
     if not res:
@@ -98,13 +97,11 @@ def get_profiles_from_os(opensearch_client, owner, repo, index):
     return res
 
 
-def load_github_profiles(github_tokens, opensearch_conn_infos, github_users_ids):
+def load_github_profiles(token_proxy_accommodator, opensearch_conn_infos, github_users_ids):
     """Get GitHub profiles by ids."""
-    logger.debug(f'calling load_github_profiles by {github_users_ids}')
     # get ids set;
-    github_users_ids = list(set(github_users_ids))
+    # github_users_ids = list(set(github_users_ids))
     # put GitHub user profile into opensearch if it is not in opensearch
-    github_tokens_iter = itertools.cycle(github_tokens)
     opensearch_api = OpensearchAPI()
-    opensearch_api.put_profile_into_opensearch(github_ids=github_users_ids, github_tokens_iter=github_tokens_iter,
+    opensearch_api.put_profile_into_opensearch(github_ids=github_users_ids, token_proxy_accommodator=token_proxy_accommodator,
                                                opensearch_client=get_opensearch_client(opensearch_conn_infos))

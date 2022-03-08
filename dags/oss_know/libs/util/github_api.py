@@ -1,14 +1,9 @@
 import copy
 
-from oss_know.libs.util.base import do_get_result, do_get_github_result
+from oss_know.libs.util.base import do_get_github_result
+from oss_know.libs.exceptions import GithubNonExistingUserError
 from oss_know.libs.util.log import logger
 
-
-class GithubAPIException(Exception):
-    def __init__(self, message, status):
-        super().__init__(message, status)
-        self.message = message
-        self.status = status
 
 
 class GithubAPI:
@@ -32,17 +27,16 @@ class GithubAPI:
 
         return res
 
-    def get_latest_github_profile(self, http_session, github_tokens_iter, user_id):
+    def get_latest_github_profile(self, http_session, token_proxy_accommodator, user_id):
         """Get GitHub user's latest profile from GitHUb."""
         url = f"https://api.github.com/user/{user_id}"
         headers = copy.deepcopy(self.github_headers)
-        headers.update({'Authorization': 'token %s' % next(github_tokens_iter)})
         params = {}
         try:
-            req = do_get_result(http_session, url, headers, params)
+            req = do_get_github_result(http_session, url, headers, params, accommodator=token_proxy_accommodator)
             latest_github_profile = req.json()
-        except TypeError as e:
-            logger.error(f"捕获airflow抛出的TypeError:{e}")
+        except (TypeError, GithubNonExistingUserError) as e:
+            logger.error(f"Failed to get github profile: {e}, return an empty one")
             return {'login': '', 'id': user_id, 'node_id': '', 'avatar_url': '', 'gravatar_id': '', 'url': '',
                     'html_url': '',
                     'followers_url': '', 'following_url': '', 'gists_url': '', 'starred_url': '',
