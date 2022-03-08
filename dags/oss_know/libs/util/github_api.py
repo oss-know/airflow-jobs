@@ -1,7 +1,7 @@
 import copy
 
 from oss_know.libs.util.base import do_get_github_result
-from oss_know.libs.exceptions import GithubNonExistingUserError
+from oss_know.libs.exceptions import GithubResourceNotFoundError
 from oss_know.libs.util.log import logger
 
 
@@ -35,7 +35,7 @@ class GithubAPI:
         try:
             req = do_get_github_result(http_session, url, headers, params, accommodator=token_proxy_accommodator)
             latest_github_profile = req.json()
-        except (TypeError, GithubNonExistingUserError) as e:
+        except (TypeError, GithubResourceNotFoundError) as e:
             logger.error(f"Failed to get github profile: {e}, return an empty one")
             return {'login': '', 'id': user_id, 'node_id': '', 'avatar_url': '', 'gravatar_id': '', 'url': '',
                     'html_url': '',

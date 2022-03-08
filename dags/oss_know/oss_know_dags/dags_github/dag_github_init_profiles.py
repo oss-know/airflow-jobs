@@ -50,7 +50,7 @@ with DAG(
         from airflow.models import Variable
         from oss_know.libs.util.base import init_geolocator
 
-        geolocator_token = Variable.get(LOCATIONGEO_TOKEN, deserialize_json=Falsez)
+        geolocator_token = Variable.get(LOCATIONGEO_TOKEN, deserialize_json=False)
         init_geolocator(geolocator_token)
 
         github_tokens = Variable.get("github_tokens", deserialize_json=True)

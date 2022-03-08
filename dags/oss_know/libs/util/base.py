@@ -16,7 +16,7 @@ from oss_know.libs.base_dict.variable_key import LOCATIONGEO_TOKEN
 from oss_know.libs.util.clickhouse_driver import CKServer
 from oss_know.libs.util.proxy import GithubTokenProxyAccommodator
 from ..util.log import logger
-from oss_know.libs.exceptions import GithubNonExistingUserError
+from oss_know.libs.exceptions import GithubResourceNotFoundError
 
 
 class HttpGetException(Exception):
@@ -110,7 +110,7 @@ def do_get_github_result(req_session, url, headers, params, accommodator: Github
         # elif some_proxy_condition:
         #     token_proxy_accommodator.report_invalid_proxy(proxy_url)
         elif res.status_code == 404:
-            raise GithubNonExistingUserError(f'Target user not found', res.status_code)
+            raise GithubResourceNotFoundError(f'Target github resource {url} not found', res.status_code)
         else:
             logger.debug(f"Uncovered status {res.status_code}, text: {res.text}")
 

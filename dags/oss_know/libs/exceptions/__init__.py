@@ -5,6 +5,6 @@ class GithubAPIException(Exception):
         self.status = status
 
 
-class GithubNonExistingUserError(GithubAPIException):
+class GithubResourceNotFoundError(GithubAPIException):
     pass
 
