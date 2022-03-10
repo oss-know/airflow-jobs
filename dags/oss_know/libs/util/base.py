@@ -16,6 +16,7 @@ from oss_know.libs.base_dict.variable_key import LOCATIONGEO_TOKEN
 from oss_know.libs.util.clickhouse_driver import CKServer
 from oss_know.libs.util.proxy import GithubTokenProxyAccommodator
 from ..util.log import logger
+from oss_know.libs.exceptions import GithubResourceNotFoundError
 
 
 class HttpGetException(Exception):
@@ -98,7 +99,7 @@ def do_get_github_result(req_session, url, headers, params, accommodator: Github
             return EmptyResponse()
 
         if res.status_code == 401:
-            # Token no longer invalid
+            # Token becomes invalid
             logger.warning(f'Token {github_token} no longer available, remove it from token list')
             accommodator.report_invalid_token(github_token)
         elif res.status_code == 403:
@@ -108,6 +109,10 @@ def do_get_github_result(req_session, url, headers, params, accommodator: Github
         # TODO The proxy service inside accommodator should provide a unified method to check if the proxy dies
         # elif some_proxy_condition:
         #     token_proxy_accommodator.report_invalid_proxy(proxy_url)
+        elif res.status_code == 404:
+            raise GithubResourceNotFoundError(f'Target github resource {url} not found', res.status_code)
+        else:
+            logger.debug(f"Uncovered status {res.status_code}, text: {res.text}")
 
         raise HttpGetException('http get 失败！', res.status_code)
     return res
@@ -165,15 +170,21 @@ def infer_company_from_emaildomain(email):
     return None
 
 
+_global_geolocator = None
+
+
+def init_geolocator(token):
+    global _global_geolocator
+    if not _global_geolocator:
+        _global_geolocator = GoogleV3(api_key=token)
+
+
 def infer_country_from_location(github_location):
     """
     :param  github_location: location from a GitHub profile
     :return country_name  : the english name of a country
     """
-    from airflow.models import Variable
-    api_token = Variable.get(LOCATIONGEO_TOKEN, deserialize_json=True)
-    geolocator = GoogleV3(api_key=api_token)
-    geo_res = geolocator.geocode(github_location, language='en')
+    geo_res = _global_geolocator.geocode(github_location, language='en')
     if geo_res:
         return geo_res.address.split(',')[-1].strip()
     return None
@@ -184,10 +195,7 @@ def infer_geo_info_from_location(github_location):
     :param  github_location: the location given by github
     :return GoogleGeoInfo  : the information of GoogleGeo inferred by location
     """
-    from airflow.models import Variable
-    api_token = Variable.get(LOCATIONGEO_TOKEN, deserialize_json=True)
-    geolocator = GoogleV3(api_key=api_token)
-    geo_res = geolocator.geocode(github_location, language='en')
+    geo_res = _global_geolocator.geocode(github_location, language='en')
     if geo_res and geo_res.raw and ("address_components" in geo_res.raw) and geo_res.raw["address_components"]:
         address_components = geo_res.raw["address_components"]
         geo_info_from_location = {}

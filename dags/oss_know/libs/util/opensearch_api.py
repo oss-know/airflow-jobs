@@ -113,7 +113,7 @@ class OpensearchAPI:
 
         return success, failed
 
-    def put_profile_into_opensearch(self, github_ids, github_tokens_iter, opensearch_client):
+    def put_profile_into_opensearch(self, github_ids, token_proxy_accommodator, opensearch_client):
         """Put GitHub user profile into opensearch if it is not in opensearch."""
         # 获取github profile
         for github_id in github_ids:
@@ -142,7 +142,7 @@ class OpensearchAPI:
                 github_api = GithubAPI()
                 session = requests.Session()
                 latest_github_profile = github_api.get_latest_github_profile(http_session=session,
-                                                                             github_tokens_iter=github_tokens_iter,
+                                                                             token_proxy_accommodator=token_proxy_accommodator,
                                                                              user_id=github_id)
                 for tup in inferrers:
                     key, original_key, infer = tup
