@@ -2943,41 +2943,15 @@
       ]
     }
   ],
-  "proxy_confs": [
-	{
-		"scheme": "http",
-		"ip": "36.133.63.46",
-		"port": 16789,
-		"user": "1714",
-		"password": 8275
-	},
-	{
-		"scheme": "http",
-		"ip": "36.138.93.155",
-		"port": 16789,
-		"user": "1714",
-		"password": 8275
-	},
-	{
-		"scheme": "http",
-		"ip": "36.137.249.251",
-		"port": 16789,
-		"user": "1714",
-		"password": 8275
-	},
-	{
-		"scheme": "http",
-		"ip": "36.138.140.167",
-		"port": 16789,
-		"user": "1714",
-		"password": 8275
-	},
-	{
-		"scheme": "http",
-		"ip": "36.40.66.93",
-		"port": 16789,
-		"user": "1714",
-		"password": 8275
-	}
-]
+  "proxy_confs": {
+    "api_url": "http://YOUR_PROXY_SVC_API_URL",
+    "orderid": "THIS_FIELD_VARIES_FROM_DIFF_SERVICE_PROVIDERS",
+    "reserved_proxies": [
+      "put",
+      "preserved",
+      "proxies",
+      "if",
+      "any"
+    ]
+  }
 }
