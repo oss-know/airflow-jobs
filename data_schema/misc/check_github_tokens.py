@@ -25,6 +25,8 @@ def getConnectDemo(token):
             '%Y-%m-%d %H:%M:%S')
         print(f"token限制重置时间:{t}")
 
+    print(result)
+
 
 tokens = [
 ]
