@@ -2,6 +2,7 @@ import itertools
 from random import shuffle as shuffle_list
 
 import requests
+from requests.exceptions import RequestException
 
 from oss_know.libs.util.log import logger
 from oss_know.libs.util.token import TokenManager
@@ -131,20 +132,31 @@ class ProxyManager:
     def fetch_all(self):
         return self.fetch(len(self.idle))
 
-    def idle_proxy(self, token):
-        self.idle.append(token)
-        self.in_use.remove(token)
+    def idle_proxy(self, proxy):
+        # A proxy might be bound to multiple tokens, when tokens become invalid and try to idle the paired proxy,
+        # we should check proxy existence first, making sure the proxy is neither removed multi times in in_use list,
+        # nor appended multi times in idle list.
+        if proxy not in self.idle:
+            self.idle.append(proxy)
 
-    def report_invalid(self, proxy):
         if proxy not in self.in_use:
             logger.warning(f'Proxy {proxy} not found in "in use" list')
             return
-
         self.in_use.remove(proxy)
 
-        if not self.idle:
-            self._makeup_proxies(10)
-        return self.idle.pop()
+    def report_invalid(self, proxy):
+        if proxy in self.in_use:
+            self.in_use.remove(proxy)
+        else:
+            logger.warning(f'Proxy {proxy} not found in "in use" list')
+
+        try:
+            if not self.idle:
+                self._makeup_proxies(10)
+            return self.idle.pop()
+        except RequestException as e:
+            logger.error(f'Failed to make up proxies: {e}')
+            return None
 
 
 class GithubTokenProxyAccommodator:
@@ -193,9 +205,17 @@ class GithubTokenProxyAccommodator:
         return self._iter.next()
 
     def report_invalid_proxy(self, token, proxy):
+        if proxy in self.proxies:
+            self.proxies.remove(proxy)
+        else:
+            logger.warning(f'Proxy {proxy} not in proxies list')
+
         new_proxy = self.proxy_manager.report_invalid(proxy)
-        self.proxies.remove(proxy)
-        self.proxies.append(new_proxy)
+        if new_proxy:
+            self.proxies.append(new_proxy)
+        else:
+            logger.warning(f'Failed to get new proxy, proxy list might run out')
+
         if self.policy == GithubTokenProxyAccommodator.POLICY_FIXED_MAP:
             self._iter.update_mapping(token, new_proxy)
         elif self.policy == GithubTokenProxyAccommodator.POLICY_CYCLE_ITERATION:
@@ -204,9 +224,12 @@ class GithubTokenProxyAccommodator:
 
     def report_invalid_token(self, token):
         """The paired proxy of the invalid token is still available, assign it to the new token if possible"""
-        new_token = self.token_manager.drop(token)
-        self.tokens.remove(token)
+        if token in self.tokens:
+            self.tokens.remove(token)
+        else:
+            logger.warning(f'Token {token} not in tokens list')
 
+        new_token = self.token_manager.drop(token)
         if new_token:
             self.tokens.append(new_token)
 
@@ -224,7 +247,10 @@ class GithubTokenProxyAccommodator:
             self._accommodate()
 
     def report_drain_token(self, token, recover_duration=3600):
-        self.tokens.remove(token)
+        if token in self.tokens:
+            self.tokens.remove(token)
+        else:
+            logger.warning(f'Token {token} not in tokens list')
         new_token = self.token_manager.cool_down(token, self.on_token_wakeup, recover_duration=recover_duration)
         if new_token:
             self.tokens.append(new_token)

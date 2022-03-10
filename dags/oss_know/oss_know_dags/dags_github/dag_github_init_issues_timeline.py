@@ -1,10 +1,11 @@
 from datetime import datetime
+
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 
 # v0.0.1
 from oss_know.libs.base_dict.variable_key import NEED_INIT_GITHUB_ISSUES_TIMELINE_REPOS, GITHUB_TOKENS, \
-    OPENSEARCH_CONN_DATA
+    OPENSEARCH_CONN_DATA, PROXY_CONFS
 from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
 from oss_know.libs.util.token import TokenManager
 
@@ -32,7 +33,7 @@ with DAG(
         github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
         opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
 
-        proxy_confs = Variable.get('proxy_confs', deserialize_json=True)
+        proxy_confs = Variable.get(PROXY_CONFS, deserialize_json=True)
         proxies = []
         for line in proxy_confs['reserved_proxies']:
             proxies.append(f'http://{line}')
@@ -49,7 +50,8 @@ with DAG(
         # since = params["since"]
         since = None
 
-        init_issues_timeline.init_sync_github_issues_timeline(opensearch_conn_info, owner, repo, proxy_accommodator, since)
+        init_issues_timeline.init_sync_github_issues_timeline(opensearch_conn_info, owner, repo,
+                                                              proxy_accommodator, since)
 
         return params
 
