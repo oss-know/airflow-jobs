@@ -2,7 +2,7 @@ from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from oss_know.libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TOKENS, REDIS_CLIENT_DATA, \
-    DURATION_OF_SYNC_GITHUB_PROFILES,SYNC_PROFILES_TASK_NUM
+    DURATION_OF_SYNC_GITHUB_PROFILES,SYNC_PROFILES_TASK_NUM, LOCATIONGEO_TOKEN,
 from airflow.models import Variable
 
 # v0.0.1
@@ -26,6 +26,9 @@ with DAG(
 
     def do_sync_github_profiles():
         from oss_know.libs.github import sync_profiles
+        from oss_know.libs.util.base import init_geolocator
+        geolocator_token = Variable.get(LOCATIONGEO_TOKEN, deserialize_json=False)
+        init_geolocator(geolocator_token)
 
         github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
         opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
