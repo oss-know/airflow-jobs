@@ -15,7 +15,7 @@ SYNC_PROFILES_TASK_NUM = "sync_profiles_task_num"
 NEED_INIT_GITS = "need_init_gits"
 
 CLICKHOUSE_DRIVER_INFO = "clickhouse_conn_data"
-CK_TABLE_MAP_FROM_OS_INDEX= "ck_table_map_from_os_index"
+CK_TABLE_MAP_FROM_OS_INDEX = "ck_table_map_from_os_index"
 CK_CREATE_TABLE_COLS_DATATYPE_TPLT = "ck_create_table_cols_datatype_tplt"
 CK_ALTER_TABLE_COLS_DATATYPE_TPLT = "ck_alter_table_cols_datatype_tplt"
 CK_TABLE_DEFAULT_VAL_TPLT = "ck_table_default_val_tplt"
@@ -25,3 +25,5 @@ REDIS_CLIENT_DATA = "redis_client_data"
 LOCATIONGEO_TOKEN = "LocationGeo_token"
 
 MAIL_LISTS = "mail_lists"
+
+PROXY_CONFS = "proxy_confs"

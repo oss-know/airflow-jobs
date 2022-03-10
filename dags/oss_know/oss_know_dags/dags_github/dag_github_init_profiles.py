@@ -6,7 +6,7 @@ from airflow.models import XCom
 from airflow.operators.python import PythonOperator
 from airflow.utils.db import provide_session
 
-from oss_know.libs.base_dict.variable_key import NEED_INIT_GITHUB_PROFILES_REPOS, LOCATIONGEO_TOKEN
+from oss_know.libs.base_dict.variable_key import NEED_INIT_GITHUB_PROFILES_REPOS, LOCATIONGEO_TOKEN, PROXY_CONFS
 from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
 from oss_know.libs.util.token import TokenManager
 
@@ -56,7 +56,7 @@ with DAG(
         github_tokens = Variable.get("github_tokens", deserialize_json=True)
         opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
 
-        proxy_confs = Variable.get('proxy_confs', deserialize_json=True)
+        proxy_confs = Variable.get(PROXY_CONFS, deserialize_json=True)
         proxies = []
         for line in proxy_confs['reserved_proxies']:
             proxies.append(f'http://{line}')
