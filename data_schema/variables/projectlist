@@ -1,5 +1,4 @@
 https://github.com/systemd/systemd
-https://github.com/rpm-software-management/rpm
 https://github.com/openssl/openssl
 https://github.com/google/leveldb
 https://github.com/facebook/zstd
@@ -8,8 +7,3 @@ https://github.com/curl/curl
 https://github.com/grpc/grpc
 https://github.com/moby/moby
 https://github.com/docker/cli
-https://github.com/kata-containers/kata-containers
-https://github.com/gluster/glusterfs
-https://github.com/nghttp2/nghttp2
-https://github.com/urllib3/urllib3
-https://github.com/SELinuxProject/selinux
