@@ -108,7 +108,8 @@
     "PASSWD": "",
     "PORT": "19001",
     "USER": "default",
-    "DATABASE": "default"
+    "DATABASE": "default",
+    "CLUSTER_NAME": "cluster"
   },
   "redis_client_data": {
     "HOST": "192.168.8.108",
@@ -2953,5 +2954,6 @@
       "if",
       "any"
     ]
-  }
+  },
+  "repo_list": [{"owner": "","repo": ""}]
 }
