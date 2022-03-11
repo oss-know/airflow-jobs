@@ -10,7 +10,7 @@ services:
       - 53000:3000
     environment:
       GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: System797836
+      GF_SECURITY_ADMIN_PASSWORD: admin
       GF_INSTALL_PLUGINS: grafana-piechart-panel, grafana-worldmap-panel, vertamedia-clickhouse-datasource, snuids-radar-panel
 
     volumes:
