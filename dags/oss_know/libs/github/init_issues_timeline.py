@@ -1,17 +1,17 @@
 import random
+import time
 
 import requests
-import time
-import itertools
-
 from opensearchpy import OpenSearch
 from opensearchpy import helpers as opensearch_helpers
 
-from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES, \
-    OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES
+from oss_know.libs.exceptions import GithubResourceNotFoundError
 from oss_know.libs.util.github_api import GithubAPI
 from oss_know.libs.util.log import logger
 from oss_know.libs.util.opensearch_api import OpensearchAPI
+
+
 def init_sync_github_issues_timeline(opensearch_conn_info, owner, repo, token_proxy_accommodator, since=None):
     opensearch_client = OpenSearch(
         hosts=[{'host': opensearch_conn_info["HOST"], 'port': opensearch_conn_info["PORT"]}],
@@ -51,7 +51,6 @@ def init_sync_github_issues_timeline(opensearch_conn_info, owner, repo, token_pr
     # 不要在dag or task里面 创建index 会有并发异常！！！
     # if not opensearch_client.indices.exists("github_issues"):
     #     opensearch_client.indices.create("github_issues")
-
 
     # todo 这里要将注释释放掉，本次注释应对暴力获取没爬完的数据
     # 由于需要初始化幂等要求，在重新初始化前删除对应owner/repo 指定的 issues_timeline 记录的所有数据
@@ -110,16 +109,15 @@ def init_sync_github_issues_timeline(opensearch_conn_info, owner, repo, token_pr
             logger.info(f'这个issue {number} 已经存在需要跳过')
             continue
 
-
-
-
-
-
         for page in range(1, 10000):
             time.sleep(random.uniform(0.01, 0.02))
-            req = github_api.get_github_issues_timeline(req_session, token_proxy_accommodator, owner, repo, number,
-                                                        page)
-            one_page_github_issues_timeline = req.json()
+            try:
+                req = github_api.get_github_issues_timeline(req_session, token_proxy_accommodator, owner, repo, number,
+                                                            page)
+                one_page_github_issues_timeline = req.json()
+            except GithubResourceNotFoundError as e:
+                logger.error(f'Target timeline info does not exist: {e}')
+                break
 
             if (one_page_github_issues_timeline is not None) and len(
                     one_page_github_issues_timeline) == 0:
