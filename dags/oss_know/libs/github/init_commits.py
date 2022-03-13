@@ -26,7 +26,7 @@ def init_github_commits(opensearch_conn_info, owner, repo,
     github_api = GithubAPI()
     opensearch_api = OpensearchAPI()
     for page in range(1, 99999):
-        time.sleep(random.uniform(0.1, 0.2))
+        time.sleep(random.uniform(0.05, 0.1)
         # 获取一页 github commits
         req = github_api.get_github_commits(http_session=session, token_proxy_accommodator=token_proxy_accommodator, owner=owner,
                                             repo=repo, page=page, since=since, until=until)
