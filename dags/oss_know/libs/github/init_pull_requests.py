@@ -52,7 +52,7 @@ def init_sync_github_pull_requests(opensearch_conn_info, owner, repo, token_prox
 
     for page in range(1, 10000):
         # Token sleep
-        time.sleep(random.uniform(0.1, 0.2))
+        time.sleep(random.uniform(0.05, 0.1)
 
         req = github_api.get_github_pull_requests(http_session=session, token_proxy_accommodator=token_proxy_accommodator,
                                                   owner=owner, page=page, repo=repo, since=since)
