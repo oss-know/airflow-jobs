@@ -11,7 +11,7 @@ def getConnectDemo(token):
     }
     response = requests.get(url=url, headers=headers)
     result = response.json()
-    # print(result)
+
     if response.status_code >= 400:
         print("本token为无效token")
         print(f'响应的结果:{result}')
