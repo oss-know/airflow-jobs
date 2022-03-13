@@ -656,7 +656,7 @@
                 </replica>
             </shard>
         </test_shard_localhost>
-         <cluster>
+        <cluster>
             <shard>
                 <weight>1</weight>
                 <internal_replication>true</internal_replication>
