@@ -1,0 +1,71 @@
+# docker compose edition 
+version: "3.8"
+
+services:
+  #  node 1
+  zk1:
+    #  Image name 
+    image: zookeeper:3.7
+    #  Container name 
+    container_name: zk1.docker
+    # docker Automatically restart the container after restart 
+    restart: always
+    #  Current container hostname 
+    hostname: zk1.docker
+    #  port   The host machine : Containers 
+    ports:
+      - 2181:2181
+    #  environment variable 
+    environment:
+      # myid, A node in a cluster is uniquely identified 
+      ZOO_MY_ID: 1
+      #  List of nodes in the cluster 
+      ZOO_SERVERS:
+        - server.1=zk1.docker:2888:3888;2181
+        - server.2=zk2.docker:2888:3888;2181
+        - server.3=zk3.docker:2888:3888;2181
+    volumes:
+      - ./zk1_zoo.cfg:/conf/zoo.cfg
+      - ./zk1_data:/data
+      - ./zk1_datalog:/datalog
+      - ./zk1_logs:/logs
+
+  #  node 2
+  zk2:
+    image: zookeeper:3.7
+    container_name: zk2.docker
+    restart: always
+    hostname: zk2.docker
+    ports:
+      - 2182:2181
+    environment:
+      ZOO_MY_ID: 2
+      ZOO_SERVERS:
+        - server.1=zk1.docker:2888:3888;2181
+        - server.2=zk2.docker:2888:3888;2181
+        - server.3=zk3.docker:2888:3888;2181
+    volumes:
+      - ./zk2_zoo.cfg:/conf/zoo.cfg
+      - ./zk2_data:/data
+      - ./zk2_datalog:/datalog
+      - ./zk2_logs:/logs
+
+  #  node 3
+  zk3:
+    image: zookeeper:3.7
+    container_name: zk3.docker
+    restart: always
+    hostname: zk3.docker
+    ports:
+      - 2183:2181
+    environment:
+      ZOO_MY_ID: 3
+      ZOO_SERVERS:
+        - server.1=zk1.docker:2888:3888;2181
+        - server.2=zk2.docker:2888:3888;2181
+        - server.3=zk3.docker:2888:3888;2181
+    volumes:
+      - ./zk3_zoo.cfg:/conf/zoo.cfg
+      - ./zk3_data:/data
+      - ./zk3_datalog:/datalog
+      - ./zk3_logs:/logs

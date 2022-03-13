@@ -1321,7 +1321,7 @@
   "ck_create_table_cols_datatype_tplt": [
     {
       "table_name": "gits",
-      "cluster_name": "replicated",
+      "cluster_name": "cluster",
       "database_name": "default",
       "distributed_key": "search_key__updated_at",
       "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/gits','{replica}')",
@@ -1382,7 +1382,7 @@
     },
     {
       "table_name": "github_profile",
-      "cluster_name": "replicated",
+      "cluster_name": "cluster",
       "database_name": "default",
       "distributed_key": "search_key__updated_at",
       "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_profile','{replica}')",
@@ -1453,7 +1453,7 @@
     },
     {
       "table_name": "github_commits",
-      "cluster_name": "replicated",
+      "cluster_name": "cluster",
       "database_name": "default",
       "distributed_key": "search_key__updated_at",
       "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_commits','{replica}')",
@@ -1551,7 +1551,7 @@
     },
     {
       "table_name": "github_issues_comments",
-      "cluster_name": "replicated",
+      "cluster_name": "cluster",
       "database_name": "default",
       "distributed_key": "search_key__updated_at",
       "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_issues_comments','{replica}')",
@@ -1616,7 +1616,7 @@
     },
     {
       "table_name": "github_issues",
-      "cluster_name": "replicated",
+      "cluster_name": "cluster",
       "database_name": "default",
       "distributed_key": "search_key__updated_at",
       "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_issues','{replica}')",
@@ -1788,7 +1788,7 @@
     },
     {
       "table_name": "github_pull_requests",
-      "cluster_name": "replicated",
+      "cluster_name": "cluster",
       "database_name": "default",
       "distributed_key": "search_key__updated_at",
       "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_pull_requests','{replica}')",
@@ -2277,7 +2277,7 @@
     },
     {
       "table_name": "github_issues_timeline",
-      "cluster_name": "replicated",
+      "cluster_name": "cluster",
       "database_name": "default",
       "distributed_key": "search_key__updated_at",
       "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_issues_timeline','{replica}')",
@@ -2301,7 +2301,7 @@
     },
     {
       "table_name": "maillists",
-      "cluster_name": "replicated",
+      "cluster_name": "cluster",
       "database_name": "default",
       "distributed_key": "search_key__updated_at",
       "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/maillists','{replica}')",
@@ -2532,7 +2532,7 @@
     },
     {
       "table_name": "maillists_enriched",
-      "cluster_name": "replicated",
+      "cluster_name": "cluster",
       "database_name": "default",
       "distributed_key": "search_key__updated_at",
       "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/maillists_enriched','{replica}')",
@@ -2587,7 +2587,7 @@
     },
     {
       "table_name": "email_address",
-      "cluster_name": "replicated",
+      "cluster_name": "cluster",
       "database_name": "default",
       "distributed_key": "search_key__updated_at",
       "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/email_address','{replica}')",
@@ -2669,7 +2669,7 @@
     },
     {
       "table_name": "metrics",
-      "cluster_name": "replicated",
+      "cluster_name": "cluster",
       "database_name": "default",
       "distributed_key": "github_id",
       "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/metrics','{replica}')",
@@ -2708,7 +2708,7 @@
     },
     {
       "table_name": "activitys",
-      "cluster_name": "replicated",
+      "cluster_name": "cluster",
       "database_name": "default",
       "distributed_key": "github_id",
       "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/activitys','{replica}')",
@@ -2735,7 +2735,7 @@
   "ck_alter_table_cols_datatype_tplt": [
     {
       "table_name": "gits",
-      "cluster_name": "replicated",
+      "cluster_name": "cluster",
       "database_name": "default",
       "distributed_key": "search_key__updated_at",
       "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/gits','{replica}')",

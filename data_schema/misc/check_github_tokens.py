@@ -28,14 +28,9 @@ def getConnectDemo(token):
     print(result)
 
 
-tokens = [
-]
-
+tokens = []
 
 for token in tokens:
     print("---------------------------------------------------")
     print(token)
     getConnectDemo(token)
-
-
-

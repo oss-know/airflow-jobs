@@ -81,8 +81,9 @@ services:
       - 2181:2181
     container_name: zookeeper
     environment:
-#      ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
       JVMFLAGS: "-Xms2g -Xmx2g -Dzookeeper.globalOutstandingLimit=2000"
     volumes:
-      - ./CH/data/zookeeper-data:/var/lib/zookeeper/data
+      - ./CH/data/zookeeper-data/data:/data
+      - ./CH/data/zookeeper-data/datalog:/datalog
+      - ./CH/data/zookeeper-data/logs:/logs
