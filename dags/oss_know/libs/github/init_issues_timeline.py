@@ -110,7 +110,7 @@ def init_sync_github_issues_timeline(opensearch_conn_info, owner, repo, token_pr
             continue
 
         for page in range(1, 10000):
-            time.sleep(random.uniform(0.01, 0.02))
+            time.sleep(random.uniform(0.1, 0.2))
             try:
                 req = github_api.get_github_issues_timeline(req_session, token_proxy_accommodator, owner, repo, number,
                                                             page)
