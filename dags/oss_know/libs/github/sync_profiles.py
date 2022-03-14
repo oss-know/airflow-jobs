@@ -8,6 +8,7 @@ from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_PRO
 from oss_know.libs.base_dict.redis import STORAGE_HASH, STORAGE_IDS_SET, WORKING_HASH
 from oss_know.libs.util.log import logger
 from opensearchpy import helpers as opensearch_helpers
+from oss_know.libs.base_dict.options import GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX
 
 
 def init_storage_pipeline(opensearch_conn_info, redis_client_info):

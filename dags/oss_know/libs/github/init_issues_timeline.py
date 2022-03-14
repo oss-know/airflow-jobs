@@ -10,6 +10,7 @@ from oss_know.libs.exceptions import GithubResourceNotFoundError
 from oss_know.libs.util.github_api import GithubAPI
 from oss_know.libs.util.log import logger
 from oss_know.libs.util.opensearch_api import OpensearchAPI
+from oss_know.libs.base_dict.options import GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX
 
 
 def init_sync_github_issues_timeline(opensearch_conn_info, owner, repo, token_proxy_accommodator, since=None):
