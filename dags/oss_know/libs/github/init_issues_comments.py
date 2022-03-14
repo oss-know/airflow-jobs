@@ -12,6 +12,7 @@ from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISS
     OPENSEARCH_INDEX_GITHUB_ISSUES
 from oss_know.libs.util.github_api import GithubAPI
 from oss_know.libs.util.log import logger
+from oss_know.libs.base_dict.options import GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX
 
 #
 #

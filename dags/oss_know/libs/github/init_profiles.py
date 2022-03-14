@@ -5,6 +5,7 @@ from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COM
     OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE
 from oss_know.libs.util.opensearch_api import OpensearchAPI
 from oss_know.libs.util.base import get_opensearch_client
+from oss_know.libs.base_dict.options import GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX
 
 
 def load_github_ids_by_repo(opensearch_conn_infos, owner, repo):

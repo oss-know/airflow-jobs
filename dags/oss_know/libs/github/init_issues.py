@@ -10,6 +10,7 @@ from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_CHECK_SYNC
 from oss_know.libs.util.github_api import GithubAPI
 from oss_know.libs.util.opensearch_api import OpensearchAPI
 from oss_know.libs.util.log import logger
+from oss_know.libs.base_dict.options import GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX
 
 
 def init_github_issues(opensearch_conn_infos, owner, repo, token_proxy_accommodator, since=None):

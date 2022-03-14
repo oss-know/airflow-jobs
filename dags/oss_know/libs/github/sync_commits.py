@@ -14,6 +14,7 @@ from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COM
 from oss_know.libs.util.base import do_get_result
     #, github_headers, do_opensearch_bulk, sync_github_commits_check_update_info
 from oss_know.libs.util.log import logger
+from oss_know.libs.base_dict.options import GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX
 
 
 class SyncGithubCommitException(Exception):
