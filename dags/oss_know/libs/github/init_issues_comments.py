@@ -109,7 +109,7 @@ def init_github_issues_comments(opensearch_conn_info, owner, repo, token_proxy_a
     for issue_item in need_init_comments_all_issues:
         number = issue_item["_source"]["raw_data"]["number"]
         for page in range(1, 10000):
-            time.sleep(random.uniform(0.05, 0.1)
+            time.sleep(random.uniform(0.05, 0.1))
             req = github_api.get_github_issues_comments(http_session=req_session,
                                                         token_proxy_accommodator=token_proxy_accommodator,
                                                         owner=owner, repo=repo, number=number, page=page)
