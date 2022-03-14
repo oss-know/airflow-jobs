@@ -93,7 +93,7 @@ def sync_github_commits(github_tokens,
     github_api = GithubAPI()
     opensearch_api = OpensearchAPI()
     for page in range(1, 9999):
-        time.sleep(random.uniform(0.05, 0.1)
+        time.sleep(random.uniform(0.05, 0.1))
         req = github_api.get_github_commits(http_session=session, github_tokens_iter=github_tokens_iter,
                                             owner=owner, repo=repo, page=page, since=since, until=until)
         now_github_commits = req.json()
