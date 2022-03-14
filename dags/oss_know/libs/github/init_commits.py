@@ -8,11 +8,11 @@ from opensearchpy import OpenSearch
 from oss_know.libs.util.log import logger
 from oss_know.libs.util.github_api import GithubAPI
 from oss_know.libs.util.opensearch_api import OpensearchAPI
+from oss_know.libs.base_dict.options import GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX
 
 
 def init_github_commits(opensearch_conn_info, owner, repo,
                         token_proxy_accommodator, since=None, until=None):
-
     opensearch_client = OpenSearch(
         hosts=[{'host': opensearch_conn_info["HOST"], 'port': opensearch_conn_info["PORT"]}],
         http_compress=True,
@@ -26,9 +26,10 @@ def init_github_commits(opensearch_conn_info, owner, repo,
     github_api = GithubAPI()
     opensearch_api = OpensearchAPI()
     for page in range(1, 99999):
-        time.sleep(random.uniform(0.05, 0.1))
+        time.sleep(random.uniform(GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX))
         # 获取一页 github commits
-        req = github_api.get_github_commits(http_session=session, token_proxy_accommodator=token_proxy_accommodator, owner=owner,
+        req = github_api.get_github_commits(http_session=session, token_proxy_accommodator=token_proxy_accommodator,
+                                            owner=owner,
                                             repo=repo, page=page, since=since, until=until)
         one_page_github_commits = req.json()
 

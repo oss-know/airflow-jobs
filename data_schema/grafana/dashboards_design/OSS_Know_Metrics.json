@@ -1,0 +1,376 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 1,
+  "iteration": 1647248489438,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": false,
+      "title": "SelectProfile",
+      "tooltip": "SelectProfile",
+      "type": "link",
+      "url": "http://localhost:53000/d/-oitn9Y7z/oss_know_metrics?orgId=1&var-metrics_owner=curl&var-metrics_repo=curl&viewPanel=4&from=1646878244049&to=1646899844049"
+    }
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          },
+          "links": [
+            {
+              "title": "",
+              "url": "http://localhost:53000/d/-oitn9Y7z/oss_know_metrics?var-metrics_owner=${metrics_owner}&var-metrics_repo=${metrics_repo}&var-github_login=${__data.fields.github_login}"
+            }
+          ],
+          "mappings": [],
+          "min": -3,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "git_author_email"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 274
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "links": [],
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "commit_times"
+          }
+        ]
+      },
+      "pluginVersion": "8.4.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "g9o-osYnz"
+          },
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT *\n\nFROM metrics\n\nWHERE\n    owner = '$metrics_owner'\n    AND repo = '$metrics_repo'\nORDER BY issues_counts\n",
+          "rawQuery": "SELECT *\n\nFROM metrics\n\nWHERE\n    owner = 'var-metrics_owner=systemd'\n    AND repo = ''\nORDER BY issues_counts",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "OSS_Know_Metrics",
+      "type": "table"
+    },
+    {
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 9
+      },
+      "id": 6,
+      "radarSettings": {
+        "animationDurationMs": 0,
+        "aspectRatio": 2.2,
+        "autoScale": true,
+        "drawTicksBackground": true,
+        "fontColor": "gray",
+        "fontSize": 14,
+        "gridColor": "gray",
+        "ignoreTimeInfluxDB": false,
+        "legendType": "right",
+        "limitAspectRatio": true,
+        "scaleMax": 0,
+        "scaleMin": 0,
+        "scaleStep": 0,
+        "seriesAlias": ""
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "g9o-osYnz"
+          },
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "select knowledge_sharing, code_contribution, issue_coordination, progress_control, code_tweaking, issue_reporting\nfrom  activitys\nwhere github_login = '$github_login'",
+          "rawQuery": "select knowledge_sharing, code_contribution, issue_coordination, progress_control, code_tweaking, issue_reporting\nfrom  activitys\nwhere github_login = 'akudryav'",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "社区角色雷达",
+      "type": "snuids-radar-panel"
+    },
+    {
+      "description": "代码提交时区",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 6,
+        "y": 9
+      },
+      "id": 10,
+      "options": {
+        "followTheme": true,
+        "getOption": "var data_array = new Array()\n\nfor (let i = 0; i < data.series[0].fields[0].values.length; i++) {\n  data_array.push({\n        name: data.series[0].fields[0].values.buffer[i],\n        value: data.series[0].fields[1].values.buffer[i]\n    })\n}\n\noption = {\n  backgroundColor: 'transparent',\n    title: {\n        text: '代码提交时区',\n        left: 'center',\n        top: 'center'\n    },\n    tooltip: {\n        trigger: 'item',\n        formatter: \"{a} <br/>时区:{b};<br/>提交量:{c}<br/>百分比:({d}%)\"\n    },\n    legend: {\n        orient: 'vertical',\n        left: 'left',\n        top: '20%'\n    },\n    series: [\n        {\n            name: '时区详细信息',\n            type: 'pie',\n            label: {\n                normal: {\n                    formatter: '{b}:{c}: ({d}%)',\n                    textStyle: {\n                        fontWeight: 'normal',\n                        fontSize: 15\n                    }\n                }\n            },\n            itemStyle: {\n                emphasis: {\n                    shadowBlur: 10,\n                    shadowOffsetX: 0,\n                    shadowColor: 'rgba(0, 0, 0, 0.5)'\n                }\n            },\n            radius: ['40%', '70%'],\n            data: data_array\n        }\n    ]\n}\n\nreturn option"
+      },
+      "targets": [
+        {
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "g9o-osYnz"
+          },
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT\n    author_tz,\n    count(author_tz) as commits_count\nFROM gits\n\nWHERE\n    search_key__owner = 'systemd'\n    and search_key__repo = 'systemd'\n    and author_email = 'lennart@poettering.net'\nGROUP BY author_tz\nORDER BY author_tz asc\nLIMIT 5",
+          "rawQuery": "SELECT\n    author_tz,\n    count(author_tz) as commits_count\nFROM gits\n\nWHERE\n    search_key__owner = 'systemd'\n    and search_key__repo = 'systemd'\n    and author_email = 'lennart@poettering.net'\nGROUP BY author_tz\nORDER BY author_tz asc\nLIMIT 5",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "gits",
+          "tableLoading": false
+        }
+      ],
+      "title": "代码提交时区",
+      "transformations": [],
+      "type": "bilibala-echarts-panel"
+    },
+    {
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 10,
+        "x": 14,
+        "y": 9
+      },
+      "id": 8,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "8.4.3",
+      "targets": [
+        {
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "g9o-osYnz"
+          },
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "select name,company,blog,location,email,bio,twitter_username,created_at,updated_at,country_inferred_from_email_cctld,country_inferred_from_email_domain_company from github_profile\nwhere login='$github_login'",
+          "rawQuery": "select name,company,blog,location,email,bio,twitter_username,created_at,updated_at,country_inferred_from_email_cctld,country_inferred_from_email_domain_company from github_profile\nwhere login='ghost'",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "github_profile",
+          "tableLoading": false
+        }
+      ],
+      "title": "github profile 信息",
+      "type": "table"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 35,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "google",
+          "value": "google"
+        },
+        "definition": "SELECT distinct owner FROM metrics",
+        "description": "metrics_owner",
+        "hide": 0,
+        "includeAll": false,
+        "label": "metrics_owner",
+        "multi": false,
+        "name": "metrics_owner",
+        "options": [],
+        "query": "SELECT distinct owner FROM metrics",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 5,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "leveldb",
+          "value": "leveldb"
+        },
+        "definition": "SELECT distinct repo FROM metrics where owner='$metrics_owner'",
+        "description": "metrics_repo",
+        "hide": 0,
+        "includeAll": false,
+        "label": "metrics_repo",
+        "multi": false,
+        "name": "metrics_repo",
+        "options": [],
+        "query": "SELECT distinct repo FROM metrics where owner='$metrics_owner'",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 5,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "dveeden",
+          "value": "dveeden"
+        },
+        "description": "github_login",
+        "hide": 0,
+        "label": "github_login",
+        "name": "github_login",
+        "options": [
+          {
+            "selected": true,
+            "text": "dveeden",
+            "value": "dveeden"
+          }
+        ],
+        "query": "dveeden",
+        "skipUrlSync": false,
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "OSS_Know_Metrics",
+  "uid": "-oitn9Y7z",
+  "version": 43,
+  "weekStart": ""
+}
