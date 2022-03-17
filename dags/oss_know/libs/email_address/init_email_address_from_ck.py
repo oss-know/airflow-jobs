@@ -7,7 +7,7 @@ from oss_know.libs.util.base import infer_country_from_emailcctld, infer_country
 from oss_know.libs.base_dict.clickhouse import CLICKHOUSE_EMAIL_ADDRESS, EMAIL_ADDRESS_SEARCH_KEY__UPDATED_AT, \
     EMAIL_ADDRESS_SEARCH_KEY__EMAIL, EMAIL_ADDRESS_EMIAL, EMAIL_ADDRESS_COUNTRY_INFERRED_FROM_EMAILCCTLD, \
     EMAIL_ADDRESS_COUNTRY_INFERRED_FROM_EMAILDOMAIN, EMAIL_ADDRESS_COMPANY_INFERRED_FROM_EMAIL, \
-    EMAIL_ADDRESS_COUNTRY_INFERRED_FROM_COMPANY
+    EMAIL_ADDRESS_COUNTRY_INFERRED_FROM_COMPANY, EMAIL_ALIASE
 
 from oss_know.libs.email_address.email_address_default_tplt import EMAIL_ADDRESS_DEFAULT_TPLT
 
@@ -16,6 +16,7 @@ def load_all_email_address(clickhouse_server_info):
     ck = get_clickhouse_client(clickhouse_server_info)
     init_email_address_dict = {}
     update_email_address = set()
+    email_aliase_dict = {}
     mbox_helper = MBoxEnrich()
     maillists_enriched_sql = "select DISTINCT From,To from maillists_enriched"
     email_tuples = ck.execute_no_params(maillists_enriched_sql)
@@ -26,6 +27,7 @@ def load_all_email_address(clickhouse_server_info):
                 for origin_email in origin_email_list:
                     identity = mbox_helper.get_sh_identity(origin_email)
                     email = identity["email"]
+                    email_aliase_dict[email] = identity["name"]
                     if email and '@' in email:
                         init_email_address_dict[email] = 0
 
@@ -87,6 +89,10 @@ def load_all_email_address(clickhouse_server_info):
         value[EMAIL_ADDRESS_SEARCH_KEY__UPDATED_AT] = int(datetime.datetime.now().timestamp() * 1000)
         value[EMAIL_ADDRESS_SEARCH_KEY__EMAIL] = k
         value[EMAIL_ADDRESS_EMIAL] = k
+        if k in email_aliase_dict:
+            value[EMAIL_ALIASE] = email_aliase_dict[k]
+        else:
+            value[EMAIL_ALIASE] = ''
         country_by_emailcctld = infer_country_from_emailcctld(k)
         country_by_emaildomain = infer_country_from_emaildomain(k)
         company_by_email = infer_company_from_emaildomain(k)

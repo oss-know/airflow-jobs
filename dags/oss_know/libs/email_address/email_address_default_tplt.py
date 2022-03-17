@@ -4,6 +4,7 @@ EMAIL_ADDRESS_DEFAULT_TPLT = {
     "search_key__updated_at": 0,
     "search_key__email": "",
     "email": "",
+    "email_aliase": "",
     "country_inferred_from_emailcctld": "",
     "country_inferred_from_emaildomain": "",
     "company_inferred_from_email": "",
