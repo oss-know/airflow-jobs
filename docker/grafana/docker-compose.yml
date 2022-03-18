@@ -6,6 +6,7 @@ services:
 #      context: ./grafana
     image: airflowjobs/custom-grafana-enterprise:latest
     container_name: grafana
+    user: root
     ports:
       - 53000:3000
     environment:

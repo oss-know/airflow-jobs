@@ -20,7 +20,7 @@
 #
 # WARNING: This configuration is for local development. Do not use it in a production deployment.
 #
-# This configuration supports basic configuration using environment variables or an .env file
+# This configuration supports basic configuration using environment variables or an .env.demo file
 # The following variables are supported:
 #
 # AIRFLOW_IMAGE_NAME           - Docker image name used to run Airflow.
