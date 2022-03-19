@@ -5,6 +5,7 @@ services:
 #    build:
 #      context: ./grafana
     image: airflowjobs/custom-grafana-enterprise:latest
+    user: root
     container_name: grafana
     user: root
     ports:
