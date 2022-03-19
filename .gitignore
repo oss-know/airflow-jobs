@@ -137,3 +137,4 @@ docker/grafana/GF*
 #data_schema/variables/big_variable.json
 #data_schema/misc/check_github_tokens.py
 docker/cubejs/cube/conf/.cubestore
+docker/cubejs/cube/conf/cube.js

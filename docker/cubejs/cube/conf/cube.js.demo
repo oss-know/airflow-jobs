@@ -16,7 +16,7 @@ module.exports = {
         if (dataSource === 'Clickhouse') {
             return new ClickhouseDriver({
                 database: 'default',
-                host: '192.168.8.108',
+                host: '192.168.8.20',
                 user: 'default',
                 password: 'default',
                 port: 18000,
@@ -24,7 +24,7 @@ module.exports = {
         } else {
             return new ClickhouseDriver({
                 database: 'default',
-                host: '192.168.8.108',
+                host: '192.168.8.20',
                 user: 'default',
                 password: 'default',
                 port: 18000,
