@@ -26,6 +26,7 @@ services:
       - 9600:9600 # required for Performance Analyzer
     networks:
       - dev-network
+
   opensearch-node2:
     image: opensearchproject/opensearch:latest
     container_name: opensearch-node2
@@ -49,6 +50,7 @@ services:
       - opensearch-data2:/usr/share/opensearch/data
     networks:
       - dev-network
+
   opensearch-dashboards:
     image: opensearchproject/opensearch-dashboards:latest
     # image: opensearch-dashboards-no-security
