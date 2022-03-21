@@ -1,4 +1,7 @@
+import numpy as np
+
 from oss_know.libs.util.clickhouse_driver import CKServer
+from oss_know.libs.util.log import logger
 
 
 def statistics_metrics(clickhouse_server_info):
@@ -929,4 +932,93 @@ def statistics_metrics(clickhouse_server_info):
     return "end::statistics_metrics"
 
 
+get_metrics_sql = '''
+select owner, repo, github_id, github_login, sum(commit_times), sum(changed_lines), sum(diff_file_counts),sum(prs_counts) / count(github_login), sum(pr_body_length_avg) / count(github_login), sum(issues_counts) / count(github_login), 
+sum(issue_body_length_avg) / count(github_login), sum(issues_comment_count) / count(github_login), sum(issues_comment_body_length_avg) / count(github_login), sum(pr_comment_count) / count(github_login), 
+sum(pr_comment_body_length_avg) / count(github_login), sum(be_mentioned_times_in_issues) / count(github_login), sum(be_mentioned_times_in_pr) / count(github_login), 
+sum(referred_other_issues_or_prs_in_issue) / count(github_login), sum(referred_other_issues_or_prs_in_pr) / count(github_login), sum(changed_label_times_in_issues) / count(github_login), 
+sum(changed_label_times_in_prs) / count(github_login), sum(closed_issues_times) / count(github_login), sum(closed_prs_times) / count(github_login) FROM  metrics 
+group by (owner, repo, github_id, github_login)
+'''
 
+activity_factors = '''
+0.00 1.03 0.02 -0.07 -0.04 0.05
+0.00 1.03 0.02 -0.07 -0.04 0.05
+0.00 0.26 -0.07 0.35 0.45 -0.17
+0.06 -0.04 -0.11 0.45 0.70 0.05
+0.05 -0.01 -0.03 -0.01 0.13 0.01
+0.30 0.04 0.18 0.11 0.11 0.35
+-0.01 0.00 -0.03 0.00 0.02 0.16
+0.52 -0.01 0.30 0.24 -0.13 0.16
+-0.02 0.01 0.00 -0.01 0.00 0.1
+0.72 -0.01 0.09 0.03 0.25 -0.12
+0.00 -0.01 0.04 -0.02 0.09 0.03
+0.78 0.01 0.1 0.01 -0.02 0.14
+1.02 0.01 -0.16 -0.2 0.2 -0.22
+-0.12 0.02 1.06 -0.07 0.02 -0.15
+0.06 0.00 0.59 -0.05 0.21 0.00
+0.06 0.01 0.72 0.24 -0.23 -0.07
+0.58 0.00 0.13 -0.03 0.15 -0.07
+0.28 -0.03 0.08 0.65 -0.24 0.04
+-0.30 -0.08 0.07 0.95 0.33 -0.06
+'''
+insert_factor_sql = '''
+INSERT into activities values
+'''
+
+
+def statistics_activities(clickhouse_server_info):
+    read_ck_server = CKServer(host=clickhouse_server_info["HOST"],
+                              port=clickhouse_server_info["PORT"],
+                              user=clickhouse_server_info["USER"],
+                              password=clickhouse_server_info["PASSWD"],
+                              database=clickhouse_server_info["DATABASE"],
+                              settings={'use_numpy': True})
+    metrics = read_ck_server.execute_no_params(get_metrics_sql)
+    metrics_np = np.array(metrics)
+    metrics_mat = metrics_np[:, 4:]
+    metrics_mat = np.array(metrics_mat, dtype=float)
+
+    factor_loadings = []
+    for line in activity_factors.strip().split('\n'):
+        factor_loadings.append([float(f) for f in line.split(' ')])
+    factor_mat = np.mat(factor_loadings, dtype=float)
+
+    result_mat = metrics_mat * factor_mat
+
+    write_ck_server = CKServer(host=clickhouse_server_info["HOST"],
+                               port=clickhouse_server_info["PORT"],
+                               user=clickhouse_server_info["USER"],
+                               password=clickhouse_server_info["PASSWD"],
+                               database=clickhouse_server_info["DATABASE"])
+
+    batch_size = 5000
+    batch = []
+    num_inserted = 0
+    for i in range(result_mat.shape[0]):
+        data_item = dict()
+        data_item['owner'] = metrics[i][0]
+        data_item['repo'] = metrics[i][1]
+        data_item['github_id'] = int(metrics[i][2])
+        data_item['github_login'] = metrics[i][3]
+        matrix_a1 = result_mat[i].A1
+        data_item['knowledge_sharing'] = matrix_a1[0]
+        data_item['code_contribution'] = matrix_a1[1]
+        data_item['issue_coordination'] = matrix_a1[2]
+        data_item['progress_control'] = matrix_a1[3]
+        data_item['code_tweaking'] = matrix_a1[4]
+        data_item['issue_reporting'] = matrix_a1[5]
+        batch.append(data_item)
+
+        i += 1
+        if i % batch_size == 0:
+            write_ck_server.execute(insert_factor_sql, batch)
+            batch = []
+            num_inserted += batch_size
+            logger.info(f'{num_inserted} activity records inserted')
+
+    if batch:
+        write_ck_server.execute(insert_factor_sql, batch)
+        num_inserted += len(batch)
+
+    logger.info(f'{num_inserted} activity records inserted')
