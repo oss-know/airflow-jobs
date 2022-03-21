@@ -10,7 +10,10 @@ services:
     container_name: cubejs-server
     # docker Automatically restart the container after restart
     restart: always
-    #  Current container hostname 
+    # 跨多个Docker-compose配置文件，services在一个网桥
+    networks:
+      - dev-network
+    #  Current container hostname
     hostname: cubejs-server
     #  port   The host machine : Containers 
     ports:
@@ -20,3 +23,7 @@ services:
       CUBEJS_DEV_MODE: true
     volumes:
       - ./cube/conf:/cube/conf
+
+networks:
+  dev-network:
+    external: true

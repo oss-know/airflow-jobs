@@ -25,7 +25,8 @@ services:
       - 9200:9200
       - 9600:9600 # required for Performance Analyzer
     networks:
-      - opensearch-net
+      - dev-network
+
   opensearch-node2:
     image: opensearchproject/opensearch:latest
     container_name: opensearch-node2
@@ -48,7 +49,8 @@ services:
     volumes:
       - opensearch-data2:/usr/share/opensearch/data
     networks:
-      - opensearch-net
+      - dev-network
+
   opensearch-dashboards:
     image: opensearchproject/opensearch-dashboards:latest
     # image: opensearch-dashboards-no-security
@@ -60,11 +62,12 @@ services:
     environment:
       OPENSEARCH_HOSTS: '["https://opensearch-node1:9200","https://opensearch-node2:9200"]'
     networks:
-      - opensearch-net
+      - dev-network
 
 volumes:
   opensearch-data1:
   opensearch-data2:
 
 networks:
-  opensearch-net:
+  dev-network:
+    external: true

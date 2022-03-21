@@ -7,6 +7,9 @@ services:
     hostname: ch-cluster-0-0
     image: yandex/clickhouse-server:21.12
     restart: on-failure
+    # 跨多个Docker-compose配置文件，services在一个网桥
+    networks:
+      - dev-network
     volumes:
       - ./CH/configuration/ch-cluster-0-0/config.d/local.xml:/etc/clickhouse-server/config.d/config.xml
       - ./CH/configuration/ch-cluster-0-0/config.d/macros.xml:/etc/clickhouse-server/config.d/macros.xml
@@ -25,6 +28,9 @@ services:
     hostname: ch-cluster-0-1
     image: yandex/clickhouse-server:21.12
     restart: on-failure
+    # 跨多个Docker-compose配置文件，services在一个网桥
+    networks:
+      - dev-network
     volumes:
       - ./CH/configuration/ch-cluster-0-1/config.d/local.xml:/etc/clickhouse-server/config.d/local.xml
       - ./CH/configuration/ch-cluster-0-1/config.d/macros.xml:/etc/clickhouse-server/config.d/macros.xml
@@ -43,6 +49,9 @@ services:
     hostname: ch-cluster-1-0
     image: yandex/clickhouse-server:21.12
     restart: on-failure
+    # 跨多个Docker-compose配置文件，services在一个网桥
+    networks:
+      - dev-network
     volumes:
       - ./CH/configuration/ch-cluster-1-0/config.d/local.xml:/etc/clickhouse-server/config.d/local.xml
       - ./CH/configuration/ch-cluster-1-0/config.d/macros.xml:/etc/clickhouse-server/config.d/macros.xml
@@ -61,6 +70,9 @@ services:
     hostname: ch-cluster-1-1
     image: yandex/clickhouse-server:21.12
     restart: on-failure
+    # 跨多个Docker-compose配置文件，services在一个网桥
+    networks:
+      - dev-network
     volumes:
       - ./CH/configuration/ch-cluster-1-1/config.d/local.xml:/etc/clickhouse-server/config.d/local.xml
       - ./CH/configuration/ch-cluster-1-1/config.d/macros.xml:/etc/clickhouse-server/config.d/macros.xml
@@ -77,6 +89,9 @@ services:
   ch-zookeeper:
     image: zookeeper:3.7
     hostname: zookeeper
+    # 跨多个Docker-compose配置文件，services在一个网桥
+    networks:
+      - dev-network
     ports:
       - 2181:2181
     container_name: zookeeper
@@ -87,3 +102,7 @@ services:
       - ./CH/data/zookeeper-data/data:/data
       - ./CH/data/zookeeper-data/datalog:/datalog
       - ./CH/data/zookeeper-data/logs:/logs
+
+networks:
+  dev-network:
+    external: true
