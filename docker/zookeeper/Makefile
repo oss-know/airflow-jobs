@@ -15,6 +15,7 @@ help: ## Help dialog.
 ####################################################################
 
 up_infra: ## Create and start containers
+	docker network create -d bridge dev-network && \
 	docker pull zookeeper:3.7 && \
 	$(DOCKER_INFRA) up -d
 

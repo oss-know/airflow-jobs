@@ -13,6 +13,7 @@ help: ## Help dialog.
 ####################################################################
 
 up_infra: ## Create and start containers
+	docker network create -d bridge dev-network && \
 	docker pull airflowjobs/custom-grafana-enterprise:latest && \
 	$(DOCKER_INFRA) up -d
 
