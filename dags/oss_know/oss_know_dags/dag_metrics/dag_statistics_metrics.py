@@ -1,9 +1,12 @@
 from datetime import datetime
+
 from airflow import DAG
+from airflow.models import Variable
 from airflow.operators.python import PythonOperator
 
 # statistics_metrics_init_sync_v0.0.1
-from oss_know.libs.base_dict.variable_key import CK_CREATE_TABLE_COLS_DATATYPE_TPLT, CLICKHOUSE_DRIVER_INFO
+from oss_know.libs.base_dict.variable_key import CLICKHOUSE_DRIVER_INFO
+from oss_know.libs.metrics.init_statistics_metrics import statistics_metrics, statistics_activities
 
 with DAG(
         dag_id='ck_statistics_metrics',
@@ -21,11 +24,10 @@ with DAG(
         python_callable=init_statistics_metrics,
     )
 
-    def do_statistics_metrics(params):
-        from airflow.models import Variable
-        from oss_know.libs.metrics import init_statistics_metrics
+
+    def do_statistics_metrics():
         clickhouse_server_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
-        init_statistics_metrics.statistics_metrics(clickhouse_server_info=clickhouse_server_info)
+        statistics_metrics(clickhouse_server_info=clickhouse_server_info)
         return "end::do_statistics_metrics"
 
 
@@ -34,4 +36,16 @@ with DAG(
         python_callable=do_statistics_metrics
     )
 
-    op_init_statistics_metrics >> op_do_statistics_metrics
+
+    def do_statistics_activities():
+        clickhouse_server_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
+        statistics_activities(clickhouse_server_info=clickhouse_server_info)
+        return "end::do_statistics_activities"
+
+
+    op_do_statistics_activities = PythonOperator(
+        task_id=f'do_statistics_activities',
+        python_callable=do_statistics_activities
+    )
+
+    op_init_statistics_metrics >> op_do_statistics_metrics >> op_do_statistics_activities

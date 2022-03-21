@@ -2708,11 +2708,11 @@
       }
     },
     {
-      "table_name": "activitys",
+      "table_name": "activities",
       "cluster_name": "cluster",
       "database_name": "default",
       "distributed_key": "github_id",
-      "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/activitys','{replica}')",
+      "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/activities','{replica}')",
       "partition_by": "owner",
       "order_by": [
         "owner",

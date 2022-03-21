@@ -2,8 +2,8 @@ from clickhouse_driver import Client, connect
 
 
 class CKServer:
-    def __init__(self, host, port, user, password, database):
-        self.client = Client(host=host, port=port, user=user, password=password, database=database)
+    def __init__(self, host, port, user, password, database, settings={}):
+        self.client = Client(host=host, port=port, user=user, password=password, database=database, settings=settings)
         self.connect = connect(host=host, port=port, user=user, password=password, database=database)
         self.cursor = self.connect.cursor()
 
