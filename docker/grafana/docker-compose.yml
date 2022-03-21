@@ -12,15 +12,19 @@ services:
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
-#      GF_INSTALL_PLUGINS: grafana-piechart-panel, grafana-worldmap-panel, vertamedia-clickhouse-datasource, snuids-radar-panel, bilibala-echarts-panel
+      # GF_INSTALL_PLUGINS: grafana-piechart-panel, grafana-worldmap-panel, vertamedia-clickhouse-datasource, snuids-radar-panel, bilibala-echarts-panel
+    # 跨多个Docker-compose配置文件，services在一个网桥
+    networks:
+      - dev-network
 
+    ## Explicitly define the persistent volume for your data storage
     volumes:
       - ./grafana.ini:/etc/grafana/grafana.ini
       - ./GF_DATA:/var/lib/grafana
       - ./GF_LOGS:/var/log/grafana
       - ./GF_PLUGINS:/var/lib/grafana/plugins
       - ./GF_PROVISIONING:/etc/grafana/provisioning
-## Explicitly define the persistent volume for your data storage
-#volumes:
-#  GF_DATA:
-#    external: true
+
+networks:
+  dev-network:
+    external: true

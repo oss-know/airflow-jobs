@@ -10,7 +10,9 @@ services:
     container_name: zk1.docker
     # docker Automatically restart the container after restart 
     restart: always
-    #  Current container hostname 
+    networks:
+      - dev-network
+    #  Current container hostname
     hostname: zk1.docker
     #  port   The host machine : Containers 
     ports:
@@ -35,6 +37,8 @@ services:
     image: zookeeper:3.7
     container_name: zk2.docker
     restart: always
+    networks:
+      - dev-network
     hostname: zk2.docker
     ports:
       - 2182:2181
@@ -55,6 +59,8 @@ services:
     image: zookeeper:3.7
     container_name: zk3.docker
     restart: always
+    networks:
+      - dev-network
     hostname: zk3.docker
     ports:
       - 2183:2181
@@ -69,3 +75,7 @@ services:
       - ./zk3_data:/data
       - ./zk3_datalog:/datalog
       - ./zk3_logs:/logs
+
+networks:
+  dev-network:
+    external: true
