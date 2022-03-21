@@ -87,7 +87,9 @@ services:
       interval: 5s
       retries: 5
     restart: always
-
+    # 跨多个Docker-compose配置文件，services在一个网桥
+    networks:
+      - dev-network
   redis:
     image: redis:latest
     ports:
@@ -100,6 +102,9 @@ services:
       timeout: 30s
       retries: 50
     restart: always
+    # 跨多个Docker-compose配置文件，services在一个网桥
+    networks:
+      - dev-network
 
   airflow-webserver:
     <<: *airflow-common
@@ -112,6 +117,9 @@ services:
       timeout: 10s
       retries: 5
     restart: always
+    # 跨多个Docker-compose配置文件，services在一个网桥
+    networks:
+      - dev-network
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -126,6 +134,9 @@ services:
       timeout: 10s
       retries: 5
     restart: always
+    # 跨多个Docker-compose配置文件，services在一个网桥
+    networks:
+      - dev-network
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -147,6 +158,9 @@ services:
       # See https://airflow.apache.org/docs/docker-stack/entrypoint.html#signal-propagation
       DUMB_INIT_SETSID: "0"
     restart: always
+    # 跨多个Docker-compose配置文件，services在一个网桥
+    networks:
+      - dev-network
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -161,6 +175,9 @@ services:
       timeout: 10s
       retries: 5
     restart: always
+    # 跨多个Docker-compose配置文件，services在一个网桥
+    networks:
+      - dev-network
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -242,6 +259,9 @@ services:
     user: "0:0"
     volumes:
       - .:/sources
+    # 跨多个Docker-compose配置文件，services在一个网桥
+    networks:
+      - dev-network
 
   airflow-cli:
     <<: *airflow-common
@@ -255,6 +275,9 @@ services:
       - bash
       - -c
       - airflow
+    # 跨多个Docker-compose配置文件，services在一个网桥
+    networks:
+      - dev-network
 
   flower:
     <<: *airflow-common
@@ -267,6 +290,9 @@ services:
       timeout: 10s
       retries: 5
     restart: always
+    # 跨多个Docker-compose配置文件，services在一个网桥
+    networks:
+      - dev-network
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -275,3 +301,6 @@ services:
 volumes:
   postgres-db-volume:
 
+networks:
+  dev-network:
+    external: true
