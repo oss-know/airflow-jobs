@@ -11,6 +11,7 @@ services:
       - cluster.initial_master_nodes=opensearch-node1,opensearch-node2
       - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping
       - "OPENSEARCH_JAVA_OPTS=-Xms4g -Xmx4g" # minimum and maximum Java heap size, recommend setting both to 50% of system RAM
+      - http.max_content_length=1000mb
     ulimits:
       memlock:
         soft: -1
@@ -36,6 +37,7 @@ services:
       - cluster.initial_master_nodes=opensearch-node1,opensearch-node2
       - bootstrap.memory_lock=true
       - "OPENSEARCH_JAVA_OPTS=-Xms4g -Xmx4g"
+      - http.max_content_length=1000mb
     ulimits:
       memlock:
         soft: -1
