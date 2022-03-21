@@ -1072,7 +1072,7 @@
         },
         "tag": "",
         "data": {
-          "enriched_filter_raw": "pam_pam-list",
+          "enriched_filter_raw": "",
           "unixfrom": "",
           "From": "",
           "Subject": "",
@@ -2332,6 +2332,7 @@
         },
         "tag": "",
         "data": {
+          "enriched_filter_raw": "",
           "unixfrom": "",
           "From": "",
           "Subject": "",
