@@ -22,7 +22,7 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "id": 3,
-  "iteration": 1647484100259,
+  "iteration": 1647863531681,
   "links": [
     {
       "asDropdown": false,
@@ -49,7 +49,7 @@
       "id": 14,
       "options": {
         "followTheme": false,
-        "getOption": "var data_array = new Array()\n\nfor (let i = 0; i < data.series[0].fields[0].values.length; i++) {\n  data_array.push({\n        name: data.series[0].fields[0].values.buffer[i],\n        value: data.series[0].fields[1].values.buffer[i]\n    })\n}\n\noption = {\n  backgroundColor: 'transparent',\n    title: {\n        text: '代码库代码提交时区',\n        left: 'center',\n        top: 'center',\n        textStyle:{\n          color:'white'\n        }\n    },\n    tooltip: {\n        trigger: 'item',\n        formatter: \"{a} <br/>时区:{b};<br/>提交量:{c}<br/>百分比:({d}%)\"\n    },\n    legend: {\n        orient: 'vertical',\n        left: 'left',\n        top: '20%'\n    },\n    series: [\n        {\n            name: '时区详细信息',\n            type: 'pie',\n            label: {\n                normal: {\n                    formatter: '时区{b} 提交量:{c} 百分比:({d}%)',\n                    textStyle: {\n                        fontWeight: 'normal',\n                        fontSize: 10\n                    }\n                }\n            },\n            itemStyle: {\n                emphasis: {\n                    shadowBlur: 10,\n                    shadowOffsetX: 0,\n                    shadowColor: 'rgba(0, 0, 0, 0.5)'\n                }\n            },\n            radius: ['40%', '70%'],\n            data: data_array\n        }\n    ]\n}\n\nreturn option"
+        "getOption": "var data_array = new Array()\n\nfor (let i = 0; i < data.series[0].fields[0].values.length; i++) {\n  var tz_value = data.series[0].fields[0].values.buffer[i]\n\tconsole.log(tz_value==eval(0))\n  console.log(tz_value)\n  if(parseInt(tz_value)==0){\n    tz_value_str = \"中时区\"\n  }else if(parseInt(tz_value) > 0){\n    tz_value_str = '东'+tz_value+'区'\n    console.log(tz_value_str)\n  }else if(parseInt(tz_value) < 0){\n    tz_value = -tz_value\n    tz_value_str = '西'+tz_value+'区'\n    console.log(tz_value_str)\n  }\n  data_array.push({\n        name: tz_value_str,\n        value: data.series[0].fields[1].values.buffer[i]\n    })\n}\n\noption = {\n  backgroundColor: 'transparent',\n    title: {\n        text: '代码库代码提交时区',\n        left: 'center',\n        top: 'center',\n        textStyle:{\n          color:'brown'\n        }\n    },\n    tooltip: {\n        trigger: 'item',\n        formatter: \"{a} <br/>{b};<br/>提交量:{c}<br/>百分比:({d}%)\"\n    },\n    legend: {\n        orient: 'vertical',\n        left: 'left',\n        top: '20%'\n    \n    },\n    series: [\n        {\n            name: '时区详细信息',\n            type: 'pie',\n            label: {\n                normal: {\n                    formatter: '{b} 提交量:{c} 百分比:({d}%)',\n                    textStyle: {\n                        fontWeight: 'normal',\n                        fontSize: 10\n                    }\n                }\n            },\n            itemStyle: {\n                emphasis: {\n                    shadowBlur: 10,\n                    shadowOffsetX: 0,\n                    shadowColor: 'rgba(0, 0, 0, 0.5)'\n                }\n            },\n            radius: ['40%', '70%'],\n            data: data_array\n        }\n    ]\n}\nreturn option"
       },
       "targets": [
         {
@@ -83,7 +83,7 @@
       "id": 10,
       "options": {
         "followTheme": true,
-        "getOption": "console.log('=============================')\nconsole.log(data)\nvar data_array = new Array()\n\nfor (let i = 0; i < data.series[0].fields[0].values.length; i++) {\n  data_array.push({\n        name: data.series[0].fields[0].values.buffer[i],\n        value: data.series[0].fields[1].values.buffer[i]\n    })\n}\n\noption = {\n  backgroundColor: 'transparent',\n    title: {\n        text: '个人代码提交时区',\n        left: 'center',\n        top: 'center'\n    },\n    tooltip: {\n        trigger: 'item',\n        formatter: \"{a} <br/>时区:{b};<br/>提交量:{c}<br/>百分比:({d}%)\"\n    },\n    legend: {\n        orient: 'vertical',\n        left: 'left',\n        top: '20%'\n    },\n    series: [\n        {\n            name: '时区详细信息',\n            type: 'pie',\n            label: {\n                normal: {\n                    formatter: '时区{b} 提交量:{c} 百分比:({d}%)',\n                    textStyle: {\n                        fontWeight: 'normal',\n                        fontSize: 10\n                    }\n                }\n            },\n            itemStyle: {\n                emphasis: {\n                    shadowBlur: 10,\n                    shadowOffsetX: 0,\n                    shadowColor: 'rgba(0, 0, 0, 0.5)'\n                }\n            },\n            radius: ['40%', '70%'],\n            data: data_array\n        }\n    ]\n}\n\nreturn option"
+        "getOption": "var data_array = new Array()\n\noption1 = {\n  backgroundColor: 'transparent',\n    title: {\n        text: '请传入有效用户',\n        left: 'center',\n        top: 'center',\n        textStyle:{\n          color:'brown'\n        }\n    },\n    tooltip: {\n        trigger: 'item',\n    },\n    legend: {\n        orient: 'vertical',\n        left: 'left',\n        top: '20%'\n    \n    },\n    series: [\n        {\n            name: '时区详细信息',\n            type: 'pie',\n            label: {\n                normal: {\n                    textStyle: {\n                        fontWeight: 'normal',\n                        fontSize: 10\n                    }\n                }\n            },\n            itemStyle: {\n                emphasis: {\n                    shadowBlur: 10,\n                    shadowOffsetX: 0,\n                    shadowColor: 'rgba(0, 0, 0, 0.5)'\n                }\n            },\n            radius: ['40%', '70%'],\n            data: [{name:'请传入有效用户',value:100}]\n        }\n    ]\n}\nif(data.series[0]==undefined){\n  return option1\n}\n\nfor (let i = 0; i < data.series[0].fields[0].values.length; i++) {\n  var tz_value = data.series[0].fields[0].values.buffer[i]\n\tconsole.log(tz_value==eval(0))\n  console.log(tz_value)\n  if(parseInt(tz_value)==0){\n    tz_value_str = \"中时区\"\n  }else if(parseInt(tz_value) > 0){\n    tz_value_str = '东'+tz_value+'区'\n    console.log(tz_value_str)\n  }else if(parseInt(tz_value) < 0){\n    tz_value = -tz_value\n    tz_value_str = '西'+tz_value+'区'\n    console.log(tz_value_str)\n  }\n  data_array.push({\n        name: tz_value_str,\n        value: data.series[0].fields[1].values.buffer[i]\n    })\n}\n\n// for (let i = 0; i < data.series[0].fields[0].values.length; i++) {\n//   data_array.push({\n//         name: data.series[0].fields[0].values.buffer[i],\n//         value: data.series[0].fields[1].values.buffer[i]\n//     })\n// }\n\noption = {\n  backgroundColor: 'transparent',\n    title: {\n        text: '个人代码提交时区',\n        left: 'center',\n        top: 'center'\n    },\n    tooltip: {\n        trigger: 'item',\n        formatter: \"{a} <br/>{b};<br/>提交量:{c}<br/>百分比:({d}%)\"\n    },\n    legend: {\n        orient: 'vertical',\n        left: 'left',\n        top: '20%'\n    },\n    series: [\n        {\n            name: '时区详细信息',\n            type: 'pie',\n            label: {\n                normal: {\n                    formatter: '{b} 提交量:{c} 百分比:({d}%)',\n                    textStyle: {\n                        fontWeight: 'normal',\n                        fontSize: 10\n                    }\n                }\n            },\n            itemStyle: {\n                emphasis: {\n                    shadowBlur: 10,\n                    shadowOffsetX: 0,\n                    shadowColor: 'rgba(0, 0, 0, 0.5)'\n                }\n            },\n            radius: ['40%', '70%'],\n            data: data_array\n        }\n    ]\n}\n\nreturn option"
       },
       "targets": [
         {
@@ -102,7 +102,7 @@
           "interval": "",
           "intervalFactor": 1,
           "query": "SELECT\n    author_tz,\n    count(author_tz) as commits_count\nFROM gits\n\nWHERE\n    search_key__owner = '$metrics_owner'\n    and search_key__repo = '$metrics_repo'\n    and author_email = '$git_author_email'\nGROUP BY author_tz\nORDER BY author_tz asc\nLIMIT 5",
-          "rawQuery": "SELECT\n    author_tz,\n    count(author_tz) as commits_count\nFROM gits\n\nWHERE\n    search_key__owner = 'google'\n    and search_key__repo = 'leveldb'\n    and author_email = 'costan@google.com'\nGROUP BY author_tz\nORDER BY author_tz asc\nLIMIT 5",
+          "rawQuery": "SELECT\n    author_tz,\n    count(author_tz) as commits_count\nFROM gits\n\nWHERE\n    search_key__owner = 'google'\n    and search_key__repo = 'leveldb'\n    and author_email = '13126959424@163.com'\nGROUP BY author_tz\nORDER BY author_tz asc\nLIMIT 5",
           "refId": "A",
           "round": "0s",
           "skip_comments": true,
@@ -124,7 +124,7 @@
       "id": 12,
       "options": {
         "followTheme": false,
-        "getOption": "var name_max_array = new Array()\n    var data_value_array = new Array()\n    for (let i = 4; i < 10; i++) {\n      console.log(data.series[0].fields[i].values.buffer[0])\n      console.log(data.series[0].fields[i].name)\n      console.log(data.series[0].fields[2*i+2].values.buffer[0])\n      console.log(data.series[0].fields[2*i+3].values.buffer[0])\n     data_value_array.push(data.series[0].fields[i].values.buffer[0])\n     name_max_array.push({\n            name: data.series[0].fields[i].name,\n            max: data.series[0].fields[2*i+2].values.buffer[0],\n            min: data.series[0].fields[2*i+3].values.buffer[0]\n        })\n    }\n\n    option = {\n      title: {\n        text: '社区角色雷达',\n        textStyle:{\n          color:'white'\n        }\n      },\n      legend: {\n        data: [data.series[0].fields[3].values.buffer[0]],\n        left:'auto',\n        top:'middle',\n        textStyle:{\n          color:'white'\n        }\n      \n      },\n      radar: {\n         //shape: 'circle',\n        //shape:'polygon',\n        indicator: name_max_array\n      },\n      series: [\n        {\n          name: 'Budget vs spending',\n          type: 'radar',\n          data: [\n            {\n              value: data_value_array,\n              name: data.series[0].fields[3].values.buffer[0]\n            }\n          ]\n        }\n      ]\n    }\n    return option"
+        "getOption": "option1 ={\n  title: {\n    text: '请输入有效用户',\n     textStyle:{\n          color:'brown'\n        }\n  },\n    legend: {\n    data: ['']\n  },\n  radar: {\n    // shape: 'circle',\n    indicator: [\n      \n      { name: 'knowledge_sharing', max: 6500 },\n      { name: 'code_contribution', max: 16000 },\n      { name: 'issue_coordination', max: 30000 },\n      { name: 'progress_control', max: 38000 },\n      { name: 'code_tweaking', max: 52000 },\n      { name: 'issue_reporting', max: 25000 }\n    ]\n  },\n  series: [\n    {\n      name: '请输入有效用户',\n      type: 'radar',\n      data: [\n        {\n          value: [6500, 16000, 30000, 38000, 52000, 25000],\n          name: '请输入有效用户'\n        }\n      ]\n    }\n  ]\n}\nif(data.series[0]==undefined){\n  return option1\n}\nvar user_login = \"用户登录名: \"+data.series[0].fields[3].values.buffer[0]\nvar name_max_array = new Array()\n    var data_value_array = new Array()\n    for (let i = 4; i < 10; i++) {\n      console.log(data.series[0].fields[i].values.buffer[0])\n      console.log(data.series[0].fields[i].name)\n      console.log(data.series[0].fields[2*i+2].values.buffer[0])\n      console.log(data.series[0].fields[2*i+3].values.buffer[0])\n     data_value_array.push(data.series[0].fields[i].values.buffer[0])\n     name_max_array.push({\n            name: data.series[0].fields[i].name,\n            max: data.series[0].fields[2*i+2].values.buffer[0],\n            min: data.series[0].fields[2*i+3].values.buffer[0]\n        })\n    }\n\t\t \n    option = {\n      title: {\n        text: '社区角色雷达',\n        textStyle:{\n          color:'brown'\n        }\n      },\n      legend: {\n        data: [user_login],\n        left:'auto',\n        top:'middle',\n        textStyle:{\n          color:'brown'\n        }\n      \n      },\n      radar: {\n         //shape: 'circle',\n        //shape:'polygon',\n        indicator: name_max_array\n      },\n      series: [\n        {\n          name: '社区角色雷达',\n          type: 'radar',\n          data: [\n            {\n              value: data_value_array,\n              name: user_login\n            }\n          ]\n        }\n      ]\n    }\n    return option"
       },
       "targets": [
         {
@@ -138,7 +138,7 @@
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
           "intervalFactor": 1,
           "query": "select owner,\nrepo,\ngithub_id,\ngithub_login,\n\nknowledge_sharing,\ncode_contribution,\nissue_coordination,\nprogress_control,\ncode_tweaking,\nissue_reporting,\n\nmax_knowledge_sharing,\nmin_knowledge_sharing,\n\nmax_code_contribution,\nmin_code_contribution,\n\nmax_issue_coordination,\nmin_issue_coordination,\n\nmax_progress_control,\nmin_progress_control,\n\nmax_code_tweaking,\nmin_code_tweaking,\n\nmax_issue_reporting,\nmin_issue_reporting\nfrom (\n  select *, 1 as jv\n  from activities\n  where owner = '$metrics_owner'\n    and repo = '$metrics_repo'\n    and github_login = '$github_login') as act_info\n  global\n  join (\nselect 1                       as jv,\n    max(knowledge_sharing)  as max_knowledge_sharing,\n    min(knowledge_sharing)  as min_knowledge_sharing,\n    max(code_contribution)  as max_code_contribution,\n    min(code_contribution)  as min_code_contribution,\n    max(issue_coordination) as max_issue_coordination,\n    min(issue_coordination) as min_issue_coordination,\n    max(progress_control)   as max_progress_control,\n    min(progress_control)   as min_progress_control,\n    max(code_tweaking)      as max_code_tweaking,\n    min(code_tweaking)      as min_code_tweaking,\n    max(issue_reporting)    as max_issue_reporting,\n    min(issue_reporting)    as min_issue_reporting\nfrom activities\nwhere owner = '$metrics_owner'\nand repo = '$metrics_repo'\n) as act_jh on act_info.jv = act_jh.jv\n",
-          "rawQuery": "select owner,\nrepo,\ngithub_id,\ngithub_login,\n\nknowledge_sharing,\ncode_contribution,\nissue_coordination,\nprogress_control,\ncode_tweaking,\nissue_reporting,\n\nmax_knowledge_sharing,\nmin_knowledge_sharing,\n\nmax_code_contribution,\nmin_code_contribution,\n\nmax_issue_coordination,\nmin_issue_coordination,\n\nmax_progress_control,\nmin_progress_control,\n\nmax_code_tweaking,\nmin_code_tweaking,\n\nmax_issue_reporting,\nmin_issue_reporting\nfrom (\n  select *, 1 as jv\n  from activities\n  where owner = 'google'\n    and repo = 'leveldb'\n    and github_login = 'pwnall') as act_info\n  global\n  join (\nselect 1                       as jv,\n    max(knowledge_sharing)  as max_knowledge_sharing,\n    min(knowledge_sharing)  as min_knowledge_sharing,\n    max(code_contribution)  as max_code_contribution,\n    min(code_contribution)  as min_code_contribution,\n    max(issue_coordination) as max_issue_coordination,\n    min(issue_coordination) as min_issue_coordination,\n    max(progress_control)   as max_progress_control,\n    min(progress_control)   as min_progress_control,\n    max(code_tweaking)      as max_code_tweaking,\n    min(code_tweaking)      as min_code_tweaking,\n    max(issue_reporting)    as max_issue_reporting,\n    min(issue_reporting)    as min_issue_reporting\nfrom activities\nwhere owner = 'google'\nand repo = 'leveldb'\n) as act_jh on act_info.jv = act_jh.jv",
+          "rawQuery": "select owner,\nrepo,\ngithub_id,\ngithub_login,\n\nknowledge_sharing,\ncode_contribution,\nissue_coordination,\nprogress_control,\ncode_tweaking,\nissue_reporting,\n\nmax_knowledge_sharing,\nmin_knowledge_sharing,\n\nmax_code_contribution,\nmin_code_contribution,\n\nmax_issue_coordination,\nmin_issue_coordination,\n\nmax_progress_control,\nmin_progress_control,\n\nmax_code_tweaking,\nmin_code_tweaking,\n\nmax_issue_reporting,\nmin_issue_reporting\nfrom (\n  select *, 1 as jv\n  from activities\n  where owner = 'google'\n    and repo = 'leveldb'\n    and github_login = 'neal-zhu') as act_info\n  global\n  join (\nselect 1                       as jv,\n    max(knowledge_sharing)  as max_knowledge_sharing,\n    min(knowledge_sharing)  as min_knowledge_sharing,\n    max(code_contribution)  as max_code_contribution,\n    min(code_contribution)  as min_code_contribution,\n    max(issue_coordination) as max_issue_coordination,\n    min(issue_coordination) as min_issue_coordination,\n    max(progress_control)   as max_progress_control,\n    min(progress_control)   as min_progress_control,\n    max(code_tweaking)      as max_code_tweaking,\n    min(code_tweaking)      as min_code_tweaking,\n    max(issue_reporting)    as max_issue_reporting,\n    min(issue_reporting)    as min_issue_reporting\nfrom activities\nwhere owner = 'google'\nand repo = 'leveldb'\n) as act_jh on act_info.jv = act_jh.jv",
           "refId": "A",
           "round": "0s",
           "skip_comments": true
@@ -160,7 +160,7 @@
           "links": [
             {
               "title": "",
-              "url": "http://localhost:53000/d/-oitn9Y7z/oss_know_metrics?var-metrics_owner=${metrics_owner}&var-metrics_repo=${metrics_repo}&var-github_login=${__data.fields.github_login}&var-git_author_email=${__data.fields.git_author_email:percentencode}"
+              "url": "/d/-oitn9Y7z/oss_know_metrics?var-metrics_owner=${metrics_owner}&var-metrics_repo=${metrics_repo}&var-github_login=${__data.fields.github_login}&var-git_author_email=${__data.fields.git_author_email:percentencode}"
             }
           ],
           "mappings": [],
@@ -231,7 +231,7 @@
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
           "intervalFactor": 1,
           "query": "SELECT *\n\nFROM metrics\n\nWHERE\n    owner = '$metrics_owner'\n    AND repo = '$metrics_repo'\nORDER BY issues_counts\n",
-          "rawQuery": "SELECT *\n\nFROM metrics\n\nWHERE\n    owner = 'systemd'\n    AND repo = 'systemd'\nORDER BY issues_counts",
+          "rawQuery": "SELECT *\n\nFROM metrics\n\nWHERE\n    owner = 'google'\n    AND repo = 'leveldb'\nORDER BY issues_counts",
           "refId": "A",
           "round": "0s",
           "skip_comments": true
@@ -275,8 +275,8 @@
           "format": "time_series",
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
           "intervalFactor": 1,
-          "query": "select knowledge_sharing, code_contribution, issue_coordination, progress_control, code_tweaking, issue_reporting\nfrom  activities\nwhere github_login = '$github_login'",
-          "rawQuery": "select knowledge_sharing, code_contribution, issue_coordination, progress_control, code_tweaking, issue_reporting\nfrom  activities\nwhere github_login = 'akudryav'",
+          "query": "select knowledge_sharing, code_contribution, issue_coordination, progress_control, code_tweaking, issue_reporting\nfrom  activitys\nwhere github_login = '$github_login'",
+          "rawQuery": "select knowledge_sharing, code_contribution, issue_coordination, progress_control, code_tweaking, issue_reporting\nfrom  activitys\nwhere github_login = 'akudryav'",
           "refId": "A",
           "round": "0s",
           "skip_comments": true
@@ -409,29 +409,29 @@
       {
         "current": {
           "selected": false,
-          "text": "pwnall",
-          "value": "pwnall"
+          "text": "neal-zhu",
+          "value": "neal-zhu"
         },
         "description": "github_login",
         "hide": 2,
         "label": "github_login",
-        "name": "github_login",797836
+        "name": "github_login",
         "options": [
           {
-            "selected": true,
-            "text": "pwnall",
-            "value": "pwnall"
+            "selected": false,
+            "text": "dveeden",
+            "value": "dveeden"
           }
         ],
-        "query": "pwnall",
+        "query": "neal-zhu",
         "skipUrlSync": false,
         "type": "textbox"
       },
       {
         "current": {
           "selected": false,
-          "text": "costan@google.com",
-          "value": "costan@google.com"
+          "text": "13126959424@163.com",
+          "value": "13126959424@163.com"
         },
         "description": "git_author_email",
         "hide": 2,
@@ -440,11 +440,11 @@
         "options": [
           {
             "selected": false,
-            "text": "pwnall@chromium.org",
-            "value": "pwnall@chromium.org"
+            "text": "",
+            "value": ""
           }
         ],
-        "query": "costan@google.com",
+        "query": "13126959424@163.com",
         "skipUrlSync": false,
         "type": "textbox"
       }
@@ -458,6 +458,6 @@
   "timezone": "",
   "title": "OSS_Know_Metrics",
   "uid": "-oitn9Y7z",
-  "version": 17,
+  "version": 22,
   "weekStart": ""
 }
