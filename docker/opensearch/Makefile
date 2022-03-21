@@ -13,6 +13,7 @@ help: ## Help dialog.
 ####################################################################
 
 up_infra: ## Create and start containers
+	docker network create -d bridge dev-network && \
 	docker pull opensearchproject/opensearch:latest && \
 	docker pull opensearchproject/opensearch-dashboards:latest && \
 	$(DOCKER_INFRA) up -d
