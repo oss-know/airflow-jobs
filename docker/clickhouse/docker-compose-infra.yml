@@ -5,7 +5,7 @@ services:
   ch-cluster-0-0:
     container_name: ch-cluster-0-0
     hostname: ch-cluster-0-0
-    image: yandex/clickhouse-server:21.12
+    image: yandex/clickhouse-server:21
     restart: on-failure
     # 跨多个Docker-compose配置文件，services在一个网桥
     networks:
@@ -20,13 +20,11 @@ services:
     ports:
       - "19000:9000"
       - "18000:8123"
-    depends_on:
-      - ch-zookeeper
 
   ch-cluster-0-1:
     container_name: ch-cluster-0-1
     hostname: ch-cluster-0-1
-    image: yandex/clickhouse-server:21.12
+    image: yandex/clickhouse-server:21
     restart: on-failure
     # 跨多个Docker-compose配置文件，services在一个网桥
     networks:
@@ -41,13 +39,11 @@ services:
     ports:
       - "19001:9000"
       - "18001:8123"
-    depends_on:
-      - ch-zookeeper
 
   ch-cluster-1-0:
     container_name: ch-cluster-1-0
     hostname: ch-cluster-1-0
-    image: yandex/clickhouse-server:21.12
+    image: yandex/clickhouse-server:21
     restart: on-failure
     # 跨多个Docker-compose配置文件，services在一个网桥
     networks:
@@ -62,13 +58,11 @@ services:
     ports:
       - "19010:9000"
       - "18010:8123"
-    depends_on:
-      - ch-zookeeper
 
   ch-cluster-1-1:
     container_name: ch-cluster-1-1
     hostname: ch-cluster-1-1
-    image: yandex/clickhouse-server:21.12
+    image: yandex/clickhouse-server:21
     restart: on-failure
     # 跨多个Docker-compose配置文件，services在一个网桥
     networks:
@@ -83,25 +77,6 @@ services:
     ports:
       - "19011:9000"
       - "18011:8123"
-    depends_on:
-      - ch-zookeeper
-
-  ch-zookeeper:
-    image: zookeeper:3.7
-    hostname: zookeeper
-    # 跨多个Docker-compose配置文件，services在一个网桥
-    networks:
-      - dev-network
-    ports:
-      - 2181:2181
-    container_name: zookeeper
-    environment:
-      ZOOKEEPER_TICK_TIME: 2000
-      JVMFLAGS: "-Xms2g -Xmx2g -Dzookeeper.globalOutstandingLimit=2000"
-    volumes:
-      - ./CH/data/zookeeper-data/data:/data
-      - ./CH/data/zookeeper-data/datalog:/datalog
-      - ./CH/data/zookeeper-data/logs:/logs
 
 networks:
   dev-network:

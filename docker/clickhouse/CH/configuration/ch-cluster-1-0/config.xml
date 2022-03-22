@@ -855,20 +855,36 @@
         </node>
         <node>
             <host>example2</host>
-            <port>2181</port>
+            <port>12181</port>
         </node>
         <node>
             <host>example3</host>
-            <port>2181</port>
+            <port>12181</port>
         </node>
     </zookeeper>
     -->
     <zookeeper>
-        <node>
-            <host>zookeeper</host>
+        <node index="1">
+            <host>zk1</host>
             <port>2181</port>
         </node>
+        <node  index="2">
+            <host>zk2</host>
+            <port>2181</port>
+        </node>
+        <node index="3">
+            <host>zk3</host>
+            <port>2181</port>
+        </node>
+
+<!--        <session_timeout_ms>30000</session_timeout_ms>-->
+<!--        <operation_timeout_ms>10000</operation_timeout_ms>-->
+        <!-- Optional. Chroot suffix. Should exist. -->
+        <!-- root>/path/to/zookeeper/node</root -->
+        <!-- Optional. Zookeeper digest ACL string. -->
+        <!-- identity>user:password</identity -->
     </zookeeper>
+
 
     <!-- Substitutions for parameters of replicated tables.
           Optional. If you don't use replicated tables, you could omit that.

@@ -27,10 +27,4 @@
             </shard>
         </cluster>
     </remote_servers>
-    <zookeeper>
-        <node>
-            <host>zookeeper</host>
-            <port>2181</port>
-        </node>
-    </zookeeper>
 </yandex>
