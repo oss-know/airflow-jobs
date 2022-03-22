@@ -8,3 +8,4 @@ EMAIL_ADDRESS_COUNTRY_INFERRED_FROM_EMAILCCTLD = 'country_inferred_from_emailcct
 EMAIL_ADDRESS_COUNTRY_INFERRED_FROM_EMAILDOMAIN = 'country_inferred_from_emaildomain'
 EMAIL_ADDRESS_COMPANY_INFERRED_FROM_EMAIL = 'company_inferred_from_email'
 EMAIL_ADDRESS_COUNTRY_INFERRED_FROM_COMPANY = 'country_inferred_from_company'
+EMAIL_ALIASE = 'email_aliase'

@@ -2606,6 +2606,7 @@
         },
         "raw_data": {
           "email": "",
+          "email_aliase": "",
           "country_inferred_from_emailcctld": "",
           "country_inferred_from_emaildomain": "",
           "company_inferred_from_email": "",
