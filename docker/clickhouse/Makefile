@@ -13,6 +13,10 @@ help: ## Help dialog.
 ####################################################################
 
 up_infra: ## Create and start containers
+<<<<<<< HEAD
+=======
+#	docker network create -d bridge dev-network && 
+>>>>>>> upstream/development
 	docker pull yandex/clickhouse-server:21.12 && \
 	$(DOCKER_INFRA) up -d
 

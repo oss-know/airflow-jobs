@@ -32,7 +32,7 @@ services:
       #  List of nodes in the cluster 
       #  ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181 server.2=zk2.docker:2888:3888;2181 server.3=zk3.docker:2888:3888;2181
       #  ZOOKEEPER_TICK_TIME: 2000
-      JVMFLAGS: "-Xms2g -Xmx2g -Dzookeeper.globalOutstandingLimit=2000"
+      JVMFLAGS: "-Xms1g -Xmx1g -Dzookeeper.globalOutstandingLimit=2000"
     volumes:
       - ./zk1_zoo.cfg:/conf/zoo.cfg
       - ./vol_zk1_data:/data
@@ -57,7 +57,7 @@ services:
       #  List of nodes in the cluster
       #  ZOO_SERVERS: server.1=zk1.docker:2888:3888;2181 server.2=0.0.0.0:2888:3888;2181 server.3=zk3.docker:2888:3888;2181
       #  ZOOKEEPER_TICK_TIME: 2000
-      JVMFLAGS: "-Xms2g -Xmx2g -Dzookeeper.globalOutstandingLimit=2000"
+      JVMFLAGS: "-Xms1g -Xmx1g -Dzookeeper.globalOutstandingLimit=2000"
     volumes:
       - ./zk2_zoo.cfg:/conf/zoo.cfg
       - ./vol_zk2_data:/data
@@ -82,7 +82,7 @@ services:
       #  List of nodes in the cluster
       #  ZOO_SERVERS: server.1=zk1.docker:2888:3888;2181 server.2=zk2.docker:2888:3888;2181 server.3=0.0.0.0:2888:3888;2181
       #  ZOOKEEPER_TICK_TIME: 2000
-      JVMFLAGS: "-Xms2g -Xmx2g -Dzookeeper.globalOutstandingLimit=2000"
+      JVMFLAGS: "-Xms1g -Xmx1g -Dzookeeper.globalOutstandingLimit=2000"
     volumes:
       - ./zk3_zoo.cfg:/conf/zoo.cfg
       - ./vol_zk3_data:/data
