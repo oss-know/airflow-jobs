@@ -1,8 +1,8 @@
 version: '3'
 services:
-  opensearch-node1:
+  dev-opensearch-node1:
     image: opensearchproject/opensearch:latest
-    container_name: opensearch-node1
+    container_name: dev-opensearch-node1
     environment:
       # - plugins.security.disabled=true
       - cluster.name=opensearch-cluster
@@ -22,14 +22,14 @@ services:
     volumes:
       - opensearch-data1:/usr/share/opensearch/data
     ports:
-      - 9200:9200
-      - 9600:9600 # required for Performance Analyzer
+      - 19200:9200
+      - 19600:9600 # required for Performance Analyzer
     networks:
       - dev-network
 
-  opensearch-node2:
+  dev-opensearch-node2:
     image: opensearchproject/opensearch:latest
-    container_name: opensearch-node2
+    container_name: dev-opensearch-node2
     environment:
       # - plugins.security.disabled=true
       - cluster.name=opensearch-cluster
@@ -48,19 +48,22 @@ services:
         hard: 65536
     volumes:
       - opensearch-data2:/usr/share/opensearch/data
+    ports:
+      - 19200:9200
+      - 19600:9600 # required for Performance Analyzer
     networks:
       - dev-network
 
-  opensearch-dashboards:
+  dev-opensearch-dashboards:
     image: opensearchproject/opensearch-dashboards:latest
     # image: opensearch-dashboards-no-security
-    container_name: opensearch-dashboards
+    container_name: dev-opensearch-dashboards
     ports:
-      - 5601:5601
+      - 15601:5601
     expose:
       - "5601"
     environment:
-      OPENSEARCH_HOSTS: '["https://opensearch-node1:9200","https://opensearch-node2:9200"]'
+      OPENSEARCH_HOSTS: '["https://opensearch-node1:19200","https://opensearch-node2:19200"]'
     networks:
       - dev-network
 
