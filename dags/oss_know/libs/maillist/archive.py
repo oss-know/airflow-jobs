@@ -197,6 +197,8 @@ def sync_archive(opensearch_conn_info, **maillist_params):
         ocean_backend = MBoxOcean(None)
         enrich_backend = OSSKnowMBoxEnrich(project_name, list_name)
 
+    ocean_backend.set_filter_raw(f'enrich_filter_raw.keyword: {project_name}_{list_name}')
+
     os_user = opensearch_conn_info["USER"]
     os_pass = opensearch_conn_info["PASSWD"]
     os_host = opensearch_conn_info["HOST"]
@@ -261,6 +263,7 @@ def _data2es(items, ocean, project_name, mail_list_name):
             'mail_list_name': mail_list_name,
             'updated_at': now_timestamp()
         }
+        item['data']['enrich_filter_raw'] = f'{project_name}_{mail_list_name}'
         items_pack.append(item)
         if len(items_pack) >= ocean.elastic.max_items_bulk:
             inserted += ocean._items_to_es(items_pack)
