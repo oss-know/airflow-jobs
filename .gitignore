@@ -132,6 +132,7 @@ dmypy.json
 logs/
 .DS_Store
 
+docker/zookeeper/vol_*
 docker/clickhouse/CH/data
 docker/grafana/GF*
 #data_schema/variables/big_variable.json
