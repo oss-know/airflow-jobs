@@ -13,55 +13,55 @@
             "owner": "systemd",
             "repo": "systemd",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-10T07:19:47Z"
+            "until": "2022-03-23T03:24:33Z"
         },
         {
             "owner": "openssl",
             "repo": "openssl",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-10T07:19:47Z"
+            "until": "2022-03-23T03:24:33Z"
         },
         {
             "owner": "google",
             "repo": "leveldb",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-10T07:19:47Z"
+            "until": "2022-03-23T03:24:33Z"
         },
         {
             "owner": "facebook",
             "repo": "zstd",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-10T07:19:47Z"
+            "until": "2022-03-23T03:24:33Z"
         },
         {
             "owner": "vim",
             "repo": "vim",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-10T07:19:47Z"
+            "until": "2022-03-23T03:24:33Z"
         },
         {
             "owner": "curl",
             "repo": "curl",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-10T07:19:47Z"
+            "until": "2022-03-23T03:24:33Z"
         },
         {
             "owner": "grpc",
             "repo": "grpc",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-10T07:19:47Z"
+            "until": "2022-03-23T03:24:33Z"
         },
         {
             "owner": "moby",
             "repo": "moby",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-10T07:19:47Z"
+            "until": "2022-03-23T03:24:33Z"
         },
         {
             "owner": "docker",
             "repo": "cli",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-10T07:19:47Z"
+            "until": "2022-03-23T03:24:33Z"
         }
     ],
     "need_init_github_issues_comments_repos": [
@@ -556,7 +556,8 @@
         "PASSWD": "",
         "PORT": "19001",
         "USER": "default",
-        "DATABASE": "default"
+        "DATABASE": "default",
+        "CLUSTER_NAME": "cluster"
     },
     "redis_client_data": {
         "HOST": "192.168.8.108",
@@ -1519,6 +1520,7 @@
                 },
                 "tag": "",
                 "data": {
+                    "enriched_filter_raw": "",
                     "unixfrom": "",
                     "From": "",
                     "Subject": "",
@@ -1769,7 +1771,7 @@
     "ck_create_table_cols_datatype_tplt": [
         {
             "table_name": "gits",
-            "cluster_name": "replicated",
+            "cluster_name": "cluster",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/gits','{replica}')",
@@ -1830,7 +1832,7 @@
         },
         {
             "table_name": "github_profile",
-            "cluster_name": "replicated",
+            "cluster_name": "cluster",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_profile','{replica}')",
@@ -1901,7 +1903,7 @@
         },
         {
             "table_name": "github_commits",
-            "cluster_name": "replicated",
+            "cluster_name": "cluster",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_commits','{replica}')",
@@ -1999,7 +2001,7 @@
         },
         {
             "table_name": "github_issues_comments",
-            "cluster_name": "replicated",
+            "cluster_name": "cluster",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_issues_comments','{replica}')",
@@ -2064,7 +2066,7 @@
         },
         {
             "table_name": "github_issues",
-            "cluster_name": "replicated",
+            "cluster_name": "cluster",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_issues','{replica}')",
@@ -2236,7 +2238,7 @@
         },
         {
             "table_name": "github_pull_requests",
-            "cluster_name": "replicated",
+            "cluster_name": "cluster",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_pull_requests','{replica}')",
@@ -2725,7 +2727,7 @@
         },
         {
             "table_name": "github_issues_timeline",
-            "cluster_name": "replicated",
+            "cluster_name": "cluster",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_issues_timeline','{replica}')",
@@ -2749,7 +2751,7 @@
         },
         {
             "table_name": "maillists",
-            "cluster_name": "replicated",
+            "cluster_name": "cluster",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/maillists','{replica}')",
@@ -2778,6 +2780,7 @@
                 },
                 "tag": "",
                 "data": {
+                    "enriched_filter_raw": "",
                     "unixfrom": "",
                     "From": "",
                     "Subject": "",
@@ -2980,7 +2983,7 @@
         },
         {
             "table_name": "maillists_enriched",
-            "cluster_name": "replicated",
+            "cluster_name": "cluster",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/maillists_enriched','{replica}')",
@@ -3035,7 +3038,7 @@
         },
         {
             "table_name": "email_address",
-            "cluster_name": "replicated",
+            "cluster_name": "cluster",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/email_address','{replica}')",
@@ -3051,6 +3054,7 @@
                 },
                 "raw_data": {
                     "email": "",
+                    "email_aliase": "",
                     "country_inferred_from_emailcctld": "",
                     "country_inferred_from_emaildomain": "",
                     "company_inferred_from_email": "",
@@ -3117,7 +3121,7 @@
         },
         {
             "table_name": "metrics",
-            "cluster_name": "replicated",
+            "cluster_name": "cluster",
             "database_name": "default",
             "distributed_key": "github_id",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/metrics','{replica}')",
@@ -3155,11 +3159,11 @@
             }
         },
         {
-            "table_name": "activitys",
-            "cluster_name": "replicated",
+            "table_name": "activities",
+            "cluster_name": "cluster",
             "database_name": "default",
             "distributed_key": "github_id",
-            "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/activitys','{replica}')",
+            "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/activities','{replica}')",
             "partition_by": "owner",
             "order_by": [
                 "owner",
@@ -3178,12 +3182,81 @@
                 "code_tweaking": 0.0,
                 "issue_reporting": 0.0
             }
+        },
+        {
+            "table_name": "temp_gits_by_company",
+            "cluster_name": "replicated",
+            "database_name": "default",
+            "distributed_key": "search_key__updated_at",
+            "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/temp_gits_by_company','{replica}')",
+            "partition_by": "search_key__owner",
+            "order_by": [
+                "search_key__owner",
+                "search_key__repo",
+                "search_key__origin"
+            ],
+            "parse_data": {
+                "author_email_account": "",
+                "author_email_domain": "",
+                "author_github_login": "",
+                "author_github_id": 0,
+                "committer_email_account": "",
+                "committer_email_domain": "",
+                "committer_github_login": "",
+                "committer_github_id": 0,
+                "search_key": {
+                    "owner": "",
+                    "repo": "",
+                    "origin": "",
+                    "updated_at": 0
+                },
+                "raw_data": {
+                    "message": "",
+                    "hexsha": "",
+                    "parents": [
+                        "",
+                        ""
+                    ],
+                    "author_tz": 0,
+                    "committer_tz": 0,
+                    "author_name": "",
+                    "author_email": "",
+                    "committer_name": "",
+                    "committer_email": "",
+                    "authored_date": "1970-01-01T00:00:00Z",
+                    "authored_timestamp": 0,
+                    "committed_date": "1970-01-01T00:00:00Z",
+                    "committed_timestamp": 0,
+                    "files": [
+                        {
+                            "insertions": 0,
+                            "deletions": 0,
+                            "lines": 0,
+                            "file_name": ""
+                        },
+                        {
+                            "insertions": 0,
+                            "deletions": 0,
+                            "lines": 0,
+                            "file_name": ""
+                        }
+                    ],
+                    "total": {
+                        "insertions": 0,
+                        "deletions": 0,
+                        "lines": 0,
+                        "files": 0
+                    },
+                    "if_merged": false,
+                    "type": ""
+                }
+            }
         }
     ],
     "ck_alter_table_cols_datatype_tplt": [
         {
             "table_name": "gits",
-            "cluster_name": "replicated",
+            "cluster_name": "cluster",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/gits','{replica}')",
@@ -3401,5 +3474,11 @@
             "if",
             "any"
         ]
-    }
+    },
+    "repo_list": [
+        {
+            "owner": "",
+            "repo": ""
+        }
+    ]
 }

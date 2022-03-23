@@ -2736,6 +2736,75 @@
         "code_tweaking": 0.0,
         "issue_reporting": 0.0
       }
+    },
+    {
+      "table_name": "temp_gits_by_company",
+      "cluster_name": "replicated",
+      "database_name": "default",
+      "distributed_key": "search_key__updated_at",
+      "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/temp_gits_by_company','{replica}')",
+      "partition_by": "search_key__owner",
+      "order_by": [
+        "search_key__owner",
+        "search_key__repo",
+        "search_key__origin"
+      ],
+      "parse_data": {
+        "author_email_account": "",
+          "author_email_domain": "",
+          "author_github_login": "",
+          "author_github_id": 0,
+          "committer_email_account": "",
+          "committer_email_domain": "",
+          "committer_github_login": "",
+          "committer_github_id": 0,
+        "search_key": {
+          "owner": "",
+          "repo": "",
+          "origin": "",
+          "updated_at": 0
+        },
+        "raw_data": {
+          "message": "",
+          "hexsha": "",
+          "parents": [
+            "",
+            ""
+          ],
+          "author_tz": 0,
+          "committer_tz": 0,
+          "author_name": "",
+          "author_email": "",
+          "committer_name": "",
+          "committer_email": "",
+          "authored_date": "1970-01-01T00:00:00Z",
+          "authored_timestamp": 0,
+          "committed_date": "1970-01-01T00:00:00Z",
+          "committed_timestamp": 0,
+          "files": [
+            {
+              "insertions": 0,
+              "deletions": 0,
+              "lines": 0,
+              "file_name": ""
+            },
+            {
+              "insertions": 0,
+              "deletions": 0,
+              "lines": 0,
+              "file_name": ""
+            }
+          ],
+          "total": {
+            "insertions": 0,
+            "deletions": 0,
+            "lines": 0,
+            "files": 0
+          },
+          "if_merged": false,
+          "type": ""
+        }
+      }
     }
   ],
   "ck_alter_table_cols_datatype_tplt": [
