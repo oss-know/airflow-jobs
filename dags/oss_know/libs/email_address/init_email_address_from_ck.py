@@ -15,10 +15,10 @@ from oss_know.libs.email_address.email_address_default_tplt import EMAIL_ADDRESS
 def load_all_email_address(clickhouse_server_info):
     ck = get_clickhouse_client(clickhouse_server_info)
     init_email_address_dict = {}
-    update_email_address = set()
+    # update_email_address = set()
     email_aliase_dict = {}
     mbox_helper = MBoxEnrich()
-    maillists_enriched_sql = "select DISTINCT From,To from maillists_enriched"
+    maillists_enriched_sql = "select DISTINCT From,To from maillists_enriched limit 100"
     email_tuples = ck.execute_no_params(maillists_enriched_sql)
     for email_tuple in email_tuples:
         for origin_email_str in email_tuple:
@@ -31,16 +31,17 @@ def load_all_email_address(clickhouse_server_info):
                     if email and '@' in email:
                         init_email_address_dict[email] = 0
 
-    gits_sql = "SELECT DISTINCT author_email,committer_email FROM gits"
+    gits_sql = "SELECT DISTINCT author_email,committer_email FROM gits limit 100"
     gits_email = ck.execute_no_params(gits_sql)
     for author_email, committer_email in gits_email:
         for item in author_email, committer_email:
-            if email_is_existed(item, ck):
-                update_email_address.add(item)
-            elif item:
+            # if email_is_existed(item, ck):
+            #     update_email_address.add(item)
+            if item:
                 init_email_address_dict[item] = 0
 
     for k, v in init_email_address_dict.items():
+        k = k.replace('\'', '\"')
         committer_id_sql = f"SELECT DISTINCT committer__id,commit__committer__email from github_commits WHERE commit__committer__email = '{k}'"
         committer_id = ck.execute_no_params(committer_id_sql)
         author_id_sql = f"SELECT DISTINCT author__id,commit__author__email from github_commits WHERE commit__author__email = '{k}'"
@@ -51,31 +52,31 @@ def load_all_email_address(clickhouse_server_info):
                 id = item[0][0]
                 init_email_address_dict[email] = id
 
-    profile_sql = "SELECT DISTINCT email,id FROM github_profile"
+    profile_sql = "SELECT DISTINCT email,id FROM github_profile limit 100"
     profile_email_id_pair = ck.execute_no_params(profile_sql)
     for email, id in profile_email_id_pair:
-        if email_is_existed(email, ck):
-            update_email_address.add(email)
-        else:
-            init_email_address_dict[email] = id
+        # if email_is_existed(email, ck):
+        #     update_email_address.add(email)
+        # else:
+        init_email_address_dict[email] = id
 
-    need_update_email_id_pair = {}
-    for email in update_email_address:
-        profile_updated_sql = f"select updated_at from github_profile where search_key__updated_at = (select MAX(search_key__updated_at) from github_profile where github_profile.email = '{email}'); "
-        profile_updated = ck.execute_no_params(profile_updated_sql)
-        email_profile_updated_sql = f"SELECT github__profile__updated_at FROM {CLICKHOUSE_EMAIL_ADDRESS}  WHERE email = '{email}'"
-        email_profile_updated = ck.execute_no_params(email_profile_updated_sql)
-        if profile_updated != email_profile_updated:
-            profile_id_sql = f"select id from github_profile where search_key__updated_at = (select MAX(search_key__updated_at) from github_profile where github_profile.email = '{email}'); "
-            profile_id = ck.execute_no_params(profile_id_sql)
-            if profile_id:
-                need_update_email_id_pair[email] = profile_id
+    # need_update_email_id_pair = {}
+    # for email in update_email_address:
+    #     profile_updated_sql = f"select updated_at from github_profile where search_key__updated_at = (select MAX(search_key__updated_at) from github_profile where github_profile.email = '{email}'); "
+    #     profile_updated = ck.execute_no_params(profile_updated_sql)
+    #     email_profile_updated_sql = f"SELECT github__profile__updated_at FROM {CLICKHOUSE_EMAIL_ADDRESS}  WHERE email = '{email}'"
+    #     email_profile_updated = ck.execute_no_params(email_profile_updated_sql)
+    #     if profile_updated != email_profile_updated:
+    #         profile_id_sql = f"select id from github_profile where search_key__updated_at = (select MAX(search_key__updated_at) from github_profile where github_profile.email = '{email}'); "
+    #         profile_id = ck.execute_no_params(profile_id_sql)
+    #         if profile_id:
+    #             need_update_email_id_pair[email] = profile_id
+    #
+    #         ck_cluster_name = clickhouse_server_info["CLUSTER_NAME"]
+    #         delete_need_update_sql = f"ALTER TABLE {CLICKHOUSE_EMAIL_ADDRESS} on cluster {ck_cluster_name} delete where email = '{email}'"
+    #         ck.execute_no_params(delete_need_update_sql)
 
-            ck_cluster_name = clickhouse_server_info["CLUSTER_NAME"]
-            delete_need_update_sql = f"ALTER TABLE {CLICKHOUSE_EMAIL_ADDRESS} on cluster {ck_cluster_name} delete where email = '{email}'"
-            ck.execute_no_params(delete_need_update_sql)
-
-    init_email_address_dict = dict(init_email_address_dict, **need_update_email_id_pair)
+    # init_email_address_dict = dict(init_email_address_dict, **need_update_email_id_pair)
     values_to_insert = []
     total_count = len(init_email_address_dict)
     page_count = 5000
@@ -128,15 +129,15 @@ def load_all_email_address(clickhouse_server_info):
     ck.close()
 
 
-def email_is_existed(email, ck):
-    is_existed = False
-    if not email:
-        return is_existed
-    sql = f"select * from {CLICKHOUSE_EMAIL_ADDRESS} where search_key__email ='{email}'"
-    email_domain = ck.execute_no_params(sql)
-    if email_domain:
-        is_existed = True
-    return is_existed
+# def email_is_existed(email, ck):
+#     is_existed = False
+#     if not email:
+#         return is_existed
+#     sql = f"select * from {CLICKHOUSE_EMAIL_ADDRESS} where search_key__email ='{email}'"
+#     email_domain = ck.execute_no_params(sql)
+#     if email_domain:
+#         is_existed = True
+#     return is_existed
 
 
 def get_profile_value(profile_id, clickhouse_client):
