@@ -3,10 +3,10 @@ import copy
 from loguru import logger
 
 from oss_know.libs.email_address.temp_gits_by_company_tplt import TEMP_GITS_BY_COMPANY_DEFAULT_TPLT
-from oss_know.libs.util.base import  get_clickhouse_client
+from oss_know.libs.util.base import get_clickhouse_client
 
 
-def load_all_temp_gits_by_company(clickhouse_server_info):
+def load_all_temp_gits_by_company(clickhouse_server_info, owners):
     ck = get_clickhouse_client(clickhouse_server_info)
     truncate_local_sql = "truncate table temp_gits_by_company_local"
     truncate_sql = "truncate table temp_gits_by_company"
@@ -15,8 +15,14 @@ def load_all_temp_gits_by_company(clickhouse_server_info):
     values_to_insert = []
     github_id_login_pair = {}
     check_email_dict = {}
-    gits_sql = "SELECT DISTINCT * FROM gits limit 100"
-    gits_values = ck.execute_no_params(gits_sql)
+    gits_values = []
+    if not owners:
+        gits_sql = "SELECT DISTINCT * FROM gits"
+        gits_values.extend(ck.execute_no_params(gits_sql))
+    else:
+        for owner in owners:
+            gits_sql = f"select * from gits where search_key__owner = '{owner}'"
+            gits_values.extend(ck.execute_no_params(gits_sql))
     gits_values_len = len(gits_values)
     get_gits_table_columns_sql = "select distinct name from system.columns where database = 'default' AND table = 'gits'"
     gits_columns = ck.execute_no_params(get_gits_table_columns_sql)
@@ -56,12 +62,19 @@ def load_all_temp_gits_by_company(clickhouse_server_info):
 
 def add_email_column(email, value, check_email_dict, ck, github_id_login_pair, pre):
     split_result = email.split("@")
-    value[pre + "_email_account"] = split_result[0]
-    value[pre + "_email_domain"] = split_result[1]
+    split_result_len = len(split_result)
+    if split_result_len == 2:
+        value[pre + "_email_account"] = split_result[0]
+        value[pre + "_email_domain"] = split_result[1]
+    elif split_result_len == 1:
+        if email.startswith("@"):
+            value[pre + "_email_account"] = split_result[0]
+        else:
+            value[pre + "_email_domain"] = split_result[0]
     if email in check_email_dict:
         value[pre + "_github_id"] = list(check_email_dict[email])[0]
         value[pre + "_github_login"] = check_email_dict[email][value[pre + "_github_id"]]
-        logger.info("第二次取值：", value[pre + "_github_id"], value[pre + "_github_login"])
+        print("第二次取值：", value[pre + "_github_id"], value[pre + "_github_login"])
     else:
         github_profile_sql = f"select id , login from github_profile where email = '{email}'"
         profiles = ck.execute_no_params(github_profile_sql)
@@ -72,7 +85,7 @@ def add_email_column(email, value, check_email_dict, ck, github_id_login_pair, p
             check_email_dict[email] = github_id_login_pair
             value[pre + "_github_id"] = profile_id
             value[pre + "_github_login"] = profile_login
-            logger.info("第一次取值，", value[pre + "_github_id"], value[pre + "_github_login"])
+            print("第一次取值，", value[pre + "_github_id"], value[pre + "_github_login"])
     return value
 
     ck.close()

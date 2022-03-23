@@ -1,6 +1,11 @@
 # docker compose edition 
 version: "3.8"
 
+
+networks:
+  dev-network:
+    #    name: dev-network
+    external: true
 services:
   #  node 1
   zk1:
@@ -9,73 +14,77 @@ services:
     #  Container name 
     container_name: zk1.docker
     # docker Automatically restart the container after restart 
-    restart: always
+    restart: on-failure
     networks:
       - dev-network
     #  Current container hostname
     hostname: zk1.docker
     #  port   The host machine : Containers 
     ports:
-      - 2181:2181
-    #  environment variable 
+      - 12181:2181
+      - 18081:8080
+    expose:
+      - 2181
+    #  environment variable
     environment:
       # myid, A node in a cluster is uniquely identified 
       ZOO_MY_ID: 1
       #  List of nodes in the cluster 
-      ZOO_SERVERS:
-        - server.1=zk1.docker:2888:3888;2181
-        - server.2=zk2.docker:2888:3888;2181
-        - server.3=zk3.docker:2888:3888;2181
+      #  ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181 server.2=zk2.docker:2888:3888;2181 server.3=zk3.docker:2888:3888;2181
+      #  ZOOKEEPER_TICK_TIME: 2000
+      JVMFLAGS: "-Xms1g -Xmx1g -Dzookeeper.globalOutstandingLimit=2000"
     volumes:
       - ./zk1_zoo.cfg:/conf/zoo.cfg
-      - ./zk1_data:/data
-      - ./zk1_datalog:/datalog
-      - ./zk1_logs:/logs
+      - ./vol_zk1_data:/data
+      - ./vol_zk1_datalog:/datalog
+      - ./vol_zk1_logs:/logs
 
   #  node 2
   zk2:
     image: zookeeper:3.7
     container_name: zk2.docker
-    restart: always
+    restart: on-failure
     networks:
       - dev-network
     hostname: zk2.docker
     ports:
-      - 2182:2181
+      - 12182:2181
+      - 18082:8080
+    expose:
+      - 2181
     environment:
       ZOO_MY_ID: 2
-      ZOO_SERVERS:
-        - server.1=zk1.docker:2888:3888;2181
-        - server.2=zk2.docker:2888:3888;2181
-        - server.3=zk3.docker:2888:3888;2181
+      #  List of nodes in the cluster
+      #  ZOO_SERVERS: server.1=zk1.docker:2888:3888;2181 server.2=0.0.0.0:2888:3888;2181 server.3=zk3.docker:2888:3888;2181
+      #  ZOOKEEPER_TICK_TIME: 2000
+      JVMFLAGS: "-Xms1g -Xmx1g -Dzookeeper.globalOutstandingLimit=2000"
     volumes:
       - ./zk2_zoo.cfg:/conf/zoo.cfg
-      - ./zk2_data:/data
-      - ./zk2_datalog:/datalog
-      - ./zk2_logs:/logs
+      - ./vol_zk2_data:/data
+      - ./vol_zk2_datalog:/datalog
+      - ./vol_zk2_logs:/logs
 
   #  node 3
   zk3:
     image: zookeeper:3.7
     container_name: zk3.docker
-    restart: always
+    restart: on-failure
     networks:
       - dev-network
     hostname: zk3.docker
     ports:
-      - 2183:2181
+      - 12183:2181
+      - 18083:8080
+    expose:
+      - 2181
     environment:
       ZOO_MY_ID: 3
-      ZOO_SERVERS:
-        - server.1=zk1.docker:2888:3888;2181
-        - server.2=zk2.docker:2888:3888;2181
-        - server.3=zk3.docker:2888:3888;2181
+      #  List of nodes in the cluster
+      #  ZOO_SERVERS: server.1=zk1.docker:2888:3888;2181 server.2=zk2.docker:2888:3888;2181 server.3=0.0.0.0:2888:3888;2181
+      #  ZOOKEEPER_TICK_TIME: 2000
+      JVMFLAGS: "-Xms1g -Xmx1g -Dzookeeper.globalOutstandingLimit=2000"
     volumes:
       - ./zk3_zoo.cfg:/conf/zoo.cfg
-      - ./zk3_data:/data
-      - ./zk3_datalog:/datalog
-      - ./zk3_logs:/logs
-
-networks:
-  dev-network:
-    external: true
+      - ./vol_zk3_data:/data
+      - ./vol_zk3_datalog:/datalog
+      - ./vol_zk3_logs:/logs

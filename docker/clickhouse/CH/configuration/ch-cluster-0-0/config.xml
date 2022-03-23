@@ -747,18 +747,18 @@
             </shard>
         </test_cluster_two_shard_three_replicas_localhost>
         <test_cluster_two_shards_localhost>
-             <shard>
-                 <replica>
-                     <host>localhost</host>
-                     <port>9000</port>
-                 </replica>
-             </shard>
-             <shard>
-                 <replica>
-                     <host>localhost</host>
-                     <port>9000</port>
-                 </replica>
-             </shard>
+            <shard>
+                <replica>
+                    <host>localhost</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
+            <shard>
+                <replica>
+                    <host>localhost</host>
+                    <port>9000</port>
+                </replica>
+            </shard>
         </test_cluster_two_shards_localhost>
         <test_cluster_two_shards>
             <shard>
@@ -819,21 +819,21 @@
         If this section is not present in configuration, all hosts are allowed.
     -->
     <!--<remote_url_allow_hosts>-->
-        <!-- Host should be specified exactly as in URL. The name is checked before DNS resolution.
-            Example: "yandex.ru", "yandex.ru." and "www.yandex.ru" are different hosts.
-                    If port is explicitly specified in URL, the host:port is checked as a whole.
-                    If host specified here without port, any port with this host allowed.
-                    "yandex.ru" -> "yandex.ru:443", "yandex.ru:80" etc. is allowed, but "yandex.ru:80" -> only "yandex.ru:80" is allowed.
-            If the host is specified as IP address, it is checked as specified in URL. Example: "[2a02:6b8:a::a]".
-            If there are redirects and support for redirects is enabled, every redirect (the Location field) is checked.
-            Host should be specified using the host xml tag:
-                    <host>yandex.ru</host>
-        -->
+    <!-- Host should be specified exactly as in URL. The name is checked before DNS resolution.
+        Example: "yandex.ru", "yandex.ru." and "www.yandex.ru" are different hosts.
+                If port is explicitly specified in URL, the host:port is checked as a whole.
+                If host specified here without port, any port with this host allowed.
+                "yandex.ru" -> "yandex.ru:443", "yandex.ru:80" etc. is allowed, but "yandex.ru:80" -> only "yandex.ru:80" is allowed.
+        If the host is specified as IP address, it is checked as specified in URL. Example: "[2a02:6b8:a::a]".
+        If there are redirects and support for redirects is enabled, every redirect (the Location field) is checked.
+        Host should be specified using the host xml tag:
+                <host>yandex.ru</host>
+    -->
 
-        <!-- Regular expression can be specified. RE2 engine is used for regexps.
-            Regexps are not aligned: don't forget to add ^ and $. Also don't forget to escape dot (.) metacharacter
-            (forgetting to do so is a common source of error).
-        -->
+    <!-- Regular expression can be specified. RE2 engine is used for regexps.
+        Regexps are not aligned: don't forget to add ^ and $. Also don't forget to escape dot (.) metacharacter
+        (forgetting to do so is a common source of error).
+    -->
     <!--</remote_url_allow_hosts>-->
 
     <!-- If element has 'incl' attribute, then for it's value will be used corresponding substitution from another file.
@@ -864,10 +864,24 @@
     </zookeeper>
     -->
     <zookeeper>
-        <node>
-            <host>zookeeper</host>
+        <node index="1">
+            <host>zk1</host>
             <port>2181</port>
         </node>
+        <node  index="2">
+            <host>zk2</host>
+            <port>2181</port>
+        </node>
+        <node index="3">
+            <host>zk3</host>
+            <port>2181</port>
+        </node>
+<!--        <session_timeout_ms>30000</session_timeout_ms>-->
+<!--        <operation_timeout_ms>10000</operation_timeout_ms>-->
+        <!-- Optional. Chroot suffix. Should exist. -->
+        <!-- root>/path/to/zookeeper/node</root -->
+        <!-- Optional. Zookeeper digest ACL string. -->
+        <!-- identity>user:password</identity -->
     </zookeeper>
 
     <!-- Substitutions for parameters of replicated tables.
@@ -888,8 +902,8 @@
         <replica>ch-cluster-0-0</replica>
         <cluster>cluster</cluster>
     </macros>
-<!--    <include_from>/etc/clickhouse-server/config.d/config.xml</include_from>-->
-<!--    <zookeeper incl="zookeeper" optional="false"/>-->
+    <!--    <include_from>/etc/clickhouse-server/config.d/config.xml</include_from>-->
+    <!--    <zookeeper incl="zookeeper" optional="false"/>-->
 
     <!-- Reloading interval for embedded dictionaries, in seconds. Default: 3600. -->
     <builtin_dictionaries_reload_interval>3600</builtin_dictionaries_reload_interval>
@@ -1095,7 +1109,7 @@
         <database>system</database>
         <table>crash_log</table>
 
-        <partition_by />
+        <partition_by/>
         <flush_interval_milliseconds>1000</flush_interval_milliseconds>
     </crash_log>
 
@@ -1165,23 +1179,23 @@
          a Base64-encoded key to the stdout. -->
     <encryption_codecs>
         <!-- aes_128_gcm_siv -->
-            <!-- Example of getting hex key from env -->
-            <!-- the code should use this key and throw an exception if its length is not 16 bytes -->
-            <!--key_hex from_env="..."></key_hex -->
+        <!-- Example of getting hex key from env -->
+        <!-- the code should use this key and throw an exception if its length is not 16 bytes -->
+        <!--key_hex from_env="..."></key_hex -->
 
-            <!-- Example of multiple hex keys. They can be imported from env or be written down in config-->
-            <!-- the code should use these keys and throw an exception if their length is not 16 bytes -->
-            <!-- key_hex id="0">...</key_hex -->
-            <!-- key_hex id="1" from_env=".."></key_hex -->
-            <!-- key_hex id="2">...</key_hex -->
-            <!-- current_key_id>2</current_key_id -->
+        <!-- Example of multiple hex keys. They can be imported from env or be written down in config-->
+        <!-- the code should use these keys and throw an exception if their length is not 16 bytes -->
+        <!-- key_hex id="0">...</key_hex -->
+        <!-- key_hex id="1" from_env=".."></key_hex -->
+        <!-- key_hex id="2">...</key_hex -->
+        <!-- current_key_id>2</current_key_id -->
 
-            <!-- Example of getting hex key from config -->
-            <!-- the code should use this key and throw an exception if its length is not 16 bytes -->
-            <!-- key>...</key -->
+        <!-- Example of getting hex key from config -->
+        <!-- the code should use this key and throw an exception if its length is not 16 bytes -->
+        <!-- key>...</key -->
 
-            <!-- example of adding nonce -->
-            <!-- nonce>...</nonce -->
+        <!-- example of adding nonce -->
+        <!-- nonce>...</nonce -->
 
         <!-- /aes_128_gcm_siv -->
     </encryption_codecs>

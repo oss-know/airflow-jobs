@@ -21,29 +21,26 @@ with DAG(
         tags=['email_address'],
         on_success_callback=cleanup_xcom
 ) as dag:
-    def start_load_temp_gits_by_company_info(ds, **kwargs):
-        return 'End start_load_temp_gits_by_company_info'
+    def load_temp_gits_by_company(params, **kwargs):
+        owners = []
+        # {"owners": ["systemd", "kubernetes"]}
+        # print("=================================")
+        # print(type(params))
+        # print(params["owners"])
+        if params:
+            owners = params["owners"]
+        from airflow.models import Variable
+        from oss_know.libs.email_address import init_temp_gits_by_company_tplt
+        clickhouse_server_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
+        init_temp_gits_by_company_tplt.load_all_temp_gits_by_company(clickhouse_server_info=clickhouse_server_info,
+                                                                     owners=owners)
+        return 'load_all_temp_gits_by_company:::end'
 
 
     op_start_load_temp_gits_by_company_info = PythonOperator(
         task_id='load_temp_gits_by_company_info',
-        python_callable=start_load_temp_gits_by_company_info,
-        provide_context=True
-    )
-
-
-    def load_temp_gits_by_company(params, **kwargs):
-        from airflow.models import Variable
-        from oss_know.libs.email_address import init_temp_gits_by_company_tplt
-        clickhouse_server_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
-        init_temp_gits_by_company_tplt.load_all_temp_gits_by_company(clickhouse_server_info=clickhouse_server_info)
-        return 'load_all_temp_gits_by_company:::end'
-
-
-    op_load_temp_gits_by_company = PythonOperator(
-        task_id='op_load_temp_gits_by_company',
         python_callable=load_temp_gits_by_company,
 
-        provide_context=True
     )
-    op_start_load_temp_gits_by_company_info >> op_load_temp_gits_by_company
+
+    op_start_load_temp_gits_by_company_info

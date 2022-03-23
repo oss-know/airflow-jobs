@@ -13,7 +13,7 @@ help: ## Help dialog.
 ####################################################################
 
 up_infra: ## Create and start containers
-   #  docker network create -d bridge dev-network && 
+   #  docker network create -d bridge dev-network &&
 	docker pull airflowjobs/airflow:dev-python3.8 && \
 	$(DOCKER_INFRA) up &
 
