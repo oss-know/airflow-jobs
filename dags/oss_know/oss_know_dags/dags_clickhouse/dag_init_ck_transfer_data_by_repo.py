@@ -25,7 +25,7 @@ with DAG(
     )
 
 
-    def do_ck_transfer_data_by_repo(params, owner_repo):
+    def do_ck_transfer_data_by_repo(params, search_key):
         from airflow.models import Variable
         from oss_know.libs.clickhouse import init_ck_transfer_data
         opensearch_index = params["OPENSEARCH_INDEX"]
@@ -40,7 +40,7 @@ with DAG(
             transfer_data = init_ck_transfer_data.transfer_data_special_by_repo(clickhouse_server_info=clickhouse_server_info,
                                                                         opensearch_index=opensearch_index,
                                                                         table_name=table_name,
-                                                                        opensearch_conn_datas=opensearch_conn_datas, owner_repo=owner_repo)
+                                                                        opensearch_conn_datas=opensearch_conn_datas, search_key=search_key)
         else:
             table_templates = Variable.get(CK_TABLE_DEFAULT_VAL_TPLT, deserialize_json=True)
             for table_template in table_templates:
@@ -49,12 +49,21 @@ with DAG(
                     break
             df = pd.json_normalize(template)
             template = init_ck_transfer_data.parse_data_init(df)
+            if table_name.startswith("maillist"):
+                transfer_data = init_ck_transfer_data.transfer_data_by_repo(
+                    clickhouse_server_info=clickhouse_server_info,
+                    opensearch_index=opensearch_index,
+                    table_name=table_name,
+                    opensearch_conn_datas=opensearch_conn_datas,
+                    template=template, search_key=search_key, type='maillist_init')
+            else:
+                transfer_data = init_ck_transfer_data.transfer_data_by_repo(
+                    clickhouse_server_info=clickhouse_server_info,
+                    opensearch_index=opensearch_index,
+                    table_name=table_name,
+                    opensearch_conn_datas=opensearch_conn_datas,
+                    template=template, search_key=search_key,type='github_git_init_by_repo')
 
-            transfer_data = init_ck_transfer_data.transfer_data_by_repo(clickhouse_server_info=clickhouse_server_info,
-                                                                opensearch_index=opensearch_index,
-                                                                table_name=table_name,
-                                                                opensearch_conn_datas=opensearch_conn_datas,
-                                                                template=template, owner_repo=owner_repo)
         return 'do_ck_transfer_data_by_repo:::end'
 
 
@@ -62,12 +71,23 @@ with DAG(
 
     os_index_ck_tb_infos = Variable.get(CK_TABLE_MAP_FROM_OS_INDEX, deserialize_json=True)
     owner_repo_list = Variable.get("repo_list", deserialize_json=True)
+    maillist_repo_list = Variable.get("maillist_repo", deserialize_json=True)
     for os_index_ck_tb_info in os_index_ck_tb_infos:
-        for owner_repo in owner_repo_list:
-            op_do_ck_transfer_data_by_repo = PythonOperator(
-                task_id=f'do_ck_transfer_os_index_{os_index_ck_tb_info["OPENSEARCH_INDEX"]}_ck_tb_{os_index_ck_tb_info["CK_TABLE_NAME"]}_owner_{owner_repo.get("owner")}_repo_{owner_repo.get("repo")}',
-                python_callable=do_ck_transfer_data_by_repo,
-                op_kwargs={'params': os_index_ck_tb_info,'owner_repo':owner_repo},
-            )
+        if os_index_ck_tb_info["OPENSEARCH_INDEX"].startswith('maillist'):
+            for maillist_repo in maillist_repo_list:
+                op_do_ck_transfer_data_by_repo = PythonOperator(
+                    task_id=f'do_ck_transfer_os_index_{os_index_ck_tb_info["OPENSEARCH_INDEX"]}_ck_tb_{os_index_ck_tb_info["CK_TABLE_NAME"]}_project_name_{maillist_repo.get("project_name")}_mail_list_name_{maillist_repo.get("mail_list_name")}',
+                    python_callable=do_ck_transfer_data_by_repo,
+                    op_kwargs={'params': os_index_ck_tb_info, 'search_key': maillist_repo},
+                )
 
-            op_init_clickhouse_transfer_data_by_repo >> op_do_ck_transfer_data_by_repo
+                op_init_clickhouse_transfer_data_by_repo >> op_do_ck_transfer_data_by_repo
+        else:
+            for owner_repo in owner_repo_list:
+                op_do_ck_transfer_data_by_repo = PythonOperator(
+                    task_id=f'do_ck_transfer_os_index_{os_index_ck_tb_info["OPENSEARCH_INDEX"]}_ck_tb_{os_index_ck_tb_info["CK_TABLE_NAME"]}_owner_{owner_repo.get("owner")}_repo_{owner_repo.get("repo")}',
+                    python_callable=do_ck_transfer_data_by_repo,
+                    op_kwargs={'params': os_index_ck_tb_info, 'search_key': owner_repo},
+                )
+
+                op_init_clickhouse_transfer_data_by_repo >> op_do_ck_transfer_data_by_repo

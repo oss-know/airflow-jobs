@@ -77,6 +77,32 @@ def ck_check_point_repo(opensearch_client, opensearch_index, clickhouse_table, u
     logger.info(response)
 
 
+def ck_check_point_maillist(opensearch_client, opensearch_index, clickhouse_table, updated_at, maillist_repo):
+    now_time = datetime.datetime.now()
+    check_info = {
+        "search_key": {
+            "type": "os_ck",
+            "update_time": now_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "update_timestamp": now_time.timestamp(),
+            "opensearch_index": opensearch_index,
+            "clickhouse_table": clickhouse_table,
+            "project_name": maillist_repo.get("project_name"),
+            "mail_list_name": maillist_repo.get("mail_list_name")
+        },
+        "os_ck": {
+            "type": "os_ck",
+            "opensearch_index": opensearch_index,
+            "clickhouse_table": clickhouse_table,
+            "last_data": {
+                "updated_at": updated_at
+            }
+        }
+    }
+    # 插入一条数据
+    response = opensearch_client.index(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA, body=check_info)
+    logger.info(response)
+
+
 # 转换为基本数据类型
 def alter_data_type(row):
     if isinstance(row, numpy.int64):
@@ -97,7 +123,8 @@ def alter_data_type(row):
 
 
 # 特殊情况 by repo
-def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, table_name, opensearch_conn_datas, owner_repo):
+def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, table_name, opensearch_conn_datas,
+                                  search_key):
     bulk_datas = []
     template = {
         "search_key": {
@@ -115,14 +142,12 @@ def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, tabl
                   user=clickhouse_server_info["USER"],
                   password=clickhouse_server_info["PASSWD"],
                   database=clickhouse_server_info["DATABASE"])
+
+    transfer_type = 'github_issues_timeline_by_repo'
+    keep_idempotent(ck=ck, clickhouse_server_info=clickhouse_server_info, search_key=search_key,
+                    transfer_type=transfer_type, table_name=table_name)
     opensearch_datas = get_data_from_opensearch_by_repo(index=opensearch_index,
-                                                        opensearch_conn_datas=opensearch_conn_datas, repo=owner_repo)
-    owner = owner_repo.get('owner')
-    repo  = owner_repo.get('repo')
-    # 保证幂等
-    ck.execute_no_params(
-        f"ALTER TABLE {table_name}_local ON CLUSTER {clickhouse_server_info['CLUSTER_NAME']} DELETE WHERE search_key__owner = '{owner}' and search_key__repo = '{repo}'")
-    logger.info("将同owner和repo的老数据进行删除")
+                                                        opensearch_conn_datas=opensearch_conn_datas, repo=search_key)
     max_timestamp = 0
     count = 0
     # 把os中的数据一条一条拿出来
@@ -151,14 +176,15 @@ def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, tabl
             result = ck.execute(sql, bulk_datas)
         logger.info(f"已经插入的数据条数:{count}")
     except Exception as error:
-        bulk_except(bulk_datas, opensearch_datas, opensearch_index, table_name, owner_repo)
+        bulk_except_repo(bulk_datas, opensearch_datas, opensearch_index, table_name, search_key,
+                         transfer_type=transfer_type)
         raise Exception(error)
 
     # 将检查点放在这里插入
     ck_check_point_repo(opensearch_client=opensearch_datas[1],
                         opensearch_index=opensearch_index,
                         clickhouse_table=table_name,
-                        updated_at=max_timestamp, repo=owner_repo)
+                        updated_at=max_timestamp, repo=search_key)
     ck.close()
 
 
@@ -221,10 +247,6 @@ warnings.filterwarnings('ignore')
 
 
 def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensearch_conn_datas, template):
-    # if opensearch_index == 'maillists' or opensearch_index == 'maillists_enriched':
-    #     settings = {'strings_encoding': 'unicode_escape'}
-    # else:
-    #     settings = {'strings_encoding': 'utf-8'}
     ck = CKServer(host=clickhouse_server_info["HOST"],
                   port=clickhouse_server_info["PORT"],
                   user=clickhouse_server_info["USER"],
@@ -233,167 +255,6 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
     fields = get_table_structure(table_name=table_name, ck=ck)
     opensearch_datas = get_data_from_opensearch(index=opensearch_index,
                                                 opensearch_conn_datas=opensearch_conn_datas)
-    max_timestamp = 0
-    count = 0
-    bulk_data = []
-    try:
-        for os_data in opensearch_datas[0]:
-            updated_at = os_data["_source"]["search_key"]["updated_at"]
-            # # 特殊情况要记得删掉
-            # if isinstance(updated_at,float):
-            #     continue
-            if updated_at > max_timestamp:
-                max_timestamp = updated_at
-            df_data = os_data["_source"]
-
-            df = pd.json_normalize(df_data)
-            dict_data = parse_data(df, template)
-            try:
-                dict_dict = json.loads(json.dumps(dict_data))
-            except JSONDecodeError as error:
-                logger.error(error)
-                continue
-            # except_fields = []
-            for field in fields:
-                # if not dict_data.get(field):
-                #     except_fields.append(f'`{field}`')
-                if dict_dict.get(field) and fields.get(field) == 'DateTime64(3)':
-                    # dict_data[field] = utc_timestamp(dict_data[field])
-                    # logger.info(f'dict_data:{dict_data[field]} type:{type(dict_data[field])}')
-                    dict_dict[field] = datetime.datetime.strptime(dict_dict[field], '%Y-%m-%dT%H:%M:%SZ')
-                    # logger.info(f'dict_data--datetime-type:{dict_data[field]} type:{type(dict_data[field])}')
-                elif fields.get(field) == 'String':
-                    try:
-                        dict_dict[field].encode('utf-8')
-                    except UnicodeEncodeError as error:
-                        dict_dict[field] = dict_dict[field].encode('unicode-escape').decode('utf-8')
-            bulk_data.append(dict_dict)
-            # 这里except_fields 里存储的就是表结构中有的fields 而数据中没有的字段
-            # if except_fields:
-            #     # logger.info(f'缺失的字段列表：{except_fields}')
-            #     except_fields = f'EXCEPT({",".join(except_fields)})'
-            #     sql = f"INSERT INTO {table_name} (* {except_fields}) VALUES"
-            # else:
-            #     sql = f"INSERT INTO {table_name} VALUES"
-            ck_sql = f"INSERT INTO {table_name} VALUES"
-            try:
-                # result = ck.execute(ck_sql, [dict_data])
-                count += 1
-                if count % 20000 == 0:
-                    result = ck.execute(ck_sql, bulk_data)
-                    bulk_data.clear()
-                    logger.info(f'已经插入的数据的条数为:{count}')
-                    # print(bulk_data)
-                    # raise Exception("运行一就停")
-                # ck.execute_use_setting(sql=sql, params=[dict_data], settings=settings)
-            except KeyError as error:
-                logger.error(f'插入数据发现错误 {error}')
-                logger.error(f'出现问题的数据是{dict_dict}')
-                postgres_conn = get_postgres_conn()
-                sql = '''INSERT INTO os_ck_errar(
-                                    index, data) 
-                                    VALUES (%s, %s);'''
-                try:
-                    cur = postgres_conn.cursor()
-                    os_index = table_name
-                    error_data = json.dumps(os_data['_source'])
-                    cur.execute(sql, (os_index, error_data))
-                    postgres_conn.commit()
-                    cur.close()
-                except (psycopg2.DatabaseError) as error:
-                    logger.error(f"psycopg2.DatabaseError:{error}")
-            except ServerException as error:
-                print(f'----------------------------Server')
-                logger.error(f'插入数据发现错误 {error}')
-                logger.error(f'出现问题的数据是{dict_dict}')
-                # postgres_conn = get_postgres_conn()
-                # sql = '''INSERT INTO os_ck_errar(
-                #                                     index, data)
-                #                                     VALUES (%s, %s);'''
-                # try:
-                #     cur = postgres_conn.cursor()
-                #     os_index = table_name
-                #     error_data = json.dumps(os_data['_source'])
-                #     cur.execute(sql, (os_index, error_data))
-                #     postgres_conn.commit()
-                #     cur.close()
-                # except (psycopg2.DatabaseError) as error:
-                #     logger.error(f"psycopg2.DatabaseError:{error}")
-                #
-                # finally:
-                #     if postgres_conn is not None:
-                #         postgres_conn.close()
-            except UnicodeEncodeError as error:
-                logger.error(f'插入数据发现错误 {error}')
-                logger.error(f'出现问题的数据是{dict_dict}')
-                logger.error(f'舍弃这条数据')
-                # logger.error(f'使用unicode进行编码:{json.loads(json.dumps(dict_dict))}')
-                # settings = {'strings_encoding': 'gbk'}
-                # try:
-                #     ck.execute_use_setting(sql=sql, params=[dict_data], settings=settings)
-                #     count += 1
-                #     if count % 5000 == 0:
-                #         logger.info(f'已经插入的数据的条数为:{count}')
-                # except UnicodeEncodeError as error:
-                #     logger.error(f'使用Unicode编码还是出现问题')
-                #     logger.error(f'插入数据发现错误 {error}')
-                #     logger.error(f'出现问题的数据是{dict_data}')
-            except AttributeError as error:
-                logger.error(f'插入数据发现错误 {error}')
-                logger.error(f'出现问题的数据是{json.dumps(dict_dict)}')
-                raise AttributeError(error)
-
-
-    # airflow dag的中断
-    except AirflowException as error:
-        raise AirflowException(f'airflow interrupt {error}')
-    except NotFoundError as error:
-
-        raise NotFoundError(
-            f'scroll error raise HTTP_EXCEPTIONS.get(status_code, TransportError)(opensearchpy.exceptions.NotFoundError: NotFoundError(404, "search_phase_execution_exception", "No search context found for id [631]"){error}')
-    finally:
-        # 将检查点放在这里插入
-        ck_check_point(opensearch_client=opensearch_datas[1],
-                       opensearch_index=opensearch_index,
-                       clickhouse_table=table_name,
-                       updated_at=max_timestamp)
-        ck.close()
-    if bulk_data:
-        result = ck.execute(ck_sql, bulk_data)
-    logger.info(f'已经插入的数据的条数为:{count}')
-    # 将检查点放在这里插入
-    ck_check_point(opensearch_client=opensearch_datas[1],
-                   opensearch_index=opensearch_index,
-                   clickhouse_table=table_name,
-                   updated_at=max_timestamp)
-    ck.close()
-
-
-def bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name, repo):
-    start_updated_at = bulk_data[0]['search_key__updated_at']
-    end_updated_at = bulk_data[-1]['search_key__updated_at']
-    ck_check_point_repo(opensearch_client=opensearch_datas[1],
-                        opensearch_index=opensearch_index,
-                        clickhouse_table=table_name,
-                        updated_at=start_updated_at, repo=repo)
-    logger.error(f'批量插入出现问题，将这一批的最小的updated时间插入check_point 这一批数据的updated 范围为{start_updated_at}----{end_updated_at}')
-
-
-def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, opensearch_conn_datas, template, owner_repo):
-    ck = CKServer(host=clickhouse_server_info["HOST"],
-                  port=clickhouse_server_info["PORT"],
-                  user=clickhouse_server_info["USER"],
-                  password=clickhouse_server_info["PASSWD"],
-                  database=clickhouse_server_info["DATABASE"])
-    owner = owner_repo.get('owner')
-    repo = owner_repo.get('repo')
-    # 保证幂等
-    ck.execute_no_params(
-        f"ALTER TABLE {table_name}_local ON CLUSTER {clickhouse_server_info['CLUSTER_NAME']} DELETE WHERE search_key__owner = '{owner}' and search_key__repo = '{repo}'")
-    logger.info("将同owner和repo的老数据进行删除")
-    fields = get_table_structure(table_name=table_name, ck=ck)
-    opensearch_datas = get_data_from_opensearch_by_repo(index=opensearch_index,
-                                                        opensearch_conn_datas=opensearch_conn_datas, repo=owner_repo)
     max_timestamp = 0
     count = 0
     bulk_data = []
@@ -430,24 +291,24 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
                     max_timestamp = 0
                     logger.info(f'已经插入的数据的条数为:{count}')
             except KeyError as error:
-                bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo)
+                bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name)
                 raise KeyError(error)
             except ServerException as error:
-                bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo)
+                bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name)
                 raise ServerException(error)
             except AttributeError as error:
-                bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo)
+                bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name)
                 raise AttributeError(error)
     # airflow dag的中断
     except AirflowException as error:
-        bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo)
+        bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name)
         raise AirflowException(f'airflow interrupt {error}')
     except NotFoundError as error:
-        bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo)
+        bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name)
         raise NotFoundError(
             f'scroll error raise HTTP_EXCEPTIONS.get(status_code, TransportError)(opensearchpy.exceptions.NotFoundError: NotFoundError(404, "search_phase_execution_exception", "No search context found for id [631]"){error}')
     except Exception as error:
-        bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo)
+        bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name)
         raise Exception(error)
     # 处理尾部多余的数据
     try:
@@ -455,22 +316,363 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
             result = ck.execute(ck_sql, bulk_data)
         logger.info(f'已经插入的数据的条数为:{count}')
     except KeyError as error:
-        bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo)
+        bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name)
         raise KeyError(error)
     except ServerException as error:
-        bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo)
+        bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name)
         raise ServerException(error)
     except AttributeError as error:
-        bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo)
+        bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name)
         raise AttributeError(error)
     except Exception as error:
-        bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo)
+        bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name)
+        raise Exception(error)
+    # 将检查点放在这里插入
+    ck_check_point(opensearch_client=opensearch_datas[1],
+                   opensearch_index=opensearch_index,
+                   clickhouse_table=table_name,
+                   updated_at=max_timestamp)
+    ck.close()
+
+
+# check_structure
+def transfer_data_check_structure(clickhouse_server_info, opensearch_index, table_name, opensearch_conn_datas,
+                                  template):
+    try:
+        ck = CKServer(host=clickhouse_server_info["HOST"],
+                      port=clickhouse_server_info["PORT"],
+                      user=clickhouse_server_info["USER"],
+                      password=clickhouse_server_info["PASSWD"],
+                      database=clickhouse_server_info["DATABASE"])
+        fields = get_table_structure(table_name=table_name, ck=ck)
+        opensearch_datas = get_data_from_opensearch(index=opensearch_index,
+                                                    opensearch_conn_datas=opensearch_conn_datas)
+        max_timestamp = 0
+        flag = 0
+        mistake_structure = []
+        for os_data in opensearch_datas[0]:
+            updated_at = os_data["_source"]["search_key"]["updated_at"]
+            if updated_at > max_timestamp:
+                max_timestamp = updated_at
+            df_data = os_data["_source"]
+
+            df = pd.json_normalize(df_data)
+            dict_data = parse_data(df, template)
+            try:
+                dict_dict = json.loads(json.dumps(dict_data))
+            except JSONDecodeError as error:
+                logger.error(error)
+                continue
+            for field in fields:
+                if dict_dict.get(field) and fields.get(field) == 'String':
+                    try:
+                        dict_dict[field] = datetime.datetime.strptime(dict_dict[field], '%Y-%m-%dT%H:%M:%SZ')
+                        flag = 1
+                        mistake_structure.append(field)
+
+                    except ValueError:
+                        pass
+        if flag:
+            raise Exception(f"数据声明为字符串类型但是数据为日期类型,字段为{list(set(mistake_structure))}")
+    except AirflowException as error:
+        if flag:
+            raise Exception(f"数据声明为字符串类型但是数据为日期类型,字段为{list(set(mistake_structure))}")
+        raise AirflowException(f'airflow interrupt {error}')
+
+
+def bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, transfer_type):
+    start_updated_at = bulk_data[0]['search_key__updated_at']
+    end_updated_at = bulk_data[-1]['search_key__updated_at']
+    if transfer_type == "github_git_init_by_repo" or transfer_type == 'github_issues_timeline_by_repo':
+        ck_check_point_repo(opensearch_client=opensearch_datas[1],
+                            opensearch_index=opensearch_index,
+                            clickhouse_table=table_name,
+                            updated_at=start_updated_at, repo=search_key)
+    elif transfer_type == "maillist_init":
+        ck_check_point_maillist(opensearch_client=opensearch_datas[1],
+                                opensearch_index=opensearch_index,
+                                clickhouse_table=table_name,
+                                updated_at=start_updated_at,
+                                maillist_repo=search_key)
+    logger.error(f'批量插入出现问题，将这一批的最小的updated时间插入check_point 这一批数据的updated 范围为{start_updated_at}----{end_updated_at}')
+
+
+def bulk_except_maillist(bulk_data, opensearch_datas, opensearch_index, table_name, maillist_repo):
+    start_updated_at = bulk_data[0]['search_key__updated_at']
+    end_updated_at = bulk_data[-1]['search_key__updated_at']
+    ck_check_point_maillist(opensearch_client=opensearch_datas[1],
+                            opensearch_index=opensearch_index,
+                            clickhouse_table=table_name,
+                            updated_at=start_updated_at, maillist_repo=maillist_repo)
+    logger.error(f'批量插入出现问题，将这一批的最小的updated时间插入check_point 这一批数据的updated 范围为{start_updated_at}----{end_updated_at}')
+
+
+def bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name):
+    start_updated_at = bulk_data[0]['search_key__updated_at']
+    end_updated_at = bulk_data[-1]['search_key__updated_at']
+    ck_check_point(opensearch_client=opensearch_datas[1],
+                   opensearch_index=opensearch_index,
+                   clickhouse_table=table_name,
+                   updated_at=start_updated_at)
+    logger.error(f'批量插入出现问题，将这一批的最小的updated时间插入check_point 这一批数据的updated 范围为{start_updated_at}----{end_updated_at}')
+
+
+# 保证插入数据的幂等性
+def keep_idempotent(ck, search_key, clickhouse_server_info, table_name, transfer_type):
+    print(f"{transfer_type}-------------------------------------------------------------")
+    # 获取clickhouse集群节点信息
+    get_clusters_sql = f"select host_name from system.clusters where cluster = '{clickhouse_server_info['CLUSTER_NAME']}'"
+    # print(get_clusters_sql)
+    clusters_info = ck.execute_no_params(get_clusters_sql)
+    delect_data_sql = ''
+    check_if_done_sql = ''
+    # 保证幂等
+    import time
+    # 获得当前时间时间戳
+    now = int(time.time())
+    # logger.info(type)
+    # raise Exception("停止一下")
+    if transfer_type == 'github_git_init_by_repo' or transfer_type == 'github_issues_timeline_by_repo':
+        owner = search_key.get('owner')
+        repo = search_key.get('repo')
+        delect_data_sql = f"ALTER TABLE {table_name}_local ON CLUSTER {clickhouse_server_info['CLUSTER_NAME']} DELETE WHERE {now}={now} and search_key__owner = '{owner}' and search_key__repo = '{repo}'"
+        check_if_done_sql = f"select is_done from system.mutations m WHERE `table` = '{table_name}_local' and command = 'DELETE WHERE ({now} = {now}) AND (search_key__owner = \\'{owner}\\') AND (search_key__repo = \\'{repo}\\')'"
+    elif transfer_type == 'maillist_init':
+        project_name = search_key.get('project_name')
+        mail_list_name = search_key.get('mail_list_name')
+        delect_data_sql = f"ALTER TABLE {table_name}_local ON CLUSTER {clickhouse_server_info['CLUSTER_NAME']} DELETE WHERE {now} = {now} and search_key__project_name = '{project_name}' and search_key__mail_list_name = '{mail_list_name}'"
+        check_if_done_sql = f"select is_done from system.mutations m WHERE `table` = '{table_name}_local' and command = 'DELETE WHERE ({now} = {now}) AND (search_key__project_name = \\'{project_name}\\') AND (search_key__mail_list_name = \\'{mail_list_name}\\')'"
+    ck.execute_no_params(delect_data_sql)
+    logger.info("将同owner和repo的老数据进行删除")
+
+    time.sleep(1)
+    logger.info("等待1秒，等待数据删除成功")
+    wait_count = 1
+    while 1:
+        delete_flag = 1
+        for cluster_host_name in clusters_info:
+            logger.info(f"clickhouse 节点：{cluster_host_name[0]}")
+            all_ck = CKServer(host=f'{cluster_host_name[0]}',
+                              port=9000,
+                              user=clickhouse_server_info["USER"],
+                              password=clickhouse_server_info["PASSWD"],
+                              database=clickhouse_server_info["DATABASE"])
+            result = all_ck.execute_no_params(check_if_done_sql)
+            print(result)
+            if result and result[0][0] == 1:
+                logger.info(f"{cluster_host_name[0]} 上已经将数据删除成功删除")
+            else:
+                delete_flag = 0
+                logger.info(f"{cluster_host_name[0]} 上没有将数据删除成功删除")
+        if delete_flag == 1:
+            logger.info("所有节点上的相关数据已经完全删除")
+            break
+        time.sleep(1)
+        wait_count += 1
+        if wait_count == 20:
+            raise Exception("等待时间过长，删除时间超时,无法保证幂等")
+
+
+def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, opensearch_conn_datas, template,
+                          search_key, type):
+    ck = CKServer(host=clickhouse_server_info["HOST"],
+                  port=clickhouse_server_info["PORT"],
+                  user=clickhouse_server_info["USER"],
+                  password=clickhouse_server_info["PASSWD"],
+                  database=clickhouse_server_info["DATABASE"])
+
+    if type == "github_git_init_by_repo":
+        keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
+                        table_name=table_name, transfer_type="github_git_init_by_repo")
+        logger.info("github_git_init_by_repo------------------------")
+        opensearch_datas = get_data_from_opensearch_by_repo(index=opensearch_index,
+                                                            opensearch_conn_datas=opensearch_conn_datas,
+                                                            repo=search_key)
+    elif type == "maillist_init":
+        keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
+                        table_name=table_name, transfer_type="maillist_init")
+        logger.info("maillist------------------------")
+        opensearch_datas = get_data_from_opensearch_maillist(index=opensearch_index,
+                                                             opensearch_conn_datas=opensearch_conn_datas,
+                                                             maillist_repo=search_key)
+    fields = get_table_structure(table_name=table_name, ck=ck)
+    max_timestamp = 0
+    count = 0
+    bulk_data = []
+    try:
+        for os_data in opensearch_datas[0]:
+            updated_at = os_data["_source"]["search_key"]["updated_at"]
+            if updated_at > max_timestamp:
+                max_timestamp = updated_at
+            df_data = os_data["_source"]
+
+            df = pd.json_normalize(df_data)
+            dict_data = parse_data(df, template)
+            try:
+                dict_dict = json.loads(json.dumps(dict_data))
+            except JSONDecodeError as error:
+                logger.error(error)
+                continue
+            for field in fields:
+                if dict_dict.get(field) and fields.get(field) == 'DateTime64(3)':
+                    dict_dict[field] = datetime.datetime.strptime(dict_dict[field], '%Y-%m-%dT%H:%M:%SZ')
+                elif fields.get(field) == 'String':
+                    try:
+                        dict_dict[field].encode('utf-8')
+                    except UnicodeEncodeError as error:
+                        dict_dict[field] = dict_dict[field].encode('unicode-escape').decode('utf-8')
+            bulk_data.append(dict_dict)
+            ck_sql = f"INSERT INTO {table_name} VALUES"
+            try:
+                # result = ck.execute(ck_sql, [dict_data])
+                count += 1
+                if count % 20000 == 0:
+                    result = ck.execute(ck_sql, bulk_data)
+                    bulk_data.clear()
+                    max_timestamp = 0
+                    logger.info(f'已经插入的数据的条数为:{count}')
+            except KeyError as error:
+                bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, type)
+                raise KeyError(error)
+            except ServerException as error:
+                bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, type)
+                raise ServerException(error)
+            except AttributeError as error:
+                bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, type)
+                raise AttributeError(error)
+    # airflow dag的中断
+    except AirflowException as error:
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, type)
+        raise AirflowException(f'airflow interrupt {error}')
+    except NotFoundError as error:
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, type)
+        raise NotFoundError(
+            f'scroll error raise HTTP_EXCEPTIONS.get(status_code, TransportError)(opensearchpy.exceptions.NotFoundError: NotFoundError(404, "search_phase_execution_exception", "No search context found for id [631]"){error}')
+    except Exception as error:
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, type)
+        raise Exception(error)
+    # 处理尾部多余的数据
+    try:
+        if bulk_data:
+            result = ck.execute(ck_sql, bulk_data)
+        logger.info(f'已经插入的数据的条数为:{count}')
+    except KeyError as error:
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, type)
+        raise KeyError(error)
+    except ServerException as error:
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, type)
+        raise ServerException(error)
+    except AttributeError as error:
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, type)
+        raise AttributeError(error)
+    except Exception as error:
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, type)
+        raise Exception(error)
+    # 将检查点放在这里插入
+    if type == "github_git_init_by_repo":
+        ck_check_point_repo(opensearch_client=opensearch_datas[1],
+                            opensearch_index=opensearch_index,
+                            clickhouse_table=table_name,
+                            updated_at=max_timestamp, repo=search_key)
+    elif type == "maillist_init":
+        ck_check_point_maillist(opensearch_client=opensearch_datas[1],
+                                opensearch_index=opensearch_index,
+                                clickhouse_table=table_name,
+                                updated_at=max_timestamp,
+                                maillist_repo=search_key)
+    ck.close()
+
+
+def transfer_data_maillist(clickhouse_server_info, opensearch_index, table_name, opensearch_conn_datas, template,
+                           maillist_repo):
+    ck = CKServer(host=clickhouse_server_info["HOST"],
+                  port=clickhouse_server_info["PORT"],
+                  user=clickhouse_server_info["USER"],
+                  password=clickhouse_server_info["PASSWD"],
+                  database=clickhouse_server_info["DATABASE"])
+    keep_idempotent(ck=ck, clickhouse_server_info=clickhouse_server_info, search_key=maillist_repo,
+                    table_name=table_name, transfer_type='maillist_init')
+    fields = get_table_structure(table_name=table_name, ck=ck)
+    opensearch_datas = get_data_from_opensearch_maillist(index=opensearch_index,
+                                                         opensearch_conn_datas=opensearch_conn_datas,
+                                                         maillist_repo=maillist_repo)
+    max_timestamp = 0
+    count = 0
+    bulk_data = []
+    try:
+        for os_data in opensearch_datas[0]:
+            updated_at = os_data["_source"]["search_key"]["updated_at"]
+            if updated_at > max_timestamp:
+                max_timestamp = updated_at
+            df_data = os_data["_source"]
+
+            df = pd.json_normalize(df_data)
+            dict_data = parse_data(df, template)
+            try:
+                dict_dict = json.loads(json.dumps(dict_data))
+            except JSONDecodeError as error:
+                logger.error(error)
+                continue
+            for field in fields:
+                if dict_dict.get(field) and fields.get(field) == 'DateTime64(3)':
+                    dict_dict[field] = datetime.datetime.strptime(dict_dict[field], '%Y-%m-%dT%H:%M:%SZ')
+                elif fields.get(field) == 'String':
+                    try:
+                        dict_dict[field].encode('utf-8')
+                    except UnicodeEncodeError as error:
+                        dict_dict[field] = dict_dict[field].encode('unicode-escape').decode('utf-8')
+            bulk_data.append(dict_dict)
+            ck_sql = f"INSERT INTO {table_name} VALUES"
+            try:
+                # result = ck.execute(ck_sql, [dict_data])
+                count += 1
+                if count % 20000 == 0:
+                    result = ck.execute(ck_sql, bulk_data)
+                    bulk_data.clear()
+                    max_timestamp = 0
+                    logger.info(f'已经插入的数据的条数为:{count}')
+            except KeyError as error:
+                bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, maillist_repo)
+                raise KeyError(error)
+            except ServerException as error:
+                bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, maillist_repo)
+                raise ServerException(error)
+            except AttributeError as error:
+                bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, maillist_repo)
+                raise AttributeError(error)
+    # airflow dag的中断
+    except AirflowException as error:
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, maillist_repo)
+        raise AirflowException(f'airflow interrupt {error}')
+    except NotFoundError as error:
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, maillist_repo)
+        raise NotFoundError(
+            f'scroll error raise HTTP_EXCEPTIONS.get(status_code, TransportError)(opensearchpy.exceptions.NotFoundError: NotFoundError(404, "search_phase_execution_exception", "No search context found for id [631]"){error}')
+    except Exception as error:
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, maillist_repo)
+        raise Exception(error)
+    # 处理尾部多余的数据
+    try:
+        if bulk_data:
+            result = ck.execute(ck_sql, bulk_data)
+        logger.info(f'已经插入的数据的条数为:{count}')
+    except KeyError as error:
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, maillist_repo)
+        raise KeyError(error)
+    except ServerException as error:
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, maillist_repo)
+        raise ServerException(error)
+    except AttributeError as error:
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, maillist_repo)
+        raise AttributeError(error)
+    except Exception as error:
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, maillist_repo)
         raise Exception(error)
     # 将检查点放在这里插入
     ck_check_point_repo(opensearch_client=opensearch_datas[1],
                         opensearch_index=opensearch_index,
                         clickhouse_table=table_name,
-                        updated_at=max_timestamp, repo=owner_repo)
+                        updated_at=max_timestamp, repo=maillist_repo)
     ck.close()
 
 
@@ -513,6 +715,46 @@ def get_data_from_opensearch_by_repo(index, opensearch_conn_datas, repo):
                                                "term": {
                                                    "search_key.repo.keyword": {
                                                        "value": repo.get('repo')
+                                                   }
+                                               }
+                                           }
+                                       ]
+                                   }
+                               },
+                               "sort": [
+                                   {
+                                       "search_key.updated_at": {
+                                           "order": "asc"
+                                       }
+                                   }
+                               ]
+                           },
+                           index=index,
+                           size=5000,
+                           scroll="40m",
+                           request_timeout=100,
+                           preserve_order=True)
+    return results, opensearch_client
+
+
+def get_data_from_opensearch_maillist(index, opensearch_conn_datas, maillist_repo):
+    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+    results = helpers.scan(client=opensearch_client,
+                           query={
+                               "query": {
+                                   "bool": {
+                                       "must": [
+                                           {
+                                               "term": {
+                                                   "search_key.project_name.keyword": {
+                                                       "value": maillist_repo.get('project_name')
+                                                   }
+                                               }
+                                           },
+                                           {
+                                               "term": {
+                                                   "search_key.mail_list_name.keyword": {
+                                                       "value": maillist_repo.get('mail_list_name')
                                                    }
                                                }
                                            }
