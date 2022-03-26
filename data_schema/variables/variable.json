@@ -105,7 +105,7 @@
   },
   "clickhouse_conn_data": {
     "HOST": "192.168.8.108",
-    "PASSWD": "",
+    "PASSWD": "default",
     "PORT": "19001",
     "USER": "default",
     "DATABASE": "default",
