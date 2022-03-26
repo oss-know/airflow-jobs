@@ -6,9 +6,9 @@ services:
     environment:
       # - plugins.security.disabled=true
       - cluster.name=opensearch-cluster
-      - node.name=opensearch-node1
-      - discovery.seed_hosts=opensearch-node1,opensearch-node2
-      - cluster.initial_master_nodes=opensearch-node1,opensearch-node2
+      - node.name=dev-opensearch-node1
+      - discovery.seed_hosts=dev-opensearch-node1,dev-opensearch-node2
+      - cluster.initial_master_nodes=dev-opensearch-node1,dev-opensearch-node2
       - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping
       - "OPENSEARCH_JAVA_OPTS=-Xms4g -Xmx4g" # minimum and maximum Java heap size, recommend setting both to 50% of system RAM
       - http.max_content_length=1000mb
@@ -22,8 +22,8 @@ services:
     volumes:
       - opensearch-data1:/usr/share/opensearch/data
     ports:
-      - 19200:9200
-      - 19600:9600 # required for Performance Analyzer
+      - 19201:9200
+      - 19601:9600 # required for Performance Analyzer
     networks:
       - dev-network
 
@@ -33,9 +33,9 @@ services:
     environment:
       # - plugins.security.disabled=true
       - cluster.name=opensearch-cluster
-      - node.name=opensearch-node2
-      - discovery.seed_hosts=opensearch-node1,opensearch-node2
-      - cluster.initial_master_nodes=opensearch-node1,opensearch-node2
+      - node.name=dev-opensearch-node2
+      - discovery.seed_hosts=dev-opensearch-node1,dev-opensearch-node2
+      - cluster.initial_master_nodes=dev-opensearch-node1,dev-opensearch-node2
       - bootstrap.memory_lock=true
       - "OPENSEARCH_JAVA_OPTS=-Xms4g -Xmx4g"
       - http.max_content_length=1000mb
@@ -49,8 +49,8 @@ services:
     volumes:
       - opensearch-data2:/usr/share/opensearch/data
     ports:
-      - 19200:9200
-      - 19600:9600 # required for Performance Analyzer
+      - 19202:9200
+      - 19602:9600 # required for Performance Analyzer
     networks:
       - dev-network
 
@@ -59,11 +59,11 @@ services:
     # image: opensearch-dashboards-no-security
     container_name: dev-opensearch-dashboards
     ports:
-      - 15601:5601
+      - 5601:5601
     expose:
       - "5601"
     environment:
-      OPENSEARCH_HOSTS: '["https://opensearch-node1:19200","https://opensearch-node2:19200"]'
+      OPENSEARCH_HOSTS: '["https://dev-opensearch-node1:9200","https://dev-opensearch-node2:9200"]'
     networks:
       - dev-network
 

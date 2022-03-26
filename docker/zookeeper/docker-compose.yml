@@ -14,7 +14,7 @@ services:
     #  Container name 
     container_name: zk1.docker
     # docker Automatically restart the container after restart 
-    restart: on-failure
+    restart: always
     networks:
       - dev-network
     #  Current container hostname
@@ -43,7 +43,7 @@ services:
   zk2:
     image: zookeeper:3.7
     container_name: zk2.docker
-    restart: on-failure
+    restart: always
     networks:
       - dev-network
     hostname: zk2.docker
@@ -68,7 +68,7 @@ services:
   zk3:
     image: zookeeper:3.7
     container_name: zk3.docker
-    restart: on-failure
+    restart: always
     networks:
       - dev-network
     hostname: zk3.docker

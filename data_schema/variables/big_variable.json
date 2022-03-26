@@ -13,55 +13,55 @@
             "owner": "systemd",
             "repo": "systemd",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-23T03:24:33Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "openssl",
             "repo": "openssl",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-23T03:24:33Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "google",
             "repo": "leveldb",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-23T03:24:33Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "facebook",
             "repo": "zstd",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-23T03:24:33Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "vim",
             "repo": "vim",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-23T03:24:33Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "curl",
             "repo": "curl",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-23T03:24:33Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "grpc",
             "repo": "grpc",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-23T03:24:33Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "moby",
             "repo": "moby",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-23T03:24:33Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "docker",
             "repo": "cli",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-23T03:24:33Z"
+            "until": "2022-03-26T04:26:08Z"
         }
     ],
     "need_init_github_issues_comments_repos": [
@@ -557,7 +557,7 @@
         "PORT": "19001",
         "USER": "default",
         "DATABASE": "default",
-        "CLUSTER_NAME": "cluster"
+        "CLUSTER_NAME": "replicated"
     },
     "redis_client_data": {
         "HOST": "192.168.8.108",
@@ -644,10 +644,10 @@
                         "site_admin": false
                     },
                     "body": "",
-                    "created_at": "",
-                    "updated_at": "",
-                    "closed_at": "",
-                    "merged_at": "",
+                    "created_at": "1970-01-01T00:00:00Z",
+                    "updated_at": "1970-01-01T00:00:00Z",
+                    "closed_at": "1970-01-01T00:00:00Z",
+                    "merged_at": "1970-01-01T00:00:00Z",
                     "merge_commit_sha": "",
                     "assignee": {
                         "login": "",
@@ -776,10 +776,10 @@
                         },
                         "open_issues": 0,
                         "closed_issues": 0,
-                        "created_at": "",
-                        "updated_at": "",
-                        "closed_at": "",
-                        "due_on": ""
+                        "created_at": "1970-01-01T00:00:00Z",
+                        "updated_at": "1970-01-01T00:00:00Z",
+                        "closed_at": "1970-01-01T00:00:00Z",
+                        "due_on": "1970-01-01T00:00:00Z"
                     },
                     "draft": false,
                     "commits_url": "",
@@ -877,9 +877,9 @@
                             "labels_url": "",
                             "releases_url": "",
                             "deployments_url": "",
-                            "created_at": "",
-                            "updated_at": "",
-                            "pushed_at": "",
+                            "created_at": "1970-01-01T00:00:00Z",
+                            "updated_at": "1970-01-01T00:00:00Z",
+                            "pushed_at": "1970-01-01T00:00:00Z",
                             "git_url": "",
                             "ssh_url": "",
                             "clone_url": "",
@@ -1009,9 +1009,9 @@
                             "labels_url": "",
                             "releases_url": "",
                             "deployments_url": "",
-                            "created_at": "",
-                            "updated_at": "",
-                            "pushed_at": "",
+                            "created_at": "1970-01-01T00:00:00Z",
+                            "updated_at": "1970-01-01T00:00:00Z",
+                            "pushed_at": "1970-01-01T00:00:00Z",
                             "git_url": "",
                             "ssh_url": "",
                             "clone_url": "",
@@ -1098,12 +1098,12 @@
                         "author": {
                             "name": "",
                             "email": "",
-                            "date": ""
+                            "date": "1970-01-01T00:00:00Z"
                         },
                         "committer": {
                             "name": "",
                             "email": "",
-                            "date": ""
+                            "date": "1970-01-01T00:00:00Z"
                         },
                         "message": "",
                         "tree": {
@@ -1349,15 +1349,15 @@
                         },
                         "open_issues": 0,
                         "closed_issues": 0,
-                        "created_at": "",
-                        "updated_at": "",
-                        "closed_at": "",
-                        "due_on": ""
+                        "created_at": "1970-01-01T00:00:00Z",
+                        "updated_at": "1970-01-01T00:00:00Z",
+                        "closed_at": "1970-01-01T00:00:00Z",
+                        "due_on": "1970-01-01T00:00:00Z"
                     },
                     "comments": 0,
-                    "created_at": "",
-                    "updated_at": "",
-                    "closed_at": "",
+                    "created_at": "1970-01-01T00:00:00Z",
+                    "updated_at": "1970-01-01T00:00:00Z",
+                    "closed_at": "1970-01-01T00:00:00Z",
                     "author_association": "",
                     "active_lock_reason": "",
                     "draft": false,
@@ -1366,7 +1366,7 @@
                         "html_url": "",
                         "diff_url": "",
                         "patch_url": "",
-                        "merged_at": ""
+                        "merged_at": "1970-01-01T00:00:00Z"
                     },
                     "body": "",
                     "reactions": {
@@ -1421,8 +1421,8 @@
                         "type": "",
                         "site_admin": false
                     },
-                    "created_at": "",
-                    "updated_at": "",
+                    "created_at": "1970-01-01T00:00:00Z",
+                    "updated_at": "1970-01-01T00:00:00Z",
                     "author_association": "",
                     "body": "",
                     "reactions": {
@@ -1709,7 +1709,8 @@
                     "Posted-To": "",
                     "Bounce-To": "",
                     "Referencs": "",
-                    "Authentication-Results-Original": ""
+                    "Authentication-Results-Original": "",
+                    "enrich_filter_raw": ""
                 },
                 "metadata__updated_on": "1970-01-01T00:00:00Z",
                 "metadata__timestamp": "1970-01-01T00:00:00Z",
@@ -1771,7 +1772,7 @@
     "ck_create_table_cols_datatype_tplt": [
         {
             "table_name": "gits",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/gits','{replica}')",
@@ -1832,7 +1833,7 @@
         },
         {
             "table_name": "github_profile",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_profile','{replica}')",
@@ -1903,7 +1904,7 @@
         },
         {
             "table_name": "github_commits",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_commits','{replica}')",
@@ -1925,12 +1926,12 @@
                         "author": {
                             "name": "",
                             "email": "",
-                            "date": ""
+                            "date": "1970-01-01T00:00:00Z"
                         },
                         "committer": {
                             "name": "",
                             "email": "",
-                            "date": ""
+                            "date": "1970-01-01T00:00:00Z"
                         },
                         "message": "",
                         "tree": {
@@ -2001,7 +2002,7 @@
         },
         {
             "table_name": "github_issues_comments",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_issues_comments','{replica}')",
@@ -2044,8 +2045,8 @@
                         "type": "",
                         "site_admin": false
                     },
-                    "created_at": "",
-                    "updated_at": "",
+                    "created_at": "1970-01-01T00:00:00Z",
+                    "updated_at": "1970-01-01T00:00:00Z",
                     "author_association": "",
                     "body": "",
                     "reactions": {
@@ -2066,7 +2067,7 @@
         },
         {
             "table_name": "github_issues",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_issues','{replica}')",
@@ -2199,15 +2200,15 @@
                         },
                         "open_issues": 0,
                         "closed_issues": 0,
-                        "created_at": "",
-                        "updated_at": "",
-                        "closed_at": "",
-                        "due_on": ""
+                        "created_at": "1970-01-01T00:00:00Z",
+                        "updated_at": "1970-01-01T00:00:00Z",
+                        "closed_at": "1970-01-01T00:00:00Z",
+                        "due_on": "1970-01-01T00:00:00Z"
                     },
                     "comments": 0,
-                    "created_at": "",
-                    "updated_at": "",
-                    "closed_at": "",
+                    "created_at": "1970-01-01T00:00:00Z",
+                    "updated_at": "1970-01-01T00:00:00Z",
+                    "closed_at": "1970-01-01T00:00:00Z",
                     "author_association": "",
                     "active_lock_reason": "",
                     "draft": false,
@@ -2216,7 +2217,7 @@
                         "html_url": "",
                         "diff_url": "",
                         "patch_url": "",
-                        "merged_at": ""
+                        "merged_at": "1970-01-01T00:00:00Z"
                     },
                     "body": "",
                     "reactions": {
@@ -2238,7 +2239,7 @@
         },
         {
             "table_name": "github_pull_requests",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_pull_requests','{replica}')",
@@ -2286,10 +2287,10 @@
                         "site_admin": false
                     },
                     "body": "",
-                    "created_at": "",
-                    "updated_at": "",
-                    "closed_at": "",
-                    "merged_at": "",
+                    "created_at": "1970-01-01T00:00:00Z",
+                    "updated_at": "1970-01-01T00:00:00Z",
+                    "closed_at": "1970-01-01T00:00:00Z",
+                    "merged_at": "1970-01-01T00:00:00Z",
                     "merge_commit_sha": "",
                     "assignee": {
                         "login": "",
@@ -2418,10 +2419,10 @@
                         },
                         "open_issues": 0,
                         "closed_issues": 0,
-                        "created_at": "",
-                        "updated_at": "",
-                        "closed_at": "",
-                        "due_on": ""
+                        "created_at": "1970-01-01T00:00:00Z",
+                        "updated_at": "1970-01-01T00:00:00Z",
+                        "closed_at": "1970-01-01T00:00:00Z",
+                        "due_on": "1970-01-01T00:00:00Z"
                     },
                     "draft": false,
                     "commits_url": "",
@@ -2519,9 +2520,9 @@
                             "labels_url": "",
                             "releases_url": "",
                             "deployments_url": "",
-                            "created_at": "",
-                            "updated_at": "",
-                            "pushed_at": "",
+                            "created_at": "1970-01-01T00:00:00Z",
+                            "updated_at": "1970-01-01T00:00:00Z",
+                            "pushed_at": "1970-01-01T00:00:00Z",
                             "git_url": "",
                             "ssh_url": "",
                             "clone_url": "",
@@ -2651,9 +2652,9 @@
                             "labels_url": "",
                             "releases_url": "",
                             "deployments_url": "",
-                            "created_at": "",
-                            "updated_at": "",
-                            "pushed_at": "",
+                            "created_at": "1970-01-01T00:00:00Z",
+                            "updated_at": "1970-01-01T00:00:00Z",
+                            "pushed_at": "1970-01-01T00:00:00Z",
                             "git_url": "",
                             "ssh_url": "",
                             "clone_url": "",
@@ -2727,7 +2728,7 @@
         },
         {
             "table_name": "github_issues_timeline",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_issues_timeline','{replica}')",
@@ -2751,7 +2752,7 @@
         },
         {
             "table_name": "maillists",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/maillists','{replica}')",
@@ -2969,7 +2970,8 @@
                     "Posted-To": "",
                     "Bounce-To": "",
                     "Referencs": "",
-                    "Authentication-Results-Original": ""
+                    "Authentication-Results-Original": "",
+                    "enrich_filter_raw": ""
                 },
                 "metadata__updated_on": "1970-01-01T00:00:00Z",
                 "metadata__timestamp": "1970-01-01T00:00:00Z",
@@ -2983,7 +2985,7 @@
         },
         {
             "table_name": "maillists_enriched",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/maillists_enriched','{replica}')",
@@ -3038,7 +3040,7 @@
         },
         {
             "table_name": "email_address",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/email_address','{replica}')",
@@ -3121,7 +3123,7 @@
         },
         {
             "table_name": "metrics",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
             "distributed_key": "github_id",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/metrics','{replica}')",
@@ -3160,7 +3162,7 @@
         },
         {
             "table_name": "activities",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
             "distributed_key": "github_id",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/activities','{replica}')",
@@ -3479,6 +3481,12 @@
         {
             "owner": "",
             "repo": ""
+        }
+    ],
+    "maillist_repo": [
+        {
+            "project_name": "",
+            "mail_list_name": ""
         }
     ]
 }
