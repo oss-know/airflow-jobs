@@ -1,0 +1,28 @@
+# docker compose edition 
+version: "3.8"
+
+networks:
+  dev-network:
+    external: true
+
+services:
+  postgresql-db:
+    image: postgres:14
+    restart: always
+    networks:
+      - dev-network
+    ports:
+      - 15432:5432
+    environment:
+      POSTGRES_USER: datapipline
+      POSTGRES_PASSWORD: datapipline_password
+    volumes:
+      - ./data:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    restart: always
+    networks:
+      - dev-network
+    ports:
+      - 18888:8080

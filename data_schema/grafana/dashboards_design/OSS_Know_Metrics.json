@@ -21,8 +21,8 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 3,
-  "iteration": 1647863531681,
+  "id": 1,
+  "iteration": 1648041530318,
   "links": [
     {
       "asDropdown": false,
@@ -39,114 +39,6 @@
   ],
   "liveNow": false,
   "panels": [
-    {
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 0
-      },
-      "id": 14,
-      "options": {
-        "followTheme": false,
-        "getOption": "var data_array = new Array()\n\nfor (let i = 0; i < data.series[0].fields[0].values.length; i++) {\n  var tz_value = data.series[0].fields[0].values.buffer[i]\n\tconsole.log(tz_value==eval(0))\n  console.log(tz_value)\n  if(parseInt(tz_value)==0){\n    tz_value_str = \"中时区\"\n  }else if(parseInt(tz_value) > 0){\n    tz_value_str = '东'+tz_value+'区'\n    console.log(tz_value_str)\n  }else if(parseInt(tz_value) < 0){\n    tz_value = -tz_value\n    tz_value_str = '西'+tz_value+'区'\n    console.log(tz_value_str)\n  }\n  data_array.push({\n        name: tz_value_str,\n        value: data.series[0].fields[1].values.buffer[i]\n    })\n}\n\noption = {\n  backgroundColor: 'transparent',\n    title: {\n        text: '代码库代码提交时区',\n        left: 'center',\n        top: 'center',\n        textStyle:{\n          color:'brown'\n        }\n    },\n    tooltip: {\n        trigger: 'item',\n        formatter: \"{a} <br/>{b};<br/>提交量:{c}<br/>百分比:({d}%)\"\n    },\n    legend: {\n        orient: 'vertical',\n        left: 'left',\n        top: '20%'\n    \n    },\n    series: [\n        {\n            name: '时区详细信息',\n            type: 'pie',\n            label: {\n                normal: {\n                    formatter: '{b} 提交量:{c} 百分比:({d}%)',\n                    textStyle: {\n                        fontWeight: 'normal',\n                        fontSize: 10\n                    }\n                }\n            },\n            itemStyle: {\n                emphasis: {\n                    shadowBlur: 10,\n                    shadowOffsetX: 0,\n                    shadowColor: 'rgba(0, 0, 0, 0.5)'\n                }\n            },\n            radius: ['40%', '70%'],\n            data: data_array\n        }\n    ]\n}\nreturn option"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "vertamedia-clickhouse-datasource",
-            "uid": "fzTwZeLnz"
-          },
-          "dateTimeType": "DATETIME",
-          "extrapolate": true,
-          "format": "time_series",
-          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
-          "intervalFactor": 1,
-          "query": "SELECT\n    author_tz,\n    count(author_tz) as commits_count\nFROM gits\n\nWHERE\n    search_key__owner = '$metrics_owner'\n    and search_key__repo = '$metrics_repo'\nGROUP BY author_tz\nORDER BY author_tz asc\nLIMIT 5",
-          "rawQuery": "SELECT\n    author_tz,\n    count(author_tz) as commits_count\nFROM gits\n\nWHERE\n    search_key__owner = 'google'\n    and search_key__repo = 'leveldb'\nGROUP BY author_tz\nORDER BY author_tz asc\nLIMIT 5",
-          "refId": "A",
-          "round": "0s",
-          "skip_comments": true
-        }
-      ],
-      "title": "代码库代码提交时区",
-      "type": "bilibala-echarts-panel"
-    },
-    {
-      "description": "代码提交时区",
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 12,
-        "y": 0
-      },
-      "id": 10,
-      "options": {
-        "followTheme": true,
-        "getOption": "var data_array = new Array()\n\noption1 = {\n  backgroundColor: 'transparent',\n    title: {\n        text: '请传入有效用户',\n        left: 'center',\n        top: 'center',\n        textStyle:{\n          color:'brown'\n        }\n    },\n    tooltip: {\n        trigger: 'item',\n    },\n    legend: {\n        orient: 'vertical',\n        left: 'left',\n        top: '20%'\n    \n    },\n    series: [\n        {\n            name: '时区详细信息',\n            type: 'pie',\n            label: {\n                normal: {\n                    textStyle: {\n                        fontWeight: 'normal',\n                        fontSize: 10\n                    }\n                }\n            },\n            itemStyle: {\n                emphasis: {\n                    shadowBlur: 10,\n                    shadowOffsetX: 0,\n                    shadowColor: 'rgba(0, 0, 0, 0.5)'\n                }\n            },\n            radius: ['40%', '70%'],\n            data: [{name:'请传入有效用户',value:100}]\n        }\n    ]\n}\nif(data.series[0]==undefined){\n  return option1\n}\n\nfor (let i = 0; i < data.series[0].fields[0].values.length; i++) {\n  var tz_value = data.series[0].fields[0].values.buffer[i]\n\tconsole.log(tz_value==eval(0))\n  console.log(tz_value)\n  if(parseInt(tz_value)==0){\n    tz_value_str = \"中时区\"\n  }else if(parseInt(tz_value) > 0){\n    tz_value_str = '东'+tz_value+'区'\n    console.log(tz_value_str)\n  }else if(parseInt(tz_value) < 0){\n    tz_value = -tz_value\n    tz_value_str = '西'+tz_value+'区'\n    console.log(tz_value_str)\n  }\n  data_array.push({\n        name: tz_value_str,\n        value: data.series[0].fields[1].values.buffer[i]\n    })\n}\n\n// for (let i = 0; i < data.series[0].fields[0].values.length; i++) {\n//   data_array.push({\n//         name: data.series[0].fields[0].values.buffer[i],\n//         value: data.series[0].fields[1].values.buffer[i]\n//     })\n// }\n\noption = {\n  backgroundColor: 'transparent',\n    title: {\n        text: '个人代码提交时区',\n        left: 'center',\n        top: 'center'\n    },\n    tooltip: {\n        trigger: 'item',\n        formatter: \"{a} <br/>{b};<br/>提交量:{c}<br/>百分比:({d}%)\"\n    },\n    legend: {\n        orient: 'vertical',\n        left: 'left',\n        top: '20%'\n    },\n    series: [\n        {\n            name: '时区详细信息',\n            type: 'pie',\n            label: {\n                normal: {\n                    formatter: '{b} 提交量:{c} 百分比:({d}%)',\n                    textStyle: {\n                        fontWeight: 'normal',\n                        fontSize: 10\n                    }\n                }\n            },\n            itemStyle: {\n                emphasis: {\n                    shadowBlur: 10,\n                    shadowOffsetX: 0,\n                    shadowColor: 'rgba(0, 0, 0, 0.5)'\n                }\n            },\n            radius: ['40%', '70%'],\n            data: data_array\n        }\n    ]\n}\n\nreturn option"
-      },
-      "targets": [
-        {
-          "database": "default",
-          "datasource": {
-            "type": "vertamedia-clickhouse-datasource",
-            "uid": "g9o-osYnz"
-          },
-          "dateColDataType": "",
-          "dateLoading": false,
-          "dateTimeType": "DATETIME",
-          "datetimeLoading": false,
-          "extrapolate": true,
-          "format": "table",
-          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
-          "interval": "",
-          "intervalFactor": 1,
-          "query": "SELECT\n    author_tz,\n    count(author_tz) as commits_count\nFROM gits\n\nWHERE\n    search_key__owner = '$metrics_owner'\n    and search_key__repo = '$metrics_repo'\n    and author_email = '$git_author_email'\nGROUP BY author_tz\nORDER BY author_tz asc\nLIMIT 5",
-          "rawQuery": "SELECT\n    author_tz,\n    count(author_tz) as commits_count\nFROM gits\n\nWHERE\n    search_key__owner = 'google'\n    and search_key__repo = 'leveldb'\n    and author_email = '13126959424@163.com'\nGROUP BY author_tz\nORDER BY author_tz asc\nLIMIT 5",
-          "refId": "A",
-          "round": "0s",
-          "skip_comments": true,
-          "table": "gits",
-          "tableLoading": false
-        }
-      ],
-      "title": "个人代码提交时区",
-      "transformations": [],
-      "type": "bilibala-echarts-panel"
-    },
-    {
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 8
-      },
-      "id": 12,
-      "options": {
-        "followTheme": false,
-        "getOption": "option1 ={\n  title: {\n    text: '请输入有效用户',\n     textStyle:{\n          color:'brown'\n        }\n  },\n    legend: {\n    data: ['']\n  },\n  radar: {\n    // shape: 'circle',\n    indicator: [\n      \n      { name: 'knowledge_sharing', max: 6500 },\n      { name: 'code_contribution', max: 16000 },\n      { name: 'issue_coordination', max: 30000 },\n      { name: 'progress_control', max: 38000 },\n      { name: 'code_tweaking', max: 52000 },\n      { name: 'issue_reporting', max: 25000 }\n    ]\n  },\n  series: [\n    {\n      name: '请输入有效用户',\n      type: 'radar',\n      data: [\n        {\n          value: [6500, 16000, 30000, 38000, 52000, 25000],\n          name: '请输入有效用户'\n        }\n      ]\n    }\n  ]\n}\nif(data.series[0]==undefined){\n  return option1\n}\nvar user_login = \"用户登录名: \"+data.series[0].fields[3].values.buffer[0]\nvar name_max_array = new Array()\n    var data_value_array = new Array()\n    for (let i = 4; i < 10; i++) {\n      console.log(data.series[0].fields[i].values.buffer[0])\n      console.log(data.series[0].fields[i].name)\n      console.log(data.series[0].fields[2*i+2].values.buffer[0])\n      console.log(data.series[0].fields[2*i+3].values.buffer[0])\n     data_value_array.push(data.series[0].fields[i].values.buffer[0])\n     name_max_array.push({\n            name: data.series[0].fields[i].name,\n            max: data.series[0].fields[2*i+2].values.buffer[0],\n            min: data.series[0].fields[2*i+3].values.buffer[0]\n        })\n    }\n\t\t \n    option = {\n      title: {\n        text: '社区角色雷达',\n        textStyle:{\n          color:'brown'\n        }\n      },\n      legend: {\n        data: [user_login],\n        left:'auto',\n        top:'middle',\n        textStyle:{\n          color:'brown'\n        }\n      \n      },\n      radar: {\n         //shape: 'circle',\n        //shape:'polygon',\n        indicator: name_max_array\n      },\n      series: [\n        {\n          name: '社区角色雷达',\n          type: 'radar',\n          data: [\n            {\n              value: data_value_array,\n              name: user_login\n            }\n          ]\n        }\n      ]\n    }\n    return option"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "vertamedia-clickhouse-datasource",
-            "uid": "fzTwZeLnz"
-          },
-          "dateTimeType": "DATETIME",
-          "extrapolate": true,
-          "format": "table",
-          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
-          "intervalFactor": 1,
-          "query": "select owner,\nrepo,\ngithub_id,\ngithub_login,\n\nknowledge_sharing,\ncode_contribution,\nissue_coordination,\nprogress_control,\ncode_tweaking,\nissue_reporting,\n\nmax_knowledge_sharing,\nmin_knowledge_sharing,\n\nmax_code_contribution,\nmin_code_contribution,\n\nmax_issue_coordination,\nmin_issue_coordination,\n\nmax_progress_control,\nmin_progress_control,\n\nmax_code_tweaking,\nmin_code_tweaking,\n\nmax_issue_reporting,\nmin_issue_reporting\nfrom (\n  select *, 1 as jv\n  from activities\n  where owner = '$metrics_owner'\n    and repo = '$metrics_repo'\n    and github_login = '$github_login') as act_info\n  global\n  join (\nselect 1                       as jv,\n    max(knowledge_sharing)  as max_knowledge_sharing,\n    min(knowledge_sharing)  as min_knowledge_sharing,\n    max(code_contribution)  as max_code_contribution,\n    min(code_contribution)  as min_code_contribution,\n    max(issue_coordination) as max_issue_coordination,\n    min(issue_coordination) as min_issue_coordination,\n    max(progress_control)   as max_progress_control,\n    min(progress_control)   as min_progress_control,\n    max(code_tweaking)      as max_code_tweaking,\n    min(code_tweaking)      as min_code_tweaking,\n    max(issue_reporting)    as max_issue_reporting,\n    min(issue_reporting)    as min_issue_reporting\nfrom activities\nwhere owner = '$metrics_owner'\nand repo = '$metrics_repo'\n) as act_jh on act_info.jv = act_jh.jv\n",
-          "rawQuery": "select owner,\nrepo,\ngithub_id,\ngithub_login,\n\nknowledge_sharing,\ncode_contribution,\nissue_coordination,\nprogress_control,\ncode_tweaking,\nissue_reporting,\n\nmax_knowledge_sharing,\nmin_knowledge_sharing,\n\nmax_code_contribution,\nmin_code_contribution,\n\nmax_issue_coordination,\nmin_issue_coordination,\n\nmax_progress_control,\nmin_progress_control,\n\nmax_code_tweaking,\nmin_code_tweaking,\n\nmax_issue_reporting,\nmin_issue_reporting\nfrom (\n  select *, 1 as jv\n  from activities\n  where owner = 'google'\n    and repo = 'leveldb'\n    and github_login = 'neal-zhu') as act_info\n  global\n  join (\nselect 1                       as jv,\n    max(knowledge_sharing)  as max_knowledge_sharing,\n    min(knowledge_sharing)  as min_knowledge_sharing,\n    max(code_contribution)  as max_code_contribution,\n    min(code_contribution)  as min_code_contribution,\n    max(issue_coordination) as max_issue_coordination,\n    min(issue_coordination) as min_issue_coordination,\n    max(progress_control)   as max_progress_control,\n    min(progress_control)   as min_progress_control,\n    max(code_tweaking)      as max_code_tweaking,\n    min(code_tweaking)      as min_code_tweaking,\n    max(issue_reporting)    as max_issue_reporting,\n    min(issue_reporting)    as min_issue_reporting\nfrom activities\nwhere owner = 'google'\nand repo = 'leveldb'\n) as act_jh on act_info.jv = act_jh.jv",
-          "refId": "A",
-          "round": "0s",
-          "skip_comments": true
-        }
-      ],
-      "title": "角色雷达图",
-      "type": "bilibala-echarts-panel"
-    },
     {
       "fieldConfig": {
         "defaults": {
@@ -188,17 +80,29 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 274
+                "value": 166
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "issues_comment_body_length_avg"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 278
               }
             ]
           }
         ]
       },
       "gridPos": {
-        "h": 9,
-        "w": 24,
+        "h": 11,
+        "w": 15,
         "x": 0,
-        "y": 16
+        "y": 0
       },
       "id": 2,
       "links": [],
@@ -230,8 +134,8 @@
           "format": "table",
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
           "intervalFactor": 1,
-          "query": "SELECT *\n\nFROM metrics\n\nWHERE\n    owner = '$metrics_owner'\n    AND repo = '$metrics_repo'\nORDER BY issues_counts\n",
-          "rawQuery": "SELECT *\n\nFROM metrics\n\nWHERE\n    owner = 'google'\n    AND repo = 'leveldb'\nORDER BY issues_counts",
+          "query": "SELECT\n    github_login,\n    git_author_email,\n    commit_times,\n    changed_lines,\n    diff_file_counts,\n    prs_counts,\n    pr_body_length_avg,\n    issues_counts,\n    issue_body_length_avg,\n    issues_comment_count,\n    issues_comment_body_length_avg,\n    pr_comment_count,\n    pr_comment_body_length_avg,\n    be_mentioned_times_in_issues,\n    be_mentioned_times_in_pr,\n    referred_other_issues_or_prs_in_issue,\n    referred_other_issues_or_prs_in_pr,\n    changed_label_times_in_issues,\n    changed_label_times_in_prs,\n    closed_issues_times,\n    closed_prs_times\nFROM metrics\n\nWHERE\n    owner = '$metrics_owner'\n    AND repo = '$metrics_repo'\nORDER BY issues_counts\n",
+          "rawQuery": "SELECT \ngithub_login, git_author_email, commit_times, changed_lines, diff_file_counts, prs_counts, \npr_body_length_avg, issues_counts, issue_body_length_avg, issues_comment_count, \nissues_comment_body_length_avg, pr_comment_count, pr_comment_body_length_avg, \nbe_mentioned_times_in_issues, be_mentioned_times_in_pr, referred_other_issues_or_prs_in_issue, \nreferred_other_issues_or_prs_in_pr, changed_label_times_in_issues, changed_label_times_in_prs, \nclosed_issues_times, closed_prs_times\n\nFROM metrics\n\nWHERE\n    owner = 'torvalds'\n    AND repo = 'linux'\nORDER BY issues_counts",
           "refId": "A",
           "round": "0s",
           "skip_comments": true
@@ -241,49 +145,128 @@
       "type": "table"
     },
     {
+      "description": "",
       "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 0,
-        "y": 25
+        "h": 11,
+        "w": 9,
+        "x": 15,
+        "y": 0
       },
-      "id": 6,
-      "radarSettings": {
-        "animationDurationMs": 0,
-        "aspectRatio": 2.2,
-        "autoScale": true,
-        "drawTicksBackground": true,
-        "fontColor": "gray",
-        "fontSize": 14,
-        "gridColor": "gray",
-        "ignoreTimeInfluxDB": false,
-        "legendType": "right",
-        "limitAspectRatio": true,
-        "scaleMax": 0,
-        "scaleMin": 0,
-        "scaleStep": 0,
-        "seriesAlias": ""
+      "id": 14,
+      "options": {
+        "followTheme": false,
+        "getOption": "// function demoOption 不要复制 ！！！\n// function demoOption(data, theme, echartsInstance, echarts) {\n\nvar data_array = new Array()\n\nfor (let i = 0; i < data.series[0].fields[0].values.length; i++) {\n    var tz_value = data.series[0].fields[0].values.buffer[i]\n    var tz_value_int = parseInt(tz_value)\n    if (tz_value_int == 0) {\n        tz_value_str = \"中时区\"\n    } else if (tz_value_int > 0) {\n        tz_value_str = '东' + tz_value + '区'\n    } else if (tz_value_int < 0) {\n        tz_value_str = '西' + (-tz_value) + '区'\n    }\n    data_array.push({\n        name: tz_value_str,\n        value: data.series[0].fields[1].values.buffer[i]\n    })\n}\n\noption = {\n    backgroundColor: 'transparent',\n    // title: {\n    //     text: '代码库代码提交时区',\n    //     left: 'center',\n    //     top: 'center',\n    //     textStyle: {\n    //         color: '#103667'\n    //     }\n    // },\n    tooltip: {\n        trigger: 'item',\n        formatter: \"{a} <br/>{b};<br/>提交量:{c}<br/>百分比:({d}%)\"\n    },\n    legend: {\n        orient: 'horizontal',\n        left: 'center',\n        // top: '20%',\n        bottom: 0,\n        textStyle: {\n            color: '#103667'\n        }\n\n    },\n    series: [{\n        name: '时区详细信息',\n        type: 'pie',\n        label: {\n            normal: {\n                formatter: '{b} 提交量:{c} 百分比:({d}%)',\n                textStyle: {\n                    fontWeight: 'normal',\n                    fontSize: 10\n                }\n            }\n        },\n        itemStyle: {\n            emphasis: {\n                shadowBlur: 10,\n                shadowOffsetX: 0,\n                shadowColor: 'rgba(0, 0, 0, 0.5)'\n            }\n        },\n        radius: ['40%', '70%'],\n        data: data_array\n    }]\n}\nreturn option\n// }"
       },
       "targets": [
         {
           "datasource": {
             "type": "vertamedia-clickhouse-datasource",
-            "uid": "g9o-osYnz"
+            "uid": "fzTwZeLnz"
           },
           "dateTimeType": "DATETIME",
           "extrapolate": true,
           "format": "time_series",
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
           "intervalFactor": 1,
-          "query": "select knowledge_sharing, code_contribution, issue_coordination, progress_control, code_tweaking, issue_reporting\nfrom  activitys\nwhere github_login = '$github_login'",
-          "rawQuery": "select knowledge_sharing, code_contribution, issue_coordination, progress_control, code_tweaking, issue_reporting\nfrom  activitys\nwhere github_login = 'akudryav'",
+          "query": "SELECT\n    author_tz,\n    count(author_tz) as commits_count\nFROM gits\n\nWHERE\n    search_key__owner = '$metrics_owner'\n    and search_key__repo = '$metrics_repo'\nGROUP BY author_tz\nORDER BY commits_count DESC\nLIMIT 5",
+          "rawQuery": "SELECT\n    author_tz,\n    count(author_tz) as commits_count\nFROM gits\n\nWHERE\n    search_key__owner = 'kubernetes'\n    and search_key__repo = 'kubernetes'\nGROUP BY author_tz\nORDER BY commits_count DESC\nLIMIT 5",
           "refId": "A",
           "round": "0s",
           "skip_comments": true
         }
       ],
-      "title": "社区角色雷达",
-      "type": "snuids-radar-panel"
+      "title": "整体代码提交时区比例",
+      "type": "bilibala-echarts-panel"
+    },
+    {
+      "gridPos": {
+        "h": 8,
+        "w": 10,
+        "x": 0,
+        "y": 11
+      },
+      "id": 18,
+      "options": {
+        "githubLoginVariableName": "github_login",
+        "githubToken": "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"
+      },
+      "title": "Developer GitHub Profile",
+      "type": "crystaldust-github-profile-panel"
+    },
+    {
+      "description": "代码提交时区",
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 10,
+        "y": 11
+      },
+      "id": 10,
+      "options": {
+        "followTheme": true,
+        "getOption": "// function demoOption 不要复制 ！！！\n// function demoOption(data, theme, echartsInstance, echarts) {\n\nvar data_array = new Array()\n\noption1 = {\n    backgroundColor: 'transparent',\n    title: {\n        text: '请传入有效用户',\n        left: 'center',\n        top: 'center',\n        textStyle: {\n            color: '#103667'\n        }\n    },\n    tooltip: {\n        trigger: 'item',\n    },\n    legend: {\n        orient: 'horizontal',\n        left: 'left',\n        buttom: 0,\n        // top: '20%',\n        textStyle: {\n            color: '#103667'\n        }\n\n    },\n    series: [{\n        name: '时区详细信息',\n        type: 'pie',\n        label: {\n            normal: {\n                textStyle: {\n                    fontWeight: 'normal',\n                    fontSize: 10\n                }\n            }\n        },\n        itemStyle: {\n            emphasis: {\n                shadowBlur: 10,\n                shadowOffsetX: 0,\n                shadowColor: 'rgba(0, 0, 0, 0.5)'\n            }\n        },\n        radius: ['40%', '70%'],\n        data: [{\n            name: '请传入有效用户',\n            value: 100\n        }]\n    }]\n}\nif (data.series[0] == undefined) {\n    return option1\n}\n\nfor (let i = 0; i < data.series[0].fields[0].values.length; i++) {\n    var tz_value = data.series[0].fields[0].values.buffer[i]\n    var tz_value_int = parseInt(tz_value)\n    if (tz_value_int == 0) {\n        tz_value_str = \"中时区\"\n    } else if (tz_value_int > 0) {\n        tz_value_str = '东' + tz_value + '区'\n    } else if (tz_value_int < 0) {\n        tz_value_str = '西' + (-tz_value) + '区'\n    }\n    data_array.push({\n        name: tz_value_str,\n        value: data.series[0].fields[1].values.buffer[i]\n    })\n}\n\n// for (let i = 0; i < data.series[0].fields[0].values.length; i++) {\n//   data_array.push({\n//         name: data.series[0].fields[0].values.buffer[i],\n//         value: data.series[0].fields[1].values.buffer[i]\n//     })\n// }\n\noption = {\n    backgroundColor: 'transparent',\n    // title: {\n    //     text: '个人代码提交时区',\n    //     left: 'center',\n    //     top: 'center',\n    //     textStyle: {\n    //         color: '#103667'\n    //     }\n    // },\n    tooltip: {\n        trigger: 'item',\n        formatter: \"{a} <br/>{b};<br/>提交量:{c}<br/>百分比:({d}%)\"\n    },\n    legend: {\n        orient: 'horizontal',\n        left: 'center',\n        //verticalAlign: 'bottom',\n        //top: '20%',\n        bottom: 0,\n        textStyle: {\n            color: '#103667'\n        }\n    },\n    series: [{\n        name: '时区详细信息',\n        type: 'pie',\n        color: ['#628cee', '#d05c7c', '#bb60b2', '#e75840', '#a565ef', '#433e7c', '#f47a75', '#009db2', '#024b51', '#0780cf', '#765005'],\n        label: {\n            normal: {\n                formatter: '{b} 提交量:{c} 百分比:({d}%)',\n                textStyle: {\n                    fontWeight: 'normal',\n                    fontSize: 10\n                }\n            }\n        },\n        itemStyle: {\n            emphasis: {\n                shadowBlur: 10,\n                shadowOffsetX: 0,\n                shadowColor: 'rgba(0, 0, 0, 0.5)'\n            }\n        },\n        radius: ['40%', '70%'],\n        data: data_array\n    }]\n}\n\nreturn option\n\n\n// }"
+      },
+      "targets": [
+        {
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "g9o-osYnz"
+          },
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT\n    author_tz,\n    count(author_tz) as commits_count\nFROM gits\n\nWHERE\n    search_key__owner = '$metrics_owner'\n    and search_key__repo = '$metrics_repo'\n    and author_email = '$git_author_email'\nGROUP BY author_tz\nORDER BY commits_count DESC\nLIMIT 5",
+          "rawQuery": "SELECT\n    author_tz,\n    count(author_tz) as commits_count\nFROM gits\n\nWHERE\n    search_key__owner = 'kubernetes'\n    and search_key__repo = 'kubernetes'\n    and author_email = 'k8s-ci-robot@users.noreply.github.com'\nGROUP BY author_tz\nORDER BY commits_count DESC\nLIMIT 5",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "gits",
+          "tableLoading": false
+        }
+      ],
+      "title": "个人代码提交时区",
+      "transformations": [],
+      "type": "bilibala-echarts-panel"
+    },
+    {
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 11
+      },
+      "id": 12,
+      "options": {
+        "followTheme": false,
+        "getOption": "option1 = {\n        title: {\n            text: '请输入有效用户',\n            textStyle: {\n                color: 'brown'\n            }\n        },\n        legend: {\n            data: ['']\n        },\n        radar: {\n            // shape: 'circle',\n            indicator: [\n\n                {name: 'knowledge_sharing', max: 6500},\n                {name: 'code_contribution', max: 16000},\n                {name: 'issue_coordination', max: 30000},\n                {name: 'progress_control', max: 38000},\n                {name: 'code_tweaking', max: 52000},\n                {name: 'issue_reporting', max: 25000}\n            ]\n        },\n        series: [\n            {\n                name: '请输入有效用户',\n                type: 'radar',\n                data: [\n                    {\n                        value: [6500, 16000, 30000, 38000, 52000, 25000],\n                        name: '请输入有效用户'\n                    }\n                ]\n            }\n        ]\n    }\n    if (data.series[0] == undefined) {\n        return option1\n    }\n    var user_login = \"用户登录名: \" + data.series[0].fields[3].values.buffer[0]\n    var name_max_array = new Array()\n    var data_value_array = new Array()\n    for (let i = 4; i < 10; i++) {\n        console.log(data.series[0].fields[i].values.buffer[0])\n        console.log(data.series[0].fields[i].name)\n        console.log(data.series[0].fields[2 * i + 2].values.buffer[0])\n        console.log(data.series[0].fields[2 * i + 3].values.buffer[0])\n        data_value_array.push(data.series[0].fields[i].values.buffer[0])\n        name_max_array.push({\n            name: data.series[0].fields[i].name,\n            max: data.series[0].fields[2 * i + 2].values.buffer[0],\n            min: data.series[0].fields[2 * i + 3].values.buffer[0]\n        })\n    }\n\n    option = {\n        title: {\n            text: '社区角色雷达',\n            textStyle: {\n                color: 'brown'\n            }\n        },\n        legend: {\n            data: [user_login],\n            left: 'auto',\n            top: 'middle',\n            textStyle: {\n                color: 'brown'\n            }\n\n        },\n        radar: {\n            //shape: 'circle',\n            //shape:'polygon',\n            indicator: name_max_array\n        },\n        series: [\n            {\n                name: '社区角色雷达',\n                type: 'radar',\n                data: [\n                    {\n                        value: data_value_array,\n                        name: user_login\n                    }\n                ]\n            }\n        ]\n    }\n    return option"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "fzTwZeLnz"
+          },
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "select owner,\nrepo,\ngithub_id,\ngithub_login,\n\nknowledge_sharing,\ncode_contribution,\nissue_coordination,\nprogress_control,\ncode_tweaking,\nissue_reporting,\n\nmax_knowledge_sharing,\nmin_knowledge_sharing,\n\nmax_code_contribution,\nmin_code_contribution,\n\nmax_issue_coordination,\nmin_issue_coordination,\n\nmax_progress_control,\nmin_progress_control,\n\nmax_code_tweaking,\nmin_code_tweaking,\n\nmax_issue_reporting,\nmin_issue_reporting\nfrom (\n  select *, 1 as jv\n  from activities\n  where owner = '$metrics_owner'\n    and repo = '$metrics_repo'\n    and github_login = '$github_login') as act_info\n  global\n  join (\nselect 1                       as jv,\n    max(knowledge_sharing)  as max_knowledge_sharing,\n    min(knowledge_sharing)  as min_knowledge_sharing,\n    max(code_contribution)  as max_code_contribution,\n    min(code_contribution)  as min_code_contribution,\n    max(issue_coordination) as max_issue_coordination,\n    min(issue_coordination) as min_issue_coordination,\n    max(progress_control)   as max_progress_control,\n    min(progress_control)   as min_progress_control,\n    max(code_tweaking)      as max_code_tweaking,\n    min(code_tweaking)      as min_code_tweaking,\n    max(issue_reporting)    as max_issue_reporting,\n    min(issue_reporting)    as min_issue_reporting\nfrom activities\nwhere owner = '$metrics_owner'\nand repo = '$metrics_repo'\n) as act_jh on act_info.jv = act_jh.jv\n",
+          "rawQuery": "select owner,\nrepo,\ngithub_id,\ngithub_login,\n\nknowledge_sharing,\ncode_contribution,\nissue_coordination,\nprogress_control,\ncode_tweaking,\nissue_reporting,\n\nmax_knowledge_sharing,\nmin_knowledge_sharing,\n\nmax_code_contribution,\nmin_code_contribution,\n\nmax_issue_coordination,\nmin_issue_coordination,\n\nmax_progress_control,\nmin_progress_control,\n\nmax_code_tweaking,\nmin_code_tweaking,\n\nmax_issue_reporting,\nmin_issue_reporting\nfrom (\n  select *, 1 as jv\n  from activities\n  where owner = 'GNOME'\n    and repo = 'libxml2'\n    and github_login = 'rickertm') as act_info\n  global\n  join (\nselect 1                       as jv,\n    max(knowledge_sharing)  as max_knowledge_sharing,\n    min(knowledge_sharing)  as min_knowledge_sharing,\n    max(code_contribution)  as max_code_contribution,\n    min(code_contribution)  as min_code_contribution,\n    max(issue_coordination) as max_issue_coordination,\n    min(issue_coordination) as min_issue_coordination,\n    max(progress_control)   as max_progress_control,\n    min(progress_control)   as min_progress_control,\n    max(code_tweaking)      as max_code_tweaking,\n    min(code_tweaking)      as min_code_tweaking,\n    max(issue_reporting)    as max_issue_reporting,\n    min(issue_reporting)    as min_issue_reporting\nfrom activities\nwhere owner = 'GNOME'\nand repo = 'libxml2'\n) as act_jh on act_info.jv = act_jh.jv",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "角色雷达图",
+      "type": "bilibala-echarts-panel"
     },
     {
       "fieldConfig": {
@@ -295,6 +278,12 @@
             "align": "auto",
             "displayMode": "auto"
           },
+          "links": [
+            {
+              "title": "Show activities",
+              "url": "http://localhost:53000/d/-oitn9Y7z/oss_know_metrics?var-metrics_owner=${metrics_owner}&var-metrics_repo=${metrics_repo}&var-github_login=${__data.fields.github_login}"
+            }
+          ],
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -313,12 +302,12 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
+        "h": 7,
         "w": 10,
-        "x": 14,
-        "y": 25
+        "x": 0,
+        "y": 19
       },
-      "id": 8,
+      "id": 16,
       "options": {
         "footer": {
           "fields": "",
@@ -327,34 +316,192 @@
           ],
           "show": false
         },
-        "showHeader": true
+        "frameIndex": 1,
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "code_contribution"
+          }
+        ]
       },
       "pluginVersion": "8.4.3",
       "targets": [
         {
-          "database": "default",
           "datasource": {
             "type": "vertamedia-clickhouse-datasource",
-            "uid": "g9o-osYnz"
+            "uid": "UTLnvqY7k"
           },
-          "dateColDataType": "",
-          "dateLoading": false,
           "dateTimeType": "DATETIME",
-          "datetimeLoading": false,
           "extrapolate": true,
           "format": "table",
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
           "intervalFactor": 1,
-          "query": "select name,company,blog,location,email,bio,twitter_username,created_at,updated_at,country_inferred_from_email_cctld,country_inferred_from_email_domain_company from github_profile\nwhere login='$github_login'",
-          "rawQuery": "select name,company,blog,location,email,bio,twitter_username,created_at,updated_at,country_inferred_from_email_cctld,country_inferred_from_email_domain_company from github_profile\nwhere login='ghost'",
+          "query": "SELECT\n    github_login,\n    knowledge_sharing,\n    code_contribution,\n    issue_coordination,\n    progress_control,\n    code_tweaking,\n    issue_reporting\nFROM activities\nWHERE owner='$metrics_owner' AND repo='$metrics_repo'\n",
+          "rawQuery": "SELECT\n    github_login,\n    knowledge_sharing,\n    code_contribution,\n    issue_coordination,\n    progress_control,\n    code_tweaking,\n    issue_reporting\nFROM activities\nWHERE owner='google' AND repo='leveldb'",
           "refId": "A",
           "round": "0s",
-          "skip_comments": true,
-          "table": "github_profile",
-          "tableLoading": false
+          "skip_comments": true
         }
       ],
-      "title": "github profile 信息",
+      "title": "Activities Table",
+      "type": "table"
+    },
+    {
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          },
+          "links": [],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "dir"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 231
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "file_count"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 111
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_lines"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 106
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_insertions"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 158
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_deletions"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 195
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "author_email"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 259
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 14,
+        "x": 10,
+        "y": 19
+      },
+      "id": 20,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "file_count"
+          }
+        ]
+      },
+      "pluginVersion": "8.4.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "tgwX1UP7k"
+          },
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "select author_email,\n       if(length(dir) = 0, '/', concat('/', arrayStringConcat(dir, '/'))) as dir,\n\n       COUNT(files.file_name)                                                file_count,\n       sum(files.lines)                                                      total_lines,\n       sum(files.insertions)                                                 total_insertions,\n       sum(files.deletions)                                                  total_deletions\n\n\nfrom (select search_key__owner,\n             search_key__repo,\n             author_email,\n             `files.insertions`,\n             `files.deletions`,\n             `files.lines`,\n             `files.file_name`,\n             splitByChar('/', `files.file_name`) as f_name,\n             length(f_name)                      as len,\n             arraySlice(f_name, 1, 2)            as dir\n      from gits g\n          array join\n          files.file_name\n         , files.insertions\n         , files.deletions\n         , files.lines\n      WHERE if_merged = 0\n        and search_key__owner = '$metrics_owner'\n        and search_key__repo = '$metrics_repo'\n        and author_email = '$git_author_email'\n        and len > 2)\ngroup by search_key__owner, search_key__repo, author_email, dir\n\n\nUNION ALL\n\nselect author_email,\n       if(length(dir) = 0, '/', concat('/', arrayStringConcat(dir, '/'))) as dir,\n       COUNT(files.file_name)                                                file_count,\n       sum(files.lines)                                                      total_lines,\n       sum(files.insertions)                                                 total_insertions,\n       sum(files.deletions)                                                  total_deletions\nfrom (select search_key__owner,\n             search_key__repo,\n             author_email,\n             `files.insertions`,\n             `files.deletions`,\n             `files.lines`,\n             `files.file_name`,\n             splitByChar('/', `files.file_name`) as f_name,\n             length(f_name)                      as len,\n             arrayPopBack(f_name)                as dir\n      from gits g\n          array join\n          files.file_name\n         , files.insertions\n         , files.deletions\n         , files.lines\n      WHERE if_merged = 0\n        and search_key__owner = '$metrics_owner'\n        and search_key__repo = '$metrics_repo'\n        and author_email = '$git_author_email'\n        and (len = 2 or len = 1))\ngroup by search_key__owner, search_key__repo, author_email, dir",
+          "rawQuery": "select author_email,\n       if(length(dir) = 0, '/', concat('/', arrayStringConcat(dir, '/'))) as dir,\n\n       COUNT(files.file_name)                                                file_count,\n       sum(files.lines)                                                      total_lines,\n       sum(files.insertions)                                                 total_insertions,\n       sum(files.deletions)                                                  total_deletions\n\n\nfrom (select search_key__owner,\n             search_key__repo,\n             author_email,\n             `files.insertions`,\n             `files.deletions`,\n             `files.lines`,\n             `files.file_name`,\n             splitByChar('/', `files.file_name`) as f_name,\n             length(f_name)                      as len,\n             arraySlice(f_name, 1, 2)            as dir\n      from gits g\n          array join\n          files.file_name\n         , files.insertions\n         , files.deletions\n         , files.lines\n      WHERE if_merged = 0\n        and search_key__owner = 'google'\n        and search_key__repo = 'leveldb'\n        and author_email = 'cmumford@google.com'\n        and len > 2)\ngroup by search_key__owner, search_key__repo, author_email, dir\n\n\nUNION ALL\n\nselect author_email,\n       if(length(dir) = 0, '/', concat('/', arrayStringConcat(dir, '/'))) as dir,\n       COUNT(files.file_name)                                                file_count,\n       sum(files.lines)                                                      total_lines,\n       sum(files.insertions)                                                 total_insertions,\n       sum(files.deletions)                                                  total_deletions\nfrom (select search_key__owner,\n             search_key__repo,\n             author_email,\n             `files.insertions`,\n             `files.deletions`,\n             `files.lines`,\n             `files.file_name`,\n             splitByChar('/', `files.file_name`) as f_name,\n             length(f_name)                      as len,\n             arrayPopBack(f_name)                as dir\n      from gits g\n          array join\n          files.file_name\n         , files.insertions\n         , files.deletions\n         , files.lines\n      WHERE if_merged = 0\n        and search_key__owner = 'google'\n        and search_key__repo = 'leveldb'\n        and author_email = 'cmumford@google.com'\n        and (len = 2 or len = 1))\ngroup by search_key__owner, search_key__repo, author_email, dir",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "开发者修改的文件(路径)",
+      "transformations": [
+        {
+          "id": "spatial",
+          "options": {
+            "action": "prepare",
+            "source": {
+              "mode": "auto"
+            }
+          }
+        }
+      ],
       "type": "table"
     }
   ],
@@ -367,8 +514,8 @@
       {
         "current": {
           "selected": false,
-          "text": "google",
-          "value": "google"
+          "text": "kubernetes",
+          "value": "kubernetes"
         },
         "definition": "SELECT distinct owner FROM metrics",
         "description": "metrics_owner",
@@ -388,8 +535,8 @@
       {
         "current": {
           "selected": false,
-          "text": "leveldb",
-          "value": "leveldb"
+          "text": "kubernetes",
+          "value": "kubernetes"
         },
         "definition": "SELECT distinct repo FROM metrics where owner='$metrics_owner'",
         "description": "metrics_repo",
@@ -409,8 +556,8 @@
       {
         "current": {
           "selected": false,
-          "text": "neal-zhu",
-          "value": "neal-zhu"
+          "text": "lavalamp",
+          "value": "lavalamp"
         },
         "description": "github_login",
         "hide": 2,
@@ -418,20 +565,20 @@
         "name": "github_login",
         "options": [
           {
-            "selected": false,
-            "text": "dveeden",
-            "value": "dveeden"
+            "selected": true,
+            "text": "pwnall",
+            "value": "pwnall"
           }
         ],
-        "query": "neal-zhu",
+        "query": "lavalamp",
         "skipUrlSync": false,
         "type": "textbox"
       },
       {
         "current": {
           "selected": false,
-          "text": "13126959424@163.com",
-          "value": "13126959424@163.com"
+          "text": "dbsmith@google.com",
+          "value": "dbsmith@google.com"
         },
         "description": "git_author_email",
         "hide": 2,
@@ -439,14 +586,34 @@
         "name": "git_author_email",
         "options": [
           {
-            "selected": false,
-            "text": "",
-            "value": ""
+            "selected": true,
+            "text": "costan@google.com",
+            "value": "costan@google.com"
           }
         ],
-        "query": "13126959424@163.com",
+        "query": "dbsmith@google.com",
         "skipUrlSync": false,
         "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "29985",
+          "value": "29985"
+        },
+        "definition": "SELECT count(distinct github_login) FROM metrics where owner='$metrics_owner' AND repo='$metrics_repo'",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Num of Contributors",
+        "multi": false,
+        "name": "num_contributors",
+        "options": [],
+        "query": "SELECT count(distinct github_login) FROM metrics where owner='$metrics_owner' AND repo='$metrics_repo'",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
       }
     ]
   },
@@ -458,6 +625,6 @@
   "timezone": "",
   "title": "OSS_Know_Metrics",
   "uid": "-oitn9Y7z",
-  "version": 22,
+  "version": 53,
   "weekStart": ""
 }

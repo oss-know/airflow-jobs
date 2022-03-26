@@ -15,6 +15,7 @@ with DAG(
         catchup=False,
         tags=['clickhouse'],
 ) as dag:
+
     def init_ck_email_company_data(ds, **kwargs):
         # {"owners": ["systemd", "kubernetes"]}
         print(f'kwargs:{kwargs}')

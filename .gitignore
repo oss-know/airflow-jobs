@@ -135,7 +135,10 @@ logs/
 docker/zookeeper/vol_*
 docker/clickhouse/CH/data
 docker/grafana/GF*
+docker/postgres/data
+docker/redis/data
+
 #data_schema/variables/big_variable.json
 #data_schema/misc/check_github_tokens.py
-docker/cubejs/cube/conf/.cubestore
-docker/cubejs/cube/conf/cube.js
+#docker/cubejs/cube/conf/.cubestore
+#docker/cubejs/cube/conf/cube.js

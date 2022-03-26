@@ -22,6 +22,8 @@
 
         <!-- Profile that allows only read queries. -->
         <readonly>
+            <max_memory_usage>10000000000</max_memory_usage>
+            <load_balancing>random</load_balancing>
             <readonly>1</readonly>
         </readonly>
     </profiles>
@@ -100,6 +102,14 @@
             <!-- User can create other users and grant rights to them. -->
             <!-- <access_management>1</access_management> -->
         </default>
+        <querydata>
+            <password>querydata</password>
+            <networks>
+                <ip>::/0</ip>
+            </networks>
+            <profile>readonly</profile>
+            <quota>default</quota>
+        </querydata>
     </users>
 
     <!-- Quotas. -->
