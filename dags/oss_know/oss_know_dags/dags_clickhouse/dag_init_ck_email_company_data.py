@@ -13,7 +13,7 @@ with DAG(
         schedule_interval=None,
         start_date=datetime(2021, 1, 1),
         catchup=False,
-        tags=['clickhouse'],
+        tags=['ooooooo'],
 ) as dag:
 
     def init_ck_email_company_data(ds, **kwargs):

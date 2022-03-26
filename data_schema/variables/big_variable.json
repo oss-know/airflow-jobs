@@ -13,55 +13,55 @@
             "owner": "systemd",
             "repo": "systemd",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-10T07:19:47Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "openssl",
             "repo": "openssl",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-10T07:19:47Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "google",
             "repo": "leveldb",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-10T07:19:47Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "facebook",
             "repo": "zstd",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-10T07:19:47Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "vim",
             "repo": "vim",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-10T07:19:47Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "curl",
             "repo": "curl",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-10T07:19:47Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "grpc",
             "repo": "grpc",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-10T07:19:47Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "moby",
             "repo": "moby",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-10T07:19:47Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "docker",
             "repo": "cli",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-10T07:19:47Z"
+            "until": "2022-03-26T04:26:08Z"
         }
     ],
     "need_init_github_issues_comments_repos": [
@@ -556,7 +556,8 @@
         "PASSWD": "",
         "PORT": "19001",
         "USER": "default",
-        "DATABASE": "default"
+        "DATABASE": "default",
+        "CLUSTER_NAME": "replicated"
     },
     "redis_client_data": {
         "HOST": "192.168.8.108",
@@ -643,10 +644,10 @@
                         "site_admin": false
                     },
                     "body": "",
-                    "created_at": "",
-                    "updated_at": "",
-                    "closed_at": "",
-                    "merged_at": "",
+                    "created_at": "1970-01-01T00:00:00Z",
+                    "updated_at": "1970-01-01T00:00:00Z",
+                    "closed_at": "1970-01-01T00:00:00Z",
+                    "merged_at": "1970-01-01T00:00:00Z",
                     "merge_commit_sha": "",
                     "assignee": {
                         "login": "",
@@ -775,10 +776,10 @@
                         },
                         "open_issues": 0,
                         "closed_issues": 0,
-                        "created_at": "",
-                        "updated_at": "",
-                        "closed_at": "",
-                        "due_on": ""
+                        "created_at": "1970-01-01T00:00:00Z",
+                        "updated_at": "1970-01-01T00:00:00Z",
+                        "closed_at": "1970-01-01T00:00:00Z",
+                        "due_on": "1970-01-01T00:00:00Z"
                     },
                     "draft": false,
                     "commits_url": "",
@@ -876,9 +877,9 @@
                             "labels_url": "",
                             "releases_url": "",
                             "deployments_url": "",
-                            "created_at": "",
-                            "updated_at": "",
-                            "pushed_at": "",
+                            "created_at": "1970-01-01T00:00:00Z",
+                            "updated_at": "1970-01-01T00:00:00Z",
+                            "pushed_at": "1970-01-01T00:00:00Z",
                             "git_url": "",
                             "ssh_url": "",
                             "clone_url": "",
@@ -1008,9 +1009,9 @@
                             "labels_url": "",
                             "releases_url": "",
                             "deployments_url": "",
-                            "created_at": "",
-                            "updated_at": "",
-                            "pushed_at": "",
+                            "created_at": "1970-01-01T00:00:00Z",
+                            "updated_at": "1970-01-01T00:00:00Z",
+                            "pushed_at": "1970-01-01T00:00:00Z",
                             "git_url": "",
                             "ssh_url": "",
                             "clone_url": "",
@@ -1097,12 +1098,12 @@
                         "author": {
                             "name": "",
                             "email": "",
-                            "date": ""
+                            "date": "1970-01-01T00:00:00Z"
                         },
                         "committer": {
                             "name": "",
                             "email": "",
-                            "date": ""
+                            "date": "1970-01-01T00:00:00Z"
                         },
                         "message": "",
                         "tree": {
@@ -1348,15 +1349,15 @@
                         },
                         "open_issues": 0,
                         "closed_issues": 0,
-                        "created_at": "",
-                        "updated_at": "",
-                        "closed_at": "",
-                        "due_on": ""
+                        "created_at": "1970-01-01T00:00:00Z",
+                        "updated_at": "1970-01-01T00:00:00Z",
+                        "closed_at": "1970-01-01T00:00:00Z",
+                        "due_on": "1970-01-01T00:00:00Z"
                     },
                     "comments": 0,
-                    "created_at": "",
-                    "updated_at": "",
-                    "closed_at": "",
+                    "created_at": "1970-01-01T00:00:00Z",
+                    "updated_at": "1970-01-01T00:00:00Z",
+                    "closed_at": "1970-01-01T00:00:00Z",
                     "author_association": "",
                     "active_lock_reason": "",
                     "draft": false,
@@ -1365,7 +1366,7 @@
                         "html_url": "",
                         "diff_url": "",
                         "patch_url": "",
-                        "merged_at": ""
+                        "merged_at": "1970-01-01T00:00:00Z"
                     },
                     "body": "",
                     "reactions": {
@@ -1420,8 +1421,8 @@
                         "type": "",
                         "site_admin": false
                     },
-                    "created_at": "",
-                    "updated_at": "",
+                    "created_at": "1970-01-01T00:00:00Z",
+                    "updated_at": "1970-01-01T00:00:00Z",
                     "author_association": "",
                     "body": "",
                     "reactions": {
@@ -1519,6 +1520,7 @@
                 },
                 "tag": "",
                 "data": {
+                    "enriched_filter_raw": "",
                     "unixfrom": "",
                     "From": "",
                     "Subject": "",
@@ -1707,7 +1709,8 @@
                     "Posted-To": "",
                     "Bounce-To": "",
                     "Referencs": "",
-                    "Authentication-Results-Original": ""
+                    "Authentication-Results-Original": "",
+                    "enrich_filter_raw": ""
                 },
                 "metadata__updated_on": "1970-01-01T00:00:00Z",
                 "metadata__timestamp": "1970-01-01T00:00:00Z",
@@ -1923,12 +1926,12 @@
                         "author": {
                             "name": "",
                             "email": "",
-                            "date": ""
+                            "date": "1970-01-01T00:00:00Z"
                         },
                         "committer": {
                             "name": "",
                             "email": "",
-                            "date": ""
+                            "date": "1970-01-01T00:00:00Z"
                         },
                         "message": "",
                         "tree": {
@@ -2042,8 +2045,8 @@
                         "type": "",
                         "site_admin": false
                     },
-                    "created_at": "",
-                    "updated_at": "",
+                    "created_at": "1970-01-01T00:00:00Z",
+                    "updated_at": "1970-01-01T00:00:00Z",
                     "author_association": "",
                     "body": "",
                     "reactions": {
@@ -2197,15 +2200,15 @@
                         },
                         "open_issues": 0,
                         "closed_issues": 0,
-                        "created_at": "",
-                        "updated_at": "",
-                        "closed_at": "",
-                        "due_on": ""
+                        "created_at": "1970-01-01T00:00:00Z",
+                        "updated_at": "1970-01-01T00:00:00Z",
+                        "closed_at": "1970-01-01T00:00:00Z",
+                        "due_on": "1970-01-01T00:00:00Z"
                     },
                     "comments": 0,
-                    "created_at": "",
-                    "updated_at": "",
-                    "closed_at": "",
+                    "created_at": "1970-01-01T00:00:00Z",
+                    "updated_at": "1970-01-01T00:00:00Z",
+                    "closed_at": "1970-01-01T00:00:00Z",
                     "author_association": "",
                     "active_lock_reason": "",
                     "draft": false,
@@ -2214,7 +2217,7 @@
                         "html_url": "",
                         "diff_url": "",
                         "patch_url": "",
-                        "merged_at": ""
+                        "merged_at": "1970-01-01T00:00:00Z"
                     },
                     "body": "",
                     "reactions": {
@@ -2284,10 +2287,10 @@
                         "site_admin": false
                     },
                     "body": "",
-                    "created_at": "",
-                    "updated_at": "",
-                    "closed_at": "",
-                    "merged_at": "",
+                    "created_at": "1970-01-01T00:00:00Z",
+                    "updated_at": "1970-01-01T00:00:00Z",
+                    "closed_at": "1970-01-01T00:00:00Z",
+                    "merged_at": "1970-01-01T00:00:00Z",
                     "merge_commit_sha": "",
                     "assignee": {
                         "login": "",
@@ -2416,10 +2419,10 @@
                         },
                         "open_issues": 0,
                         "closed_issues": 0,
-                        "created_at": "",
-                        "updated_at": "",
-                        "closed_at": "",
-                        "due_on": ""
+                        "created_at": "1970-01-01T00:00:00Z",
+                        "updated_at": "1970-01-01T00:00:00Z",
+                        "closed_at": "1970-01-01T00:00:00Z",
+                        "due_on": "1970-01-01T00:00:00Z"
                     },
                     "draft": false,
                     "commits_url": "",
@@ -2517,9 +2520,9 @@
                             "labels_url": "",
                             "releases_url": "",
                             "deployments_url": "",
-                            "created_at": "",
-                            "updated_at": "",
-                            "pushed_at": "",
+                            "created_at": "1970-01-01T00:00:00Z",
+                            "updated_at": "1970-01-01T00:00:00Z",
+                            "pushed_at": "1970-01-01T00:00:00Z",
                             "git_url": "",
                             "ssh_url": "",
                             "clone_url": "",
@@ -2649,9 +2652,9 @@
                             "labels_url": "",
                             "releases_url": "",
                             "deployments_url": "",
-                            "created_at": "",
-                            "updated_at": "",
-                            "pushed_at": "",
+                            "created_at": "1970-01-01T00:00:00Z",
+                            "updated_at": "1970-01-01T00:00:00Z",
+                            "pushed_at": "1970-01-01T00:00:00Z",
                             "git_url": "",
                             "ssh_url": "",
                             "clone_url": "",
@@ -2778,6 +2781,7 @@
                 },
                 "tag": "",
                 "data": {
+                    "enriched_filter_raw": "",
                     "unixfrom": "",
                     "From": "",
                     "Subject": "",
@@ -2966,7 +2970,8 @@
                     "Posted-To": "",
                     "Bounce-To": "",
                     "Referencs": "",
-                    "Authentication-Results-Original": ""
+                    "Authentication-Results-Original": "",
+                    "enrich_filter_raw": ""
                 },
                 "metadata__updated_on": "1970-01-01T00:00:00Z",
                 "metadata__timestamp": "1970-01-01T00:00:00Z",
@@ -3051,6 +3056,7 @@
                 },
                 "raw_data": {
                     "email": "",
+                    "email_aliase": "",
                     "country_inferred_from_emailcctld": "",
                     "country_inferred_from_emaildomain": "",
                     "company_inferred_from_email": "",
@@ -3155,11 +3161,11 @@
             }
         },
         {
-            "table_name": "activitys",
+            "table_name": "activities",
             "cluster_name": "replicated",
             "database_name": "default",
             "distributed_key": "github_id",
-            "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/activitys','{replica}')",
+            "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/activities','{replica}')",
             "partition_by": "owner",
             "order_by": [
                 "owner",
@@ -3178,12 +3184,81 @@
                 "code_tweaking": 0.0,
                 "issue_reporting": 0.0
             }
+        },
+        {
+            "table_name": "temp_gits_by_company",
+            "cluster_name": "replicated",
+            "database_name": "default",
+            "distributed_key": "search_key__updated_at",
+            "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/temp_gits_by_company','{replica}')",
+            "partition_by": "search_key__owner",
+            "order_by": [
+                "search_key__owner",
+                "search_key__repo",
+                "search_key__origin"
+            ],
+            "parse_data": {
+                "author_email_account": "",
+                "author_email_domain": "",
+                "author_github_login": "",
+                "author_github_id": 0,
+                "committer_email_account": "",
+                "committer_email_domain": "",
+                "committer_github_login": "",
+                "committer_github_id": 0,
+                "search_key": {
+                    "owner": "",
+                    "repo": "",
+                    "origin": "",
+                    "updated_at": 0
+                },
+                "raw_data": {
+                    "message": "",
+                    "hexsha": "",
+                    "parents": [
+                        "",
+                        ""
+                    ],
+                    "author_tz": 0,
+                    "committer_tz": 0,
+                    "author_name": "",
+                    "author_email": "",
+                    "committer_name": "",
+                    "committer_email": "",
+                    "authored_date": "1970-01-01T00:00:00Z",
+                    "authored_timestamp": 0,
+                    "committed_date": "1970-01-01T00:00:00Z",
+                    "committed_timestamp": 0,
+                    "files": [
+                        {
+                            "insertions": 0,
+                            "deletions": 0,
+                            "lines": 0,
+                            "file_name": ""
+                        },
+                        {
+                            "insertions": 0,
+                            "deletions": 0,
+                            "lines": 0,
+                            "file_name": ""
+                        }
+                    ],
+                    "total": {
+                        "insertions": 0,
+                        "deletions": 0,
+                        "lines": 0,
+                        "files": 0
+                    },
+                    "if_merged": false,
+                    "type": ""
+                }
+            }
         }
     ],
     "ck_alter_table_cols_datatype_tplt": [
         {
             "table_name": "gits",
-            "cluster_name": "replicated",
+            "cluster_name": "cluster",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/gits','{replica}')",
@@ -3401,5 +3476,17 @@
             "if",
             "any"
         ]
-    }
+    },
+    "repo_list": [
+        {
+            "owner": "",
+            "repo": ""
+        }
+    ],
+    "maillist_repo": [
+        {
+            "project_name": "",
+            "mail_list_name": ""
+        }
+    ]
 }
