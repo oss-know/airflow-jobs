@@ -109,7 +109,7 @@
     "PORT": "19001",
     "USER": "default",
     "DATABASE": "default",
-    "CLUSTER_NAME": "cluster"
+    "CLUSTER_NAME": "replicated"
   },
   "redis_client_data": {
     "HOST": "192.168.8.108",

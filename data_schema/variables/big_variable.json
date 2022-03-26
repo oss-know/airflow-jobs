@@ -13,55 +13,55 @@
             "owner": "systemd",
             "repo": "systemd",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-26T03:02:17Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "openssl",
             "repo": "openssl",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-26T03:02:17Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "google",
             "repo": "leveldb",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-26T03:02:17Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "facebook",
             "repo": "zstd",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-26T03:02:17Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "vim",
             "repo": "vim",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-26T03:02:17Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "curl",
             "repo": "curl",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-26T03:02:17Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "grpc",
             "repo": "grpc",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-26T03:02:17Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "moby",
             "repo": "moby",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-26T03:02:17Z"
+            "until": "2022-03-26T04:26:08Z"
         },
         {
             "owner": "docker",
             "repo": "cli",
             "since": "1970-01-01T00:00:00Z",
-            "until": "2022-03-26T03:02:17Z"
+            "until": "2022-03-26T04:26:08Z"
         }
     ],
     "need_init_github_issues_comments_repos": [
@@ -557,7 +557,7 @@
         "PORT": "19001",
         "USER": "default",
         "DATABASE": "default",
-        "CLUSTER_NAME": "cluster"
+        "CLUSTER_NAME": "replicated"
     },
     "redis_client_data": {
         "HOST": "192.168.8.108",
@@ -1772,7 +1772,7 @@
     "ck_create_table_cols_datatype_tplt": [
         {
             "table_name": "gits",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/gits','{replica}')",
@@ -1833,7 +1833,7 @@
         },
         {
             "table_name": "github_profile",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_profile','{replica}')",
@@ -2728,7 +2728,7 @@
         },
         {
             "table_name": "github_issues_timeline",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_issues_timeline','{replica}')",
@@ -2985,7 +2985,7 @@
         },
         {
             "table_name": "maillists_enriched",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/maillists_enriched','{replica}')",
@@ -3040,7 +3040,7 @@
         },
         {
             "table_name": "email_address",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
             "distributed_key": "search_key__updated_at",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/email_address','{replica}')",
@@ -3123,7 +3123,7 @@
         },
         {
             "table_name": "metrics",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
             "distributed_key": "github_id",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/metrics','{replica}')",
@@ -3162,7 +3162,7 @@
         },
         {
             "table_name": "activities",
-            "cluster_name": "cluster",
+            "cluster_name": "replicated",
             "database_name": "default",
             "distributed_key": "github_id",
             "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/activities','{replica}')",

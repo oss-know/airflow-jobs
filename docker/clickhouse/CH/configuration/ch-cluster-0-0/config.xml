@@ -627,10 +627,14 @@
                 <replica>
                     <host>ch-cluster-0-0</host>
                     <port>9000</port>
+                    <user>default</user>
+                    <password>default</password>
                 </replica>
                 <replica>
                     <host>ch-cluster-0-1</host>
                     <port>9000</port>
+                    <user>default</user>
+                    <password>default</password>
                 </replica>
             </shard>
             <shard>
@@ -639,10 +643,14 @@
                 <replica>
                     <host>ch-cluster-1-0</host>
                     <port>9000</port>
+                    <user>default</user>
+                    <password>default</password>
                 </replica>
                 <replica>
                     <host>ch-cluster-1-1</host>
                     <port>9000</port>
+                    <user>default</user>
+                    <password>default</password>
                 </replica>
             </shard>
         </replicated>

@@ -627,10 +627,14 @@
                 <replica>
                     <host>ch-cluster-0-0</host>
                     <port>9000</port>
+                    <user>default</user>
+                    <password>default</password>
                 </replica>
                 <replica>
                     <host>ch-cluster-0-1</host>
                     <port>9000</port>
+                    <user>default</user>
+                    <password>default</password>
                 </replica>
             </shard>
             <shard>
@@ -639,14 +643,17 @@
                 <replica>
                     <host>ch-cluster-1-0</host>
                     <port>9000</port>
+                    <user>default</user>
+                    <password>default</password>
                 </replica>
                 <replica>
                     <host>ch-cluster-1-1</host>
                     <port>9000</port>
+                    <user>default</user>
+                    <password>default</password>
                 </replica>
             </shard>
         </replicated>
-
 <!--        <test_shard_localhost>-->
 <!--            &lt;!&ndash; Inter-server per-cluster secret for Distributed queries-->
 <!--                 default: no secret (no authentication will be performed)-->
@@ -748,18 +755,18 @@
 <!--            </shard>-->
 <!--        </test_cluster_two_shard_three_replicas_localhost>-->
 <!--        <test_cluster_two_shards_localhost>-->
-<!--             <shard>-->
-<!--                 <replica>-->
-<!--                     <host>localhost</host>-->
-<!--                     <port>9000</port>-->
-<!--                 </replica>-->
-<!--             </shard>-->
-<!--             <shard>-->
-<!--                 <replica>-->
-<!--                     <host>localhost</host>-->
-<!--                     <port>9000</port>-->
-<!--                 </replica>-->
-<!--             </shard>-->
+<!--            <shard>-->
+<!--                <replica>-->
+<!--                    <host>localhost</host>-->
+<!--                    <port>9000</port>-->
+<!--                </replica>-->
+<!--            </shard>-->
+<!--            <shard>-->
+<!--                <replica>-->
+<!--                    <host>localhost</host>-->
+<!--                    <port>9000</port>-->
+<!--                </replica>-->
+<!--            </shard>-->
 <!--        </test_cluster_two_shards_localhost>-->
 <!--        <test_cluster_two_shards>-->
 <!--            <shard>-->
