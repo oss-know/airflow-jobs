@@ -1,0 +1,44 @@
+# docker compose edition 
+version: "3.8"
+
+networks:
+  dev-network:
+    external: true
+
+services:
+  redis:
+    image: redis:6
+    restart: always
+    container_name: redis-6
+    networks:
+      - dev-network
+    ports:
+      - 16379:6379
+    volumes:
+      - ./redis.conf:/etc/redis/redis.conf
+      - ./data:/data
+    command: redis-server /etc/redis/redis.conf
+#    privileged: true
+
+
+#services:
+#  postgresql-db:
+#    image: postgres
+#    restart: always
+#    networks:
+#      - dev-network
+#    ports:
+#      - 15432:5432
+#    environment:
+#      POSTGRES_USER: datapipline
+#      POSTGRES_PASSWORD: datapipline_password
+#    volumes:
+#      - ./data:/var/lib/postgresql/data
+#
+#  adminer:
+#    image: adminer
+#    restart: always
+#    networks:
+#      - dev-network
+#    ports:
+#      - 18888:8080

@@ -1,3 +1,5 @@
+## zookeeper集群未和 clickhouse 整合
+
 .DEFAULT_GOAL := help
 
 DOCKER_COMPOSE := docker-compose
@@ -13,7 +15,7 @@ help: ## Help dialog.
 ####################################################################
 
 up_infra: ## Create and start containers
-	docker pull airflowjobs/custom-grafana-enterprise:latest && \
+	docker pull redis:6 && \
 	$(DOCKER_INFRA) up -d
 
 down_infra: ## Stop and remove all containers

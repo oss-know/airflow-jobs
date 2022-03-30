@@ -15,8 +15,7 @@ help: ## Help dialog.
 ####################################################################
 
 up_infra: ## Create and start containers
-	docker network create -d bridge dev-network && \
-	docker pull cubejs/cube:latest && \
+	docker pull postgres:13 && \
 	$(DOCKER_INFRA) up -d
 
 down_infra: ## Stop and remove all containers
