@@ -7,6 +7,9 @@
 -- 2/ 依靠其他列的内容，更新另外一列，where 必须有 如果对整个表 每一行都应用 使用 where 1=1
 ---- ALTER TABLE github_issues_comments_local on cluster `cluster` UPDATE user__type=splitByString('/users/',user__received_events_url)[2] where 1=1
 ----------------------------------------------------------------------------------------
+-- 删除分布式表&本地表所有数据 提示：
+--  truncate table activities_local on cluster replicated
+----------------------------------------------------------------------------------------
 
 
 
