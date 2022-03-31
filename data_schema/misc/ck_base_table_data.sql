@@ -11,17 +11,18 @@
 --  truncate table activities_local on cluster replicated
 ----------------------------------------------------------------------------------------
 
-insert into email_domain_to_company_country
-values ('intel.com', 'intel', 'US'),
-       ('kernel.intel.com', 'intel', 'US'),
-       ('huawei.com', 'huawei', 'CN'),
-       ('hisilicon.com', 'huawei', 'CN'),
-       ('suse.com', 'suse', 'DE'),
-       ('suse.de', 'suse', 'DE'),
-       ('suse.fr', 'suse', 'DE'),
-       ('redhat.com', 'redhat', 'US'),
-       ('google.com', 'google', 'US'),
-       ('googlemail.com', 'google', 'US'),
-       ('facebook.com', 'facebook', 'US'),
-       ('fb.com', 'facebook', 'US'),
-       ('arm.com', 'arm', 'UK')
+--
+-- insert into email_domain_to_company_country
+-- values ('intel.com', 'intel', 'US'),
+--        ('kernel.intel.com', 'intel', 'US'),
+--        ('huawei.com', 'huawei', 'CN'),
+--        ('hisilicon.com', 'huawei', 'CN'),
+--        ('suse.com', 'suse', 'DE'),
+--        ('suse.de', 'suse', 'DE'),
+--        ('suse.fr', 'suse', 'DE'),
+--        ('redhat.com', 'redhat', 'US'),
+--        ('google.com', 'google', 'US'),
+--        ('googlemail.com', 'google', 'US'),
+--        ('facebook.com', 'facebook', 'US'),
+--        ('fb.com', 'facebook', 'US'),
+--        ('arm.com', 'arm', 'UK')

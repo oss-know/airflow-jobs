@@ -11,8 +11,6 @@
 --  truncate table activities_local on cluster replicated
 ----------------------------------------------------------------------------------------
 
-
-
 create table activities on cluster replicated
 (
     owner              String,
@@ -766,6 +764,11 @@ create table github_issues_timeline_local on cluster replicated
         ORDER BY (search_key__owner, search_key__repo, search_key__number)
         SETTINGS index_granularity = 8192;
 
+drop table github_profile on cluster replicated;
+drop table github_profile_local on cluster replicated;
+
+-- 删除 zookeeper 的 残留
+
 create table github_profile on cluster replicated
 (
     search_key__updated_at                              Int64,
@@ -819,7 +822,10 @@ create table github_profile on cluster replicated
     inferred_from_location__postal_code_suffix          String,
     inferred_from_location__postal_town                 String,
     inferred_from_location__route                       String,
-    inferred_from_location__street_number               String
+    inferred_from_location__street_number               String,
+    email_full_name                                     String,
+    email_account                                       String,
+    email_domain                                        String
 )
     engine = Distributed('replicated', 'default', 'github_profile_local', search_key__updated_at);
 
@@ -876,11 +882,16 @@ create table github_profile_local on cluster replicated
     inferred_from_location__postal_code_suffix          String,
     inferred_from_location__postal_town                 String,
     inferred_from_location__route                       String,
-    inferred_from_location__street_number               String
+    inferred_from_location__street_number               String,
+    email_full_name                                     String,
+    email_account                                       String,
+    email_domain                                        String
 )
     engine = ReplicatedMergeTree('/clickhouse/tables/{shard}/github_profile', '{replica}')
         ORDER BY search_key__updated_at
         SETTINGS index_granularity = 8192;
+
+-- 数据同步 ck_sync_data_to_local.sql
 
 create table github_pull_requests on cluster replicated
 (
@@ -1988,93 +1999,6 @@ create table maillists on cluster replicated
 )
     engine = Distributed('replicated', 'default', 'maillists_local', search_key__updated_at);
 
-create table maillists_enriched on cluster replicated
-(
-    metadata__updated_on        DateTime64(3),
-    metadata__timestamp         DateTime64(3),
-    offset                      Int64,
-    origin                      String,
-    tag                         String,
-    uuid                        String,
-    Date                        DateTime64(3),
-    Subject                     String,
-    `Message-ID`                String,
-    Subject_analyzed            String,
-    email_date                  DateTime64(3),
-    list                        String,
-    root                        Int64,
-    body_extract                String,
-    size                        Int64,
-    tz                          Int64,
-    mbox_author_domain          String,
-    repository_labels           Array(String),
-    metadata__filter_raw        String,
-    grimoire_creation_date      DateTime64(3),
-    is_mbox_message             Int64,
-    metadata__gelk_version      String,
-    metadata__gelk_backend_name String,
-    metadata__enriched_on       DateTime64(3),
-    Date_tz                     Int64,
-    email_date_tz               Int64,
-    metadata__enriched_on_tz    Int64,
-    grimoire_creation_date_tz   Int64,
-    From                        String,
-    References                  String,
-    `In-Reply-To`               String,
-    To                          String,
-    is_pipermail_message        Int64,
-    search_key__message_id      String,
-    search_key__project_name    String,
-    search_key__mail_list_name  String,
-    search_key__updated_at      Int64
-)
-    engine = Distributed('replicated', 'default', 'maillists_enriched_local', search_key__updated_at);
-
-create table maillists_enriched_local on cluster replicated
-(
-    metadata__updated_on        DateTime64(3),
-    metadata__timestamp         DateTime64(3),
-    offset                      Int64,
-    origin                      String,
-    tag                         String,
-    uuid                        String,
-    Date                        DateTime64(3),
-    Subject                     String,
-    `Message-ID`                String,
-    Subject_analyzed            String,
-    email_date                  DateTime64(3),
-    list                        String,
-    root                        Int64,
-    body_extract                String,
-    size                        Int64,
-    tz                          Int64,
-    mbox_author_domain          String,
-    repository_labels           Array(String),
-    metadata__filter_raw        String,
-    grimoire_creation_date      DateTime64(3),
-    is_mbox_message             Int64,
-    metadata__gelk_version      String,
-    metadata__gelk_backend_name String,
-    metadata__enriched_on       DateTime64(3),
-    Date_tz                     Int64,
-    email_date_tz               Int64,
-    metadata__enriched_on_tz    Int64,
-    grimoire_creation_date_tz   Int64,
-    From                        String,
-    References                  String,
-    `In-Reply-To`               String,
-    To                          String,
-    is_pipermail_message        Int64,
-    search_key__message_id      String,
-    search_key__project_name    String,
-    search_key__mail_list_name  String,
-    search_key__updated_at      Int64
-)
-    engine = ReplicatedMergeTree('/clickhouse/tables/{shard}/maillists_enriched', '{replica}')
-        PARTITION BY search_key__mail_list_name
-        ORDER BY (search_key__project_name, search_key__mail_list_name)
-        SETTINGS index_granularity = 8192;
-
 create table maillists_local on cluster replicated
 (
     backend_name                                  String,
@@ -2286,6 +2210,104 @@ create table maillists_local on cluster replicated
         PARTITION BY search_key__mail_list_name
         ORDER BY (search_key__message_id, search_key__project_name, search_key__mail_list_name)
         SETTINGS index_granularity = 8192;
+
+drop table maillists_enriched_local on cluster replicated;
+drop table maillists_enriched on cluster replicated;
+
+create table maillists_enriched on cluster replicated
+(
+    metadata__updated_on        DateTime64(3),
+    metadata__timestamp         DateTime64(3),
+    offset                      Int64,
+    origin                      String,
+    tag                         String,
+    uuid                        String,
+    Date                        DateTime64(3),
+    Subject                     String,
+    `Message-ID`                String,
+    Subject_analyzed            String,
+    email_date                  DateTime64(3),
+    list                        String,
+    root                        Int64,
+    body_extract                String,
+    size                        Int64,
+    tz                          Int64,
+    mbox_author_domain          String,
+    repository_labels           Array(String),
+    metadata__filter_raw        String,
+    grimoire_creation_date      DateTime64(3),
+    is_mbox_message             Int64,
+    metadata__gelk_version      String,
+    metadata__gelk_backend_name String,
+    metadata__enriched_on       DateTime64(3),
+    Date_tz                     Int64,
+    email_date_tz               Int64,
+    metadata__enriched_on_tz    Int64,
+    grimoire_creation_date_tz   Int64,
+    From                        String,
+    References                  String,
+    `In-Reply-To`               String,
+    To                          String,
+    is_pipermail_message        Int64,
+    search_key__message_id      String,
+    search_key__project_name    String,
+    search_key__mail_list_name  String,
+    search_key__updated_at      Int64,
+    from_email_domain           String,
+    from_email_account          String,
+    from_email_full_name        String
+)
+    engine = Distributed('replicated', 'default', 'maillists_enriched_local', search_key__updated_at);
+
+create table maillists_enriched_local on cluster replicated
+(
+    metadata__updated_on        DateTime64(3),
+    metadata__timestamp         DateTime64(3),
+    offset                      Int64,
+    origin                      String,
+    tag                         String,
+    uuid                        String,
+    Date                        DateTime64(3),
+    Subject                     String,
+    `Message-ID`                String,
+    Subject_analyzed            String,
+    email_date                  DateTime64(3),
+    list                        String,
+    root                        Int64,
+    body_extract                String,
+    size                        Int64,
+    tz                          Int64,
+    mbox_author_domain          String,
+    repository_labels           Array(String),
+    metadata__filter_raw        String,
+    grimoire_creation_date      DateTime64(3),
+    is_mbox_message             Int64,
+    metadata__gelk_version      String,
+    metadata__gelk_backend_name String,
+    metadata__enriched_on       DateTime64(3),
+    Date_tz                     Int64,
+    email_date_tz               Int64,
+    metadata__enriched_on_tz    Int64,
+    grimoire_creation_date_tz   Int64,
+    From                        String,
+    References                  String,
+    `In-Reply-To`               String,
+    To                          String,
+    is_pipermail_message        Int64,
+    search_key__message_id      String,
+    search_key__project_name    String,
+    search_key__mail_list_name  String,
+    search_key__updated_at      Int64,
+    from_email_domain           String,
+    from_email_account          String,
+    from_email_full_name        String
+)
+    engine = ReplicatedMergeTree('/clickhouse/tables/{shard}/maillists_enriched', '{replica}')
+        PARTITION BY search_key__mail_list_name
+        ORDER BY (search_key__project_name, search_key__mail_list_name)
+        SETTINGS index_granularity = 8192;
+
+
 
 create table metrics on cluster replicated
 (
