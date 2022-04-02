@@ -84,7 +84,7 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
                         "search_key": {
                             "owner": owner,
                             "repo": repo,
-                            "origin": f"http://github.com/{owner}/{repo}.git",
+                            "origin": git_url,
                             'updated_at': 0
                         },
                         "raw_data": {

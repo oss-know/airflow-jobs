@@ -14,6 +14,7 @@ help: ## Help dialog.
 ####################        DOCKER COMPOSE      ####################
 ####################################################################
 
+#  docker network create -d bridge dev-network &&
 up_infra: ## Create and start containers
 	docker pull zookeeper:3.7 && \
 	$(DOCKER_INFRA) up -d

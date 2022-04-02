@@ -47,7 +47,7 @@ services:
         soft: 65536
         hard: 65536
     volumes:
-      - opensearch-data2:/usr/share/opensearch/data
+    - opensearch-data2:/usr/share/opensearch/data
     ports:
       - 19202:9200
       - 19602:9600 # required for Performance Analyzer
