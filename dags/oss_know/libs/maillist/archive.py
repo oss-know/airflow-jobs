@@ -182,7 +182,7 @@ def sync_archive(opensearch_conn_info, **maillist_params):
     elif archive_type == 'pipermail':
         archive = EmailArchive(**kwargs)
         archive.get_res()
-        repo = Pipermail(url=archive.url_prefix, dirpath=archive.dirpath)
+        repo = Pipermail(url=archive.url_prefix, dirpath=archive.dirpath, ssl_verify=False)
         ocean_backend = PipermailOcean(None)
         enrich_backend = OSSKnowPipermailEnrich(project_name, list_name)
     elif archive_type == 'mbox':
