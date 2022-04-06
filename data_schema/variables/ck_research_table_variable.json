@@ -66,6 +66,80 @@
         "To_email_account": "",
         "To_email_domaint": ""
       }
+    },
+   {
+      "table_name": "github_profile_research",
+      "cluster_name": "replicated",
+      "database_name": "default",
+      "distributed_key": "search_key__updated_at",
+      "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/github_profile_research','{replica}')",
+      "partition_by": "",
+      "order_by": [
+        "search_key__updated_at"
+      ],
+      "parse_data": {
+        "search_key": {
+          "updated_at": 0
+        },
+        "raw_data": {
+          "login": "",
+          "id": 0,
+          "node_id": "",
+          "avatar_url": "",
+          "gravatar_id": "",
+          "url": "",
+          "html_url": "",
+          "followers_url": "",
+          "following_url": "",
+          "gists_url": "",
+          "starred_url": "",
+          "subscriptions_url": "",
+          "organizations_url": "",
+          "repos_url": "",
+          "events_url": "",
+          "received_events_url": "",
+          "type": "",
+          "site_admin": false,
+          "name": "",
+          "company": "",
+          "blog": "",
+          "location": "",
+          "email": "",
+          "hireable": false,
+          "bio": "",
+          "twitter_username": "",
+          "public_repos": 0,
+          "public_gists": 0,
+          "followers": 0,
+          "following": 0,
+          "created_at": "1970-01-01T00:00:00Z",
+          "updated_at": "1970-01-01T00:00:00Z",
+          "country_inferred_from_email_cctld": "",
+          "country_inferred_from_email_domain_company": "",
+          "country_inferred_from_location": "",
+          "country_inferred_from_company": "",
+          "final_company_inferred_from_company": "",
+          "company_inferred_from_email_domain_company": "",
+          "inferred_from_location": {
+            "administrative_area_level_1": "",
+            "administrative_area_level_2": "",
+            "administrative_area_level_3": "",
+            "colloquial_area": "",
+            "continent": "",
+            "country": "",
+            "locality": "",
+            "political": "",
+            "postal_code": "",
+            "postal_code_suffix": "",
+            "postal_town": "",
+            "route": "",
+            "street_number": ""
+          },
+          "email_full_name": "",
+          "email_account": "",
+          "email_domain": ""
+        }
+      }
     }
-  ]
+]
 }  
