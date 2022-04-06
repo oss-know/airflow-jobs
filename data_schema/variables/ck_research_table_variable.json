@@ -1,0 +1,71 @@
+{
+"ck_create_table_cols_datatype_tplt": [
+    {
+      "table_name": "maillists_research",
+      "cluster_name": "replicated",
+      "database_name": "default",
+      "distributed_key": "search_key__updated_at",
+      "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/maillists_research','{replica}')",
+      "partition_by": "search_key__mail_list_name",
+      "order_by": [
+        "search_key__project_name",
+        "search_key__mail_list_name"
+      ],
+      "parse_data": {
+        "metadata__updated_on": "1970-01-01T00:00:00Z",
+        "metadata__timestamp": "1970-01-01T00:00:00Z",
+        "offset": 0,
+        "origin": "",
+        "tag": "",
+        "uuid": "",
+        "Date": "1970-01-01T00:00:00Z",
+        "Subject": "",
+        "Message-ID": "",
+        "Subject_analyzed": "",
+        "email_date": "1970-01-01T00:00:00Z",
+        "list": "",
+        "root": true,
+        "body_extract": "",
+        "size": 738,
+        "tz": 0,
+        "mbox_author_domain": "",
+        "repository_labels": [
+          ""
+        ],
+        "metadata__filter_raw": "",
+        "grimoire_creation_date": "1970-01-01T00:00:00Z",
+        "is_mbox_message": 1,
+        "metadata__gelk_version": "",
+        "metadata__gelk_backend_name": "",
+        "metadata__enriched_on": "1970-01-01T00:00:00Z",
+        "search_key": {
+          "message_id": "",
+          "project_name": "",
+          "mail_list_name": "",
+          "updated_at": 0,
+
+          "owner": "用于映射git&github的owner repo 概念",
+          "repo": "用于映射git&github的owner repo 概念",
+          "developer_id": "用于索引一个开发者的唯一标识"
+        },
+        "Date_tz": 0,
+        "email_date_tz": 0,
+        "metadata__enriched_on_tz": 0,
+        "grimoire_creation_date_tz": 0,
+        "From": "",
+        "References": "",
+        "In-Reply-To": "",
+        "To": "",
+        "is_pipermail_message": 0,
+        "From_fullname": "",
+        "From_email": "",
+        "From_email_account": "",
+        "From_email_domaint": "",
+        "To_fullname": "",
+        "To_email": "",
+        "To_email_account": "",
+        "To_email_domaint": ""
+      }
+    }
+  ]
+}  
