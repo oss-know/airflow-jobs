@@ -179,6 +179,12 @@ def init_geolocator(token):
         _global_geolocator = GoogleV3(api_key=token)
 
 
+@retry(stop=stop_after_attempt(10),
+       wait=wait_fixed(1),
+       retry=(retry_if_exception_type(urllib3.exceptions.HTTPError) |
+              retry_if_exception_type(urllib3.exceptions.MaxRetryError) |
+              retry_if_exception_type(requests.exceptions.ProxyError) |
+              retry_if_exception_type(requests.exceptions.SSLError)))
 def infer_country_from_location(github_location):
     """
     :param  github_location: location from a GitHub profile
@@ -190,6 +196,12 @@ def infer_country_from_location(github_location):
     return None
 
 
+@retry(stop=stop_after_attempt(10),
+       wait=wait_fixed(1),
+       retry=(retry_if_exception_type(urllib3.exceptions.HTTPError) |
+              retry_if_exception_type(urllib3.exceptions.MaxRetryError) |
+              retry_if_exception_type(requests.exceptions.ProxyError) |
+              retry_if_exception_type(requests.exceptions.SSLError)))
 def infer_geo_info_from_location(github_location):
     """
     :param  github_location: the location given by github
