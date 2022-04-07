@@ -116,7 +116,9 @@ class OpensearchAPI:
     def put_profile_into_opensearch(self, github_ids, token_proxy_accommodator, opensearch_client):
         """Put GitHub user profile into opensearch if it is not in opensearch."""
         # 获取github profile
-        for github_id in github_ids:
+        batch_size = 100
+        num_github_ids = len(github_ids)
+        for index, github_id in enumerate(github_ids):
             logger.info(f'github_profile_user:{github_id}')
             time.sleep(round(random.uniform(0.01, 0.1), 2))
             has_user_profile = opensearch_client.search(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
@@ -156,6 +158,10 @@ class OpensearchAPI:
                 logger.info(f"Put the github {github_id}'s profile into opensearch.")
             else:
                 logger.info(f"{github_id}'s profile has already existed.")
+
+            if index % batch_size == 0:
+                logger.info(f'{index}/{num_github_ids} finished')
+
         return "Put GitHub user profile into opensearch if it is not in opensearch"
 
     def bulk_github_issues_timeline(self, opensearch_client, issues_timelines, owner, repo, number):
