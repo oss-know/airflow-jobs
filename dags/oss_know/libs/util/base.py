@@ -2,6 +2,7 @@ import re
 from datetime import datetime
 from urllib.parse import urlparse
 
+from geopy.exc import GeocoderServiceError, GeocoderTimedOut
 import geopy
 import redis
 import requests
@@ -179,18 +180,12 @@ def init_geolocator(token):
         _global_geolocator = GoogleV3(api_key=token)
 
 
-@retry(stop=stop_after_attempt(10),
-       wait=wait_fixed(1),
-       retry=(retry_if_exception_type(urllib3.exceptions.HTTPError) |
-              retry_if_exception_type(urllib3.exceptions.MaxRetryError) |
-              retry_if_exception_type(requests.exceptions.ProxyError) |
-              retry_if_exception_type(requests.exceptions.SSLError)))
 def infer_country_from_location(github_location):
     """
     :param  github_location: location from a GitHub profile
     :return country_name  : the english name of a country
     """
-    geo_res = _global_geolocator.geocode(github_location, language='en')
+    geo_res = do_geocode(github_location, language='en')
     if geo_res:
         return geo_res.address.split(',')[-1].strip()
     return None
@@ -198,16 +193,23 @@ def infer_country_from_location(github_location):
 
 @retry(stop=stop_after_attempt(10),
        wait=wait_fixed(1),
-       retry=(retry_if_exception_type(urllib3.exceptions.HTTPError) |
-              retry_if_exception_type(urllib3.exceptions.MaxRetryError) |
-              retry_if_exception_type(requests.exceptions.ProxyError) |
-              retry_if_exception_type(requests.exceptions.SSLError)))
+       retry=(
+               retry_if_exception_type(GeocoderServiceError) |
+               retry_if_exception_type(GeocoderTimedOut) |
+               retry_if_exception_type(urllib3.exceptions.HTTPError) |
+               retry_if_exception_type(urllib3.exceptions.MaxRetryError) |
+               retry_if_exception_type(requests.exceptions.ProxyError) |
+               retry_if_exception_type(requests.exceptions.SSLError)))
+def do_geocode(location, language='en'):
+    return _global_geolocator.geocode(location, language)
+
+
 def infer_geo_info_from_location(github_location):
     """
     :param  github_location: the location given by github
     :return GoogleGeoInfo  : the information of GoogleGeo inferred by location
     """
-    geo_res = _global_geolocator.geocode(github_location, language='en')
+    geo_res = do_geocode(github_location, language='en')
     if geo_res and geo_res.raw and ("address_components" in geo_res.raw) and geo_res.raw["address_components"]:
         address_components = geo_res.raw["address_components"]
         geo_info_from_location = {}
