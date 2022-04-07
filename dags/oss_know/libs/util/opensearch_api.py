@@ -162,6 +162,7 @@ class OpensearchAPI:
             if index % batch_size == 0:
                 logger.info(f'{index}/{num_github_ids} finished')
 
+        logger.info(f'{num_github_ids} github profiles finished')
         return "Put GitHub user profile into opensearch if it is not in opensearch"
 
     def bulk_github_issues_timeline(self, opensearch_client, issues_timelines, owner, repo, number):
