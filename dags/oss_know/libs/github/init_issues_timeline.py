@@ -5,7 +5,8 @@ import requests
 from opensearchpy import OpenSearch
 from opensearchpy import helpers as opensearch_helpers
 
-from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES, \
+    OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE
 from oss_know.libs.exceptions import GithubResourceNotFoundError
 from oss_know.libs.util.github_api import GithubAPI
 from oss_know.libs.util.log import logger
@@ -53,27 +54,26 @@ def init_sync_github_issues_timeline(opensearch_conn_info, owner, repo, token_pr
     # if not opensearch_client.indices.exists("github_issues"):
     #     opensearch_client.indices.create("github_issues")
 
-    # todo 这里要将注释释放掉，本次注释应对暴力获取没爬完的数据
     # 由于需要初始化幂等要求，在重新初始化前删除对应owner/repo 指定的 issues_timeline 记录的所有数据
-    # del_result = opensearch_client.delete_by_query(index=OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE,
-    #                                                body={
-    #                                                    "query": {
-    #                                                        "bool": {"must": [
-    #                                                            {"term": {
-    #                                                                "search_key.owner.keyword": {
-    #                                                                    "value": owner
-    #                                                                }
-    #                                                            }},
-    #                                                            {"term": {
-    #                                                                "search_key.repo.keyword": {
-    #                                                                    "value": repo
-    #                                                                }
-    #                                                            }}
-    #                                                        ]}
-    #                                                    }
-    #                                                })
+    del_result = opensearch_client.delete_by_query(index=OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE,
+                                                   body={
+                                                       "query": {
+                                                           "bool": {"must": [
+                                                               {"term": {
+                                                                   "search_key.owner.keyword": {
+                                                                       "value": owner
+                                                                   }
+                                                               }},
+                                                               {"term": {
+                                                                   "search_key.repo.keyword": {
+                                                                       "value": repo
+                                                                   }
+                                                               }}
+                                                           ]}
+                                                       }
+                                                   })
 
-    # logger.info(f"DELETE github issues_timeline result:", del_result)
+    logger.info(f"DELETE github issues_timeline result:", del_result)
 
     req_session = requests.Session()
     opensearch_api = OpensearchAPI()
@@ -81,35 +81,6 @@ def init_sync_github_issues_timeline(opensearch_conn_info, owner, repo, token_pr
 
     for now_item in need_init_sync_all_results:
         number = now_item["_source"]["raw_data"]["number"]
-        # todo 这里要记得删掉应对获取未被获取的数据
-        result = opensearch_client.search(index='github_issues_timeline', body={
-            "query": {
-                "bool": {
-                    "must": [
-                        {"term": {
-                            "search_key.owner.keyword": {
-                                "value": owner
-                            }
-                        }},
-                        {"term": {
-                            "search_key.repo.keyword": {
-                                "value": repo
-                            }
-                        }},
-                        {"term": {
-                            "search_key.number": {
-                                "value": number
-                            }
-                        }}
-                    ]
-                }
-            }
-        })
-        # 如果在timeline里有这个issue的数据就跳过这个issue
-        if result['hits']['hits']:
-            logger.info(f'这个issue {number} 已经存在需要跳过')
-            continue
-
         for page in range(1, 10000):
             time.sleep(random.uniform(GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX))
             try:
