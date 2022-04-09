@@ -48,6 +48,7 @@ class _token_proxy_iter:
     """An iterator to provide (token, proxy) pair"""
 
     def __init__(self, tokens):
+        self.tokens = tokens
         self.tokens_iter = itertools.cycle(tokens)
 
     def next(self):
@@ -90,6 +91,9 @@ class _fixed_map_iterToken(_token_proxy_iter):
         self.mapping[token] = new_proxy
 
     def replace_mapping(self, token, new_token):
+        if token in self.tokens:
+            self.tokens.remove(token)
+            self.renew_tokens(self.tokens)
         paired_proxy = self.mapping.pop(token, None)
         # paired_proxy should never be None
         if new_token and paired_proxy:
