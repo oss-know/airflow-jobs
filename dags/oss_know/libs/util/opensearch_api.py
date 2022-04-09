@@ -170,7 +170,7 @@ class OpensearchAPI:
             append_item["_source"]["raw_data"] = val
             append_item["_source"]["search_key"]["event"] = val["event"]
             bulk_all_datas.append(append_item)
-            logger.info(f"add init sync github issues_timeline number:{number}")
+            # logger.info(f"add init sync github issues_timeline number:{number}")
 
         success, failed = self.do_opensearch_bulk(opensearch_client, bulk_all_datas, owner, repo)
         logger.info(f"now page:{len(bulk_all_datas)} sync github issues_timeline success:{success} & failed:{failed}")
@@ -186,7 +186,7 @@ class OpensearchAPI:
             commit_comment_item = copy.deepcopy(template)
             commit_comment_item["_source"]["raw_data"] = val
             bulk_all_github_issues_comments.append(commit_comment_item)
-            logger.info(f"add init sync github issues comments number:{number}")
+            # logger.info(f"add init sync github issues comments number:{number}")
 
         success, failed = self.do_opensearch_bulk(opensearch_client, bulk_all_github_issues_comments, owner, repo)
         logger.info(
@@ -332,7 +332,7 @@ class OpensearchAPI:
                   retry_if_exception_type(OpenSearchException))
            )
     def do_opensearch_bulk(self, opensearch_client, bulk_all_data, owner, repo):
-        logger.info(f"owner:{owner},repo:{repo}::do_opensearch_bulk")
+        logger.debug(f"owner:{owner},repo:{repo}::do_opensearch_bulk")
 
         success, failed = opensearch_helpers.bulk(client=opensearch_client, actions=bulk_all_data)
         # 强制抛出异常

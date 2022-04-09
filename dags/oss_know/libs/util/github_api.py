@@ -5,6 +5,11 @@ from oss_know.libs.exceptions import GithubResourceNotFoundError
 from oss_know.libs.util.log import logger
 
 
+class GithubException(Exception):
+    def __init__(self, message, status):
+        super().__init__(message, status)
+        self.message = message
+        self.status = status
 
 class GithubAPI:
     github_headers = {'Connection': 'keep-alive', 'Accept-Encoding': 'gzip, deflate, br', 'Accept': '*/*',

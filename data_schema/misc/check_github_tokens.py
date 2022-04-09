@@ -4,6 +4,7 @@ import pytz
 
 
 def getConnectDemo(token):
+    print(f"当前时间:{datetime.datetime.now()}")
     url = "http://api.github.com/rate_limit"
     headers = headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36",
@@ -29,6 +30,7 @@ def getConnectDemo(token):
 
 
 tokens = []
+
 
 for token in tokens:
     print("---------------------------------------------------")
