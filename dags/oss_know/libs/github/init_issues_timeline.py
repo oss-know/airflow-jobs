@@ -135,7 +135,7 @@ def do_get_github_timeline(opensearch_client, token_proxy_accommodator, owner, r
             one_page_github_issues_timeline = req.json()
         except GithubResourceNotFoundError as e:
             logger.error(f"fail init github timeline, {owner}/{repo}, issues_number:{number}, now_page:{page}, Target timeline info does not exist: {e}, end")
-            return 500, e
+            return 403, e
 
         if (one_page_github_issues_timeline is not None) and len(
                 one_page_github_issues_timeline) == 0:
