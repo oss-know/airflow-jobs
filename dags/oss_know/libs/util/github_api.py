@@ -1,7 +1,7 @@
 import copy
 
-from oss_know.libs.util.base import do_get_github_result
 from oss_know.libs.exceptions import GithubResourceNotFoundError
+from oss_know.libs.util.base import do_get_github_result
 from oss_know.libs.util.log import logger
 
 
@@ -10,6 +10,7 @@ class GithubException(Exception):
         super().__init__(message, status)
         self.message = message
         self.status = status
+
 
 class GithubAPI:
     github_headers = {'Connection': 'keep-alive', 'Accept-Encoding': 'gzip, deflate, br', 'Accept': '*/*',
@@ -26,7 +27,10 @@ class GithubAPI:
         url = f"https://api.github.com/repos/{owner}/{repo}/issues"
         headers = copy.deepcopy(self.github_headers)
         params = {'state': 'all', 'per_page': 100, 'page': page, 'since': since}
-        res = do_get_github_result(http_session, url, headers, params, accommodator=token_proxy_accommodator)
+        try:
+            res = do_get_github_result(http_session, url, headers, params, accommodator=token_proxy_accommodator)
+        except GithubResourceNotFoundError as e:
+            logger.warning(f'Failed to get github commit {url}, the resource does not exist: {e}')
 
         logger.info(f"url:{url}, \n headers:{headers}, \n params：{params}")
 
@@ -64,14 +68,20 @@ class GithubAPI:
         url = f"https://api.github.com/repos/{owner}/{repo}/issues/{number}/timeline"
         headers = copy.deepcopy(self.github_headers)
         params = {'per_page': 100, 'page': page}
-        res = do_get_github_result(http_session, url, headers, params, token_proxy_accommodator)
+        try:
+            res = do_get_github_result(http_session, url, headers, params, token_proxy_accommodator)
+        except GithubResourceNotFoundError as e:
+            logger.warning(f'Failed to get issue timeline {url}, the resource does not exist: {e}')
         return res
 
     def get_github_issues_comments(self, http_session, token_proxy_accommodator, owner, repo, number, page):
         url = f"https://api.github.com/repos/{owner}/{repo}/issues/{number}/comments"
         headers = copy.deepcopy(self.github_headers)
         params = {'per_page': 100, 'page': page}
-        res = do_get_github_result(http_session, url, headers, params, token_proxy_accommodator)
+        try:
+            res = do_get_github_result(http_session, url, headers, params, token_proxy_accommodator)
+        except GithubResourceNotFoundError as e:
+            logger.warning(f'Failed to get issue comments {url}, the resource does not exist: {e}')
         return res
 
     def get_github_pull_requests(self, http_session, token_proxy_accommodator, owner, repo, page, since):
@@ -79,5 +89,8 @@ class GithubAPI:
             owner=owner, repo=repo)
         headers = copy.deepcopy(self.github_headers)
         params = {'state': 'all', 'per_page': 100, 'page': page, 'since': since}
-        res = do_get_github_result(http_session, url, headers, params, token_proxy_accommodator)
+        try:
+            res = do_get_github_result(http_session, url, headers, params, token_proxy_accommodator)
+        except GithubResourceNotFoundError as e:
+            logger.warning(f'Failed to get pull request {url}, the resource does not exist: {e}')
         return res

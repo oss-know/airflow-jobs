@@ -28,7 +28,8 @@ class TokenManager:
 
     def drop(self, token):
         """Drop an invalid token from in use list and pop a new one for replacement"""
-        self.in_use.remove(token)
+        if token in self.in_use:
+            self.in_use.remove(token)
 
         if self.idle:
             return self.idle.pop()
@@ -48,7 +49,8 @@ class TokenManager:
         return self.drop(token)
 
     def on_token_recover(self, token, callback):
-        self.cool_pool.remove(token)
+        if token in self.cool_pool:
+            self.cool_pool.remove(token)
         # TODO It's a bit hard to decide where to put the recovered token
         # If the outside caller use the token with customized callback, then token should be an item of in_use here.
         # If the caller dones't handle the token, or pass a None callback, then token should be an item of idle.
