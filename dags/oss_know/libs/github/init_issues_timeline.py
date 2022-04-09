@@ -92,7 +92,7 @@ def init_sync_github_issues_timeline(opensearch_conn_info, owner, repo, token_pr
         ct.start()
 
         # 执行并发任务并获取结果
-        if idx % 10 == 0:
+        if idx % 5 == 0:
             for tt in get_timeline_tasks:
                 tt.join()
                 if tt.getResult()[0] != 200:

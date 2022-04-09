@@ -1,7 +1,7 @@
 #!/bin/bash
 #SRC_HOST=192.168.8.108:9200
-DST_HOST=192.168.8.108:19201
-indice=(gits github_commits github_issues github_issues_comments)
+DST_HOST=192.168.8.20:19201
+indice=(github_issues)
 #indice=(gits github_commits github_issues github_pull_requests github_issues_comments github_issues_timeline github_profile check_sync_data)
 #indice=(gits maillists github_commits github_issues github_pull_requests github_issues_comments github_issues_timeline github_profile check_sync_data)
 for index in "${indice[@]}"
