@@ -8,3 +8,5 @@ class GithubAPIException(Exception):
 class GithubResourceNotFoundError(GithubAPIException):
     pass
 
+class GithubInternalServerError(GithubAPIException):
+    pass

@@ -18,7 +18,7 @@ from oss_know.libs.base_dict.variable_key import LOCATIONGEO_TOKEN
 from oss_know.libs.util.clickhouse_driver import CKServer
 from oss_know.libs.util.proxy import GithubTokenProxyAccommodator
 from ..util.log import logger
-from oss_know.libs.exceptions import GithubResourceNotFoundError
+from oss_know.libs.exceptions import GithubResourceNotFoundError, GithubInternalServerError
 
 
 class HttpGetException(Exception):
@@ -93,9 +93,10 @@ class EmptyResponse:
               retry_if_exception_type(urllib3.exceptions.MaxRetryError) |
               retry_if_exception_type(urllib3.exceptions.ProtocolError) |
               retry_if_exception_type(requests.exceptions.ProxyError) |
+              retry_if_exception_type(requests.exceptions.SSLError) |
               retry_if_exception_type(requests.exceptions.ChunkedEncodingError) |
               retry_if_exception_type(HttpGetException) |
-              retry_if_exception_type(requests.exceptions.SSLError)))
+              retry_if_exception_type(GithubInternalServerError)))
 def do_get_github_result(req_session, url, headers, params, accommodator: GithubTokenProxyAccommodator):
     github_token, proxy_url = accommodator.next()
     logger.debug(f'GitHub request {url} with token {github_token}')
@@ -117,10 +118,19 @@ def do_get_github_result(req_session, url, headers, params, accommodator: Github
         logger.warning(f"headers:{headers}")
         logger.warning(f"params:{params}")
         logger.warning(f"text:{res.text}")
+        logger.warning(f"status_code:{res.status_code}")
 
         if 500 <= res.status_code <= 599:
             # GitHub might return internal error when requesting non-existing resources(PRs, issues...)
-            return EmptyResponse()
+            # return EmptyResponse()
+            res_json = res.json()
+            if "message" in res_json and res_json["message"] == "Server Error":
+                raise GithubInternalServerError(
+                    f'Github Internal Server Error, url:{url}, params:{params}, text:{res.text}', res.status_code)
+            else:
+                logger.warning(
+                    f'Unexpected Github Internal Server Error, url:{url}, params:{params}, res.status_code:{res.status_code}')
+                return EmptyResponse()
 
         if res.status_code == 401:
             # Token becomes invalid
