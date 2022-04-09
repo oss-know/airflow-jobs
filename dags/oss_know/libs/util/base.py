@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from threading import Thread
 from urllib.parse import urlparse
 
 from geopy.exc import GeocoderServiceError, GeocoderTimedOut
@@ -25,6 +26,27 @@ class HttpGetException(Exception):
         super().__init__(message, status)
         self.message = message
         self.status = status
+
+
+# 支持return值的线程
+class concurrent_threads(Thread):
+    def __init__(self, func, args=()):
+        '''
+        :param func: 被测试的函数
+        :param args: 被测试的函数的返回值
+        '''
+        super(concurrent_threads, self).__init__()
+        self.func = func
+        self.args = args
+
+    def run(self) -> None:
+        self.result = self.func(*self.args)
+
+    def getResult(self):
+        try:
+            return self.result
+        except BaseException as e:
+            return e.args[0]
 
 
 # retry 防止SSL解密错误，请正确处理是否忽略证书有效性
@@ -66,11 +88,12 @@ class EmptyResponse:
 # # retry 防止SSL解密错误，请正确处理是否忽略证书有效性
 @retry(stop=stop_after_attempt(10),
        wait=wait_fixed(1),
-       retry=(retry_if_exception_type(urllib3.exceptions.HTTPError) |
+       retry=(retry_if_exception_type(KeyError) |
+              retry_if_exception_type(urllib3.exceptions.HTTPError) |
               retry_if_exception_type(urllib3.exceptions.MaxRetryError) |
+              retry_if_exception_type(urllib3.exceptions.ProtocolError) |
               retry_if_exception_type(requests.exceptions.ProxyError) |
               retry_if_exception_type(requests.exceptions.ChunkedEncodingError) |
-              retry_if_exception_type(urllib3.exceptions.ProtocolError) |
               retry_if_exception_type(HttpGetException) |
               retry_if_exception_type(requests.exceptions.SSLError)))
 def do_get_github_result(req_session, url, headers, params, accommodator: GithubTokenProxyAccommodator):

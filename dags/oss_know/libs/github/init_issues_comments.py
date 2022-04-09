@@ -1,48 +1,17 @@
 import random
-
 import requests
 import time
-import itertools
-import copy
 
 from opensearchpy import OpenSearch
 from opensearchpy import helpers as OpenSearchHelpers
-
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, \
     OPENSEARCH_INDEX_GITHUB_ISSUES
-from oss_know.libs.util.github_api import GithubAPI
+from oss_know.libs.exceptions import GithubResourceNotFoundError
+from oss_know.libs.util.base import concurrent_threads
+from oss_know.libs.util.github_api import GithubAPI, GithubException
+from oss_know.libs.util.opensearch_api import OpensearchAPI
 from oss_know.libs.util.log import logger
 from oss_know.libs.base_dict.options import GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX
-
-#
-#
-# def get_github_issues_comments(req_session, github_tokens_iter, owner, repo, number, page,
-#                                since):
-#     url = "https://api.github.com/repos/{owner}/{repo}/issues/{number}/comments".format(
-#         owner=owner, repo=repo, number=number)
-#     headers = copy.deepcopy(github_headers)
-#     headers.update({'Authorization': 'token %s' % next(github_tokens_iter)})
-#     params = {'per_page': 100, 'page': page, 'since': since}
-#     res = do_get_result(req_session, url, headers, params)
-#     return res
-#
-#
-# def bulk_github_issues_comments(now_github_issues_comments, opensearch_client, owner, repo, number):
-#     bulk_all_github_issues_comments = []
-#
-#     for now_issue_comments in now_github_issues_comments:
-#         template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS,
-#                     "_source": {"search_key": {"owner": owner, "repo": repo, "number": number},
-#                                 "raw_data": None}}
-#         commit_comment_item = copy.deepcopy(template)
-#         commit_comment_item["_source"]["raw_data"] = now_issue_comments
-#         bulk_all_github_issues_comments.append(commit_comment_item)
-#         logger.info(f"add init sync github issues comments number:{number}")
-#
-#     success, failed = OpenSearchHelpers.bulk(client=opensearch_client, actions=bulk_all_github_issues_comments)
-#     logger.info(
-#         f"now page:{len(bulk_all_github_issues_comments)} sync github issues comments success:{success} & failed:{failed}")
-from oss_know.libs.util.opensearch_api import OpensearchAPI
 
 
 def init_github_issues_comments(opensearch_conn_info, owner, repo, token_proxy_accommodator, since=None):
@@ -101,30 +70,67 @@ def init_github_issues_comments(opensearch_conn_info, owner, repo, token_proxy_a
                                                            ]}
                                                        }
                                                    })
+
     logger.info(f"DELETE github issues comment result:{del_result}")
 
-    req_session = requests.Session()
-    opensearch_api = OpensearchAPI()
-    github_api = GithubAPI()
+    get_comment_tasks = list()
+    get_comment_results = list()
+    get_comment_fails_results = list()
 
-    for issue_item in need_init_comments_all_issues:
+    # for issue_item in need_init_comments_all_issues:
+    for idx, issue_item in enumerate(need_init_comments_all_issues):
         number = issue_item["_source"]["raw_data"]["number"]
-        for page in range(1, 10000):
-            time.sleep(random.uniform(GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX))
+
+        # 创建并发任务
+        ct = concurrent_threads(do_get_github_comments, args=(opensearch_client, token_proxy_accommodator, owner, repo, number))
+        get_comment_tasks.append(ct)
+        ct.start()
+
+        # 执行并发任务并获取结果
+        if idx % 10 == 0:
+            for tt in get_comment_tasks:
+                tt.join()
+                if tt.getResult()[0] != 200:
+                    logger.info(f"get_timeline_fails_results:{tt},{tt.args}")
+                    get_comment_fails_results.append(tt.getResult())
+
+                get_comment_results.append(tt.getResult())
+        if len(get_comment_fails_results) != 0:
+            raise GithubException('github请求失败！', get_comment_fails_results)
+
+
+
+# 在concurrent_threads中执行并发具体的业务方法
+def do_get_github_comments(opensearch_client, token_proxy_accommodator, owner, repo, number):
+    req_session = requests.Session()
+    github_api = GithubAPI()
+    opensearch_api = OpensearchAPI()
+
+    for page in range(1, 10000):
+        time.sleep(random.uniform(GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX))
+
+        try:
             req = github_api.get_github_issues_comments(http_session=req_session,
                                                         token_proxy_accommodator=token_proxy_accommodator,
                                                         owner=owner, repo=repo, number=number, page=page)
 
             one_page_github_issues_comments = req.json()
 
-            logger.debug(f"one_page_github_issues_comments:{one_page_github_issues_comments}")
+        except GithubResourceNotFoundError as e:
+            logger.error(f"fail init github timeline, {owner}/{repo}, issues_number:{number}, now_page:{page}, Target timeline info does not exist: {e}, end")
+            # return 403, e
 
-            if (one_page_github_issues_comments is not None) and len(one_page_github_issues_comments) == 0:
-                logger.info(f"init sync github issues end to break:{owner}/{repo}/#{number} page_index:{page}")
-                break
+        logger.debug(f"one_page_github_issues_comments:{one_page_github_issues_comments}")
 
-            opensearch_api.bulk_github_issues_comments(opensearch_client=opensearch_client,
-                                                       issues_comments=one_page_github_issues_comments,
-                                                       owner=owner, repo=repo, number=number)
+        if (one_page_github_issues_comments is not None) and len(one_page_github_issues_comments) == 0:
+            logger.info(f"success init github comments, {owner}/{repo}, issues_number:{number}, page_count:{page}, end")
+            return 200, f"success init github comments, {owner}/{repo}, issues_number:{number}, page_count:{page}, end"
 
-            logger.info(f"success get github issues page:{owner}/{repo}/#{number} page_index:{page}")
+            # logger.info(f"init sync github issues end to break:{owner}/{repo}/#{number} page_index:{page}")
+            # break
+
+        opensearch_api.bulk_github_issues_comments(opensearch_client=opensearch_client,
+                                                   issues_comments=one_page_github_issues_comments,
+                                                   owner=owner, repo=repo, number=number)
+
+        logger.info(f"success get github comments, {owner}/{repo}, issues_number:{number}, page_index:{page}, end")
