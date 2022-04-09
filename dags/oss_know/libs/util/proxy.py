@@ -81,7 +81,7 @@ class _fixed_map_iterToken(_token_proxy_iter):
 
     def next(self):
         token = next(self.tokens_iter)
-        proxy = self.mapping[token]
+        proxy = self.msg[token]
         return token, proxy
 
     def update_mapping(self, token, new_proxy):
