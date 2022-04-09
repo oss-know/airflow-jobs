@@ -201,7 +201,7 @@ def infer_country_from_location(github_location):
                retry_if_exception_type(requests.exceptions.ProxyError) |
                retry_if_exception_type(requests.exceptions.SSLError)))
 def do_geocode(location, language='en'):
-    return _global_geolocator.geocode(location, language)
+    return _global_geolocator.geocode(location, language=language)
 
 
 def infer_geo_info_from_location(github_location):
@@ -263,7 +263,7 @@ def infer_country_company_geo_insert_into_profile(latest_github_profile):
             key, original_key, infer = tup
             original_property = latest_github_profile[original_key]
             latest_github_profile[key] = infer(original_property) if original_property else None
-    except (urllib3.exceptions.MaxRetryError, requests.exceptions.ProxyError, geopy.exc.GeocoderQueryError) as e:
+    except (urllib3.exceptions.MaxRetryError, requests.exceptions.ProxyError) as e:
         logger.error(
             f"error occurs when inferring information by github profile, exception message: {e},the type of exception: {type(e)}")
         for inferrer in inferrers:
