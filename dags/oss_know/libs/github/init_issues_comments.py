@@ -87,7 +87,7 @@ def init_github_issues_comments(opensearch_conn_info, owner, repo, token_proxy_a
         ct.start()
 
         # 执行并发任务并获取结果
-        if idx % 10 == 0:
+        if idx % 30 == 0:
             for tt in get_comment_tasks:
                 tt.join()
                 if tt.getResult()[0] != 200:

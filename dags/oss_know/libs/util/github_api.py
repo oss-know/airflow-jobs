@@ -1,7 +1,7 @@
 import copy
 
-from oss_know.libs.exceptions import GithubResourceNotFoundError
-from oss_know.libs.util.base import do_get_github_result
+from oss_know.libs.exceptions import GithubResourceNotFoundError, GithubInternalServerError
+from oss_know.libs.util.base import do_get_github_result, EmptyObjectResponse
 from oss_know.libs.util.log import logger
 
 
@@ -27,10 +27,14 @@ class GithubAPI:
         url = f"https://api.github.com/repos/{owner}/{repo}/issues"
         headers = copy.deepcopy(self.github_headers)
         params = {'state': 'all', 'per_page': 100, 'page': page, 'since': since}
+
+        res = EmptyObjectResponse()
         try:
             res = do_get_github_result(http_session, url, headers, params, accommodator=token_proxy_accommodator)
         except GithubResourceNotFoundError as e:
-            logger.warning(f'Failed to get github commit {url}, the resource does not exist: {e}')
+            logger.warning(f'Failed to get github issues {url}, the resource does not exist: {e}')
+        except GithubInternalServerError as gise:
+            logger.warning(f'Failed to get github issues {url}, the Github Internal Server Error: {gise}')
 
         logger.info(f"url:{url}, \n headers:{headers}, \n params：{params}")
 
@@ -44,6 +48,8 @@ class GithubAPI:
         try:
             req = do_get_github_result(http_session, url, headers, params, accommodator=token_proxy_accommodator)
             latest_github_profile = req.json()
+        except GithubInternalServerError as gise:
+            logger.warning(f'Failed to get profile {url}, the Github Internal Server Error: {gise}')
         except (TypeError, GithubResourceNotFoundError) as e:
             logger.error(f"Failed to get github profile: {e}, return an empty one")
             return {'login': '', 'id': user_id, 'node_id': '', 'avatar_url': '', 'gravatar_id': '', 'url': '',
@@ -67,21 +73,30 @@ class GithubAPI:
     def get_github_issues_timeline(self, http_session, token_proxy_accommodator, owner, repo, number, page):
         url = f"https://api.github.com/repos/{owner}/{repo}/issues/{number}/timeline"
         headers = copy.deepcopy(self.github_headers)
+
         params = {'per_page': 100, 'page': page}
+        res = EmptyObjectResponse()
         try:
             res = do_get_github_result(http_session, url, headers, params, token_proxy_accommodator)
         except GithubResourceNotFoundError as e:
             logger.warning(f'Failed to get issue timeline {url}, the resource does not exist: {e}')
+        except GithubInternalServerError as gise:
+            logger.warning(f'Failed to get issue timeline {url}, the Github Internal Server Error: {gise}')
+
         return res
 
     def get_github_issues_comments(self, http_session, token_proxy_accommodator, owner, repo, number, page):
         url = f"https://api.github.com/repos/{owner}/{repo}/issues/{number}/comments"
         headers = copy.deepcopy(self.github_headers)
         params = {'per_page': 100, 'page': page}
+
+        res = EmptyObjectResponse()
         try:
             res = do_get_github_result(http_session, url, headers, params, token_proxy_accommodator)
         except GithubResourceNotFoundError as e:
             logger.warning(f'Failed to get issue comments {url}, the resource does not exist: {e}')
+        except GithubInternalServerError as gise:
+            logger.warning(f'Failed to get issue comments {url}, the Github Internal Server Error: {gise}')
         return res
 
     def get_github_pull_requests(self, http_session, token_proxy_accommodator, owner, repo, page, since):
@@ -93,4 +108,6 @@ class GithubAPI:
             res = do_get_github_result(http_session, url, headers, params, token_proxy_accommodator)
         except GithubResourceNotFoundError as e:
             logger.warning(f'Failed to get pull request {url}, the resource does not exist: {e}')
+        except GithubInternalServerError as gise:
+            logger.warning(f'Failed to get pull request {url}, the Github Internal Server Error: {gise}')
         return res

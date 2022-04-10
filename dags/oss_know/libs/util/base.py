@@ -1,3 +1,4 @@
+import json
 import re
 from datetime import datetime
 from threading import Thread
@@ -82,16 +83,36 @@ class EmptyResponse:
         self.text = '[]'
 
     def json(self):
+        return {}
+
+class EmptyListResponse:
+    """An fake empty http response"""
+
+    def __init__(self):
+        self.text = '[]'
+
+    def json(self):
         return []
+
+class EmptyObjectResponse:
+    """An fake empty http response"""
+
+    def __init__(self):
+        self.text = '[]'
+
+    def json(self):
+        return {}
 
 
 # # retry 防止SSL解密错误，请正确处理是否忽略证书有效性
 @retry(stop=stop_after_attempt(10),
        wait=wait_fixed(1),
        retry=(retry_if_exception_type(KeyError) |
+              retry_if_exception_type(json.decoder.JSONDecodeError) |
               retry_if_exception_type(urllib3.exceptions.HTTPError) |
               retry_if_exception_type(urllib3.exceptions.MaxRetryError) |
               retry_if_exception_type(urllib3.exceptions.ProtocolError) |
+              retry_if_exception_type(requests.exceptions.ConnectionError) |
               retry_if_exception_type(requests.exceptions.ProxyError) |
               retry_if_exception_type(requests.exceptions.SSLError) |
               retry_if_exception_type(requests.exceptions.ChunkedEncodingError) |
@@ -121,17 +142,24 @@ def do_get_github_result(req_session, url, headers, params, accommodator: Github
         logger.warning(f"status_code:{res.status_code}")
 
         if 500 <= res.status_code <= 599:
+            if res.status_code == 500:
+                raise GithubInternalServerError(
+                    f'Github Internal Server Error, url:{url}, params:{params}', res.status_code)
+            elif res.status_code == 502:
+                raise GithubInternalServerError(
+                    f'Github Internal Server Error, url:{url}, params:{params}', res.status_code)
             # GitHub might return internal error when requesting non-existing resources(PRs, issues...)
             # return EmptyResponse()
-            res_json = res.json()
-            if "message" in res_json and res_json["message"] == "Server Error":
-                raise GithubInternalServerError(
-                    f'Github Internal Server Error, url:{url}, params:{params}, text:{res.text}', res.status_code)
-            else:
-                logger.warning(
-                    f'Unexpected Github Internal Server Error, url:{url}, params:{params}, res.status_code:{res.status_code}')
-                return EmptyResponse()
-
+            # res_json = res.json()
+            # if "message" in res_json and res_json["message"] == "Server Error":
+            #     raise GithubInternalServerError(
+            #         f'Github Internal Server Error, url:{url}, params:{params}, text:{res.text}', res.status_code)
+            # else:
+            #     logger.warning(
+            #         f'Unexpected Github Internal Server Error, url:{url}, params:{params}, res.status_code:{res.status_code}')
+            #     raise GithubInternalServerError(
+            #         f'Github Internal Server Error, url:{url}, params:{params}, text:{res.text}', res.status_code)
+            # return EmptyResponse()
         if res.status_code == 401:
             # Token becomes invalid
             logger.warning(f'Token {github_token} no longer available, remove it from token list')

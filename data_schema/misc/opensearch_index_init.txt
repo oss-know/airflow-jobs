@@ -19,3 +19,9 @@ PUT github_issues_timeline
 PUT github_profile
 PUT check_sync_data
 #--------------------------------------------------------------------
+
+#--加大timeline可以存储的fields
+PUT github_issues_timeline/_settings
+{
+  "index.mapping.total_fields.limit": 2000
+}

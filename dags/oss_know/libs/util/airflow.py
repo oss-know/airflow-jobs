@@ -10,4 +10,4 @@ def get_postgres_conn():
     # print("PostgresRecord:", record)
     # pg_cursor.close()
     # postgres_conn.close()
-    return postgres_hooks.PostgresHook.get_hook("airflow-jobs").get_conn()
+    return postgres_hooks.PostgresHook.get_hook("airflow-jobs-PostgresSQL").get_conn()
