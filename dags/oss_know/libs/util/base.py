@@ -279,6 +279,8 @@ def infer_geo_info_from_location(github_location):
                 geo_info_from_location[address_component["types"][0]] = address_component["long_name"]
             except KeyError as e:
                 logger.info(f"The key not exists in address_component :{e}")
+            except IndexError as e:
+                logger.info(f"github_location:{github_location}, address_components:{address_components}, IndexError:{e}")
         return geo_info_from_location
     return None
 

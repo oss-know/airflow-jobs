@@ -3,7 +3,7 @@ SRC_HOST=192.168.8.20:19201
 #SRC_HOST=192.168.8.10:9200
 #DST_HOST=192.168.8.20:19201
 
-indice=(github_commits github_issues github_pull_requests github_issues_comments github_issues_timeline)
+indice=(github_commits github_issues github_pull_requests github_issues_comments github_issues_timeline github_profile)
 
 #indice=(github_commits github_issues github_pull_requests github_issues_comments github_issues_timeline maillists maillists_enriched)
 #indice=(gits maillists github_commits github_issues github_pull_requests github_issues_comments github_issues_timeline github_profile check_sync_data)

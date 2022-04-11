@@ -135,7 +135,7 @@ class OpensearchAPI:
             ct.start()
 
             # 执行并发任务并获取结果
-            if index % 30 == 0:
+            if index % 50 == 0:
                 for tt in get_comment_tasks:
                     tt.join()
                     if tt.getResult()[0] != 200:
