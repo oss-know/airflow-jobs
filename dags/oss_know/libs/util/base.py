@@ -1,5 +1,7 @@
+import json
 import re
 from datetime import datetime
+from threading import Thread
 from urllib.parse import urlparse
 
 from geopy.exc import GeocoderServiceError, GeocoderTimedOut
@@ -17,7 +19,7 @@ from oss_know.libs.base_dict.variable_key import LOCATIONGEO_TOKEN
 from oss_know.libs.util.clickhouse_driver import CKServer
 from oss_know.libs.util.proxy import GithubTokenProxyAccommodator
 from ..util.log import logger
-from oss_know.libs.exceptions import GithubResourceNotFoundError
+from oss_know.libs.exceptions import GithubResourceNotFoundError, GithubInternalServerError
 
 
 class HttpGetException(Exception):
@@ -25,6 +27,27 @@ class HttpGetException(Exception):
         super().__init__(message, status)
         self.message = message
         self.status = status
+
+
+# 支持return值的线程
+class concurrent_threads(Thread):
+    def __init__(self, func, args=()):
+        '''
+        :param func: 被测试的函数
+        :param args: 被测试的函数的返回值
+        '''
+        super(concurrent_threads, self).__init__()
+        self.func = func
+        self.args = args
+
+    def run(self) -> None:
+        self.result = self.func(*self.args)
+
+    def getResult(self):
+        try:
+            return self.result
+        except BaseException as e:
+            return e.args[0]
 
 
 # retry 防止SSL解密错误，请正确处理是否忽略证书有效性
@@ -60,19 +83,41 @@ class EmptyResponse:
         self.text = '[]'
 
     def json(self):
+        return {}
+
+class EmptyListResponse:
+    """An fake empty http response"""
+
+    def __init__(self):
+        self.text = '[]'
+
+    def json(self):
         return []
+
+class EmptyObjectResponse:
+    """An fake empty http response"""
+
+    def __init__(self):
+        self.text = '[]'
+
+    def json(self):
+        return {}
 
 
 # # retry 防止SSL解密错误，请正确处理是否忽略证书有效性
 @retry(stop=stop_after_attempt(10),
        wait=wait_fixed(1),
-       retry=(retry_if_exception_type(urllib3.exceptions.HTTPError) |
+       retry=(retry_if_exception_type(KeyError) |
+              retry_if_exception_type(json.decoder.JSONDecodeError) |
+              retry_if_exception_type(urllib3.exceptions.HTTPError) |
               retry_if_exception_type(urllib3.exceptions.MaxRetryError) |
-              retry_if_exception_type(requests.exceptions.ProxyError) |
-              retry_if_exception_type(requests.exceptions.ChunkedEncodingError) |
               retry_if_exception_type(urllib3.exceptions.ProtocolError) |
+              retry_if_exception_type(requests.exceptions.ConnectionError) |
+              retry_if_exception_type(requests.exceptions.ProxyError) |
+              retry_if_exception_type(requests.exceptions.SSLError) |
+              retry_if_exception_type(requests.exceptions.ChunkedEncodingError) |
               retry_if_exception_type(HttpGetException) |
-              retry_if_exception_type(requests.exceptions.SSLError)))
+              retry_if_exception_type(GithubInternalServerError)))
 def do_get_github_result(req_session, url, headers, params, accommodator: GithubTokenProxyAccommodator):
     github_token, proxy_url = accommodator.next()
     logger.debug(f'GitHub request {url} with token {github_token}')
@@ -94,11 +139,27 @@ def do_get_github_result(req_session, url, headers, params, accommodator: Github
         logger.warning(f"headers:{headers}")
         logger.warning(f"params:{params}")
         logger.warning(f"text:{res.text}")
+        logger.warning(f"status_code:{res.status_code}")
 
         if 500 <= res.status_code <= 599:
+            if res.status_code == 500:
+                raise GithubInternalServerError(
+                    f'Github Internal Server Error, url:{url}, params:{params}', res.status_code)
+            elif res.status_code == 502:
+                raise GithubInternalServerError(
+                    f'Github Internal Server Error, url:{url}, params:{params}', res.status_code)
             # GitHub might return internal error when requesting non-existing resources(PRs, issues...)
-            return EmptyResponse()
-
+            # return EmptyResponse()
+            # res_json = res.json()
+            # if "message" in res_json and res_json["message"] == "Server Error":
+            #     raise GithubInternalServerError(
+            #         f'Github Internal Server Error, url:{url}, params:{params}, text:{res.text}', res.status_code)
+            # else:
+            #     logger.warning(
+            #         f'Unexpected Github Internal Server Error, url:{url}, params:{params}, res.status_code:{res.status_code}')
+            #     raise GithubInternalServerError(
+            #         f'Github Internal Server Error, url:{url}, params:{params}, text:{res.text}', res.status_code)
+            # return EmptyResponse()
         if res.status_code == 401:
             # Token becomes invalid
             logger.warning(f'Token {github_token} no longer available, remove it from token list')
@@ -218,6 +279,8 @@ def infer_geo_info_from_location(github_location):
                 geo_info_from_location[address_component["types"][0]] = address_component["long_name"]
             except KeyError as e:
                 logger.info(f"The key not exists in address_component :{e}")
+            except IndexError as e:
+                logger.info(f"github_location:{github_location}, address_components:{address_components}, IndexError:{e}")
         return geo_info_from_location
     return None
 

@@ -17,8 +17,8 @@ from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COM
     OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE, OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, \
     OPENSEARCH_INDEX_CHECK_SYNC_DATA, OPENSEARCH_INDEX_GITHUB_PROFILE, OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS
 from oss_know.libs.util.airflow import get_postgres_conn
-from oss_know.libs.util.base import infer_country_company_geo_insert_into_profile, inferrers
-from oss_know.libs.util.github_api import GithubAPI
+from oss_know.libs.util.base import infer_country_company_geo_insert_into_profile, inferrers, concurrent_threads
+from oss_know.libs.util.github_api import GithubAPI, GithubException
 from oss_know.libs.util.log import logger
 
 
@@ -118,52 +118,82 @@ class OpensearchAPI:
         # 获取github profile
         batch_size = 100
         num_github_ids = len(github_ids)
+
+        get_comment_tasks = list()
+        get_comment_results = list()
+        get_comment_fails_results = list()
+
         for index, github_id in enumerate(github_ids):
             logger.info(f'github_profile_user:{github_id}')
             time.sleep(round(random.uniform(0.01, 0.1), 2))
-            has_user_profile = opensearch_client.search(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
-                                                        body={
-                                                            "query": {
-                                                                "bool": {
-                                                                    "must": [
-                                                                        {
-                                                                            "term": {
-                                                                                "raw_data.id": {
-                                                                                    "value": github_id
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    ]
-                                                                }
-                                                            }
-                                                        }
-                                                        )
-            current_profile_list = has_user_profile["hits"]["hits"]
 
-            if not current_profile_list:
-                github_api = GithubAPI()
-                session = requests.Session()
-                latest_github_profile = github_api.get_latest_github_profile(http_session=session,
-                                                                             token_proxy_accommodator=token_proxy_accommodator,
-                                                                             user_id=github_id)
-                for tup in inferrers:
-                    key, original_key, infer = tup
-                    latest_github_profile[key] = None
-                infer_country_company_geo_insert_into_profile(latest_github_profile)
-                opensearch_client.index(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
-                                        body={"search_key": {
-                                            'updated_at': int(datetime.datetime.now().timestamp() * 1000)},
-                                            "raw_data": latest_github_profile},
-                                        refresh=True)
-                logger.info(f"Put the github {github_id}'s profile into opensearch.")
-            else:
-                logger.info(f"{github_id}'s profile has already existed.")
+            # 创建并发任务
+            ct = concurrent_threads(self.do_init_github_profile_thread,
+                                    args=(batch_size, github_id, index, num_github_ids, opensearch_client,
+                                      token_proxy_accommodator))
+            get_comment_tasks.append(ct)
+            ct.start()
 
-            if index % batch_size == 0:
-                logger.info(f'{index}/{num_github_ids} finished')
+            # 执行并发任务并获取结果
+            if index % 50 == 0:
+                for tt in get_comment_tasks:
+                    tt.join()
+                    if tt.getResult()[0] != 200:
+                        logger.info(f"get_timeline_fails_results:{tt},{tt.args}")
+                        get_comment_fails_results.append(tt.getResult())
+
+                    get_comment_results.append(tt.getResult())
+            if len(get_comment_fails_results) != 0:
+                raise GithubException('github请求失败！', get_comment_fails_results)
+
+            # self.do_init_github_profile_thread(batch_size, github_id, index, num_github_ids, opensearch_client,
+            #                                    token_proxy_accommodator)
 
         logger.info(f'{num_github_ids} github profiles finished')
         return "Put GitHub user profile into opensearch if it is not in opensearch"
+
+    def do_init_github_profile_thread(self, batch_size, github_id, index, num_github_ids, opensearch_client,
+                                      token_proxy_accommodator):
+        has_user_profile = opensearch_client.search(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
+                                                    body={
+                                                        "query": {
+                                                            "bool": {
+                                                                "must": [
+                                                                    {
+                                                                        "term": {
+                                                                            "raw_data.id": {
+                                                                                "value": github_id
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                ]
+                                                            }
+                                                        }
+                                                    }
+                                                    )
+        current_profile_list = has_user_profile["hits"]["hits"]
+        if not current_profile_list:
+            github_api = GithubAPI()
+            session = requests.Session()
+            latest_github_profile = github_api.get_latest_github_profile(http_session=session,
+                                                                         token_proxy_accommodator=token_proxy_accommodator,
+                                                                         user_id=github_id)
+            for tup in inferrers:
+                key, original_key, infer = tup
+                latest_github_profile[key] = None
+            infer_country_company_geo_insert_into_profile(latest_github_profile)
+            opensearch_client.index(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
+                                    body={"search_key": {
+                                        'updated_at': int(datetime.datetime.now().timestamp() * 1000)},
+                                        "raw_data": latest_github_profile},
+                                    refresh=True)
+            logger.info(f"Put the github {github_id}'s profile into opensearch.")
+        else:
+            logger.info(f"{github_id}'s profile has already existed.")
+        if index % batch_size == 0:
+            logger.info(f'{index}/{num_github_ids} finished')
+
+        return 200, f"success init github profile, github_id:{github_id}, end"
 
     def bulk_github_issues_timeline(self, opensearch_client, issues_timelines, owner, repo, number):
         bulk_all_datas = []
@@ -322,7 +352,10 @@ class OpensearchAPI:
             cur.close()
         except (psycopg2.DatabaseError) as error:
             logger.error(f"psycopg2.DatabaseError:{error}")
-
+            logger.error(f"retry_state.args:{retry_state.args}")
+        except (TypeError) as error:
+            logger.error(f"TypeError:{error}")
+            logger.error(f"retry_state.args:{retry_state.args}")
         finally:
             if postgres_conn is not None:
                 postgres_conn.close()
