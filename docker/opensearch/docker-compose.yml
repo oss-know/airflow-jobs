@@ -12,6 +12,7 @@ services:
       - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping
       - "OPENSEARCH_JAVA_OPTS=-Xms4g -Xmx4g" # minimum and maximum Java heap size, recommend setting both to 50% of system RAM
       - http.max_content_length=1000mb
+      - index.mapping.total_fields.limit=2000
     ulimits:
       memlock:
         soft: -1
@@ -39,6 +40,7 @@ services:
       - bootstrap.memory_lock=true
       - "OPENSEARCH_JAVA_OPTS=-Xms4g -Xmx4g"
       - http.max_content_length=1000mb
+      - index.mapping.total_fields.limit=2000
     ulimits:
       memlock:
         soft: -1
