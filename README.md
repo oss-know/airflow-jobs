@@ -66,3 +66,8 @@ search_key{
 在airflow-jobs目录下执行
 echo -e "AIRFLOW_UID=$(id -u)\nAIRFLOW_GID=0" > .env
 ```
+
+# 为不同的docker容器创建网络
+```
+docker network create -d bridge dev-network
+```
