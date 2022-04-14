@@ -16,6 +16,7 @@ services:
     environment:
       POSTGRES_USER: datapipline
       POSTGRES_PASSWORD: datapipline_password
+      POSTGRES_DB: airflowjobs
     volumes:
       - ./data:/var/lib/postgresql/data
 

@@ -98,13 +98,13 @@
   },
   "LocationGeo_token": "123456",
   "opensearch_conn_data": {
-    "HOST": "192.168.8.108",
+    "HOST": "192.168.8.120",
     "PASSWD": "admin",
     "PORT": "9200",
     "USER": "admin"
   },
   "clickhouse_conn_data": {
-    "HOST": "192.168.8.108",
+    "HOST": "192.168.8.120",
     "PASSWD": "default",
     "PORT": "19001",
     "USER": "default",
@@ -112,7 +112,7 @@
     "CLUSTER_NAME": "replicated"
   },
   "redis_client_data": {
-    "HOST": "192.168.8.108",
+    "HOST": "192.168.8.120",
     "PORT": "6379"
   },
   "redis_conn_data": "redis_client_data",
