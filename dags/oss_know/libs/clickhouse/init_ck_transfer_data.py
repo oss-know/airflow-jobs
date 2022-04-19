@@ -466,10 +466,11 @@ def keep_idempotent(ck, search_key, clickhouse_server_info, table_name, transfer
                 logger.info(f"{cluster_host_name[0]} 上没有将数据删除成功删除")
         if delete_flag == 1:
             logger.info("所有节点上的相关数据已经完全删除")
+            time.sleep(30)
             break
         time.sleep(1)
         wait_count += 1
-        if wait_count == 20:
+        if wait_count == 60:
             raise Exception("等待时间过长，删除时间超时,无法保证幂等")
 
 
@@ -574,12 +575,24 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
                             opensearch_index=opensearch_index,
                             clickhouse_table=table_name,
                             updated_at=max_timestamp, repo=search_key)
+        time.sleep(5)
+        if not if_data_eq_github(count=count, ck=ck, table_name=table_name, owner=search_key.get('owner'),repo=search_key.get('repo')):
+            raise Exception("Inconsistent data between opensearch and clickhouse")
+        else:
+            logger.info("opensearch and clickhouse data are consistent")
+
     elif type == "maillist_init":
         ck_check_point_maillist(opensearch_client=opensearch_datas[1],
                                 opensearch_index=opensearch_index,
                                 clickhouse_table=table_name,
                                 updated_at=max_timestamp,
                                 maillist_repo=search_key)
+        time.sleep(5)
+        if not if_data_eq_github(count=count, ck=ck, table_name=table_name, owner=search_key.get('project_name'),repo=search_key.get('mail_list_name')):
+            raise Exception("Inconsistent data between opensearch and clickhouse")
+        else:
+            logger.info("opensearch and clickhouse data are consistent")
+
     ck.close()
 
 
@@ -673,7 +686,25 @@ def transfer_data_maillist(clickhouse_server_info, opensearch_index, table_name,
                         opensearch_index=opensearch_index,
                         clickhouse_table=table_name,
                         updated_at=max_timestamp, repo=maillist_repo)
+
+
     ck.close()
+#判断opensearch和ck是否数据对其
+
+def if_data_eq_github(count,ck,table_name,owner,repo):
+    sql = f"select count() from {table_name} where search_key__owner='{owner}' and search_key__repo='{repo}'"
+    # logger.info(sql)
+    result = ck.execute_no_params(sql)
+    logger.info(f'data count in ck {result[0][0]}')
+    return count == result[0][0]
+
+def if_data_eq_maillist(count,ck,table_name,project_name,mail_list_name):
+    sql = f"select count() from {table_name} where search_key__project_name='{project_name}' and search_key__mail_list_name='{mail_list_name}'"
+    # logger.info(sql)
+    result = ck.execute_no_params(sql)
+    # logger.info(result)
+    logger.info(f'data count in ck {result[0][0]}')
+    return count==result[0][0]
 
 
 def get_data_from_opensearch(index, opensearch_conn_datas):
