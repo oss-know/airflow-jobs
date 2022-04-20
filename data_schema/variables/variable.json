@@ -154,6 +154,44 @@
       "CK_TABLE_NAME": "github_issues_timeline"
     }
   ],
+  "ck_table_sync_map_from_os_index": [
+    {
+      "OPENSEARCH_INDEX": "gits",
+      "CK_TABLE_NAME": "gits"
+    },
+    {
+      "OPENSEARCH_INDEX": "github_profile",
+      "CK_TABLE_NAME": "github_profile"
+    },
+    {
+      "OPENSEARCH_INDEX": "github_commits",
+      "CK_TABLE_NAME": "github_commits"
+    },
+    {
+      "OPENSEARCH_INDEX": "github_issues_comments",
+      "CK_TABLE_NAME": "github_issues_comments"
+    },
+    {
+      "OPENSEARCH_INDEX": "github_issues",
+      "CK_TABLE_NAME": "github_issues"
+    },
+    {
+      "OPENSEARCH_INDEX": "github_pull_requests",
+      "CK_TABLE_NAME": "github_pull_requests"
+    },
+    {
+      "OPENSEARCH_INDEX": "maillists",
+      "CK_TABLE_NAME": "maillists"
+    },
+    {
+      "OPENSEARCH_INDEX": "maillists_enriched",
+      "CK_TABLE_NAME": "maillists_enriched"
+    },
+    {
+      "OPENSEARCH_INDEX": "github_issues_timeline",
+      "CK_TABLE_NAME": "github_issues_timeline"
+    }
+  ],
   "ck_table_default_val_tplt": [
     {
       "table_name": "github_pull_requests",
@@ -3030,6 +3068,12 @@
     ]
   },
   "repo_list": [
+    {
+      "owner": "",
+      "repo": ""
+    }
+  ],
+  "sync_repo_list": [
     {
       "owner": "",
       "repo": ""

@@ -1,10 +1,10 @@
 import copy
 import json
 import datetime
-from json import JSONDecodeError
-
+import time
 import pandas as pd
 import psycopg2
+from json import JSONDecodeError
 from airflow import AirflowException
 from clickhouse_driver.errors import ServerException
 from loguru import logger
@@ -12,7 +12,7 @@ from opensearchpy import helpers
 from opensearchpy.exceptions import NotFoundError
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_CHECK_SYNC_DATA
 from oss_know.libs.clickhouse.init_ck_transfer_data import parse_data, get_table_structure, ck_check_point, \
-    utc_timestamp, ck_check_point_repo, bulk_except
+    utc_timestamp, ck_check_point_repo, bulk_except, bulk_except_repo, ck_check_point_maillist
 from oss_know.libs.util.airflow import get_postgres_conn
 from oss_know.libs.util.base import get_opensearch_client
 from oss_know.libs.util.clickhouse_driver import CKServer
@@ -235,7 +235,9 @@ def sync_transfer_data(clickhouse_server_info, opensearch_index, table_name, ope
 #     logger.error(f'批量插入出现问题，将这一批的最小的updated时间插入check_point 这一批数据的updated 范围为{start_updated_at}----{end_updated_at}')
 
 
-def sync_transfer_data_spacial_by_repo(clickhouse_server_info, opensearch_index, table_name, opensearch_conn_datas,owner_repo):
+def sync_transfer_data_spacial_by_repo(clickhouse_server_info, opensearch_index, table_name, opensearch_conn_datas,
+                                       owner_repo):
+    transfer_type = 'github_issues_timeline_by_repo'
     bulk_datas = []
     template = {
         "search_key": {
@@ -254,14 +256,16 @@ def sync_transfer_data_spacial_by_repo(clickhouse_server_info, opensearch_index,
                   password=clickhouse_server_info["PASSWD"],
                   database=clickhouse_server_info["DATABASE"])
     opensearch_datas = get_data_from_opensearch_by_repo(opensearch_index=opensearch_index,
-                                                        opensearch_conn_datas=opensearch_conn_datas,clickhouse_table=table_name, repo=owner_repo)
-
-    owner = owner_repo.get('owner')
-    repo = owner_repo.get('repo')
+                                                        opensearch_conn_datas=opensearch_conn_datas,
+                                                        clickhouse_table=table_name, repo=owner_repo,transfer_type=transfer_type)
 
     # 保证幂等将处于check updated_at 临界点的数据进行删除
-    ck.execute_no_params(
-        f"ALTER TABLE {table_name}_local ON CLUSTER {clickhouse_server_info['CLUSTER_NAME']} DELETE WHERE search_key__owner = '{owner}' and search_key__repo = '{repo}' and search_key__updated_at = {opensearch_datas[2]}")
+
+    keep_idempotent(ck=ck,
+                    search_key=owner_repo,
+                    clickhouse_server_info=clickhouse_server_info,
+                    table_name=table_name,
+                    transfer_type=transfer_type, search_key__updated_at=opensearch_datas[2])
     logger.info("保证幂等将处于check updated_at 临界点的数据进行删除")
     max_timestamp = 0
     count = 0
@@ -303,7 +307,7 @@ def sync_transfer_data_spacial_by_repo(clickhouse_server_info, opensearch_index,
 
 
 def sync_transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, opensearch_conn_datas, template,
-                               owner_repo):
+                               owner_repo, transfer_type):
     ck = CKServer(host=clickhouse_server_info["HOST"],
                   port=clickhouse_server_info["PORT"],
                   user=clickhouse_server_info["USER"],
@@ -311,15 +315,18 @@ def sync_transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_n
                   database=clickhouse_server_info["DATABASE"])
 
     fields = get_table_structure(table_name=table_name, ck=ck)
-    opensearch_datas = get_data_from_opensearch_by_repo(opensearch_index=opensearch_index,
-                                                        opensearch_conn_datas=opensearch_conn_datas,clickhouse_table=table_name, repo=owner_repo)
 
-    owner = owner_repo.get('owner')
-    repo = owner_repo.get('repo')
+    opensearch_datas = get_data_from_opensearch_by_repo(opensearch_index=opensearch_index,
+                                                        opensearch_conn_datas=opensearch_conn_datas,
+                                                        clickhouse_table=table_name, repo=owner_repo,
+                                                        transfer_type=transfer_type)
 
     # 保证幂等将处于check updated_at 临界点的数据进行删除
-    ck.execute_no_params(
-        f"ALTER TABLE {table_name}_local ON CLUSTER {clickhouse_server_info['CLUSTER_NAME']} DELETE WHERE search_key__owner = '{owner}' and search_key__repo = '{repo}' and search_key__updated_at = {opensearch_datas[2]}")
+    keep_idempotent(ck=ck,
+                    search_key=owner_repo,
+                    clickhouse_server_info=clickhouse_server_info,
+                    table_name=table_name,
+                    transfer_type=transfer_type, search_key__updated_at=opensearch_datas[2])
     logger.info("保证幂等将处于check updated_at 临界点的数据进行删除")
     max_timestamp = 0
     count = 0
@@ -357,24 +364,24 @@ def sync_transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_n
                     max_timestamp = 0
                     logger.info(f'已经插入的数据的条数为:{count}')
             except KeyError as error:
-                bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo)
+                bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo, transfer_type)
                 raise KeyError(error)
             except ServerException as error:
-                bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo)
+                bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo, transfer_type)
                 raise ServerException(error)
             except AttributeError as error:
-                bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo)
+                bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo, transfer_type)
                 raise AttributeError(error)
     # airflow dag的中断
     except AirflowException as error:
-        bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo)
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo, transfer_type)
         raise AirflowException(f'airflow interrupt {error}')
     except NotFoundError as error:
-        bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo)
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo, transfer_type)
         raise NotFoundError(
             f'scroll error raise HTTP_EXCEPTIONS.get(status_code, TransportError)(opensearchpy.exceptions.NotFoundError: NotFoundError(404, "search_phase_execution_exception", "No search context found for id [631]"){error}')
     except Exception as error:
-        bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo)
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo, transfer_type)
         raise Exception(error)
     # 处理尾部多余的数据
     try:
@@ -382,79 +389,226 @@ def sync_transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_n
             result = ck.execute(ck_sql, bulk_data)
         logger.info(f'已经插入的数据的条数为:{count}')
     except KeyError as error:
-        bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo)
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo, transfer_type)
         raise KeyError(error)
     except ServerException as error:
-        bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo)
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo, transfer_type)
         raise ServerException(error)
     except AttributeError as error:
-        bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo)
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo, transfer_type)
         raise AttributeError(error)
     except Exception as error:
-        bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo)
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, owner_repo, transfer_type)
         raise Exception(error)
-    # 将检查点放在这里插入
-    ck_check_point_repo(opensearch_client=opensearch_datas[1],
-                        opensearch_index=opensearch_index,
-                        clickhouse_table=table_name,
-                        updated_at=max_timestamp, repo=owner_repo)
+        # 将检查点放在这里插入
+    if transfer_type == "github_git_sync_by_repo":
+        ck_check_point_repo(opensearch_client=opensearch_datas[1],
+                            opensearch_index=opensearch_index,
+                            clickhouse_table=table_name,
+                            updated_at=max_timestamp, repo=owner_repo)
+        time.sleep(5)
+        if not if_data_eq_github(opensearch_conn_datas=opensearch_conn_datas, ck=ck, table_name=table_name,
+                                 owner=owner_repo.get('owner'),
+                                 repo=owner_repo.get('repo')):
+            raise Exception("Inconsistent data between opensearch and clickhouse")
+        else:
+            logger.info("opensearch and clickhouse data are consistent")
+
+    elif transfer_type == "maillist_init":
+        ck_check_point_maillist(opensearch_client=opensearch_datas[1],
+                                opensearch_index=opensearch_index,
+                                clickhouse_table=table_name,
+                                updated_at=max_timestamp,
+                                maillist_repo=owner_repo)
+        time.sleep(5)
+        if not if_data_eq_maillist(opensearch_conn_datas=opensearch_conn_datas, ck=ck, table_name=table_name,
+                                 project_name=owner_repo.get('project_name'),
+                                 mail_list_name=owner_repo.get('mail_list_name')):
+            raise Exception("Inconsistent data between opensearch and clickhouse")
+        else:
+            logger.info("opensearch and clickhouse data are consistent")
+
     ck.close()
 
 
-def get_data_from_opensearch_by_repo(opensearch_index, opensearch_conn_datas, clickhouse_table, repo):
+def if_data_eq_github(opensearch_conn_datas, ck, table_name, owner, repo):
     opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
-    # 获取上一次的检查点
-    response = opensearch_client.search(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA, body={
-        "size": 1,
+    response = opensearch_client.search(index=table_name, body={
+        "size": 0,
+        "track_total_hits": True,
         "query": {
             "bool": {
                 "must": [
                     {
                         "term": {
-                            "search_key.type.keyword": {
-                                "value": "os_ck"
-                            }
-                        }
-                    },
-                    {
-                        "term": {
-                            "search_key.opensearch_index.keyword": {
-                                "value": opensearch_index
-                            }
-                        }
-                    },
-                    {
-                        "term": {
-                            "search_key.clickhouse_table.keyword": {
-                                "value": clickhouse_table
-                            }
-                        }
-                    },
-                    {
-                        "term": {
                             "search_key.owner.keyword": {
-                                "value": repo.get('owner')
+                                "value": owner
                             }
                         }
                     },
                     {
                         "term": {
                             "search_key.repo.keyword": {
-                                "value": repo.get('repo')
+                                "value": repo
                             }
                         }
                     }
+
                 ]
             }
-        },
-        "sort": [
-            {
-                "search_key.update_timestamp": {
-                    "order": "desc"
-                }
-            }
-        ]
+        }
     })
+    count = response["hits"]['total']['value']
+    sql = f"select count() from {table_name} where search_key__owner='{owner}' and search_key__repo='{repo}'"
+    # logger.info(sql)
+    result = ck.execute_no_params(sql)
+    logger.info(f'data count in ck {result[0][0]}')
+    return count == result[0][0]
+
+
+def if_data_eq_maillist(opensearch_conn_datas, ck, table_name, project_name, mail_list_name):
+    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+    response = opensearch_client.search(index=table_name, body={
+        "size": 0,
+        "track_total_hits": True,
+        "query": {
+            "bool": {
+                "must": [
+                    {
+                        "term": {
+                            "search_key.project_name.keyword": {
+                                "value": project_name
+                            }
+                        }
+                    },
+                    {
+                        "term": {
+                            "search_key.mail_list_name.keyword": {
+                                "value": mail_list_name
+                            }
+                        }
+                    }
+
+                ]
+            }
+        }
+    })
+    count = response["hits"]['total']['value']
+    sql = f"select count() from {table_name} where search_key__project_name='{project_name}' and search_key__mail_list_name='{mail_list_name}'"
+    # logger.info(sql)
+    result = ck.execute_no_params(sql)
+    logger.info(f'data count in ck {result[0][0]}')
+    return count == result[0][0]
+
+
+def  get_data_from_opensearch_by_repo(opensearch_index, opensearch_conn_datas, clickhouse_table, repo, transfer_type):
+    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+    if transfer_type == 'github_git_sync_by_repo' or transfer_type == 'github_issues_timeline_by_repo':
+        body = {
+            "size": 1,
+            "query": {
+                "bool": {
+                    "must": [
+                        {
+                            "term": {
+                                "search_key.type.keyword": {
+                                    "value": "os_ck"
+                                }
+                            }
+                        },
+                        {
+                            "term": {
+                                "search_key.opensearch_index.keyword": {
+                                    "value": opensearch_index
+                                }
+                            }
+                        },
+                        {
+                            "term": {
+                                "search_key.clickhouse_table.keyword": {
+                                    "value": clickhouse_table
+                                }
+                            }
+                        },
+                        {
+                            "term": {
+                                "search_key.owner.keyword": {
+                                    "value": repo.get('owner')
+                                }
+                            }
+                        },
+                        {
+                            "term": {
+                                "search_key.repo.keyword": {
+                                    "value": repo.get('repo')
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "sort": [
+                {
+                    "search_key.update_timestamp": {
+                        "order": "desc"
+                    }
+                }
+            ]
+        }
+    else:
+        body = {
+            "size": 1,
+            "query": {
+                "bool": {
+                    "must": [
+                        {
+                            "term": {
+                                "search_key.type.keyword": {
+                                    "value": "os_ck"
+                                }
+                            }
+                        },
+                        {
+                            "term": {
+                                "search_key.opensearch_index.keyword": {
+                                    "value": opensearch_index
+                                }
+                            }
+                        },
+                        {
+                            "term": {
+                                "search_key.clickhouse_table.keyword": {
+                                    "value": clickhouse_table
+                                }
+                            }
+                        },
+                        {
+                            "term": {
+                                "search_key.project_name.keyword": {
+                                    "value": repo.get('project_name')
+                                }
+                            }
+                        },
+                        {
+                            "term": {
+                                "search_key.mail_list_name.keyword": {
+                                    "value": repo.get('mail_list_name')
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "sort": [
+                {
+                    "search_key.update_timestamp": {
+                        "order": "desc"
+                    }
+                }
+            ]
+        }
+    # 获取上一次的检查点
+    response = opensearch_client.search(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA, body=body)
     if response['hits']['hits']:
         last_check_timestamp = response['hits']['hits'][0]["_source"]["os_ck"]["last_data"]["updated_at"]
         last_update_time = response['hits']['hits'][0]["_source"]['search_key']['update_time']
@@ -462,42 +616,133 @@ def get_data_from_opensearch_by_repo(opensearch_index, opensearch_conn_datas, cl
         logger.info(f'上一次同步clickhouse和opensearch数据的时间是{last_update_time}')
     else:
         raise Exception("没找到上一次检查点的任何信息")
+    if transfer_type == 'github_git_sync_by_repo':
+        scan_body = {
+            "query": {
+                "bool": {
+                    "filter": [
+                        {"range": {
 
+                            "search_key.updated_at": {
+
+                                "gte": last_check_timestamp
+                            }
+                        }}
+                    ], "must": [
+                        {"term": {
+                            "search_key.owner.keyword": {
+                                "value": repo.get('owner')
+                            }
+                        }}, {"term": {
+                            "search_key.repo.keyword": {
+                                "value": repo.get('repo')
+                            }
+                        }}
+                    ]
+                }
+            },
+            "sort": [
+                {
+                    "search_key.updated_at": {
+                        "order": "asc"
+                    }
+                }
+            ]
+        }
+    else:
+        scan_body = {
+            "query": {
+                "bool": {
+                    "filter": [
+                        {"range": {
+
+                            "search_key.updated_at": {
+
+                                "gte": last_check_timestamp
+                            }
+                        }}
+                    ], "must": [
+                        {"term": {
+                            "search_key.project_name.keyword": {
+                                "value": repo.get('project_name')
+                            }
+                        }}, {"term": {
+                            "search_key.mail_list_name.keyword": {
+                                "value": repo.get('mail_list_name')
+                            }
+                        }}
+                    ]
+                }
+            },
+            "sort": [
+                {
+                    "search_key.updated_at": {
+                        "order": "asc"
+                    }
+                }
+            ]
+        }
     results = helpers.scan(client=opensearch_client,
-                           query={
-                               "query": {
-                                   "bool": {
-                                       "filter": [
-                                           {"range": {
-
-                                               "search_key.updated_at": {
-
-                                                   "gte": last_check_timestamp
-                                               }
-                                           }}
-                                       ], "must": [
-                                           {"term": {
-                                               "search_key.owner.keyword": {
-                                                   "value": repo.get('owner')
-                                               }
-                                           }}, {"term": {
-                                               "search_key.repo.keyword": {
-                                                   "value": repo.get('repo')
-                                               }
-                                           }}
-                                       ]
-                                   }
-                               },
-                               "sort": [
-                                   {
-                                       "search_key.updated_at": {
-                                           "order": "asc"
-                                       }
-                                   }
-                               ]
-                           }, index=opensearch_index,
+                           query=scan_body, index=opensearch_index,
                            size=5000,
                            scroll="20m",
                            request_timeout=100,
                            preserve_order=True)
     return results, opensearch_client, last_check_timestamp
+
+
+def keep_idempotent(ck, search_key, clickhouse_server_info, table_name, transfer_type, search_key__updated_at):
+    # print(f"{transfer_type}-------------------------------------------------------------")
+    # 获取clickhouse集群节点信息
+    get_clusters_sql = f"select host_name from system.clusters where cluster = '{clickhouse_server_info['CLUSTER_NAME']}'"
+    # print(get_clusters_sql)
+    clusters_info = ck.execute_no_params(get_clusters_sql)
+    delect_data_sql = ''
+    check_if_done_sql = ''
+    # 保证幂等
+    import time
+    # 获得当前时间时间戳
+    now = int(time.time())
+    # logger.info(type)
+    # raise Exception("停止一下")
+    if transfer_type == 'github_git_sync_by_repo' or transfer_type == 'github_issues_timeline_by_repo':
+        owner = search_key.get('owner')
+        repo = search_key.get('repo')
+        delect_data_sql = f"ALTER TABLE {table_name}_local ON CLUSTER {clickhouse_server_info['CLUSTER_NAME']} DELETE WHERE {now}={now} and search_key__owner = '{owner}' and search_key__repo = '{repo}' and search_key__updated_at = {search_key__updated_at}"
+        check_if_done_sql = f"select is_done from system.mutations m WHERE `table` = '{table_name}_local' and command = 'DELETE WHERE ({now} = {now}) AND (search_key__owner = \\'{owner}\\') AND (search_key__repo = \\'{repo}\\') AND (search_key__updated_at = {search_key__updated_at})'"
+
+    elif transfer_type == 'maillist_init':
+        project_name = search_key.get('project_name')
+        mail_list_name = search_key.get('mail_list_name')
+        delect_data_sql = f"ALTER TABLE {table_name}_local ON CLUSTER {clickhouse_server_info['CLUSTER_NAME']} DELETE WHERE {now} = {now} and search_key__project_name = '{project_name}' and search_key__mail_list_name = '{mail_list_name}'"
+        check_if_done_sql = f"select is_done from system.mutations m WHERE `table` = '{table_name}_local' and command = 'DELETE WHERE ({now} = {now}) AND (search_key__project_name = \\'{project_name}\\') AND (search_key__mail_list_name = \\'{mail_list_name}\\') AND (search_key__updated_at = {search_key__updated_at})'"
+    ck.execute_no_params(delect_data_sql)
+    # logger.info("将同owner和repo的老数据进行删除")
+
+    time.sleep(1)
+    logger.info("等待1秒，等待数据删除成功")
+    wait_count = 1
+    while 1:
+        delete_flag = 1
+        for cluster_host_name in clusters_info:
+            logger.info(f"clickhouse 节点：{cluster_host_name[0]}")
+            all_ck = CKServer(host=f'{cluster_host_name[0]}',
+                              port=9000,
+                              user=clickhouse_server_info["USER"],
+                              password=clickhouse_server_info["PASSWD"],
+                              database=clickhouse_server_info["DATABASE"])
+            result = all_ck.execute_no_params(check_if_done_sql)
+            print(result)
+            if result and result[0][0] == 1:
+                logger.info(f"{cluster_host_name[0]} 上已经将数据删除成功删除")
+            else:
+                delete_flag = 0
+                logger.info(f"{cluster_host_name[0]} 上没有将数据删除成功删除")
+        if delete_flag == 1:
+            logger.info("所有节点上的相关数据已经完全删除")
+            time.sleep(30)
+            break
+        time.sleep(1)
+        wait_count += 1
+        if wait_count == 60:
+            raise Exception("等待时间过长，删除时间超时,无法保证幂等")
