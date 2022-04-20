@@ -5,7 +5,8 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 # clickhouse_init_sync_v0.0.1
 from oss_know.libs.base_dict.variable_key import CK_CREATE_TABLE_COLS_DATATYPE_TPLT, CLICKHOUSE_DRIVER_INFO, \
-    CK_TABLE_MAP_FROM_OS_INDEX, CK_TABLE_DEFAULT_VAL_TPLT,OPENSEARCH_CONN_DATA
+    CK_TABLE_MAP_FROM_OS_INDEX, CK_TABLE_DEFAULT_VAL_TPLT, OPENSEARCH_CONN_DATA, CK_TABLE_SYNC_MAP_FROM_OS_INDEX, \
+    SYNC_REPO_LIST
 
 with DAG(
         dag_id='sync_ck_transfer_data_by_repo',
@@ -46,19 +47,27 @@ with DAG(
                     break
             df = pd.json_normalize(template)
             template = init_ck_transfer_data.parse_data_init(df)
+            if table_name.startswith("maillist"):
+                transfer_data = sync_ck_transfer_data.sync_transfer_data_by_repo(
+                    clickhouse_server_info=clickhouse_server_info,
+                    opensearch_index=opensearch_index,
+                    table_name=table_name,
+                    opensearch_conn_datas=opensearch_conn_datas,
+                    template=template, owner_repo=owner_repo, transfer_type="maillist_init")
+            else:
 
-            transfer_data = sync_ck_transfer_data.sync_transfer_data_by_repo(clickhouse_server_info=clickhouse_server_info,
-                                                                opensearch_index=opensearch_index,
-                                                                table_name=table_name,
-                                                                opensearch_conn_datas=opensearch_conn_datas,
-                                                                template=template, owner_repo=owner_repo)
+                transfer_data = sync_ck_transfer_data.sync_transfer_data_by_repo(clickhouse_server_info=clickhouse_server_info,
+                                                                    opensearch_index=opensearch_index,
+                                                                    table_name=table_name,
+                                                                    opensearch_conn_datas=opensearch_conn_datas,
+                                                                    template=template, owner_repo=owner_repo,transfer_type="github_git_sync_by_repo")
         return 'do_sync_ck_transfer_data_by_repo:::end'
 
 
     from airflow.models import Variable
 
-    os_index_ck_tb_infos = Variable.get(CK_TABLE_MAP_FROM_OS_INDEX, deserialize_json=True)
-    owner_repo_list = Variable.get("repo_list", deserialize_json=True)
+    os_index_ck_tb_infos = Variable.get(CK_TABLE_SYNC_MAP_FROM_OS_INDEX, deserialize_json=True)
+    owner_repo_list = Variable.get(SYNC_REPO_LIST, deserialize_json=True)
     for os_index_ck_tb_info in os_index_ck_tb_infos:
         for owner_repo in owner_repo_list:
             op_do_sync_ck_transfer_data_by_repo = PythonOperator(

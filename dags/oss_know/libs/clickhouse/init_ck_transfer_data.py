@@ -419,7 +419,7 @@ def bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name):
 
 # 保证插入数据的幂等性
 def keep_idempotent(ck, search_key, clickhouse_server_info, table_name, transfer_type):
-    print(f"{transfer_type}-------------------------------------------------------------")
+    # print(f"{transfer_type}-------------------------------------------------------------")
     # 获取clickhouse集群节点信息
     get_clusters_sql = f"select host_name from system.clusters where cluster = '{clickhouse_server_info['CLUSTER_NAME']}'"
     # print(get_clusters_sql)
@@ -475,21 +475,21 @@ def keep_idempotent(ck, search_key, clickhouse_server_info, table_name, transfer
 
 
 def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, opensearch_conn_datas, template,
-                          search_key, type):
+                          search_key, transfer_type):
     ck = CKServer(host=clickhouse_server_info["HOST"],
                   port=clickhouse_server_info["PORT"],
                   user=clickhouse_server_info["USER"],
                   password=clickhouse_server_info["PASSWD"],
                   database=clickhouse_server_info["DATABASE"])
 
-    if type == "github_git_init_by_repo":
+    if transfer_type == "github_git_init_by_repo":
         keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
                         table_name=table_name, transfer_type="github_git_init_by_repo")
         logger.info("github_git_init_by_repo------------------------")
         opensearch_datas = get_data_from_opensearch_by_repo(index=opensearch_index,
                                                             opensearch_conn_datas=opensearch_conn_datas,
                                                             repo=search_key)
-    elif type == "maillist_init":
+    elif transfer_type == "maillist_init":
         keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
                         table_name=table_name, transfer_type="maillist_init")
         logger.info("maillist------------------------")
@@ -533,24 +533,24 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
                     max_timestamp = 0
                     logger.info(f'已经插入的数据的条数为:{count}')
             except KeyError as error:
-                bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, type)
+                bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, transfer_type)
                 raise KeyError(error)
             except ServerException as error:
-                bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, type)
+                bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, transfer_type)
                 raise ServerException(error)
             except AttributeError as error:
-                bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, type)
+                bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, transfer_type)
                 raise AttributeError(error)
     # airflow dag的中断
     except AirflowException as error:
-        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, type)
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, transfer_type)
         raise AirflowException(f'airflow interrupt {error}')
     except NotFoundError as error:
-        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, type)
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, transfer_type)
         raise NotFoundError(
             f'scroll error raise HTTP_EXCEPTIONS.get(status_code, TransportError)(opensearchpy.exceptions.NotFoundError: NotFoundError(404, "search_phase_execution_exception", "No search context found for id [631]"){error}')
     except Exception as error:
-        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, type)
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, transfer_type)
         raise Exception(error)
     # 处理尾部多余的数据
     try:
@@ -558,19 +558,19 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
             result = ck.execute(ck_sql, bulk_data)
         logger.info(f'已经插入的数据的条数为:{count}')
     except KeyError as error:
-        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, type)
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, transfer_type)
         raise KeyError(error)
     except ServerException as error:
-        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, type)
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, transfer_type)
         raise ServerException(error)
     except AttributeError as error:
-        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, type)
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, transfer_type)
         raise AttributeError(error)
     except Exception as error:
-        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, type)
+        bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, transfer_type)
         raise Exception(error)
     # 将检查点放在这里插入
-    if type == "github_git_init_by_repo":
+    if transfer_type == "github_git_init_by_repo":
         ck_check_point_repo(opensearch_client=opensearch_datas[1],
                             opensearch_index=opensearch_index,
                             clickhouse_table=table_name,
@@ -581,14 +581,14 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
         else:
             logger.info("opensearch and clickhouse data are consistent")
 
-    elif type == "maillist_init":
+    elif transfer_type == "maillist_init":
         ck_check_point_maillist(opensearch_client=opensearch_datas[1],
                                 opensearch_index=opensearch_index,
                                 clickhouse_table=table_name,
                                 updated_at=max_timestamp,
                                 maillist_repo=search_key)
         time.sleep(5)
-        if not if_data_eq_github(count=count, ck=ck, table_name=table_name, owner=search_key.get('project_name'),repo=search_key.get('mail_list_name')):
+        if not if_data_eq_maillist(count=count, ck=ck, table_name=table_name, project_name=search_key.get('project_name'),mail_list_name=search_key.get('mail_list_name')):
             raise Exception("Inconsistent data between opensearch and clickhouse")
         else:
             logger.info("opensearch and clickhouse data are consistent")

@@ -6,7 +6,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 # clickhouse_init_sync_v0.0.1
 from oss_know.libs.base_dict.variable_key import CK_CREATE_TABLE_COLS_DATATYPE_TPLT, CLICKHOUSE_DRIVER_INFO, \
-    CK_TABLE_MAP_FROM_OS_INDEX, CK_TABLE_DEFAULT_VAL_TPLT
+    CK_TABLE_MAP_FROM_OS_INDEX, CK_TABLE_DEFAULT_VAL_TPLT, REPO_LIST, MAILLIST_REPO
 
 with DAG(
         dag_id='init_ck_transfer_data_by_repo',
@@ -55,14 +55,14 @@ with DAG(
                     opensearch_index=opensearch_index,
                     table_name=table_name,
                     opensearch_conn_datas=opensearch_conn_datas,
-                    template=template, search_key=search_key, type='maillist_init')
+                    template=template, search_key=search_key, transfer_type='maillist_init')
             else:
                 transfer_data = init_ck_transfer_data.transfer_data_by_repo(
                     clickhouse_server_info=clickhouse_server_info,
                     opensearch_index=opensearch_index,
                     table_name=table_name,
                     opensearch_conn_datas=opensearch_conn_datas,
-                    template=template, search_key=search_key,type='github_git_init_by_repo')
+                    template=template, search_key=search_key, transfer_type='github_git_init_by_repo')
 
         return 'do_ck_transfer_data_by_repo:::end'
 
@@ -70,8 +70,8 @@ with DAG(
     from airflow.models import Variable
 
     os_index_ck_tb_infos = Variable.get(CK_TABLE_MAP_FROM_OS_INDEX, deserialize_json=True)
-    owner_repo_list = Variable.get("repo_list", deserialize_json=True)
-    maillist_repo_list = Variable.get("maillist_repo", deserialize_json=True)
+    owner_repo_list = Variable.get(REPO_LIST, deserialize_json=True)
+    maillist_repo_list = Variable.get(MAILLIST_REPO, deserialize_json=True)
     for os_index_ck_tb_info in os_index_ck_tb_infos:
         if os_index_ck_tb_info["OPENSEARCH_INDEX"].startswith('maillist'):
             for maillist_repo in maillist_repo_list:
