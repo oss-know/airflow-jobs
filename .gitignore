@@ -139,6 +139,8 @@ docker/postgres/data
 docker/redis/data
 
 data_schema/misc/back_data
+check_github_tokens.py
+
 #data_schema/variables/big_variable.json
 #data_schema/misc/check_github_tokens.py
 #docker/cubejs/cube/conf/.cubestore
