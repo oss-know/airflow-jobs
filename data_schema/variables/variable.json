@@ -2332,6 +2332,7 @@
         "search_key": {
           "owner": "",
           "repo": "",
+          "event": "",
           "number": 0,
           "updated_at": 0
         },
