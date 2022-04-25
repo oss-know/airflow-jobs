@@ -131,6 +131,7 @@ def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, tabl
             "owner": "",
             "repo": "",
             "number": 0,
+            "event":"",
             "updated_at": 0
         },
         "raw_data": {
@@ -160,6 +161,7 @@ def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, tabl
             insert_data['search_key__owner'] = os_data["_source"]["search_key"]['owner']
             insert_data['search_key__repo'] = os_data["_source"]["search_key"]['repo']
             insert_data['search_key__number'] = os_data["_source"]["search_key"]['number']
+            insert_data['search_key__event'] = os_data["_source"]["search_key"]['event']
             insert_data['search_key__updated_at'] = os_data["_source"]["search_key"]['updated_at']
             raw_data = os_data["_source"]["raw_data"]
             standard_data = json.dumps(raw_data, separators=(',', ':'), ensure_ascii=False)
