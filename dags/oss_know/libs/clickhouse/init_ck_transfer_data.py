@@ -465,8 +465,8 @@ def keep_idempotent(ck, search_key, clickhouse_server_info, table_name, transfer
                 delete_flag = 0
                 logger.info(f"{cluster_host_name[0]} 上没有将数据删除成功删除")
         if delete_flag == 1:
-            logger.info("所有节点上的相关数据已经完全删除")
-            time.sleep(30)
+            logger.info("所有节点上的相关数据已经删除")
+            time.sleep(120)
             break
         time.sleep(1)
         wait_count += 1
@@ -575,7 +575,7 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
                             opensearch_index=opensearch_index,
                             clickhouse_table=table_name,
                             updated_at=max_timestamp, repo=search_key)
-        time.sleep(5)
+        time.sleep(10)
         if not if_data_eq_github(count=count, ck=ck, table_name=table_name, owner=search_key.get('owner'),repo=search_key.get('repo')):
             raise Exception("Inconsistent data between opensearch and clickhouse")
         else:
@@ -587,7 +587,7 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
                                 clickhouse_table=table_name,
                                 updated_at=max_timestamp,
                                 maillist_repo=search_key)
-        time.sleep(5)
+        time.sleep(10)
         if not if_data_eq_maillist(count=count, ck=ck, table_name=table_name, project_name=search_key.get('project_name'),mail_list_name=search_key.get('mail_list_name')):
             raise Exception("Inconsistent data between opensearch and clickhouse")
         else:
