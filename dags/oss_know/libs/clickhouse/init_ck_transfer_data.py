@@ -2,6 +2,7 @@ import datetime
 import json
 import time
 import numpy
+import random
 import pandas as pd
 import psycopg2
 import warnings
@@ -468,7 +469,7 @@ def keep_idempotent(ck, search_key, clickhouse_server_info, table_name, transfer
                 logger.info(f"{cluster_host_name[0]} 上没有将数据删除成功删除")
         if delete_flag == 1:
             logger.info("所有节点上的相关数据已经删除")
-            time.sleep(120)
+            time.sleep(60)
             break
         time.sleep(1)
         wait_count += 1
@@ -530,6 +531,7 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
                 # result = ck.execute(ck_sql, [dict_data])
                 count += 1
                 if count % 20000 == 0:
+                    random.shuffle(bulk_data)
                     result = ck.execute(ck_sql, bulk_data)
                     bulk_data.clear()
                     max_timestamp = 0
@@ -557,6 +559,7 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
     # 处理尾部多余的数据
     try:
         if bulk_data:
+            random.shuffle(bulk_data)
             result = ck.execute(ck_sql, bulk_data)
         logger.info(f'已经插入的数据的条数为:{count}')
     except KeyError as error:
