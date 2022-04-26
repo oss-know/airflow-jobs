@@ -5,7 +5,7 @@ services:
   ch-cluster-0-0:
     container_name: ch-cluster-0-0
     hostname: ch-cluster-0-0
-    image: yandex/clickhouse-server:21
+    image: yandex/clickhouse-server:22
     restart: always
     # 跨多个Docker-compose配置文件，services在一个网桥
     networks:
@@ -24,7 +24,7 @@ services:
   ch-cluster-0-1:
     container_name: ch-cluster-0-1
     hostname: ch-cluster-0-1
-    image: yandex/clickhouse-server:21
+    image: yandex/clickhouse-server:22
     restart: always
     # 跨多个Docker-compose配置文件，services在一个网桥
     networks:
@@ -43,7 +43,7 @@ services:
   ch-cluster-1-0:
     container_name: ch-cluster-1-0
     hostname: ch-cluster-1-0
-    image: yandex/clickhouse-server:21
+    image: yandex/clickhouse-server:22
     restart: always
     # 跨多个Docker-compose配置文件，services在一个网桥
     networks:
@@ -62,7 +62,7 @@ services:
   ch-cluster-1-1:
     container_name: ch-cluster-1-1
     hostname: ch-cluster-1-1
-    image: yandex/clickhouse-server:21
+    image: yandex/clickhouse-server:22
     restart: always
     # 跨多个Docker-compose配置文件，services在一个网桥
     networks:
