@@ -1379,6 +1379,7 @@
           "origin": "",
           "updated_at": 0
         },
+        "ck_data_insert_at": 0,
         "raw_data": {
           "message": "",
           "hexsha": "",
@@ -1435,6 +1436,7 @@
         "search_key": {
           "updated_at": 0
         },
+        "ck_data_insert_at": 0,
         "raw_data": {
           "login": "",
           "id": 0,
@@ -1509,6 +1511,7 @@
           "repo": "",
           "updated_at": 0
         },
+        "ck_data_insert_at": 0,
         "raw_data": {
           "sha": "",
           "node_id": "",
@@ -1609,6 +1612,7 @@
           "number": 0,
           "updated_at": 0
         },
+        "ck_data_insert_at": 0,
         "raw_data": {
           "url": "",
           "html_url": "",
@@ -1672,6 +1676,7 @@
           "repo": "",
           "updated_at": 0
         },
+        "ck_data_insert_at": 0,
         "raw_data": {
           "url": "",
           "repository_url": "",
@@ -1844,6 +1849,7 @@
           "repo": "",
           "updated_at": 0
         },
+        "ck_data_insert_at": 0,
         "raw_data": {
           "url": "",
           "id": 0,
@@ -2336,6 +2342,7 @@
           "number": 0,
           "updated_at": 0
         },
+        "ck_data_insert_at": 0,
         "raw_data": {
           "timeline_raw": ""
         }
@@ -2354,6 +2361,7 @@
         "search_key__mail_list_name"
       ],
       "parse_data": {
+        "ck_data_insert_at": 0,
         "backend_name": "",
         "backend_version": "",
         "perceval_version": "",
@@ -2586,6 +2594,7 @@
         "search_key__mail_list_name"
       ],
       "parse_data": {
+        "ck_data_insert_at": 0,
         "metadata__updated_on": "1970-01-01T00:00:00Z",
         "metadata__timestamp": "1970-01-01T00:00:00Z",
         "offset": 0,
