@@ -139,6 +139,7 @@ def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, tabl
             "timeline_raw": ""
         }
     }
+    template["ck_data_insert_at"] = int(round(time.time() * 1000))
     ck = CKServer(host=clickhouse_server_info["HOST"],
                   port=clickhouse_server_info["PORT"],
                   user=clickhouse_server_info["USER"],
@@ -188,6 +189,12 @@ def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, tabl
                         opensearch_index=opensearch_index,
                         clickhouse_table=table_name,
                         updated_at=max_timestamp, repo=search_key)
+    time.sleep(10)
+    if not if_data_eq_github(count=count, ck=ck, table_name=table_name, owner=search_key.get('owner'),
+                             repo=search_key.get('repo')):
+        raise Exception("Inconsistent data between opensearch and clickhouse")
+    else:
+        logger.info("opensearch and clickhouse data are consistent")
     ck.close()
 
 
@@ -269,6 +276,7 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
             df_data = os_data["_source"]
 
             df = pd.json_normalize(df_data)
+            template["ck_data_insert_at"] = int(round(time.time() * 1000))
             dict_data = parse_data(df, template)
             try:
                 dict_dict = json.loads(json.dumps(dict_data))
@@ -509,8 +517,8 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
             if updated_at > max_timestamp:
                 max_timestamp = updated_at
             df_data = os_data["_source"]
-
             df = pd.json_normalize(df_data)
+            template["ck_data_insert_at"] = int(round(time.time() * 1000))
             dict_data = parse_data(df, template)
             try:
                 dict_dict = json.loads(json.dumps(dict_data))
@@ -531,7 +539,7 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
                 # result = ck.execute(ck_sql, [dict_data])
                 count += 1
                 if count % 20000 == 0:
-                    random.shuffle(bulk_data)
+                    # random.shuffle(bulk_data)
                     result = ck.execute(ck_sql, bulk_data)
                     bulk_data.clear()
                     max_timestamp = 0
@@ -559,7 +567,7 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
     # 处理尾部多余的数据
     try:
         if bulk_data:
-            random.shuffle(bulk_data)
+            # random.shuffle(bulk_data)
             result = ck.execute(ck_sql, bulk_data)
         logger.info(f'已经插入的数据的条数为:{count}')
     except KeyError as error:
@@ -625,6 +633,7 @@ def transfer_data_maillist(clickhouse_server_info, opensearch_index, table_name,
             df_data = os_data["_source"]
 
             df = pd.json_normalize(df_data)
+            template["ck_data_insert_at"] = int(round(time.time() * 1000))
             dict_data = parse_data(df, template)
             try:
                 dict_dict = json.loads(json.dumps(dict_data))
