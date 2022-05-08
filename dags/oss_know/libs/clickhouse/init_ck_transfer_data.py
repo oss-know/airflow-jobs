@@ -493,16 +493,29 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
                   password=clickhouse_server_info["PASSWD"],
                   database=clickhouse_server_info["DATABASE"])
 
+
     if transfer_type == "github_git_init_by_repo":
-        keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
-                        table_name=table_name, transfer_type="github_git_init_by_repo")
+        search_key_owner = search_key['owner']
+        search_key_repo = search_key['repo']
+        if_null_sql = f"select count() from {table_name} where search_key__owner='{search_key_owner}' and search_key__repo='{search_key_repo}'"
+        if_null_result = ck.execute_no_params(if_null_sql)
+        if not if_null_result:
+            keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
+                            table_name=table_name, transfer_type="github_git_init_by_repo")
+        else:
+            logger.info("No data in CK")
         logger.info("github_git_init_by_repo------------------------")
         opensearch_datas = get_data_from_opensearch_by_repo(index=opensearch_index,
                                                             opensearch_conn_datas=opensearch_conn_datas,
                                                             repo=search_key)
     elif transfer_type == "maillist_init":
-        keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
-                        table_name=table_name, transfer_type="maillist_init")
+        search_key_project_name = search_key['project_name']
+        search_key_mail_list_name = search_key['mail_list_name']
+        if_null_sql = f"select count() from {table_name} where search_key__project_name='{search_key_project_name}' and search_key__mail_list_name='{search_key_mail_list_name}'"
+        if_null_result = ck.execute_no_params(if_null_sql)
+        if not if_null_result:
+            keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
+                            table_name=table_name, transfer_type="maillist_init")
         logger.info("maillist------------------------")
         opensearch_datas = get_data_from_opensearch_maillist(index=opensearch_index,
                                                              opensearch_conn_datas=opensearch_conn_datas,
