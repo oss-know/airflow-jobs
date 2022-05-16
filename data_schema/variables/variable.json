@@ -2853,7 +2853,78 @@
           "type": ""
         }
       }
+    },
+    {
+  "table_name": "metrics_day_timeline",
+  "cluster_name": "replicated",
+  "database_name": "default",
+  "distributed_key": "ck_data_insert_at",
+  "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/metrics_day_timeline','{replica}')",
+  "partition_by": "owner",
+  "order_by": [
+    "owner",
+    "repo",
+    "github_id"
+  ],
+  "parse_data": {
+    "ck_data_insert_at": 0,
+    "owner": "",
+    "repo": "",
+    "created_at": "1970-01-01T00:00:00Z",
+    "github_id": 0,
+    "commit_times": 0,
+    "changed_lines": 0,
+    "diff_file_counts": 0,
+    "prs_counts": 0,
+    "pr_body_length_avg": 0.0,
+    "pr_body_length_sum": 0,
+    "issues_counts": 0,
+    "issue_body_length_avg": 0.0,
+    "issue_body_length_sum": 0,
+    "issues_comment_count": 0,
+    "issues_comment_body_length_avg": 0.0,
+    "issues_comment_body_length_sum": 0,
+    "pr_comment_count": 0,
+    "pr_comment_body_length_avg": 0.0,
+    "pr_comment_body_length_sum": 0,
+    "be_mentioned_times_in_issues": 0,
+    "be_mentioned_times_in_pr": 0,
+    "referred_other_issues_or_prs_in_issue": 0,
+    "referred_other_issues_or_prs_in_pr": 0,
+    "changed_label_times_in_issues": 0,
+    "changed_label_times_in_prs": 0,
+    "closed_issues_times": 0,
+    "closed_prs_times": 0
+  }
+},
+    {
+    "table_name": "dir2_analysis_v1",
+    "cluster_name": "replicated",
+    "database_name": "default",
+    "distributed_key": "ck_data_insert_at",
+    "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/dir2_analysis_v1','{replica}')",
+    "partition_by": "owner",
+    "order_by": [
+      "owner",
+      "repo"
+    ],
+    "parse_data": {
+      "ck_data_insert_at": 0,
+      "department": "",
+      "owner": "",
+      "repo": "",
+      "dir_level2": "",
+      "domain_distribution": "",
+      "tz_distribution": "",
+      "email": "",
+      "sum_tz_commit_files_count": 0,
+      "tz_commit_files_count": "",
+      "profile_location": "",
+      "profile_company": "",
+      "inferred_from_location_country_or_region": "",
+      "inferred_from_location_locality_or_region": ""
     }
+  }
   ],
   "ck_alter_table_cols_datatype_tplt": [
     {
