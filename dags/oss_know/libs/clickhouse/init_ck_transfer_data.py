@@ -499,7 +499,7 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
         search_key_repo = search_key['repo']
         if_null_sql = f"select count() from {table_name} where search_key__owner='{search_key_owner}' and search_key__repo='{search_key_repo}'"
         if_null_result = ck.execute_no_params(if_null_sql)
-        if if_null_result[0][0]==0:
+        if if_null_result[0][0]!=0:
             keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
                             table_name=table_name, transfer_type="github_git_init_by_repo")
         else:
