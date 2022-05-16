@@ -43,6 +43,7 @@ with DAG(
     from airflow.models import Variable
 
     git_info_list = Variable.get(NEED_INIT_GITS, deserialize_json=True)
+
     for git_info in git_info_list:
         op_do_init_sync_git_info = PythonOperator(
             task_id=f'do_sync_git_info_{git_info["owner"]}_{git_info["repo"]}',
