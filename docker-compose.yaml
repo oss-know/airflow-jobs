@@ -73,7 +73,7 @@ x-airflow-common:
 
 services:
   postgres:
-    image: postgres:13
+    image: postgres:14.2
     ports:
       - 5432:5432
     environment:
@@ -81,7 +81,7 @@ services:
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
     volumes:
-      - postgres-db-volume:/var/lib/postgresql/data
+      - ./postgres_db_data:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "airflow" ]
       interval: 5s
@@ -90,6 +90,7 @@ services:
     # 跨多个Docker-compose配置文件，services在一个网桥
     networks:
       - dev-network
+
   redis:
     image: redis:latest
     ports:
@@ -302,8 +303,8 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
-volumes:
-  postgres-db-volume:
+#volumes:
+#  postgres-db-volume:
 
 networks:
   dev-network:
