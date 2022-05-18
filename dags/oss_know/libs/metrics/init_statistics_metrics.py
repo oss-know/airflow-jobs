@@ -11,7 +11,7 @@ def statistics_metrics(clickhouse_server_info):
                   password=clickhouse_server_info["PASSWD"],
                   database=clickhouse_server_info["DATABASE"])
     results = ck.execute_no_params("""
-        --1--15
+       select * from ( --1--15
         select 
     	if(a.owner != '',
     	a.owner,
@@ -898,8 +898,9 @@ def statistics_metrics(clickhouse_server_info):
     ON
     	toString(a.github_id)= b.github_id
     	and a.owner = b.owner
-    	and a.repo = b.repo""")
+    	and a.repo = b.repo) order by owner""")
     all_data = []
+    ck_sql = "INSERT INTO metrics VALUES"
     for result in results:
         data = {}
         data['owner'] = result[0]
@@ -927,8 +928,16 @@ def statistics_metrics(clickhouse_server_info):
         data['closed_issues_times'] = result[22]
         data['closed_prs_times'] = result[23]
         all_data.append(data)
-    ck_sql = "INSERT INTO metrics VALUES"
-    ck.execute(ck_sql, all_data)
+        if len(all_data) > 10000:
+            response = ck.execute(ck_sql, all_data)
+            logger.info(f"INSERT INTO metrics {response}")
+            all_data.clear()
+    if all_data:
+        response = ck.execute(ck_sql, all_data)
+        logger.info(f"INSERT INTO metrics {response}")
+
+
+
     return "end::statistics_metrics"
 
 
@@ -938,7 +947,7 @@ sum(issue_body_length_avg) / count(github_login), sum(issues_comment_count) / co
 sum(pr_comment_body_length_avg) / count(github_login), sum(be_mentioned_times_in_issues) / count(github_login), sum(be_mentioned_times_in_pr) / count(github_login), 
 sum(referred_other_issues_or_prs_in_issue) / count(github_login), sum(referred_other_issues_or_prs_in_pr) / count(github_login), sum(changed_label_times_in_issues) / count(github_login), 
 sum(changed_label_times_in_prs) / count(github_login), sum(closed_issues_times) / count(github_login), sum(closed_prs_times) / count(github_login) FROM  metrics 
-group by (owner, repo, github_id, github_login)
+group by (owner, repo, github_id, github_login) order by owner
 '''
 
 activity_factors = '''
