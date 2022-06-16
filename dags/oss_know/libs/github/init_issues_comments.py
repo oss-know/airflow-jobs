@@ -43,8 +43,7 @@ def init_github_issues_comments(opensearch_conn_info, owner, repo, token_proxy_a
                                                         }}
                                                     ]}
                                                 }
-                                            },
-                                            doc_type="_doc"
+                                            }
                                             )
     need_init_comments_all_issues = []
     for issues_item in issues_results:

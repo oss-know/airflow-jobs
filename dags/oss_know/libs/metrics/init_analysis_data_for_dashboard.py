@@ -5,8 +5,8 @@ from oss_know.libs.util.clickhouse_driver import CKServer
 
 
 def get_dir_n(owner, repo):
-    ck1 = CKServer(host='192.168.8.152', port=9000, user='default', password='default', database='default')
-    ck2 = CKServer(host='192.168.8.152', port=9000, user='default', password='default', database='default')
+    ck1 = CKServer(host='192.168.8.2', port=19000, user='default', password='default', database='default')
+    ck2 = CKServer(host='192.168.8.2', port=19000, user='default', password='default', database='default')
 
     results = ck1.execute_no_params(f"""
     SELECT search_key__owner,
@@ -93,7 +93,7 @@ def get_dir_n(owner, repo):
         dir_dict = {"search_key__owner": owner,
                     "search_key__repo": repo,
                     "dir": i,
-                    "ck_data_insert_at":int(time.time()*1000)}
+                    "ck_data_insert_at": int(time.time() * 1000)}
         bulk_dir_list.append(dir_dict)
     if bulk_dir_list:
         insert_sql = 'insert into table gits_dir values'
@@ -101,150 +101,307 @@ def get_dir_n(owner, repo):
     ck1.close()
     ck2.close()
 
-def get_alter_files_count():
-    ck = CKServer(host='192.168.8.152', port=9000, user='default', password='default', database='default')
-    sql = f"""
-    select * from (select search_key__owner ,
-    search_key__repo ,
-    in_dir ,
-    authored_date,
-    '北美' as area,
-    COUNT() alter_file_count
-from (
-    select search_key__owner,
-        search_key__repo,
-        toYYYYMM(authored_date) as authored_date,
-        in_dir
-    from  gits_dir_label
 
-    where
-         author_tz global in (-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12)
-)
-group by search_key__owner, search_key__repo,
-    in_dir,authored_date
+def get_alter_files_count(owner='', repo=''):
+    ck = CKServer(host='192.168.8.2', port=19000, user='default', password='default', database='default')
+    if owner == '' and repo == '':
 
-union all
-
-select search_key__owner ,
-    search_key__repo ,
-    in_dir ,
-    authored_date,
-    '欧洲西部' as area,
-    COUNT() alter_file_count
-from (
-     select search_key__owner,
-        search_key__repo,
-        toYYYYMM(authored_date) as authored_date,
-        in_dir
-    from  gits_dir_label
-
-    where
-
-        author_tz global in (0,1,2)
-)
-group by search_key__owner, search_key__repo,
-    in_dir,authored_date
-
-union all
-
-select search_key__owner ,
-    search_key__repo ,
-    in_dir ,
-    authored_date,
-    '欧洲东部' as area,
-    COUNT() alter_file_count
-from (
-     select search_key__owner,
-        search_key__repo,
-        toYYYYMM(authored_date) as authored_date,
-        in_dir
-    from  gits_dir_label
-
-    where author_tz global in (3,4)
-)
-group by search_key__owner, search_key__repo,
-    in_dir,authored_date
-
-union all
-
-select search_key__owner ,
-    search_key__repo ,
-    in_dir ,
-    authored_date,
-    '印度' as area,
-    COUNT() alter_file_count
-from (
-    select search_key__owner,
-        search_key__repo,
-        toYYYYMM(authored_date) as authored_date,
-        in_dir
-    from  gits_dir_label
-
-    where author_tz global in (5)
-)
-group by search_key__owner, search_key__repo,
-    in_dir,authored_date
-
-union all
-
-select search_key__owner ,
-    search_key__repo ,
-    in_dir ,
-    authored_date,
-    '中国' as area,
-    COUNT() alter_file_count
-from (
-     select search_key__owner,
-        search_key__repo,
-        toYYYYMM(authored_date) as authored_date,
-        in_dir
-    from  gits_dir_label
-
-    where author_tz global in (8)
-)
-group by search_key__owner, search_key__repo,
-    in_dir,authored_date
-
-union all
-
-select search_key__owner ,
-    search_key__repo ,
-    in_dir ,
-    authored_date,
-    '日韩' as area,
-    COUNT() alter_file_count
-from (
-    select search_key__owner,
-        search_key__repo,
-        toYYYYMM(authored_date) as authored_date,
-        in_dir
-    from  gits_dir_label
-
-    where author_tz global in (9)
-)
-group by search_key__owner, search_key__repo,
-    in_dir,authored_date
-
-union all
-
-select search_key__owner ,
-    search_key__repo ,
-    in_dir ,
-    authored_date,
-    '澳洲' as area,
-    COUNT() alter_file_count
-from (
-     select search_key__owner,
-        search_key__repo,
-        toYYYYMM(authored_date) as authored_date,
-        in_dir
-    from  gits_dir_label
-
-    where author_tz global in (10)
-)
-group by search_key__owner, search_key__repo,
-    in_dir,authored_date) order by search_key__owner;
-    """
+        sql = f"""
+        select * from (select search_key__owner ,
+        search_key__repo ,
+        in_dir ,
+        authored_date,
+        '北美' as area,
+        COUNT() alter_file_count
+    from (
+        select search_key__owner,
+            search_key__repo,
+            toYYYYMM(authored_date) as authored_date,
+            in_dir
+        from  gits_dir_label
+    
+        where
+             author_tz global in (-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12)
+    )
+    group by search_key__owner, search_key__repo,
+        in_dir,authored_date
+    
+    union all
+    
+    select search_key__owner ,
+        search_key__repo ,
+        in_dir ,
+        authored_date,
+        '欧洲西部' as area,
+        COUNT() alter_file_count
+    from (
+         select search_key__owner,
+            search_key__repo,
+            toYYYYMM(authored_date) as authored_date,
+            in_dir
+        from  gits_dir_label
+    
+        where
+    
+            author_tz global in (0,1,2)
+    )
+    group by search_key__owner, search_key__repo,
+        in_dir,authored_date
+    
+    union all
+    
+    select search_key__owner ,
+        search_key__repo ,
+        in_dir ,
+        authored_date,
+        '欧洲东部' as area,
+        COUNT() alter_file_count
+    from (
+         select search_key__owner,
+            search_key__repo,
+            toYYYYMM(authored_date) as authored_date,
+            in_dir
+        from  gits_dir_label
+    
+        where author_tz global in (3,4)
+    )
+    group by search_key__owner, search_key__repo,
+        in_dir,authored_date
+    
+    union all
+    
+    select search_key__owner ,
+        search_key__repo ,
+        in_dir ,
+        authored_date,
+        '印度' as area,
+        COUNT() alter_file_count
+    from (
+        select search_key__owner,
+            search_key__repo,
+            toYYYYMM(authored_date) as authored_date,
+            in_dir
+        from  gits_dir_label
+    
+        where author_tz global in (5)
+    )
+    group by search_key__owner, search_key__repo,
+        in_dir,authored_date
+    
+    union all
+    
+    select search_key__owner ,
+        search_key__repo ,
+        in_dir ,
+        authored_date,
+        '中国' as area,
+        COUNT() alter_file_count
+    from (
+         select search_key__owner,
+            search_key__repo,
+            toYYYYMM(authored_date) as authored_date,
+            in_dir
+        from  gits_dir_label
+    
+        where author_tz global in (8)
+    )
+    group by search_key__owner, search_key__repo,
+        in_dir,authored_date
+    
+    union all
+    
+    select search_key__owner ,
+        search_key__repo ,
+        in_dir ,
+        authored_date,
+        '日韩' as area,
+        COUNT() alter_file_count
+    from (
+        select search_key__owner,
+            search_key__repo,
+            toYYYYMM(authored_date) as authored_date,
+            in_dir
+        from  gits_dir_label
+    
+        where author_tz global in (9)
+    )
+    group by search_key__owner, search_key__repo,
+        in_dir,authored_date
+    
+    union all
+    
+    select search_key__owner ,
+        search_key__repo ,
+        in_dir ,
+        authored_date,
+        '澳洲' as area,
+        COUNT() alter_file_count
+    from (
+         select search_key__owner,
+            search_key__repo,
+            toYYYYMM(authored_date) as authored_date,
+            in_dir
+        from  gits_dir_label
+    
+        where author_tz global in (10)
+    )
+    group by search_key__owner, search_key__repo,
+        in_dir,authored_date) order by search_key__owner;
+        """
+    else:
+        sql = f"""
+        select * from (select search_key__owner ,
+        search_key__repo ,
+        in_dir ,
+        authored_date,
+        '北美' as area,
+        COUNT() alter_file_count
+    from (
+        select search_key__owner,
+            search_key__repo,
+            toYYYYMM(authored_date) as authored_date,
+            in_dir
+        from  gits_dir_label
+    
+        where
+             search_key__owner = '{owner}' and search_key__repo = '{repo}' and
+             author_tz global in (-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12)
+    )
+    group by search_key__owner, search_key__repo,
+        in_dir,authored_date
+    
+    union all
+    
+    select search_key__owner ,
+        search_key__repo ,
+        in_dir ,
+        authored_date,
+        '欧洲西部' as area,
+        COUNT() alter_file_count
+    from (
+         select search_key__owner,
+            search_key__repo,
+            toYYYYMM(authored_date) as authored_date,
+            in_dir
+        from  gits_dir_label
+    
+        where
+            search_key__owner = '{owner}' and search_key__repo = '{repo}' and
+            author_tz global in (0,1,2)
+    )
+    group by search_key__owner, search_key__repo,
+        in_dir,authored_date
+    
+    union all
+    
+    select search_key__owner ,
+        search_key__repo ,
+        in_dir ,
+        authored_date,
+        '欧洲东部' as area,
+        COUNT() alter_file_count
+    from (
+         select search_key__owner,
+            search_key__repo,
+            toYYYYMM(authored_date) as authored_date,
+            in_dir
+        from  gits_dir_label
+        
+        where 
+        search_key__owner = '{owner}' and search_key__repo = '{repo}' and
+        author_tz global in (3,4)
+    )
+    group by search_key__owner, search_key__repo,
+        in_dir,authored_date
+    
+    union all
+    
+    select search_key__owner ,
+        search_key__repo ,
+        in_dir ,
+        authored_date,
+        '印度' as area,
+        COUNT() alter_file_count
+    from (
+        select search_key__owner,
+            search_key__repo,
+            toYYYYMM(authored_date) as authored_date,
+            in_dir
+        from  gits_dir_label
+    
+        where 
+        search_key__owner = '{owner}' and search_key__repo = '{repo}' and
+        author_tz global in (5)
+    )
+    group by search_key__owner, search_key__repo,
+        in_dir,authored_date
+    
+    union all
+    
+    select search_key__owner ,
+        search_key__repo ,
+        in_dir ,
+        authored_date,
+        '中国' as area,
+        COUNT() alter_file_count
+    from (
+         select search_key__owner,
+            search_key__repo,
+            toYYYYMM(authored_date) as authored_date,
+            in_dir
+        from  gits_dir_label
+    
+        where 
+        search_key__owner = '{owner}' and search_key__repo = '{repo}' and
+        author_tz global in (8)
+    )
+    group by search_key__owner, search_key__repo,
+        in_dir,authored_date
+    
+    union all
+    
+    select search_key__owner ,
+        search_key__repo ,
+        in_dir ,
+        authored_date,
+        '日韩' as area,
+        COUNT() alter_file_count
+    from (
+        select search_key__owner,
+            search_key__repo,
+            toYYYYMM(authored_date) as authored_date,
+            in_dir
+        from  gits_dir_label
+    
+        where 
+        search_key__owner = '{owner}' and search_key__repo = '{repo}' and
+        author_tz global in (9)
+    )
+    group by search_key__owner, search_key__repo,
+        in_dir,authored_date
+    
+    union all
+    
+    select search_key__owner ,
+        search_key__repo ,
+        in_dir ,
+        authored_date,
+        '澳洲' as area,
+        COUNT() alter_file_count
+    from (
+         select search_key__owner,
+            search_key__repo,
+            toYYYYMM(authored_date) as authored_date,
+            in_dir
+        from  gits_dir_label
+    
+        where 
+        search_key__owner = '{owner}' and search_key__repo = '{repo}' and
+        author_tz global in (10)
+    )
+    group by search_key__owner, search_key__repo,
+        in_dir,authored_date) order by search_key__owner;
+        """
     results = ck.execute_no_params(sql)
     bulk_data = []
     for result in results:
@@ -255,21 +412,22 @@ group by search_key__owner, search_key__repo,
         data_dict["authored_date"] = result[3]
         data_dict["area"] = result[4]
         data_dict["alter_file_count"] = result[5]
-        data_dict["ck_data_insert_at"] = int(time.time()*1000)
+        data_dict["ck_data_insert_at"] = int(time.time() * 1000)
         bulk_data.append(data_dict)
-        if len(bulk_data)>20000:
-            response = ck.execute("insert into table gits_alter_file_times values",bulk_data)
+        if len(bulk_data) > 20000:
+            response = ck.execute("insert into table gits_alter_file_times values", bulk_data)
             print(f"insert into table gits_alter_file_times {response} ")
             bulk_data.clear()
     if bulk_data:
-        response=ck.execute("insert into table gits_alter_file_times values", bulk_data)
+        response = ck.execute("insert into table gits_alter_file_times values", bulk_data)
         print(f"insert into table gits_alter_file_times {response} ")
     ck.close()
 
 
-def get_dir_contributer_count():
-    ck = CKServer(host='192.168.8.152', port=9000, user='default', password='default', database='default')
-    sql = f"""
+def get_dir_contributer_count(owner='', repo=''):
+    ck = CKServer(host='192.168.8.2', port=19000, user='default', password='default', database='default')
+    if owner == '' and repo == '':
+        sql = f"""
     select * from (select search_key__owner,search_key__repo,in_dir,authored_date,area,count() as contributor_count from (select search_key__owner ,
     search_key__repo ,
     in_dir ,
@@ -433,6 +591,182 @@ group by search_key__owner, search_key__repo,
     in_dir,authored_date,area) order by search_key__owner
     
     """
+    else:
+        sql = f"""
+            select * from (select search_key__owner,search_key__repo,in_dir,authored_date,area,count() as contributor_count from (select search_key__owner ,
+            search_key__repo ,
+            in_dir ,
+            authored_date,
+            '北美' as area,
+            author_email
+        --     COUNT() alter_file_count
+        from (
+            select search_key__owner,
+                search_key__repo,
+                author_email,
+                toYYYYMM(authored_date) as authored_date,
+                in_dir
+            from gits_dir_label
+            where
+            search_key__owner = '{owner}' and search_key__repo = '{repo}' and
+        author_tz global in (-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12)
+        )
+        group by search_key__owner, search_key__repo,
+            in_dir,authored_date,author_email)
+        group by search_key__owner, search_key__repo,
+            in_dir,authored_date,area
+
+        union all
+
+        select search_key__owner,search_key__repo,in_dir,authored_date,area,count() as contributor_count from (select search_key__owner ,
+            search_key__repo ,
+            in_dir ,
+            authored_date,
+            '欧洲西部' as area,
+            author_email
+        --     COUNT() alter_file_count
+        from (
+            select search_key__owner,
+                search_key__repo,
+                author_email,
+                toYYYYMM(authored_date) as authored_date,
+                in_dir
+            from gits_dir_label
+            where
+            search_key__owner = '{owner}' and search_key__repo = '{repo}' and
+                 author_tz global in (0,1,2)
+        )
+        group by search_key__owner, search_key__repo,
+            in_dir,authored_date,author_email)
+        group by search_key__owner, search_key__repo,
+            in_dir,area,authored_date
+
+        union all
+
+        select search_key__owner,search_key__repo,in_dir,authored_date,area,count() as contributor_count from (select search_key__owner ,
+            search_key__repo ,
+            in_dir ,
+            authored_date,
+            '欧洲东部' as area,
+            author_email
+        --     COUNT() alter_file_count
+        from (
+            select search_key__owner,
+                search_key__repo,
+                author_email,
+                toYYYYMM(authored_date) as authored_date,
+                in_dir
+            from gits_dir_label
+            where
+            search_key__owner = '{owner}' and search_key__repo = '{repo}' and
+                 author_tz global in (3,4)
+        )
+        group by search_key__owner, search_key__repo,
+            in_dir,authored_date,author_email)
+        group by search_key__owner, search_key__repo,
+            in_dir,authored_date,area
+
+        union all
+
+        select search_key__owner,search_key__repo,in_dir,authored_date,area,count() as contributor_count from (select search_key__owner ,
+            search_key__repo ,
+            in_dir ,
+            authored_date,
+            '印度' as area,
+            author_email
+        --     COUNT() alter_file_count
+        from (
+            select search_key__owner,
+                search_key__repo,
+                author_email,
+                toYYYYMM(authored_date) as authored_date,
+                in_dir
+            from gits_dir_label
+            where 
+            search_key__owner = '{owner}' and search_key__repo = '{repo}' and
+            author_tz global in (5)
+        )
+        group by search_key__owner, search_key__repo,
+            in_dir,authored_date,author_email)
+        group by search_key__owner, search_key__repo,
+            in_dir,area,authored_date
+
+        union all
+
+        select search_key__owner,search_key__repo,in_dir,authored_date,area,count() as contributor_count from (select search_key__owner ,
+            search_key__repo ,
+            in_dir ,
+            authored_date,
+            '中国' as area,
+            author_email
+        --     COUNT() alter_file_count
+        from (
+            select search_key__owner,
+                search_key__repo,
+                author_email,
+                toYYYYMM(authored_date) as authored_date,
+                in_dir
+            from gits_dir_label
+            where 
+            search_key__owner = '{owner}' and search_key__repo = '{repo}' and
+            author_tz global in (8)
+        )
+        group by search_key__owner, search_key__repo,
+            in_dir,authored_date,author_email)
+        group by search_key__owner, search_key__repo,
+            in_dir,authored_date,area
+
+        union all
+
+        select search_key__owner,search_key__repo,in_dir,authored_date,area,count() as contributor_count from (select search_key__owner ,
+            search_key__repo ,
+            in_dir ,
+            authored_date,
+            '日韩' as area,
+            author_email
+        --     COUNT() alter_file_count
+        from (
+            select search_key__owner,
+                search_key__repo,
+                author_email,
+                toYYYYMM(authored_date) as authored_date,
+                in_dir
+            from gits_dir_label
+            where 
+            search_key__owner = '{owner}' and search_key__repo = '{repo}' and
+            author_tz global in (9)
+        )
+        group by search_key__owner, search_key__repo,
+            in_dir,authored_date,author_email)
+        group by search_key__owner, search_key__repo,
+            in_dir,authored_date,area
+
+        union all
+
+        select search_key__owner,search_key__repo,in_dir,authored_date,area,count() as contributor_count from (select search_key__owner ,
+            search_key__repo ,
+            in_dir ,
+            authored_date,
+            '澳洲' as area,
+            author_email
+        --     COUNT() alter_file_count
+        from (
+            select search_key__owner,
+                search_key__repo,
+                author_email,
+                toYYYYMM(authored_date) as authored_date,
+                in_dir
+            from gits_dir_label
+            where 
+            search_key__owner = '{owner}' and search_key__repo = '{repo}' and
+            author_tz global in (10)
+        )
+        group by search_key__owner, search_key__repo,
+            in_dir,authored_date,author_email)
+        group by search_key__owner, search_key__repo,
+            in_dir,authored_date,area) order by search_key__owner
+
+            """
     results = ck.execute_no_params(sql)
     bulk_data = []
     for result in results:
@@ -445,39 +779,72 @@ group by search_key__owner, search_key__repo,
         data_dict["contributer_count"] = result[5]
         data_dict["ck_data_insert_at"] = int(time.time() * 1000)
         bulk_data.append(data_dict)
-        if len(bulk_data)>20000:
-            response = ck.execute("insert into table gits_dir_contributer values",bulk_data)
+        if len(bulk_data) > 20000:
+            response = ck.execute("insert into table gits_dir_contributer values", bulk_data)
             print(f"insert into table gits_dir_contributer {response} ")
             bulk_data.clear()
     if bulk_data:
-        response=ck.execute("insert into table gits_dir_contributer values", bulk_data)
+        response = ck.execute("insert into table gits_dir_contributer values", bulk_data)
         print(f"insert into table gits_dir_contributer {response} ")
     ck.close()
 
 
-def get_alter_file_count_by_dir_email_domain():
-    ck = CKServer(host='192.168.8.152', port=9000, user='default', password='default', database='default')
-    sql = f"""
-    select * from (select search_key__owner ,
-    search_key__repo ,
-    in_dir ,
-    authored_date,
-    email_domain,
-    COUNT() alter_file_count
-from (
-    select search_key__owner,
-        search_key__repo,
-        splitByChar('@',`author_email`)[2] as email_domain,
-        toYYYYMM(authored_date) as authored_date,
-        in_dir
-    from gits_dir_label
-    where email_domain!=''
+def get_alter_file_count_by_dir_email_domain(owner='', repo=''):
+    ck = CKServer(host='192.168.8.2', port=19000, user='default', password='default', database='default')
+    if owner == '' and repo == '':
+        sql = f"""
+        select * from (select search_key__owner ,
+        search_key__repo ,
+        in_dir ,
+        authored_date,
+        email_domain,
+        COUNT() alter_file_count
+    from (
+        select search_key__owner,
+            search_key__repo,
+            multiIf(author_email='',
+                if(author_name like '%@%',
+                    splitByChar('@',`author_name`)[2],'empty_domain'),
+                author_email like '%@%',
+                splitByChar('@',`author_email`)[2],
+                author_email like '%\%%',
+                splitByChar('%',`author_email`)[2],
+                author_email) as email_domain,
+            toYYYYMM(authored_date) as authored_date,
+            in_dir
+        from gits_dir_label
+    )
+    group by search_key__owner, search_key__repo,
+        in_dir,authored_date,email_domain ) order by search_key__owner
+    
+        """
+    else:
+        sql = f"""
+                select * from (select search_key__owner ,
+                search_key__repo ,
+                in_dir ,
+                authored_date,
+                email_domain,
+                COUNT() alter_file_count
+            from (
+                select search_key__owner,
+                    search_key__repo,
+                    multiIf(author_email='',
+                        if(author_name like '%@%',
+                            splitByChar('@',`author_name`)[2],'empty_domain'),
+                        author_email like '%@%',
+                        splitByChar('@',`author_email`)[2],
+                        author_email like '%\%%',
+                        splitByChar('%',`author_email`)[2],
+                        author_email) as email_domain,
+                    toYYYYMM(authored_date) as authored_date,
+                    in_dir
+                from gits_dir_label where search_key__owner = '{owner}' and search_key__repo = '{repo}'
+            )
+            group by search_key__owner, search_key__repo,
+                in_dir,authored_date,email_domain ) order by search_key__owner
 
-)
-group by search_key__owner, search_key__repo,
-    in_dir,authored_date,email_domain ) order by search_key__owner
-
-    """
+                """
     results = ck.execute_no_params(sql)
     bulk_data = []
     for result in results:
@@ -500,28 +867,66 @@ group by search_key__owner, search_key__repo,
     ck.close()
 
 
-def get_contributer_by_dir_email_domain():
-    ck = CKServer(host='192.168.8.152', port=9000, user='default', password='default', database='default')
-    sql = f"""
-    select * from (select search_key__owner, search_key__repo,
-    in_dir,authored_date,email_domain,count() contributor_count from (
-    select search_key__owner,search_key__repo,author_email,authored_date,email_domain,in_dir from 
-    (select search_key__owner,
-        search_key__repo,
-        author_email,
-        toYYYYMM(authored_date) as authored_date,
-        splitByChar('@',`author_email`)[2] as email_domain,
-        in_dir
-    from gits_dir_label
-    where
-        email_domain!='')
-    group by search_key__owner,search_key__repo,author_email,authored_date,email_domain,in_dir
+def get_contributer_by_dir_email_domain(owner='', repo=''):
+    ck = CKServer(host='192.168.8.2', port=19000, user='default', password='default', database='default')
+    if owner == '' and repo == '':
+        sql = f"""
+        select * from (select search_key__owner, search_key__repo,
+        in_dir,authored_date,email_domain,count() contributor_count from (
+        select search_key__owner,search_key__repo,email,authored_date,email_domain,in_dir from
+        (select search_key__owner,
+            search_key__repo,
+    
+            if(author_email='',
+                if(author_name like '%@%',author_name,'empty_email'),
+                author_email) as email,
+            toYYYYMM(authored_date) as authored_date,
+            multiIf(author_email='',
+                if(author_name like '%@%',
+                    splitByChar('@',`author_name`)[2],'empty_domain'),
+                author_email like '%@%',
+                splitByChar('@',`author_email`)[2],
+                author_email like '%\%%',
+                splitByChar('%',`author_email`)[2],
+                author_email) as email_domain,
+            in_dir
+        from gits_dir_label)
+        group by search_key__owner,search_key__repo,email,authored_date,email_domain,in_dir
+    
+    )
+    group by search_key__owner, search_key__repo,
+        in_dir,authored_date,email_domain
+    order by contributor_count desc) order by search_key__owner
+        """
+    else:
+        sql = f"""
+                select * from (select search_key__owner, search_key__repo,
+                in_dir,authored_date,email_domain,count() contributor_count from (
+                select search_key__owner,search_key__repo,email,authored_date,email_domain,in_dir from
+                (select search_key__owner,
+                    search_key__repo,
 
-)
-group by search_key__owner, search_key__repo,
-    in_dir,authored_date,email_domain
-order by contributor_count desc) order by search_key__owner
-    """
+                    if(author_email='',
+                        if(author_name like '%@%',author_name,'empty_email'),
+                        author_email) as email,
+                    toYYYYMM(authored_date) as authored_date,
+                    multiIf(author_email='',
+                        if(author_name like '%@%',
+                            splitByChar('@',`author_name`)[2],'empty_domain'),
+                        author_email like '%@%',
+                        splitByChar('@',`author_email`)[2],
+                        author_email like '%\%%',
+                        splitByChar('%',`author_email`)[2],
+                        author_email) as email_domain,
+                    in_dir
+                from gits_dir_label where search_key__owner = '{owner}' and search_key__repo = '{repo}')
+                group by search_key__owner,search_key__repo,email,authored_date,email_domain,in_dir
+
+            )
+            group by search_key__owner, search_key__repo,
+                in_dir,authored_date,email_domain
+            order by contributor_count desc) order by search_key__owner
+                """
     results = ck.execute_no_params(sql)
     bulk_data = []
     for result in results:
@@ -544,9 +949,10 @@ order by contributor_count desc) order by search_key__owner
     ck.close()
 
 
-def get_tz_distribution():
-    ck = CKServer(host='192.168.8.152', port=9000, user='default', password='default', database='default')
-    sql = f"""
+def get_tz_distribution(owner='', repo=''):
+    ck = CKServer(host='192.168.8.2', port=19000, user='default', password='default', database='default')
+    if owner == '' and repo == '':
+        sql = f"""
         select * from (select search_key__owner,search_key__repo,in_dir,author_email,sum(alter_files_count) alter_files_count,groupArray(a) as tz_distribution
 from (select search_key__owner,
              search_key__repo,
@@ -571,6 +977,33 @@ from (select search_key__owner,
 group by search_key__owner,search_key__repo,in_dir,author_email
 order by alter_files_count desc) order by search_key__owner
         """
+    else:
+        sql = f"""
+                select * from (select search_key__owner,search_key__repo,in_dir,author_email,sum(alter_files_count) alter_files_count,groupArray(a) as tz_distribution
+        from (select search_key__owner,
+                     search_key__repo,
+                     in_dir,
+                     author_email,
+                     alter_files_count,
+                     map(author_tz, alter_files_count) as a
+              from (select search_key__owner, search_key__repo,in_dir, author_email, author_tz, count() alter_files_count
+                    from (select search_key__owner,
+                                 search_key__repo,
+                                 author_email,
+                                 author_tz,
+                                 in_dir
+                          from gits_dir_label
+
+                          where
+                          search_key__owner = '{owner}' and search_key__repo = '{repo}' and
+                            author_email != ''
+                            )
+
+                    group by search_key__owner, search_key__repo, author_email, author_tz,in_dir
+                    order by alter_files_count desc))
+        group by search_key__owner,search_key__repo,in_dir,author_email
+        order by alter_files_count desc) order by search_key__owner
+                """
     results = ck.execute_no_params(sql)
     bulk_data = []
     for result in results:
