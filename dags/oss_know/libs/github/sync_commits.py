@@ -24,10 +24,11 @@ class SyncGithubCommitException(Exception):
         self.status = status
 
 
-def sync_github_commits(github_tokens,
-                        opensearch_conn_info,
-                        owner, repo):
-    github_tokens_iter = itertools.cycle(github_tokens)
+def sync_github_commits(opensearch_conn_info,
+                        owner,
+                        repo,
+                        token_proxy_accommodator):
+
 
     opensearch_client = OpenSearch(
         hosts=[{'host': opensearch_conn_info["HOST"], 'port': opensearch_conn_info["PORT"]}],
@@ -93,10 +94,15 @@ def sync_github_commits(github_tokens,
     session = requests.Session()
     github_api = GithubAPI()
     opensearch_api = OpensearchAPI()
-    for page in range(1, 9999):
+    for page in range(1, 999999):
         time.sleep(random.uniform(GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX))
-        req = github_api.get_github_commits(http_session=session, github_tokens_iter=github_tokens_iter,
-                                            owner=owner, repo=repo, page=page, since=since, until=until)
+        req = github_api.get_github_commits(http_session=session,
+                                            token_proxy_accommodator=token_proxy_accommodator,
+                                            owner=owner,
+                                            repo=repo,
+                                            page=page,
+                                            since=since,
+                                            until=until)
         now_github_commits = req.json()
 
         if (now_github_commits is not None) and len(now_github_commits) == 0:
