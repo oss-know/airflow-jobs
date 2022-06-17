@@ -2989,6 +2989,9 @@
       }
     }
   ],
+  "dashboard_repo_list": [{"owner": "","repo": ""}],
+  "calculate_metrics_repo_list": [{"owner": "","repo": ""}],
+  "calculate_metrics_by_day_repos": [{"owner": "","repo": ""}],
   "mail_lists": [
     {
       "project_name": "gawk",

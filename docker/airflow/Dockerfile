@@ -12,7 +12,7 @@ RUN pip install --no-cache-dir  'grimoire-elk>=0.99.0'
 RUN pip install --no-cache-dir git+https://github.com/oss-know/grimoirelab-perceval@development
 RUN pip install --no-cache-dir  'pandas>=1.4.0' 'scikit-learn>=1.0.2' 'numpy>=1.21'
 RUN pip install --no-cache-dir  'loguru>=0.5.3' \
-                                'opensearch-py>=1.0.0' \
+                                'opensearch-py>=2.0.0' \
                                 'PyGithub>=1.54.1' \
                                 'GitPython>=3.1.24' \
                                 'urllib3>=1.26.7' \

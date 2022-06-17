@@ -48,8 +48,7 @@ def init_sync_github_issues_timeline(opensearch_conn_info, owner, repo, token_pr
                                                        }}
                                                    ]}
                                                }
-                                           },
-                                           doc_type="_doc"
+                                           }
                                            )
     need_init_all_results = []
     for now_item in scan_results:

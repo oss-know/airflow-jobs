@@ -93,7 +93,7 @@ def get_profiles_from_os(opensearch_client, owner, repo, index):
                               }}
                           ]}
                       }
-                  }, doc_type='_doc', timeout='10m')
+                  }, timeout='10m')
     logger.info(f'Get GitHub users by {repo} and {owner} and {index} from opensearch.')
     return res
 
