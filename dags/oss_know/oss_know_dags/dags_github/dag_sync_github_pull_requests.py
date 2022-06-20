@@ -2,9 +2,11 @@ from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from oss_know.libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TOKENS, \
-    NEED_SYNC_GITHUB_PULL_REPUESTS_REPOS
+    NEED_SYNC_GITHUB_PULL_REPUESTS_REPOS, PROXY_CONFS
 
 # v0.0.1
+from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
+from oss_know.libs.util.token import TokenManager
 
 with DAG(
         dag_id='github_sync_pull_requests_v1',
@@ -29,12 +31,29 @@ with DAG(
 
         github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
         opensearch_conn_infos = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
-
+        proxy_confs = Variable.get(PROXY_CONFS, deserialize_json=True)
+        proxy_api_url = proxy_confs["api_url"]
+        proxy_order_id = proxy_confs["orderid"]
+        proxy_reserved_proxies = proxy_confs["reserved_proxies"]
+        proxies = []
+        for proxy in proxy_reserved_proxies:
+            proxies.append(f"http://{proxy}")
+        proxy_service = KuaiProxyService(api_url=proxy_api_url,
+                                         orderid=proxy_order_id)
+        token_manager = TokenManager(tokens=github_tokens)
+        proxy_manager = ProxyManager(proxies=proxies,
+                                     proxy_service=proxy_service)
+        proxy_accommodator = GithubTokenProxyAccommodator(token_manager=token_manager,
+                                                          proxy_manager=proxy_manager,
+                                                          shuffle=True,
+                                                          policy=GithubTokenProxyAccommodator.POLICY_FIXED_MAP)
         owner = params["owner"]
         repo = params["repo"]
 
-        pull_requests_numbers = sync_pull_requests.sync_github_pull_requests(
-            github_tokens, opensearch_conn_infos, owner, repo)
+        pull_requests_numbers = sync_pull_requests.sync_github_pull_requests(opensearch_conn_info=opensearch_conn_infos,
+                                                                             owner=owner,
+                                                                             repo=repo,
+                                                                             token_proxy_accommodator=proxy_accommodator)
 
         return pull_requests_numbers
 

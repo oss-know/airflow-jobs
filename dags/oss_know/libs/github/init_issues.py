@@ -14,6 +14,7 @@ from oss_know.libs.base_dict.options import GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_
 
 
 def init_github_issues(opensearch_conn_infos, owner, repo, token_proxy_accommodator, since=None):
+    now_time = datetime.datetime.now()
     opensearch_client = OpenSearch(
         hosts=[{'host': opensearch_conn_infos["HOST"], 'port': opensearch_conn_infos["PORT"]}],
         http_compress=True,
@@ -48,6 +49,6 @@ def init_github_issues(opensearch_conn_infos, owner, repo, token_proxy_accommoda
         logger.info(f"success get github issues page:{owner}/{repo} page_index:{page}")
 
     # 建立 sync 标志
-    opensearch_api.set_sync_github_issues_check(opensearch_client, owner, repo)
+    opensearch_api.set_sync_github_issues_check(opensearch_client, owner, repo,now_time)
 
 

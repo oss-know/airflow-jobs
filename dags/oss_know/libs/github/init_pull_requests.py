@@ -3,7 +3,7 @@ import random
 import requests
 import time
 import itertools
-
+import datetime
 from opensearchpy import OpenSearch
 
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS
@@ -14,7 +14,7 @@ from oss_know.libs.base_dict.options import GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_
 
 
 def init_sync_github_pull_requests(opensearch_conn_info, owner, repo, token_proxy_accommodator, since=None):
-
+    now_time = datetime.datetime.now()
     opensearch_client = OpenSearch(
         hosts=[{'host': opensearch_conn_info["HOST"], 'port': opensearch_conn_info["PORT"]}],
         http_compress=True,
@@ -51,11 +51,12 @@ def init_sync_github_pull_requests(opensearch_conn_info, owner, repo, token_prox
     opensearch_api = OpensearchAPI()
     github_api = GithubAPI()
 
-    for page in range(1, 10000):
+    for page in range(1, 100000):
         # Token sleep
         time.sleep(random.uniform(GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX))
 
-        req = github_api.get_github_pull_requests(http_session=session, token_proxy_accommodator=token_proxy_accommodator,
+        req = github_api.get_github_pull_requests(http_session=session,
+                                                  token_proxy_accommodator=token_proxy_accommodator,
                                                   owner=owner, page=page, repo=repo, since=since)
 
         one_page_github_pull_requests = req.json()
@@ -69,3 +70,7 @@ def init_sync_github_pull_requests(opensearch_conn_info, owner, repo, token_prox
                                                  owner=owner, repo=repo)
 
         logger.info(f"success get github pull_requests page:{owner}/{repo} page_index:{page}")
+    opensearch_api.set_sync_github_pull_requests_check(opensearch_client=opensearch_client,
+                                                       owner=owner,
+                                                       repo=repo,
+                                                       now_time=now_time)

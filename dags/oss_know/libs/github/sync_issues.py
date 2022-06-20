@@ -20,10 +20,12 @@ class SyncGithubIssuesException(Exception):
         self.status = status
 
 
-def sync_github_issues(github_tokens, opensearch_conn_info, owner, repo):
+def sync_github_issues(opensearch_conn_info,
+                       owner,
+                       repo,
+                       token_proxy_accommodator):
     logger.info("start sync_github_issues()")
-    github_tokens_iter = itertools.cycle(github_tokens)
-
+    now_time = datetime.datetime.now()
     opensearch_client = OpenSearch(
         hosts=[{'host': opensearch_conn_info["HOST"], 'port': opensearch_conn_info["PORT"]}],
         http_compress=True,
@@ -87,13 +89,16 @@ def sync_github_issues(github_tokens, opensearch_conn_info, owner, repo):
     opensearch_api = OpensearchAPI()
     github_api = GithubAPI()
 
-    for page in range(1, 10000):
+    for page in range(1, 100000):
         # Token sleep
         time.sleep(random.uniform(GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX))
 
         req = github_api.get_github_issues(http_session=session,
-                                           github_tokens_iter=github_tokens_iter,
-                                           owner=owner, repo=repo, page=page, since=since)
+                                           token_proxy_accommodator=token_proxy_accommodator,
+                                           owner=owner,
+                                           repo=repo,
+                                           page=page,
+                                           since=since)
 
         one_page_github_issues = req.json()
 
@@ -112,7 +117,7 @@ def sync_github_issues(github_tokens, opensearch_conn_info, owner, repo):
 
     # 建立 sync 标志
     opensearch_api.set_sync_github_issues_check(opensearch_client=opensearch_client,
-                                                owner=owner, repo=repo)
+                                                owner=owner, repo=repo, now_time=now_time)
 
     logger.info(f"issues_list:{issues_numbers}")
 

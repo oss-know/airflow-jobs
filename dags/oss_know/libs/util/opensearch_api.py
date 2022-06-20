@@ -230,8 +230,7 @@ class OpensearchAPI:
             f"now page:{len(bulk_all_github_issues_comments)} sync github issues comments success:{success} & failed:{failed}")
 
     # 建立 owner/repo github issues 更新基准
-    def set_sync_github_issues_check(self, opensearch_client, owner, repo):
-        now_time = datetime.datetime.now()
+    def set_sync_github_issues_check(self, opensearch_client, owner, repo, now_time):
         check_update_info = {
             "search_key": {
                 "type": "github_issues",
@@ -258,8 +257,7 @@ class OpensearchAPI:
                                 refresh=True)
 
     # 建立 owner/repo github pull_requests 更新基准
-    def set_sync_github_pull_requests_check(self, opensearch_client, owner, repo):
-        now_time = datetime.datetime.now()
+    def set_sync_github_pull_requests_check(self, opensearch_client, owner, repo, now_time):
         check_update_info = {
             "search_key": {
                 "type": "github_pull_requests",
@@ -272,7 +270,7 @@ class OpensearchAPI:
                 "type": "github_pull_requests",
                 "owner": owner,
                 "repo": repo,
-                "issues": {
+                "prs": {
                     "owner": owner,
                     "repo": repo,
                     "sync_datetime": now_time.strftime('%Y-%m-%dT00:00:00Z'),
@@ -320,6 +318,59 @@ class OpensearchAPI:
     def bulk_github_pull_requests(self, github_pull_requests, opensearch_client, owner, repo):
         bulk_all_github_pull_requests = []
         for now_pr in github_pull_requests:
+            template = {"_index": OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS,
+                        "_source": {"search_key": {"owner": owner, "repo": repo,
+                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000)},
+                                    "raw_data": None}}
+            pull_requests_item = copy.deepcopy(template)
+            pull_requests_item["_source"]["raw_data"] = now_pr
+            bulk_all_github_pull_requests.append(pull_requests_item)
+            logger.info(f"add init sync github pull_requests number:{now_pr['number']}")
+
+        success, failed = self.do_opensearch_bulk(opensearch_client, bulk_all_github_pull_requests, owner, repo)
+        logger.info(
+            f"now page:{len(bulk_all_github_pull_requests)} sync github pull_requests success:{success} & failed:{failed}")
+
+        return success, failed
+
+    # -----------------------------------------
+
+    def sync_bulk_github_pull_requests(self, github_pull_requests, opensearch_client, owner, repo):
+        bulk_all_github_pull_requests = []
+        for now_pr in github_pull_requests:
+            # 如果对应 pr number存在则先删除
+            del_result = opensearch_client.delete_by_query(index=OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS,
+                                                           body={
+                                                               "track_total_hits": True,
+                                                               "query": {
+                                                                   "bool": {
+                                                                       "must": [
+                                                                           {
+                                                                               "term": {
+                                                                                   "raw_data.number": {
+                                                                                       "value": now_pr["number"]
+                                                                                   }
+                                                                               }
+                                                                           },
+                                                                           {
+                                                                               "term": {
+                                                                                   "search_key.owner.keyword": {
+                                                                                       "value": owner
+                                                                                   }
+                                                                               }
+                                                                           },
+                                                                           {
+                                                                               "term": {
+                                                                                   "search_key.repo.keyword": {
+                                                                                       "value": repo
+                                                                                   }
+                                                                               }
+                                                                           }
+                                                                       ]
+                                                                   }
+                                                               }
+                                                           })
+            logger.info(f"DELETE github pr result:{del_result}")
             template = {"_index": OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS,
                         "_source": {"search_key": {"owner": owner, "repo": repo,
                                                    'updated_at': int(datetime.datetime.now().timestamp() * 1000)},

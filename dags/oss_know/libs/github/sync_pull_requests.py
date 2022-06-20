@@ -20,10 +20,12 @@ class SyncGithubPullRequestsException(Exception):
         self.status = status
 
 
-def sync_github_pull_requests(github_tokens, opensearch_conn_info, owner, repo):
+def sync_github_pull_requests(opensearch_conn_info,
+                              owner,
+                              repo,
+                              token_proxy_accommodator):
     logger.info("start Function to be renamed to sync_github_pull_requests")
-    github_tokens_iter = itertools.cycle(github_tokens)
-
+    now_time = datetime.datetime.now()
     opensearch_client = OpenSearch(
         hosts=[{'host': opensearch_conn_info["HOST"], 'port': opensearch_conn_info["PORT"]}],
         http_compress=True,
@@ -35,11 +37,48 @@ def sync_github_pull_requests(github_tokens, opensearch_conn_info, owner, repo):
     )
 
     has_pull_requests_check = opensearch_client.search(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA,
-                                                       body={}
+                                                       body={
+                                                           "size": 1,
+                                                           "track_total_hits": True,
+                                                           "query": {
+                                                               "bool": {
+                                                                   "must": [
+                                                                       {
+                                                                           "term": {
+                                                                               "search_key.type.keyword": {
+                                                                                   "value": "github_pull_requests"
+                                                                               }
+                                                                           }
+                                                                       },
+                                                                       {
+                                                                           "term": {
+                                                                               "search_key.owner.keyword": {
+                                                                                   "value": owner
+                                                                               }
+                                                                           }
+                                                                       },
+                                                                       {
+                                                                           "term": {
+                                                                               "search_key.repo.keyword": {
+                                                                                   "value": repo
+                                                                               }
+                                                                           }
+                                                                       }
+                                                                   ]
+                                                               }
+                                                           },
+                                                           "sort": [
+                                                               {
+                                                                   "search_key.update_timestamp": {
+                                                                       "order": "desc"
+                                                                   }
+                                                               }
+                                                           ]
+                                                       }
                                                        )
     if len(has_pull_requests_check["hits"]["hits"]) == 0:
         raise SyncGithubPullRequestsException("没有得到上次github pull_requests 同步的时间")
-    github_pull_requests_check = has_pull_requests_check["hits"]["hits"][0]["_source"]["github"]["pull_requests"]
+    github_pull_requests_check = has_pull_requests_check["hits"]["hits"][0]["_source"]["github"]["prs"]
 
     # 生成本次同步的时间范围：同步到今天的 00:00:00
     since = datetime.datetime.fromtimestamp(github_pull_requests_check["sync_timestamp"]).strftime('%Y-%m-%dT00:00:00Z')
@@ -55,8 +94,11 @@ def sync_github_pull_requests(github_tokens, opensearch_conn_info, owner, repo):
         time.sleep(random.uniform(GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX))
 
         req = github_api.get_github_pull_requests(http_session=session,
-                                                  github_tokens_iter=github_tokens_iter,
-                                                  owner=owner, repo=repo, page=page, since=since)
+                                                  token_proxy_accommodator=token_proxy_accommodator,
+                                                  owner=owner,
+                                                  repo=repo,
+                                                  page=page,
+                                                  since=since)
 
         one_page_github_pull_requests = req.json()
 
@@ -68,14 +110,14 @@ def sync_github_pull_requests(github_tokens, opensearch_conn_info, owner, repo):
             logger.info(f"sync github pull_requests end to break:{owner}/{repo} page_index:{page}")
             break
 
-        opensearch_api.bulk_github_pull_requests(github_pull_requests=one_page_github_pull_requests,
-                                                 opensearch_client=opensearch_client,
-                                                 owner=owner, repo=repo)
+        opensearch_api.sync_bulk_github_pull_requests(github_pull_requests=one_page_github_pull_requests,
+                                                      opensearch_client=opensearch_client,
+                                                      owner=owner, repo=repo)
         logger.info(f"success get github pull_requests page:{owner}/{repo} page_index:{page}")
 
     # 建立 sync 标志
     opensearch_api.set_sync_github_pull_requests_check(opensearch_client=opensearch_client,
-                                                owner=owner, repo=repo)
+                                                       owner=owner, repo=repo, now_time=now_time)
 
     logger.info(f"pull_requests_list:{pull_requests_numbers}")
 
