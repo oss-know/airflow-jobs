@@ -1,16 +1,44 @@
 from datetime import datetime
 from string import Template
 
+import pandas as pd
 import psycopg2
 from airflow import DAG
 from airflow.models import Variable
 from airflow.operators.python import PythonOperator
 
-from oss_know.libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TOKENS, PROXY_CONFS
+from oss_know.libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TOKENS, PROXY_CONFS, \
+    CLICKHOUSE_DRIVER_INFO, CK_TABLE_DEFAULT_VAL_TPLT, POSTGRES_CONN_INFO
 # git_init_sync_v0.0.3
+from oss_know.libs.clickhouse import init_ck_transfer_data
 from oss_know.libs.util.log import logger
 from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
 from oss_know.libs.util.token import TokenManager
+
+# The essential OpenSearch indices and ClickHouse tables name mapping
+# The github_issues_timeline is handled separately
+OS_CK_MAPPING = [
+    {
+        "CK_TABLE_NAME": "gits",
+        "OPENSEARCH_INDEX": "gits"
+    },
+    {
+        "CK_TABLE_NAME": "github_commits",
+        "OPENSEARCH_INDEX": "github_commits"
+    },
+    {
+        "CK_TABLE_NAME": "github_pull_requests",
+        "OPENSEARCH_INDEX": "github_pull_requests"
+    },
+    {
+        "CK_TABLE_NAME": "github_issues",
+        "OPENSEARCH_INDEX": "github_issues"
+    },
+    {
+        "CK_TABLE_NAME": "github_issues_comments",
+        "OPENSEARCH_INDEX": "github_issues_comments"
+    }
+]
 
 with DAG(
         dag_id='git_track_repo',
@@ -31,6 +59,7 @@ with DAG(
     git_save_local_path = Variable.get("git_save_local_path", deserialize_json=True)
     github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
     opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
+    clickhouse_server_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
 
     proxy_confs = Variable.get(PROXY_CONFS, deserialize_json=True)
     proxies = [f'http://{line}' for line in proxy_confs['reserved_proxies']]
@@ -40,7 +69,11 @@ with DAG(
     proxy_accommodator = GithubTokenProxyAccommodator(token_manager, proxy_manager, shuffle=True,
                                                       policy=GithubTokenProxyAccommodator.POLICY_FIXED_MAP)
 
-    pg_conn = psycopg2.connect(host='192.168.1.2', port='5432', database='airflow', user='airflow', password='airflow')
+    postgres_conn_info = Variable.get(POSTGRES_CONN_INFO, deserialize_json=True)
+    pg_conn = psycopg2.connect(host=postgres_conn_info["host"], port=postgres_conn_info['port'],
+                               database=postgres_conn_info['database'],
+                               user=postgres_conn_info['user'],
+                               password=postgres_conn_info['password'])
     pg_cur = pg_conn.cursor()
 
 
@@ -82,6 +115,63 @@ with DAG(
         from oss_know.libs.github import init_pull_requests
         exec_job_and_update_db(init_pull_requests.init_sync_github_pull_requests, callback,
                                'github_pull_requests', **kwargs)
+
+
+    def do_ck_transfer(callback, **kwargs):
+        owner = kwargs['dag_run'].conf.get('owner')
+        repo = kwargs['dag_run'].conf.get('repo')
+        search_key = {"owner": owner, "repo": repo}
+        table_templates = Variable.get(CK_TABLE_DEFAULT_VAL_TPLT, deserialize_json=True)
+
+        update_status_template_str = \
+            f"""update triggered_git_repos 
+                    set ck_transfer_status=$status 
+                    where owner='{owner}' and repo='{repo}'"""
+        update_status_template = Template(update_status_template_str)
+
+        try:
+            # TODO The status update in pg(including the template above) is yanked from exec_job_and_update_db
+            # Unify the code in later releases
+            # To do this, exec_job_and_update_db should be updated to support batch jobs execution, since
+            # ck_transfer include multiple jobs while other git/github data fetchings are all single-job
+            pg_cur.execute(update_status_template.substitute(status=1))
+            pg_conn.commit()
+
+            # Handle timeline separately
+            init_ck_transfer_data.transfer_data_special_by_repo(
+                clickhouse_server_info=clickhouse_server_info,
+                opensearch_index='github_issues_timeline',
+                table_name='github_issues_timeline',
+                opensearch_conn_datas=opensearch_conn_info, search_key=search_key)
+
+            # Transfer all other git/github data
+            # TODO We should support other git services like gitlab, gitee in the future
+            for os_ck_map in OS_CK_MAPPING:
+                os_index_name = os_ck_map['OPENSEARCH_INDEX']
+                ck_table_name = os_ck_map['CK_TABLE_NAME']
+
+                template = None
+                for table_template in table_templates:
+                    if table_template.get("table_name") == ck_table_name:
+                        template = table_template.get("temp")
+                        break
+                df = pd.json_normalize(template)
+                template = init_ck_transfer_data.parse_data_init(df)
+
+                init_ck_transfer_data.transfer_data_by_repo(
+                    clickhouse_server_info=clickhouse_server_info,
+                    opensearch_index=os_index_name,
+                    table_name=ck_table_name,
+                    opensearch_conn_datas=opensearch_conn_info,
+                    template=template, search_key=search_key, transfer_type='github_git_init_by_repo')
+
+            pg_cur.execute(update_status_template.substitute(status=2))
+            pg_conn.commit()
+            callback(owner, repo, 'ck_transfer', None)
+        except Exception as e:
+            pg_cur.execute(update_status_template.substitute(status=3))
+            pg_conn.commit()
+            callback(owner, repo, 'ck_transfer', e)
 
 
     def exec_job_and_update_db(job_callable, callback, res_type, additional_args=[], args=[], **kwargs):
@@ -135,7 +225,11 @@ with DAG(
                         where owner='{owner}' and repo='{repo}'"""
 
         if e:
+            update_fail_reason_sql = f"""update triggered_git_repos 
+                        set {res_type}_fail_reason ='{e}' 
+                        where owner='{owner}' and repo='{repo}'"""
             pg_cur.execute(update_status_sql)
+            pg_cur.execute(update_fail_reason_sql)
             pg_conn.commit()
             raise e
 
@@ -145,7 +239,8 @@ with DAG(
                github_pull_requests_status,
                github_issues_status,
                github_issues_comments_status,
-               github_issues_timeline_status
+               github_issues_timeline_status,
+               ck_transfer_status
         from triggered_git_repos
         where owner='{owner}' and repo='{repo}'"""
         pg_cur.execute(get_statuses_sq)
@@ -204,8 +299,16 @@ with DAG(
         op_kwargs={'callback': job_callback}
     )
 
-    op_init_track_repo >> op_do_init_gits
-    op_init_track_repo >> op_do_init_github_commits
-    op_init_track_repo >> op_do_init_github_pull_requests
-    op_init_track_repo >> op_do_init_github_issues >> [op_do_init_github_issues_comments,
-                                                       op_do_init_github_issues_timeline]
+    op_do_ck_transfer = PythonOperator(
+        task_id=f'do_ck_transfer',
+        python_callable=do_ck_transfer,
+        provide_context=True,
+        op_kwargs={'callback': job_callback}
+    )
+
+    op_init_track_repo >> [op_do_init_gits, op_do_init_github_commits, op_do_init_github_pull_requests,
+                           op_do_init_github_issues]
+    op_do_init_github_issues >> [op_do_init_github_issues_comments,
+                                 op_do_init_github_issues_timeline]
+    [op_do_init_gits, op_do_init_github_commits, op_do_init_github_pull_requests,
+     op_do_init_github_issues_comments, op_do_init_github_issues_timeline] >> op_do_ck_transfer
