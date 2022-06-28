@@ -1,20 +1,17 @@
-import copy
 import datetime
-import itertools
+import datetime
 import random
-
-import requests
 import time
 
+import requests
 from opensearchpy import OpenSearch
 
-from oss_know.libs.util.github_api import GithubAPI
-from oss_know.libs.util.opensearch_api import OpensearchAPI
-from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COMMITS, OPENSEARCH_INDEX_CHECK_SYNC_DATA
-from oss_know.libs.util.base import do_get_result
-    #, github_headers, do_opensearch_bulk, sync_github_commits_check_update_info
-from oss_know.libs.util.log import logger
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_CHECK_SYNC_DATA
 from oss_know.libs.base_dict.options import GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX
+from oss_know.libs.util.github_api import GithubAPI
+# , github_headers, do_opensearch_bulk, sync_github_commits_check_update_info
+from oss_know.libs.util.log import logger
+from oss_know.libs.util.opensearch_api import OpensearchAPI
 
 
 class SyncGithubCommitException(Exception):
@@ -28,8 +25,6 @@ def sync_github_commits(opensearch_conn_info,
                         owner,
                         repo,
                         token_proxy_accommodator):
-
-
     opensearch_client = OpenSearch(
         hosts=[{'host': opensearch_conn_info["HOST"], 'port': opensearch_conn_info["PORT"]}],
         http_compress=True,
@@ -114,7 +109,6 @@ def sync_github_commits(opensearch_conn_info,
                                            owner=owner, repo=repo, if_sync=1)
 
         logger.info(f"success get github commits :: {owner}/{repo} page_index:{page}")
-
 
     opensearch_api.set_sync_github_commits_check(opensearch_client, owner, repo, since, until)
 

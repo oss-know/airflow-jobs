@@ -1,10 +1,11 @@
 import time
 from datetime import datetime
+
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from oss_know.libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TOKENS, \
-    NEED_SYNC_GITHUB_PULL_REPUESTS_REPOS, PROXY_CONFS
 
+from oss_know.libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TOKENS, \
+    NEED_SYNC_GITHUB_PULL_REQUESTS_REPOS, PROXY_CONFS
 # v0.0.1
 from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
 from oss_know.libs.util.token import TokenManager
@@ -98,7 +99,7 @@ with DAG(
     from airflow.models import Variable
 
     need_do_sync_ops = []
-    need_sync_github_pull_requests_repos = Variable.get(NEED_SYNC_GITHUB_PULL_REPUESTS_REPOS, deserialize_json=True)
+    need_sync_github_pull_requests_repos = Variable.get(NEED_SYNC_GITHUB_PULL_REQUESTS_REPOS, deserialize_json=True)
     for sync_github_pull_requests_repo in need_sync_github_pull_requests_repos:
         op_do_sync_github_pull_requests = PythonOperator(
             task_id='op_do_sync_github_pull_requests_{owner}_{repo}'.format(
