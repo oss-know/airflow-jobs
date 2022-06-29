@@ -132,8 +132,9 @@ def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, tabl
             "owner": "",
             "repo": "",
             "number": 0,
-            "event":"",
-            "updated_at": 0
+            "event": "",
+            "updated_at": 0,
+            "uuid": ""
         },
         "raw_data": {
             "timeline_raw": ""
@@ -165,6 +166,7 @@ def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, tabl
             insert_data['search_key__number'] = os_data["_source"]["search_key"]['number']
             insert_data['search_key__event'] = os_data["_source"]["search_key"]['event']
             insert_data['search_key__updated_at'] = os_data["_source"]["search_key"]['updated_at']
+            insert_data['search_key__uuid'] = os_data["_source"]["search_key"]['uuid']
             raw_data = os_data["_source"]["raw_data"]
             standard_data = json.dumps(raw_data, separators=(',', ':'), ensure_ascii=False)
             insert_data['timeline_raw'] = standard_data
@@ -493,15 +495,15 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
                   password=clickhouse_server_info["PASSWD"],
                   database=clickhouse_server_info["DATABASE"])
 
-
     if transfer_type == "github_git_init_by_repo":
         search_key_owner = search_key['owner']
         search_key_repo = search_key['repo']
         if_null_sql = f"select count() from {table_name} where search_key__owner='{search_key_owner}' and search_key__repo='{search_key_repo}'"
         if_null_result = ck.execute_no_params(if_null_sql)
-        if if_null_result[0][0]!=0:
-            keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
-                            table_name=table_name, transfer_type="github_git_init_by_repo")
+        if if_null_result[0][0] != 0:
+            # keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
+            #                 table_name=table_name, transfer_type="github_git_init_by_repo")
+            pass
         else:
             logger.info("No data in CK")
         logger.info("github_git_init_by_repo------------------------")
@@ -532,6 +534,7 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
             df_data = os_data["_source"]
             df = pd.json_normalize(df_data)
             template["ck_data_insert_at"] = int(round(time.time() * 1000))
+            template["deleted"] = 0
             dict_data = parse_data(df, template)
             try:
                 dict_dict = json.loads(json.dumps(dict_data))
@@ -602,7 +605,8 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
                             clickhouse_table=table_name,
                             updated_at=max_timestamp, repo=search_key)
         time.sleep(10)
-        if not if_data_eq_github(count=count, ck=ck, table_name=table_name, owner=search_key.get('owner'),repo=search_key.get('repo')):
+        if not if_data_eq_github(count=count, ck=ck, table_name=table_name, owner=search_key.get('owner'),
+                                 repo=search_key.get('repo')):
             raise Exception("Inconsistent data between opensearch and clickhouse")
         else:
             logger.info("opensearch and clickhouse data are consistent")
@@ -614,7 +618,9 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
                                 updated_at=max_timestamp,
                                 maillist_repo=search_key)
         time.sleep(10)
-        if not if_data_eq_maillist(count=count, ck=ck, table_name=table_name, project_name=search_key.get('project_name'),mail_list_name=search_key.get('mail_list_name')):
+        if not if_data_eq_maillist(count=count, ck=ck, table_name=table_name,
+                                   project_name=search_key.get('project_name'),
+                                   mail_list_name=search_key.get('mail_list_name')):
             raise Exception("Inconsistent data between opensearch and clickhouse")
         else:
             logger.info("opensearch and clickhouse data are consistent")
@@ -714,24 +720,26 @@ def transfer_data_maillist(clickhouse_server_info, opensearch_index, table_name,
                         clickhouse_table=table_name,
                         updated_at=max_timestamp, repo=maillist_repo)
 
-
     ck.close()
-#判断opensearch和ck是否数据对其
 
-def if_data_eq_github(count,ck,table_name,owner,repo):
+
+# 判断opensearch和ck是否数据对其
+
+def if_data_eq_github(count, ck, table_name, owner, repo):
     sql = f"select count() from {table_name} where search_key__owner='{owner}' and search_key__repo='{repo}'"
     # logger.info(sql)
     result = ck.execute_no_params(sql)
     logger.info(f'data count in ck {result[0][0]}')
     return count == result[0][0]
 
-def if_data_eq_maillist(count,ck,table_name,project_name,mail_list_name):
+
+def if_data_eq_maillist(count, ck, table_name, project_name, mail_list_name):
     sql = f"select count() from {table_name} where search_key__project_name='{project_name}' and search_key__mail_list_name='{mail_list_name}'"
     # logger.info(sql)
     result = ck.execute_no_params(sql)
     # logger.info(result)
     logger.info(f'data count in ck {result[0][0]}')
-    return count==result[0][0]
+    return count == result[0][0]
 
 
 def get_data_from_opensearch(index, opensearch_conn_datas):

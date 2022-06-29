@@ -2,6 +2,8 @@ import copy
 import datetime
 import json
 import random
+import threading
+import uuid
 from typing import Tuple
 
 import dateutil
@@ -30,7 +32,7 @@ class OpenSearchAPIException(Exception):
 
 
 class OpensearchAPI:
-    def bulk_github_commits(self, opensearch_client, github_commits, owner, repo) -> Tuple[int, int]:
+    def bulk_github_commits(self, opensearch_client, github_commits, owner, repo, if_sync) -> Tuple[int, int]:
         bulk_all_github_commits = []
         for now_commit in github_commits:
             has_commit = opensearch_client.search(index=OPENSEARCH_INDEX_GITHUB_COMMITS,
@@ -47,7 +49,8 @@ class OpensearchAPI:
             if len(has_commit["hits"]["hits"]) == 0:
                 template = {"_index": OPENSEARCH_INDEX_GITHUB_COMMITS,
                             "_source": {"search_key": {"owner": owner, "repo": repo,
-                                                       'updated_at': int(datetime.datetime.now().timestamp() * 1000)},
+                                                       'updated_at': int(datetime.datetime.now().timestamp() * 1000),
+                                                       'if_sync': if_sync},
                                         "raw_data": None}}
                 commit_item = copy.deepcopy(template)
                 commit_item["_source"]["raw_data"] = now_commit
@@ -61,7 +64,7 @@ class OpensearchAPI:
         else:
             return 0, 0
 
-    def bulk_github_issues(self, opensearch_client, github_issues, owner, repo):
+    def bulk_github_issues(self, opensearch_client, github_issues, owner, repo, if_sync):
         bulk_all_github_issues = []
 
         for now_issue in github_issues:
@@ -101,7 +104,8 @@ class OpensearchAPI:
 
             template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES,
                         "_source": {"search_key": {"owner": owner, "repo": repo,
-                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000)},
+                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000),
+                                                   'if_sync':if_sync},
                                     "raw_data": None}}
             commit_item = copy.deepcopy(template)
             commit_item["_source"]["raw_data"] = now_issue
@@ -113,7 +117,7 @@ class OpensearchAPI:
 
         return success, failed
 
-    def put_profile_into_opensearch(self, github_ids, token_proxy_accommodator, opensearch_client):
+    def put_profile_into_opensearch(self, github_ids, token_proxy_accommodator, opensearch_client, if_sync, if_new_person):
         """Put GitHub user profile into opensearch if it is not in opensearch."""
         # 获取github profile
         batch_size = 100
@@ -130,14 +134,13 @@ class OpensearchAPI:
             # 创建并发任务
             ct = concurrent_threads(self.do_init_github_profile_thread,
                                     args=(batch_size, github_id, index, num_github_ids, opensearch_client,
-                                      token_proxy_accommodator))
+                                          token_proxy_accommodator, if_sync, if_new_person))
             get_comment_tasks.append(ct)
             ct.start()
-
+            ct.join()
             # 执行并发任务并获取结果
             if index % 50 == 0:
                 for tt in get_comment_tasks:
-                    tt.join()
                     if tt.getResult()[0] != 200:
                         logger.info(f"get_timeline_fails_results:{tt},{tt.args}")
                         get_comment_fails_results.append(tt.getResult())
@@ -148,12 +151,11 @@ class OpensearchAPI:
 
             # self.do_init_github_profile_thread(batch_size, github_id, index, num_github_ids, opensearch_client,
             #                                    token_proxy_accommodator)
-
         logger.info(f'{num_github_ids} github profiles finished')
         return "Put GitHub user profile into opensearch if it is not in opensearch"
 
     def do_init_github_profile_thread(self, batch_size, github_id, index, num_github_ids, opensearch_client,
-                                      token_proxy_accommodator):
+                                      token_proxy_accommodator, if_sync, if_new_person):
         has_user_profile = opensearch_client.search(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
                                                     body={
                                                         "query": {
@@ -184,7 +186,9 @@ class OpensearchAPI:
             infer_country_company_geo_insert_into_profile(latest_github_profile)
             opensearch_client.index(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
                                     body={"search_key": {
-                                        'updated_at': int(datetime.datetime.now().timestamp() * 1000)},
+                                        'updated_at': int(datetime.datetime.now().timestamp() * 1000),
+                                        'if_sync': if_sync,
+                                        'if_new_person':if_new_person},
                                         "raw_data": latest_github_profile},
                                     refresh=True)
             logger.info(f"Put the github {github_id}'s profile into opensearch.")
@@ -195,13 +199,15 @@ class OpensearchAPI:
 
         return 200, f"success init github profile, github_id:{github_id}, end"
 
-    def bulk_github_issues_timeline(self, opensearch_client, issues_timelines, owner, repo, number):
+    def bulk_github_issues_timeline(self, opensearch_client, issues_timelines, owner, repo, number, if_sync):
         bulk_all_datas = []
 
         for val in issues_timelines:
             template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE,
                         "_source": {"search_key": {"owner": owner, "repo": repo, "number": number, "event": None,
-                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000)},
+                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000),
+                                                   'if_sync': if_sync,
+                                                   'uuid': ''.join(str(uuid.uuid1()).split('-'))},
                                     "raw_data": None}}
             append_item = copy.deepcopy(template)
             append_item["_source"]["raw_data"] = val
@@ -212,13 +218,14 @@ class OpensearchAPI:
         success, failed = self.do_opensearch_bulk(opensearch_client, bulk_all_datas, owner, repo)
         logger.info(f"now page:{len(bulk_all_datas)} sync github issues_timeline success:{success} & failed:{failed}")
 
-    def bulk_github_issues_comments(self, opensearch_client, issues_comments, owner, repo, number):
+    def bulk_github_issues_comments(self, opensearch_client, issues_comments, owner, repo, number, if_sync):
         bulk_all_github_issues_comments = []
 
         for val in issues_comments:
             template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS,
                         "_source": {"search_key": {"owner": owner, "repo": repo, "number": number,
-                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000)},
+                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000),
+                                                   'if_sync':if_sync},
                                     "raw_data": None}}
             commit_comment_item = copy.deepcopy(template)
             commit_comment_item["_source"]["raw_data"] = val
@@ -315,12 +322,38 @@ class OpensearchAPI:
                                 body=check_update_info,
                                 refresh=True)
 
-    def bulk_github_pull_requests(self, github_pull_requests, opensearch_client, owner, repo):
+    def set_sync_gits_check(self, opensearch_client, owner,
+                                      repo,check_point_timestamp):
+        now_time = datetime.datetime.now()
+        check_update_info = {
+            "search_key": {
+                "type": "gits",
+                "update_time": now_time.strftime('%Y-%m-%dT00:00:00Z'),
+                "update_timestamp": datetime.datetime.now().timestamp(),
+                "owner": owner,
+                "repo": repo
+            },
+            "gits": {
+                "type": "gits",
+                "owner": owner,
+                "repo": repo,
+                "commits": {
+                    "owner": owner,
+                    "repo": repo,
+                    "sync_timestamp": check_point_timestamp,
+                }
+            }
+        }
+        opensearch_client.index(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA,
+                                body=check_update_info,
+                                refresh=True)
+
+    def bulk_github_pull_requests(self, github_pull_requests, opensearch_client, owner, repo, if_sync):
         bulk_all_github_pull_requests = []
         for now_pr in github_pull_requests:
             template = {"_index": OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS,
                         "_source": {"search_key": {"owner": owner, "repo": repo,
-                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000)},
+                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000),"if_sync":if_sync},
                                     "raw_data": None}}
             pull_requests_item = copy.deepcopy(template)
             pull_requests_item["_source"]["raw_data"] = now_pr
@@ -335,7 +368,7 @@ class OpensearchAPI:
 
     # -----------------------------------------
 
-    def sync_bulk_github_pull_requests(self, github_pull_requests, opensearch_client, owner, repo):
+    def sync_bulk_github_pull_requests(self, github_pull_requests, opensearch_client, owner, repo, if_sync):
         bulk_all_github_pull_requests = []
         for now_pr in github_pull_requests:
             # 如果对应 pr number存在则先删除
@@ -373,7 +406,7 @@ class OpensearchAPI:
             logger.info(f"DELETE github pr result:{del_result}")
             template = {"_index": OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS,
                         "_source": {"search_key": {"owner": owner, "repo": repo,
-                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000)},
+                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000),"if_sync":if_sync},
                                     "raw_data": None}}
             pull_requests_item = copy.deepcopy(template)
             pull_requests_item["_source"]["raw_data"] = now_pr

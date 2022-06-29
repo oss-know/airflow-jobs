@@ -84,11 +84,10 @@ def init_github_issues_comments(opensearch_conn_info, owner, repo, token_proxy_a
         ct = concurrent_threads(do_get_github_comments, args=(opensearch_client, token_proxy_accommodator, owner, repo, number))
         get_comment_tasks.append(ct)
         ct.start()
-
+        ct.join()
         # 执行并发任务并获取结果
         if idx % 30 == 0:
             for tt in get_comment_tasks:
-                tt.join()
                 if tt.getResult()[0] != 200:
                     logger.info(f"get_timeline_fails_results:{tt},{tt.args}")
                     get_comment_fails_results.append(tt.getResult())
@@ -130,6 +129,6 @@ def do_get_github_comments(opensearch_client, token_proxy_accommodator, owner, r
 
         opensearch_api.bulk_github_issues_comments(opensearch_client=opensearch_client,
                                                    issues_comments=one_page_github_issues_comments,
-                                                   owner=owner, repo=repo, number=number)
+                                                   owner=owner, repo=repo, number=number, if_sync=0)
 
         logger.info(f"success get github comments, {owner}/{repo}, issues_number:{number}, page_index:{page}, end")

@@ -17,6 +17,7 @@ def timestamp_to_utc(timestamp):
 
 def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, git_save_local_path=None):
     repo_path = f'{git_save_local_path["PATH"]}/{owner}/{repo}'
+    check_point_timestamp = int(datetime.datetime.now().timestamp()*1000)
     git_repo = None
     before_pull = []
     after_pull = []
@@ -68,7 +69,8 @@ def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, gi
                                    "owner": owner,
                                    "repo": repo,
                                    "origin": f"https://github.com/{owner}/{repo}.git",
-                                   'updated_at': 0
+                                   'updated_at': 0,
+                                   'if_sync': 1
                                },
                                "raw_data": {
                                    "message": "",
@@ -96,7 +98,7 @@ def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, gi
                 file_dict = files[file]
                 file_dict["file_name"] = file
                 files_list.append(file_dict)
-            commit_data["_source"]["search_key"]["updated_at"] = int(datetime.datetime.now().timestamp() * 1000)
+            commit_data["_source"]["search_key"]["updated_at"] = check_point_timestamp
             commit_data["_source"]["raw_data"]["message"] = commit.message
             commit_data["_source"]["raw_data"]["hexsha"] = commit.hexsha
             commit_data["_source"]["raw_data"]["type"] = commit.type
@@ -134,3 +136,10 @@ def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, gi
                                                             repo=repo)
         logger.info(f"sync_bulk_git_datas::success:{success},failed:{failed}")
         logger.info(f"count:{now_count}::{owner}/{repo}::commit.hexsha:{commit.hexsha}")
+
+
+        # 加入check_point点
+        opensearch_api.set_sync_gits_check(opensearch_client=opensearch_client,
+                                           owner=owner,
+                                           repo=repo,
+                                           check_point_timestamp=check_point_timestamp)

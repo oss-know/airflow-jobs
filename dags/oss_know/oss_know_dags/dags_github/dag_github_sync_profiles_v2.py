@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 
 from airflow import DAG
@@ -6,7 +7,8 @@ from airflow.models import XCom
 from airflow.operators.python import PythonOperator
 from airflow.utils.db import provide_session
 
-from oss_know.libs.base_dict.variable_key import NEED_INIT_GITHUB_PROFILES_REPOS, LOCATIONGEO_TOKEN, PROXY_CONFS
+from oss_know.libs.base_dict.variable_key import NEED_INIT_GITHUB_PROFILES_REPOS, LOCATIONGEO_TOKEN, PROXY_CONFS, \
+    NEED_SYNC_GITHUB_PROFILES_REPOS
 from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
 from oss_know.libs.util.token import TokenManager
 
@@ -18,7 +20,7 @@ def cleanup_xcom(session=None):
 
 
 with DAG(
-        dag_id='github_init_profile_v1',
+        dag_id='github_sync_profile_v2',
         schedule_interval=None,
         start_date=datetime(2021, 1, 1),
         catchup=False,
@@ -26,6 +28,8 @@ with DAG(
         on_success_callback=cleanup_xcom
 ) as dag:
     def start_load_github_profile(ds, **kwargs):
+        elasticdump_time_point = int(datetime.now().timestamp() * 1000)
+        kwargs['ti'].xcom_push(key=f'github_profile_elasticdump_time_point', value=elasticdump_time_point)
         return 'End start_load_github_profile'
 
 
@@ -35,6 +39,61 @@ with DAG(
         provide_context=True
     )
 
+    def do_elasticdump_data(params, **kwargs):
+        index = params
+        time.sleep(5)
+        from opensearchpy import OpenSearch, helpers
+        opensearch_client = OpenSearch(
+            hosts=[{'host': "192.168.8.2", 'port': 19201}],
+            http_compress=True,
+            http_auth=("admin", "admin"),
+            use_ssl=True,
+            verify_certs=False,
+            ssl_assert_hostname=False,
+            ssl_show_warn=False
+        )
+        elasticdump_time_point = kwargs['ti'].xcom_pull(key=f'github_profile_elasticdump_time_point')
+        from oss_know.libs.github.elasticdump import output_script
+
+        # output_script(index=index, time_point=elasticdump_time_point)
+        results = helpers.scan(client=opensearch_client, index=index, query={
+            "track_total_hits": True,
+            "query": {
+                "bool": {
+                    "must": [
+                        {"term": {
+                            "search_key.if_sync": {
+                                "value": 1
+                            }
+                        }},
+                        {"term": {
+                            "search_key.if_new_person": {
+                                "value": 1
+                            }
+                        }},
+                        {
+                            "range": {
+                                "search_key.updated_at": {
+                                    "gte": elasticdump_time_point
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        })
+        # print(results)
+        print(elasticdump_time_point)
+        for result in results:
+            print(result)
+        return 'do_sync_git_info:::end'
+
+
+    op_do_elasticdump_data = PythonOperator(
+        task_id=f'do_elasticdump_data',
+        python_callable=do_elasticdump_data,
+        op_kwargs={'params': 'github_profile'}
+    )
 
     def load_github_repo_id(params, **kwargs):
         from airflow.models import Variable
@@ -78,16 +137,15 @@ with DAG(
             # TODO Need more explorations on this
             github_users_ids.update(kwargs['ti'].xcom_pull(key=f'{owner}_{repo}_ids'))
         from oss_know.libs.github import init_profiles
-        if_sync, if_new_person = 0, 1
+        if_sync, if_new_person = 1, 1
         init_profiles.load_github_profiles(token_proxy_accommodator=proxy_accommodator,
                                            opensearch_conn_infos=opensearch_conn_infos,
-                                           github_users_ids=github_users_ids,
-                                           if_sync=if_sync,
+                                           github_users_ids=github_users_ids, if_sync=if_sync,
                                            if_new_person=if_new_person)
         return 'End load_github_repo_profile'
 
 
-    need_sync_github_profile_repos = Variable.get(NEED_INIT_GITHUB_PROFILES_REPOS, deserialize_json=True)
+    need_sync_github_profile_repos = Variable.get(NEED_SYNC_GITHUB_PROFILES_REPOS, deserialize_json=True)
 
     op_load_github_repo_profiles = PythonOperator(
         task_id='op_load_github_repo_profiles',
@@ -105,4 +163,4 @@ with DAG(
             op_kwargs={'params': now_need_sync_github_profile_repos},
             provide_context=True
         )
-        op_start_load_github_profile >> op_load_github_repo_id >> op_load_github_repo_profiles
+        op_start_load_github_profile >> op_load_github_repo_id >> op_load_github_repo_profiles >> op_do_elasticdump_data

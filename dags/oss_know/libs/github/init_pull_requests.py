@@ -67,7 +67,7 @@ def init_sync_github_pull_requests(opensearch_conn_info, owner, repo, token_prox
 
         opensearch_api.bulk_github_pull_requests(opensearch_client=opensearch_client,
                                                  github_pull_requests=one_page_github_pull_requests,
-                                                 owner=owner, repo=repo)
+                                                 owner=owner, repo=repo,if_sync=0)
 
         logger.info(f"success get github pull_requests page:{owner}/{repo} page_index:{page}")
     opensearch_api.set_sync_github_pull_requests_check(opensearch_client=opensearch_client,

@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
@@ -16,12 +17,66 @@ with DAG(
         tags=['github'],
 ) as dag:
     def scheduler_sync_github_pull_requests(ds, **kwargs):
+        elasticdump_time_point = int(datetime.now().timestamp() * 1000)
+        kwargs['ti'].xcom_push(key=f'github_pull_requests_elasticdump_time_point', value=elasticdump_time_point)
         return 'scheduler_sync_github_pull_requests'
 
+
+    def do_elasticdump_data(**kwargs):
+        time.sleep(5)
+        from opensearchpy import OpenSearch, helpers
+        opensearch_client = OpenSearch(
+            hosts=[{'host': "192.168.8.2", 'port': 19201}],
+            http_compress=True,
+            http_auth=("admin", "admin"),
+            use_ssl=True,
+            verify_certs=False,
+            ssl_assert_hostname=False,
+            ssl_show_warn=False
+        )
+
+        elasticdump_time_point = kwargs['ti'].xcom_pull(key=f'github_pull_requests_elasticdump_time_point')
+        from oss_know.libs.github.elasticdump import output_script
+        from oss_know.libs.github.elasticdump import output_script
+        ak_sk = Variable.get("obs_ak_sk", deserialize_json=True)
+        ak = ak_sk['ak']
+        sk = ak_sk['sk']
+        output_script(index='github_pull_requests', time_point=elasticdump_time_point, ak=ak, sk=sk)
+        results = helpers.scan(client=opensearch_client, index='github_pull_requests', query={
+            "track_total_hits": True,
+            "query": {
+                "bool": {
+                    "must": [
+                        {"term": {
+                            "search_key.if_sync": {
+                                "value": 1
+                            }
+                        }}, {
+                            "range": {
+                                "search_key.updated_at": {
+                                    "gte": elasticdump_time_point
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        })
+        # print(results)
+        print(elasticdump_time_point)
+        for result in results:
+            print(result)
+        return 'do_sync_git_info:::end'
 
     op_scheduler_sync_github_pull_requests = PythonOperator(
         task_id='op_scheduler_sync_github_pull_requests',
         python_callable=scheduler_sync_github_pull_requests
+    )
+
+    op_do_elasticdump_data = PythonOperator(
+        task_id=f'do_elasticdump_data',
+        python_callable=do_elasticdump_data,
+
     )
 
 
@@ -126,6 +181,6 @@ with DAG(
         #     # provide_context=True,
         # )
 
-        op_scheduler_sync_github_pull_requests >> op_do_sync_github_pull_requests
+        op_scheduler_sync_github_pull_requests >> op_do_sync_github_pull_requests >> op_do_elasticdump_data
         # op_do_sync_github_pull_requests >> op_do_sync_github_pull_requests_comments
         # op_do_sync_github_pull_requests >> op_do_sync_github_issues_timelines

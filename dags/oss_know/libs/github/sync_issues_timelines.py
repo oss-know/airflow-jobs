@@ -38,8 +38,6 @@ def sync_github_issues_timelines(opensearch_conn_info,
         # 同步前删除原来存在的issues_numbers对应timeline
         del_result = opensearch_client.delete_by_query(index=OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE,
                                                        body={
-                                                           "size": 10000,
-                                                           "track_total_hits": True,
                                                            "query": {
                                                                "bool": {
                                                                    "must": [
@@ -90,6 +88,6 @@ def sync_github_issues_timelines(opensearch_conn_info,
 
             opensearch_api.bulk_github_issues_timeline(opensearch_client=opensearch_client,
                                                        issues_timelines=one_page_github_issues_timeline,
-                                                       owner=owner, repo=repo, number=issues_number)
+                                                       owner=owner, repo=repo, number=issues_number, if_sync=1)
 
             logger.info(f"success get github issues timeline page:{owner}/{repo}/{issues_number} page_index:{page}")

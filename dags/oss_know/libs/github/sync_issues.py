@@ -85,6 +85,7 @@ def sync_github_issues(opensearch_conn_info,
     logger.info(f'sync github issues since：{since}')
 
     issues_numbers = []
+    pr_numbers = []
     session = requests.Session()
     opensearch_api = OpensearchAPI()
     github_api = GithubAPI()
@@ -105,6 +106,8 @@ def sync_github_issues(opensearch_conn_info,
         # 提取 issues number，返回给后续task 获取 issues comments & issues timeline
         for now_github_issues in one_page_github_issues:
             issues_numbers.append(now_github_issues["number"])
+            if now_github_issues["node_id"].startswith('PR'):
+                pr_numbers.append(now_github_issues["number"])
 
         if (one_page_github_issues is not None) and len(one_page_github_issues) == 0:
             logger.info(f"sync github issues end to break:{owner}/{repo} page_index:{page}")
@@ -112,7 +115,7 @@ def sync_github_issues(opensearch_conn_info,
 
         opensearch_api.bulk_github_issues(opensearch_client=opensearch_client,
                                           github_issues=one_page_github_issues,
-                                          owner=owner, repo=repo)
+                                          owner=owner, repo=repo, if_sync=1)
         logger.info(f"success get github issues page:{owner}/{repo} page_index:{page}")
 
     # 建立 sync 标志
@@ -122,4 +125,4 @@ def sync_github_issues(opensearch_conn_info,
     logger.info(f"issues_list:{issues_numbers}")
 
     # issues number，返回给后续task 获取 issues comments & issues timeline
-    return issues_numbers
+    return issues_numbers, pr_numbers

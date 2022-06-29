@@ -93,7 +93,7 @@ def sync_github_issues_comments(opensearch_conn_info,
 
             opensearch_api.bulk_github_issues_comments(opensearch_client=opensearch_client,
                                                        issues_comments=one_page_github_issues_comments,
-                                                       owner=owner, repo=repo, number=issues_number)
+                                                       owner=owner, repo=repo, number=issues_number, if_sync=1)
 
             logger.info(f"success get github issues comments page:{owner}/{repo} page_index:{page}")
 

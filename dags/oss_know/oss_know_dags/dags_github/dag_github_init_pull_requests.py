@@ -1,8 +1,7 @@
+import time
 from datetime import datetime
-
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-
 from oss_know.libs.base_dict.variable_key import GITHUB_TOKENS, OPENSEARCH_CONN_DATA, \
     NEED_INIT_GITHUB_PULL_REQUESTS_REPOS, PROXY_CONFS
 from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
@@ -19,7 +18,6 @@ with DAG(
 ) as dag:
     def scheduler_init_github_pull_requests(ds, **kwargs):
         return 'End:scheduler_init_github_pull_requests'
-
 
     op_scheduler_init_github_pull_requests = PythonOperator(
         task_id='op_scheduler_init_github_pull_requests',

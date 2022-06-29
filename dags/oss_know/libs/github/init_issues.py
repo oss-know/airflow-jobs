@@ -28,7 +28,7 @@ def init_github_issues(opensearch_conn_infos, owner, repo, token_proxy_accommoda
     session = requests.Session()
     github_api = GithubAPI()
     opensearch_api = OpensearchAPI()
-    for page in range(1, 10000):
+    for page in range(1, 100000):
         # Token sleep
         time.sleep(random.uniform(GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX))
 
@@ -44,7 +44,7 @@ def init_github_issues(opensearch_conn_infos, owner, repo, token_proxy_accommoda
         # 插入一页 github isuess 到 opensearch
         opensearch_api.bulk_github_issues(opensearch_client=opensearch_client,
                                           github_issues=one_page_github_issues,
-                                          owner=owner, repo=repo)
+                                          owner=owner, repo=repo, if_sync=0)
 
         logger.info(f"success get github issues page:{owner}/{repo} page_index:{page}")
 

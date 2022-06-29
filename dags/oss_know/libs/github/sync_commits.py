@@ -88,7 +88,7 @@ def sync_github_commits(opensearch_conn_info,
 
     # 生成本次同步的时间范围：同步到今天的 00:00:00
     since = datetime.datetime.fromtimestamp(github_commits_check["sync_until_timestamp"]).strftime('%Y-%m-%dT00:00:00Z')
-    until = datetime.datetime.now().strftime('%Y-%m-%dT00:00:00Z')
+    until = datetime.datetime.now().strftime('%Y-%m-%dT23:00:00Z')
     logger.info(f'sync github commits since：{since}，sync until：{until}')
 
     session = requests.Session()
@@ -111,7 +111,7 @@ def sync_github_commits(opensearch_conn_info,
 
         opensearch_api.bulk_github_commits(opensearch_client=opensearch_client,
                                            github_commits=now_github_commits,
-                                           owner=owner, repo=repo)
+                                           owner=owner, repo=repo, if_sync=1)
 
         logger.info(f"success get github commits :: {owner}/{repo} page_index:{page}")
 

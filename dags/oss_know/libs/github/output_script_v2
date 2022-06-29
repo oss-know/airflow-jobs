@@ -1,0 +1,28 @@
+#!/bin/bash
+SRC_HOST=192.168.8.2:19201
+
+indice=($1)
+elasticdump_time_point=$2
+params_count=$#
+export NODE_TLS_REJECT_UNAUTHORIZED=0
+
+
+echo '索引:' "${indice[@]}"
+day=$(date "+%Y-%m-%d")
+date_time=$(date "+%Y-%m-%dT%H:%M:%SZ%z")
+# 删除完文件夹后再新建
+#rm -rf /opt/airflow/dags/oss_know/libs/github/data_$day
+mkdir /opt/airflow/dags/oss_know/libs/github/data_$day
+for index in "${indice[@]}"
+do
+	echo $index
+
+	elasticdump 	--input=https://admin:admin@${SRC_HOST}/${index} \
+		    	--output=/opt/airflow/dags/oss_know/libs/github/data_$day/${index}_$date_time.json.gzip \
+               		--limit=5000 \
+	    		--type=data \
+	    		--searchBody="{\"query\": {\"bool\": {\"must\": [{\"term\": {\"search_key.if_sync\": {\"value\": 1}}}, {\"range\": {\"search_key.updated_at\": {\"gte\": ${elasticdump_time_point}}}}]}}}" \
+	    		--fsCompress &
+done
+
+wait

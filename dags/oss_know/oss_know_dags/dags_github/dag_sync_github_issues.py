@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
@@ -16,6 +17,8 @@ with DAG(
         tags=['github'],
 ) as dag:
     def scheduler_sync_github_issues(ds, **kwargs):
+        elasticdump_time_point = int(datetime.now().timestamp() * 1000)
+        kwargs['ti'].xcom_push(key=f'github_issues_elasticdump_time_point', value=elasticdump_time_point)
         return 'End:scheduler_sync_github_issues'
 
 
@@ -23,6 +26,55 @@ with DAG(
         task_id='op_scheduler_sync_github_issues',
         python_callable=scheduler_sync_github_issues
     )
+
+
+    def do_elasticdump_data(params,**kwargs):
+        index = params
+        time.sleep(5)
+        from opensearchpy import OpenSearch, helpers
+        opensearch_client = OpenSearch(
+            hosts=[{'host': "192.168.8.2", 'port': 19201}],
+            http_compress=True,
+            http_auth=("admin", "admin"),
+            use_ssl=True,
+            verify_certs=False,
+            ssl_assert_hostname=False,
+            ssl_show_warn=False
+        )
+
+        elasticdump_time_point = kwargs['ti'].xcom_pull(key=f'github_issues_elasticdump_time_point')
+        indices = ['github_issues', 'github_issues_timeline', 'github_issues_comments']
+        from oss_know.libs.github.elasticdump import output_script
+        ak_sk = Variable.get("obs_ak_sk", deserialize_json=True)
+        ak = ak_sk['ak']
+        sk = ak_sk['sk']
+
+        output_script(index=index, time_point=elasticdump_time_point, ak=ak, sk=sk)
+        results = helpers.scan(client=opensearch_client, index=index, query={
+            "track_total_hits": True,
+            "query": {
+                "bool": {
+                    "must": [
+                        {"term": {
+                            "search_key.if_sync": {
+                                "value": 1
+                            }
+                        }}, {
+                            "range": {
+                                "search_key.updated_at": {
+                                    "gte": elasticdump_time_point
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        })
+        # print(results)
+        print(elasticdump_time_point)
+        for result in results:
+            print(result)
+        return 'do_sync_git_info:::end'
 
 
     def get_proxy_accommodator():
@@ -58,10 +110,10 @@ with DAG(
         owner = params["owner"]
         repo = params["repo"]
 
-        issues_numbers = sync_issues.sync_github_issues(opensearch_conn_info=opensearch_conn_infos,
-                                                        owner=owner,
-                                                        repo=repo,
-                                                        token_proxy_accommodator=proxy_accommodator)
+        issues_numbers, pr_numbers = sync_issues.sync_github_issues(opensearch_conn_info=opensearch_conn_infos,
+                                                                    owner=owner,
+                                                                    repo=repo,
+                                                                    token_proxy_accommodator=proxy_accommodator)
 
         return issues_numbers
 
@@ -109,6 +161,27 @@ with DAG(
             issues_numbers=issues_numbers)
 
 
+    op_do_elasticdump_issues_data = PythonOperator(
+        task_id=f'do_elasticdump_issues_data',
+        python_callable=do_elasticdump_data,
+        op_kwargs={'params': 'github_issues'}
+
+    )
+
+    op_do_elasticdump_issues_comments_data = PythonOperator(
+        task_id=f'do_elasticdump_issues_comments_data',
+        python_callable=do_elasticdump_data,
+        op_kwargs={'params': 'github_issues_comments'}
+
+    )
+
+    op_do_elasticdump_issues_timeline_data = PythonOperator(
+        task_id=f'do_elasticdump_issues_timeline_data',
+        python_callable=do_elasticdump_data,
+        op_kwargs={'params': 'github_issues_timeline'}
+
+    )
+
     from airflow.models import Variable
 
     need_do_sync_ops = []
@@ -142,5 +215,6 @@ with DAG(
         )
 
         op_scheduler_sync_github_issues >> op_do_sync_github_issues
-        op_do_sync_github_issues >> op_do_sync_github_issues_comments
-        op_do_sync_github_issues >> op_do_sync_github_issues_timelines
+        op_do_sync_github_issues >> op_do_elasticdump_issues_data
+        op_do_sync_github_issues >> op_do_sync_github_issues_comments >> op_do_elasticdump_issues_comments_data
+        op_do_sync_github_issues >> op_do_sync_github_issues_timelines >> op_do_elasticdump_issues_timeline_data
