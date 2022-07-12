@@ -3,6 +3,7 @@ import copy
 import time
 import datetime
 from git import Repo, exc
+from opensearchpy import helpers
 from loguru import logger
 from oss_know.libs.github.init_gits import init_sync_git_datas
 from oss_know.libs.util.base import get_opensearch_client
@@ -17,27 +18,75 @@ def timestamp_to_utc(timestamp):
 
 def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, git_save_local_path=None):
     repo_path = f'{git_save_local_path["PATH"]}/{owner}/{repo}'
-    check_point_timestamp = int(datetime.datetime.now().timestamp()*1000)
+    check_point_timestamp = int(datetime.datetime.now().timestamp() * 1000)
     git_repo = None
     before_pull = []
     after_pull = []
+    # 先获取客户端
+    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
     try:
-        # 判断有没有这个仓库
-        if os.path.exists(repo_path):
-            git_repo = Repo(repo_path)
-
-            for commit in git_repo.iter_commits():
-                before_pull.append(commit.hexsha)
-            # 如果本地已经有之前克隆的项目，执行pull
-            logger.info(f'在git pull之前的commit数量:{len(before_pull)}')
-            pull_response = git_repo.git.pull()
-            logger.info(f'git pull 之后的返回结果:{pull_response}')
+        # 判断opensearch里有没有这个git库
+        if_owner_exist = opensearch_client.search(index='gits', body={
+            "query": {
+                "bool": {
+                    "must": [
+                        {"term": {
+                            "search_key.owner.keyword": {
+                                "value": owner
+                            }
+                        }},
+                        {"term": {
+                            "search_key.repo.keyword": {
+                                "value": repo
+                            }
+                        }}
+                    ]
+                }
+            }
+        })
+        if if_owner_exist['hits']['hits']:
+            # 先判断本地有没有git库 如果没有就克隆 如果有就pull
+            logger.info("opensearch中存在该项目的git 提交信息")
+            # 如果本地有这个库
+            if os.path.exists(repo_path):
+                logger.info("本地存在该项目的源码仓库    ------进行新代码的拉取")
+                git_repo = Repo(repo_path)
+                pull_response = git_repo.git.pull()
+                logger.info(f'git pull 之后的返回结果:{pull_response}')
+            # 如果本地没有这个库就重新clone
+            else:
+                logger.info("本地不存在该项目的源码仓库   ------进行该项目仓的克隆")
+                git_repo = Repo.clone_from(url=git_url, to_path=repo_path)
             for commit in git_repo.iter_commits():
                 after_pull.append(commit.hexsha)
-            logger.info(f'在git pull之后的commit数量:{len(after_pull)}')
 
+            # opensearch里拥有这个库
+            # 将这个库的hash值抽取出来
+            hexshas = helpers.scan(client=opensearch_client, index='gits', query={
+                "query": {
+                    "bool": {
+                        "must": [
+                            {"term": {
+                                "search_key.owner.keyword": {
+                                    "value": owner
+                                }
+                            }},
+                            {"term": {
+                                "search_key.repo.keyword": {
+                                    "value": repo
+                                }
+                            }}
+                        ]
+                    }
+                }
+                , "_source": "raw_data.hexsha"
+            }, timeout='10m')
+            for hexsha in hexshas:
+                # print(hexsha)
+                # return
+                before_pull.append(hexsha['_source']['raw_data']['hexsha'])
         else:
-            logger.warning("This project does not exist in this file directory. Attempting to clone this project")
+            logger.warning("opensearch 中不存在该项目的git提交记录 ------进行init该项目项目的git提交记录获取")
             # 在这个位置调用init
             init_sync_git_datas(git_url=git_url,
                                 owner=owner,
@@ -46,15 +95,40 @@ def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, gi
                                 opensearch_conn_datas=opensearch_conn_datas,
                                 git_save_local_path=git_save_local_path)
             return
+
+    #     # 判断有没有这个仓库
+    #     if os.path.exists(repo_path):
+    #         git_repo = Repo(repo_path)
+    #
+    #         for commit in git_repo.iter_commits():
+    #             before_pull.append(commit.hexsha)
+    #         # 如果本地已经有之前克隆的项目，执行pull
+    #         logger.info(f'在git pull之前的commit数量:{len(before_pull)}')
+    #         pull_response = git_repo.git.pull()
+    #         logger.info(f'git pull 之后的返回结果:{pull_response}')
+    #         for commit in git_repo.iter_commits():
+    #             after_pull.append(commit.hexsha)
+    #         logger.info(f'在git pull之后的commit数量:{len(after_pull)}')
+    #
+    #     else:
+    #         logger.warning("This project does not exist in this file directory. Attempting to clone this project")
+    #         # 在这个位置调用init
+    #         init_sync_git_datas(git_url=git_url,
+    #                             owner=owner,
+    #                             repo=repo,
+    #                             proxy_config=proxy_config,
+    #                             opensearch_conn_datas=opensearch_conn_datas,
+    #                             git_save_local_path=git_save_local_path)
+    #         return
     except exc.InvalidGitRepositoryError as a:
         logger.error("InvalidGitRepositoryError ：This directory may not a GitRepository")
         return
 
     # 从数据中获取上次的更新位置
 
-    # 先获取客户端
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
     diff_commits = (set(before_pull) ^ set(after_pull))
+    before_pull.clear()
+    after_pull.clear()
     if not diff_commits:
         logger.info(f"这个仓库pull后没有发现新的commit")
     else:
@@ -136,7 +210,6 @@ def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, gi
                                                             repo=repo)
         logger.info(f"sync_bulk_git_datas::success:{success},failed:{failed}")
         logger.info(f"count:{now_count}::{owner}/{repo}::commit.hexsha:{commit.hexsha}")
-
 
         # 加入check_point点
         opensearch_api.set_sync_gits_check(opensearch_client=opensearch_client,

@@ -16,7 +16,7 @@ with DAG(
 ) as dag:
     def init_sync_git_info(ds, **kwargs):
         elasticdump_time_point = int(datetime.now().timestamp() * 1000)
-        kwargs['ti'].xcom_push(key=f'gits_elasticdump_time_point', value=elasticdump_time_point)
+        kwargs['ti'].xcom_push(key=f'gits_sync_elasticdump_time_point', value=elasticdump_time_point)
         return 'Start init_sync_git_info'
 
 
@@ -61,7 +61,7 @@ with DAG(
         ak_sk = Variable.get("obs_ak_sk", deserialize_json=True)
         ak = ak_sk['ak']
         sk = ak_sk['sk']
-        elasticdump_time_point = kwargs['ti'].xcom_pull(key=f'gits_elasticdump_time_point')
+        elasticdump_time_point = kwargs['ti'].xcom_pull(key=f'gits_sync_elasticdump_time_point')
         from oss_know.libs.github.elasticdump import output_script
         output_script(index='gits', time_point=elasticdump_time_point,ak=ak,sk=sk)
         results = helpers.scan(client=opensearch_client, index='gits', query={
@@ -91,11 +91,11 @@ with DAG(
         return 'do_sync_git_info:::end'
 
 
-    op_do_elasticdump_data = PythonOperator(
-        task_id=f'do_elasticdump_data',
-        python_callable=do_elasticdump_data,
-
-    )
+    # op_do_elasticdump_data = PythonOperator(
+    #     task_id=f'do_elasticdump_data',
+    #     python_callable=do_elasticdump_data,
+    #
+    # )
 
     from airflow.models import Variable
 
@@ -106,5 +106,5 @@ with DAG(
             python_callable=do_sync_git_info,
             op_kwargs={'params': git_info},
         )
-
-        op_init_sync_git_info >> op_do_init_sync_git_info >> op_do_elasticdump_data
+        op_init_sync_git_info >> op_do_init_sync_git_info
+        # op_init_sync_git_info >> op_do_init_sync_git_info >> op_do_elasticdump_data
