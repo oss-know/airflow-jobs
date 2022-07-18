@@ -2,6 +2,8 @@ import time
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from opensearchpy import OpenSearch
+
 from oss_know.libs.base_dict.variable_key import GITHUB_TOKENS, OPENSEARCH_CONN_DATA, \
     NEED_INIT_GITHUB_PULL_REQUESTS_REPOS, PROXY_CONFS
 from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator

@@ -45,57 +45,7 @@ with DAG(
         return 'do_sync_git_info:::end'
 
 
-    def do_elasticdump_data(**kwargs):
-        time.sleep(5)
-        from opensearchpy import OpenSearch, helpers
-        opensearch_client = OpenSearch(
-            hosts=[{'host': "192.168.8.2", 'port': 19201}],
-            http_compress=True,
-            http_auth=("admin", "admin"),
-            use_ssl=True,
-            verify_certs=False,
-            ssl_assert_hostname=False,
-            ssl_show_warn=False
-        )
-        from airflow.models import Variable
-        ak_sk = Variable.get("obs_ak_sk", deserialize_json=True)
-        ak = ak_sk['ak']
-        sk = ak_sk['sk']
-        elasticdump_time_point = kwargs['ti'].xcom_pull(key=f'gits_sync_elasticdump_time_point')
-        from oss_know.libs.github.elasticdump import output_script
-        output_script(index='gits', time_point=elasticdump_time_point,ak=ak,sk=sk)
-        results = helpers.scan(client=opensearch_client, index='gits', query={
-            "track_total_hits": True,
-            "query": {
-                "bool": {
-                    "must": [
-                        {"term": {
-                            "search_key.if_sync": {
-                                "value": 1
-                            }
-                        }}, {
-                            "range": {
-                                "search_key.updated_at": {
-                                    "gte": elasticdump_time_point
-                                }
-                            }
-                        }
-                    ]
-                }
-            }
-        })
-        # print(results)
-        print(elasticdump_time_point)
-        for result in results:
-            print(result)
-        return 'do_sync_git_info:::end'
 
-
-    # op_do_elasticdump_data = PythonOperator(
-    #     task_id=f'do_elasticdump_data',
-    #     python_callable=do_elasticdump_data,
-    #
-    # )
 
     from airflow.models import Variable
 
@@ -107,4 +57,4 @@ with DAG(
             op_kwargs={'params': git_info},
         )
         op_init_sync_git_info >> op_do_init_sync_git_info
-        # op_init_sync_git_info >> op_do_init_sync_git_info >> op_do_elasticdump_data
+

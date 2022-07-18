@@ -25,6 +25,7 @@ with DAG(
         tags=['github'],
         on_success_callback=cleanup_xcom
 ) as dag:
+
     def start_load_github_profile(ds, **kwargs):
         return 'End start_load_github_profile'
 

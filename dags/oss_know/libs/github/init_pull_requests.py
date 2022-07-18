@@ -57,7 +57,7 @@ def init_sync_github_pull_requests(opensearch_conn_info, owner, repo, token_prox
 
         req = github_api.get_github_pull_requests(http_session=session,
                                                   token_proxy_accommodator=token_proxy_accommodator,
-                                                  owner=owner, page=page, repo=repo, since=since)
+                                                  owner=owner, page=page, repo=repo)
 
         one_page_github_pull_requests = req.json()
 
