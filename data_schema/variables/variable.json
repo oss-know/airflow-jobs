@@ -3175,5 +3175,34 @@
       "project_name": "",
       "mail_list_name": ""
     }
-  ]
+  ],
+  "need_init_transfer_to_clickhouse":[
+        {
+            "index": "gits",
+            "repo_list": [
+                {
+                    "owner": "linruoma",
+                    "repo": "learngit"
+                }
+            ]
+        },
+        {
+            "index": "github_commits",
+            "repo_list": [
+                {
+                    "owner": "linruoma",
+                    "repo": "learngit"
+                }
+            ]
+        },
+        {
+            "index": "maillist",
+            "repo_list": [
+                {
+                    "project_name": "linruoma",
+                    "mail_list_name": "learngit"
+                }
+            ]
+        }
+    ]
 }

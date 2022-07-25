@@ -4,10 +4,12 @@ import time
 from oss_know.libs.github.obs_api import get_files_path, upload2obs
 
 
-def output_script(index, time_point, ak, sk):
-    xx = os.system(f"""/opt/airflow/dags/oss_know/libs/github/output_script_v2 {index} {time_point}""")
+def output_script(index, time_point, ak, sk, init_or_sync='sync'):
+    xx = os.system(f"""/opt/airflow/dags/oss_know/libs/github/output_script_v2 {index} {time_point} {init_or_sync}""")
     time.sleep(2)
     print(xx)
+    if xx != 0:
+        raise Exception("执行脚本出现问题")
     up_2_obs(index, ak, sk)
 
 

@@ -498,6 +498,7 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
     if transfer_type == "github_git_init_by_repo":
         search_key_owner = search_key['owner']
         search_key_repo = search_key['repo']
+        # 判断项目是否在ck中存在
         if_null_sql = f"select count() from {table_name} where search_key__owner='{search_key_owner}' and search_key__repo='{search_key_repo}'"
         if_null_result = ck.execute_no_params(if_null_sql)
         if if_null_result[0][0] != 0:
@@ -604,12 +605,12 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
                             opensearch_index=opensearch_index,
                             clickhouse_table=table_name,
                             updated_at=max_timestamp, repo=search_key)
-        time.sleep(10)
-        if not if_data_eq_github(count=count, ck=ck, table_name=table_name, owner=search_key.get('owner'),
-                                 repo=search_key.get('repo')):
-            raise Exception("Inconsistent data between opensearch and clickhouse")
-        else:
-            logger.info("opensearch and clickhouse data are consistent")
+        # time.sleep(10)
+        # if not if_data_eq_github(count=count, ck=ck, table_name=table_name, owner=search_key.get('owner'),
+        #                          repo=search_key.get('repo')):
+        #     raise Exception("Inconsistent data between opensearch and clickhouse")
+        # else:
+        #     logger.info("opensearch and clickhouse data are consistent")
 
     elif transfer_type == "maillist_init":
         ck_check_point_maillist(opensearch_client=opensearch_datas[1],
@@ -617,13 +618,13 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
                                 clickhouse_table=table_name,
                                 updated_at=max_timestamp,
                                 maillist_repo=search_key)
-        time.sleep(10)
-        if not if_data_eq_maillist(count=count, ck=ck, table_name=table_name,
-                                   project_name=search_key.get('project_name'),
-                                   mail_list_name=search_key.get('mail_list_name')):
-            raise Exception("Inconsistent data between opensearch and clickhouse")
-        else:
-            logger.info("opensearch and clickhouse data are consistent")
+        # time.sleep(10)
+        # if not if_data_eq_maillist(count=count, ck=ck, table_name=table_name,
+        #                            project_name=search_key.get('project_name'),
+        #                            mail_list_name=search_key.get('mail_list_name')):
+        #     raise Exception("Inconsistent data between opensearch and clickhouse")
+        # else:
+        #     logger.info("opensearch and clickhouse data are consistent")
 
     ck.close()
 

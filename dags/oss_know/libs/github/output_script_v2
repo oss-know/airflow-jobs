@@ -1,15 +1,21 @@
 #!/bin/bash
-SRC_HOST=192.168.8.2:19201
+SRC_HOST=192.168.8.110:19201
 
 indice=($1)
 elasticdump_time_point=$2
+init_or_sync=$3
 params_count=$#
+if_sync=1
+if [ $init_or_sync == 'init' ]; then
+   if_sync=0
+fi
 export NODE_TLS_REJECT_UNAUTHORIZED=0
 
 
 echo '索引:' "${indice[@]}"
+#echo $if_sync
 day=$(date "+%Y-%m-%d")
-date_time=$(date "+%Y-%m-%dT%H:%M:%SZ%z")
+date_time=$(date "+%Y-%m-%dT%H-%M-%SZ%z")
 # 删除完文件夹后再新建
 #rm -rf /opt/airflow/dags/oss_know/libs/github/data_$day
 mkdir /opt/airflow/dags/oss_know/libs/github/data_$day
@@ -18,10 +24,10 @@ do
 	echo $index
 
 	elasticdump 	--input=https://admin:admin@${SRC_HOST}/${index} \
-		    	--output=/opt/airflow/dags/oss_know/libs/github/data_$day/${index}_$date_time.json.gzip \
+		    	--output=/opt/airflow/dags/oss_know/libs/github/data_$day/${index}_${init_or_sync}_$date_time.json.gzip \
                		--limit=5000 \
 	    		--type=data \
-	    		--searchBody="{\"query\": {\"bool\": {\"must\": [{\"term\": {\"search_key.if_sync\": {\"value\": 1}}}, {\"range\": {\"search_key.updated_at\": {\"gte\": ${elasticdump_time_point}}}}]}}}" \
+	    		--searchBody="{\"query\": {\"bool\": {\"must\": [{\"term\": {\"search_key.if_sync\": {\"value\": $if_sync}}}, {\"range\": {\"search_key.updated_at\": {\"gte\": ${elasticdump_time_point}}}}]}}}" \
 	    		--fsCompress &
 done
 
