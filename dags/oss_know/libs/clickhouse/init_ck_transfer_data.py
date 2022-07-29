@@ -134,8 +134,10 @@ def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, tabl
             "number": 0,
             "event": "",
             "updated_at": 0,
-            "uuid": ""
+            "uuid": "",
+            "if_sync": 0
         },
+               "deleted":0,
         "raw_data": {
             "timeline_raw": ""
         }
@@ -148,6 +150,16 @@ def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, tabl
                   database=clickhouse_server_info["DATABASE"])
 
     transfer_type = 'github_issues_timeline_by_repo'
+    # 判断项目是否在ck中存在
+    if_null_sql = f"select count() from {table_name} where search_key__owner='{search_key_owner}' and search_key__repo='{search_key_repo}'"
+    if_null_result = ck.execute_no_params(if_null_sql)
+    if if_null_result[0][0] != 0:
+        keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
+                        table_name=table_name, transfer_type="github_git_init_by_repo")
+        pass
+    else:
+        logger.info("No data in CK")
+    logger.info("github_git_init_by_repo------------------------")
     keep_idempotent(ck=ck, clickhouse_server_info=clickhouse_server_info, search_key=search_key,
                     transfer_type=transfer_type, table_name=table_name)
     opensearch_datas = get_data_from_opensearch_by_repo(index=opensearch_index,
@@ -502,8 +514,8 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
         if_null_sql = f"select count() from {table_name} where search_key__owner='{search_key_owner}' and search_key__repo='{search_key_repo}'"
         if_null_result = ck.execute_no_params(if_null_sql)
         if if_null_result[0][0] != 0:
-            # keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
-            #                 table_name=table_name, transfer_type="github_git_init_by_repo")
+            keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
+                            table_name=table_name, transfer_type="github_git_init_by_repo")
             pass
         else:
             logger.info("No data in CK")

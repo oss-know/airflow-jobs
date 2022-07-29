@@ -2347,8 +2347,10 @@
           "repo": "",
           "event": "",
           "number": 0,
-          "updated_at": 0
+          "updated_at": 0,
+          "if_sync": 0
         },
+        "deleted": 0,
         "ck_data_insert_at": 0,
         "raw_data": {
           "timeline_raw": ""
