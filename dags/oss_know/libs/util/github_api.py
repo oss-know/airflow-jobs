@@ -99,11 +99,11 @@ class GithubAPI:
             logger.warning(f'Failed to get issue comments {url}, the Github Internal Server Error: {gise}')
         return res
 
-    def get_github_pull_requests(self, http_session, token_proxy_accommodator, owner, repo, page, since):
+    def get_github_pull_requests(self, http_session, token_proxy_accommodator, owner, repo, page):
         url = "https://api.github.com/repos/{owner}/{repo}/pulls".format(
             owner=owner, repo=repo)
         headers = copy.deepcopy(self.github_headers)
-        params = {'state': 'all', 'per_page': 100, 'page': page, 'since': since}
+        params = {'state': 'all', 'per_page': 100, 'page': page, 'sort': 'updated', 'direction': 'desc'}
         try:
             res = do_get_github_result(http_session, url, headers, params, token_proxy_accommodator)
         except GithubResourceNotFoundError as e:

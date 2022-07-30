@@ -2,6 +2,7 @@ from datetime import datetime
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from opensearchpy import OpenSearch
 
 from oss_know.libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TOKENS, PROXY_CONFS
 from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
@@ -56,6 +57,7 @@ with DAG(
 
 
     need_do_init_ops = []
+
 
     from airflow.models import Variable
 

@@ -41,7 +41,7 @@ def init_github_commits(opensearch_conn_info, owner, repo,
         # 向opensearch插入一页 github commits
         opensearch_api.bulk_github_commits(opensearch_client=opensearch_client,
                                            github_commits=one_page_github_commits,
-                                           owner=owner, repo=repo)
+                                           owner=owner, repo=repo, if_sync=0)
 
         logger.info(f"success get github commits :: {owner}/{repo} page_index:{page}")
 

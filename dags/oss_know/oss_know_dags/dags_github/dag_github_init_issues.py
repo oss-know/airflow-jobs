@@ -2,6 +2,7 @@ from datetime import datetime
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from opensearchpy import OpenSearch
 
 from oss_know.libs.base_dict.variable_key import NEED_INIT_GITHUB_ISSUES_REPOS, OPENSEARCH_CONN_DATA, GITHUB_TOKENS, \
     PROXY_CONFS
@@ -52,6 +53,8 @@ with DAG(
 
 
     need_do_init_sync_ops = []
+
+
 
     from airflow.models import Variable
 

@@ -19,9 +19,12 @@ class SyncGithubIssuesCommentsException(Exception):
         self.status = status
 
 
-def sync_github_issues_comments(github_tokens, opensearch_conn_info, owner, repo, issues_numbers):
+def sync_github_issues_comments(opensearch_conn_info,
+                                owner,
+                                repo,
+                                token_proxy_accommodator,
+                                issues_numbers):
     logger.info("start sync_github_issues_comments()")
-    github_tokens_iter = itertools.cycle(github_tokens)
 
     opensearch_client = OpenSearch(
         hosts=[{'host': opensearch_conn_info["HOST"], 'port': opensearch_conn_info["PORT"]}],
@@ -70,11 +73,18 @@ def sync_github_issues_comments(github_tokens, opensearch_conn_info, owner, repo
                                                        })
         logger.info(f"DELETE github issues {issues_number} comments result:{del_result}")
 
-        for page in range(1, 10000):
+        for page in range(1, 100000):
             # Token sleep
             time.sleep(random.uniform(GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX))
-            
-            req = github_api.get_github_issues_comments(session, github_tokens_iter, owner, repo, issues_number, page)
+
+            req = github_api.get_github_issues_comments(
+                http_session=session,
+                token_proxy_accommodator=token_proxy_accommodator,
+                owner=owner,
+                repo=repo,
+                number=issues_number,
+                page=page
+            )
             one_page_github_issues_comments = req.json()
 
             if (one_page_github_issues_comments is not None) and len(one_page_github_issues_comments) == 0:
@@ -83,9 +93,9 @@ def sync_github_issues_comments(github_tokens, opensearch_conn_info, owner, repo
 
             opensearch_api.bulk_github_issues_comments(opensearch_client=opensearch_client,
                                                        issues_comments=one_page_github_issues_comments,
-                                                       owner=owner, repo=repo, number=issues_number)
+                                                       owner=owner, repo=repo, number=issues_number, if_sync=1)
 
             logger.info(f"success get github issues comments page:{owner}/{repo} page_index:{page}")
 
     # 建立 sync 标志
-    opensearch_api.set_sync_github_issues_check(opensearch_client, owner, repo)
+    # opensearch_api.set_sync_github_issues_check(opensearch_client, owner, repo)

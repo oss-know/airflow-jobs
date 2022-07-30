@@ -34,8 +34,7 @@ def init_storage_pipeline(opensearch_conn_info, redis_client_info):
                                                                        }
                                                                    }
                                                                ]
-                                                           },
-                                                           doc_type="_doc"
+                                                           }
                                                            )
         with redis_client.pipeline(transaction=False) as p:
             for existing_github_profile in existing_github_profiles:
@@ -57,9 +56,9 @@ def init_storage_pipeline(opensearch_conn_info, redis_client_info):
         redis_client.delete(WORKING_HASH)
 
 
-def sync_github_profiles(github_tokens, opensearch_conn_info, redis_client_info, duration_of_sync_github_profiles):
+def sync_github_profiles(token_proxy_accommodator, opensearch_conn_info, redis_client_info, duration_of_sync_github_profiles):
     '''Update GitHub profiles in dict named sync_github_profiles:storage_updated_hash of redis.'''
-    github_tokens_iter = itertools.cycle(github_tokens)
+
     opensearch_client = get_opensearch_client(opensearch_conn_info)
     redis_client = get_redis_client(redis_client_info)
     end_time = (datetime.datetime.now() + datetime.timedelta(
@@ -87,14 +86,15 @@ def sync_github_profiles(github_tokens, opensearch_conn_info, redis_client_info,
             github_api = GithubAPI()
             session = requests.Session()
             latest_github_profile = github_api.get_latest_github_profile(http_session=session,
-                                                                         github_tokens_iter=github_tokens_iter,
+                                                                         token_proxy_accommodator=token_proxy_accommodator,
                                                                          user_id=storage_id)
             latest_profile_updated_at = latest_github_profile["updated_at"]
             if storage_updated_at != latest_profile_updated_at:
                 infer_country_company_geo_insert_into_profile(latest_github_profile)
                 opensearch_client.index(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
                                         body={"search_key": {
-                                            'updated_at': int(datetime.datetime.now().timestamp() * 1000)},
+                                            'updated_at': int(datetime.datetime.now().timestamp() * 1000), 'if_sync': 1,
+                                            'if_new_person': 0},
                                             "raw_data": latest_github_profile},
                                         refresh=True)
                 logger.info(f"Success put updated {storage_id}'s github profiles into opensearch.")

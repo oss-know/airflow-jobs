@@ -25,6 +25,7 @@ with DAG(
         tags=['github'],
         on_success_callback=cleanup_xcom
 ) as dag:
+
     def start_load_github_profile(ds, **kwargs):
         return 'End start_load_github_profile'
 
@@ -78,10 +79,12 @@ with DAG(
             # TODO Need more explorations on this
             github_users_ids.update(kwargs['ti'].xcom_pull(key=f'{owner}_{repo}_ids'))
         from oss_know.libs.github import init_profiles
-
+        if_sync, if_new_person = 0, 1
         init_profiles.load_github_profiles(token_proxy_accommodator=proxy_accommodator,
                                            opensearch_conn_infos=opensearch_conn_infos,
-                                           github_users_ids=github_users_ids)
+                                           github_users_ids=github_users_ids,
+                                           if_sync=if_sync,
+                                           if_new_person=if_new_person)
         return 'End load_github_repo_profile'
 
 

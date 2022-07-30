@@ -188,7 +188,9 @@ def get_opensearch_client(opensearch_conn_infos):
         use_ssl=True,
         verify_certs=False,
         ssl_assert_hostname=False,
-        ssl_show_warn=False
+        ssl_show_warn=False,
+        timeout=180,
+        retry_on_timeout = True
     )
     return client
 

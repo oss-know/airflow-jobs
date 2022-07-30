@@ -77,6 +77,12 @@
       "repo": "airflow-jobs"
     }
   ],
+  "need_sync_github_profiles_repos": [
+    {
+      "owner": "oss-know",
+      "repo": "airflow-jobs"
+    }
+  ],
   "need_sync_github_profile_repo_list": [
     {
       "owner": "oss-know",
@@ -115,6 +121,7 @@
     "HOST": "192.168.8.120",
     "PORT": "6379"
   },
+  "obs_ak_sk": {"ak": "","sk": ""},
   "redis_conn_data": "redis_client_data",
   "ck_table_map_from_os_index": [
     {
@@ -2340,8 +2347,10 @@
           "repo": "",
           "event": "",
           "number": 0,
-          "updated_at": 0
+          "updated_at": 0,
+          "if_sync": 0
         },
+        "deleted": 0,
         "ck_data_insert_at": 0,
         "raw_data": {
           "timeline_raw": ""
@@ -3168,5 +3177,34 @@
       "project_name": "",
       "mail_list_name": ""
     }
-  ]
+  ],
+  "need_init_transfer_to_clickhouse":[
+        {
+            "index": "gits",
+            "repo_list": [
+                {
+                    "owner": "linruoma",
+                    "repo": "learngit"
+                }
+            ]
+        },
+        {
+            "index": "github_commits",
+            "repo_list": [
+                {
+                    "owner": "linruoma",
+                    "repo": "learngit"
+                }
+            ]
+        },
+        {
+            "index": "maillist",
+            "repo_list": [
+                {
+                    "project_name": "linruoma",
+                    "mail_list_name": "learngit"
+                }
+            ]
+        }
+    ]
 }
