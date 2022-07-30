@@ -49,6 +49,9 @@ def parse_json_data(file_name, opensearch_conn_infos):
                 # if event_type == 'issues_event':
                 # print("--------------------------------")
                 if event_type == 'issues_event' or event_type == 'issue_comment_event':
+                    result['payload']['issue']['body'] = ''
+                    if event_type == 'issue_comment_event':
+                        result['payload']['comment']['body'] = ''
                     owner = result['repo']['name'].split('/')[0]
                     repo = result['repo']['name'].split('/')[1]
                     if result['payload']:
@@ -65,6 +68,9 @@ def parse_json_data(file_name, opensearch_conn_infos):
                                                                           "gh_archive_day": gh_archive_day},
                                                            "raw_data": result}})
                 elif event_type == 'pull_request_event' or event_type == 'pull_request_review_comment_event':
+                    result['payload']['pull_request']['body'] = ''
+                    if event_type == 'pull_request_review_comment_event':
+                        result['payload']['comment']['body'] = ''
                     owner = result['repo']['name'].split('/')[0]
                     repo = result['repo']['name'].split('/')[1]
                     if result['payload']:

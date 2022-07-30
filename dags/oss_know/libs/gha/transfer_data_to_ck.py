@@ -70,9 +70,9 @@ def parse_json_data_hour(clickhouse_server_info, file_name, opensearch_conn_info
                 # if event_type == 'issues_event':
                 # print("--------------------------------")
                 if event_type == 'issues_event' or event_type == 'issue_comment_event':
-                    result['payload']['issue']['body'] = ''
-                    if event_type == 'issue_comment_event':
-                        result['payload']['comment']['body'] = ''
+                    # result['payload']['issue']['body'] = ''
+                    # if event_type == 'issue_comment_event':
+                    #     result['payload']['comment']['body'] = ''
 
 
                     owner = result['repo']['name'].split('/')[0]
@@ -93,9 +93,9 @@ def parse_json_data_hour(clickhouse_server_info, file_name, opensearch_conn_info
                     bulk_data_map[event_type] = ll
 
                 elif event_type == 'pull_request_event' or event_type == 'pull_request_review_comment_event':
-                    result['payload']['pull_request']['body'] = ''
-                    if event_type == 'pull_request_review_comment_event':
-                        result['payload']['comment']['body']=''
+                    # result['payload']['pull_request']['body'] = ''
+                    # if event_type == 'pull_request_review_comment_event':
+                    #     result['payload']['comment']['body']=''
                     owner = result['repo']['name'].split('/')[0]
                     repo = result['repo']['name'].split('/')[1]
                     if result['payload']:

@@ -14,8 +14,8 @@ help: ## Help dialog.
 
 #  docker network create -d bridge dev-network &&
 up_infra: ## Create and start containers
-# 	docker pull airflowjobs/airflow:dev-python3.8 &&
 # 	docker pull malin/aiflow:v2 &&
+	docker pull airflowjobs/airflow:dev-python3.8 && \
 	$(DOCKER_INFRA) up &
 
 down_infra: ## Stop and remove all containers

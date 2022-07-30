@@ -16,7 +16,7 @@ with DAG(
         start_date=datetime(2021, 1, 1),
         catchup=False,
         tags=['gh_archive'],
-        concurrency=10
+        concurrency=18
 ) as dag:
     def init_clickhouse_transfer_data(ds, **kwargs):
         return 'Start init_gha_transfer2ck'
@@ -45,7 +45,7 @@ with DAG(
 
     for year in range(2019, 2020):
 
-        for month in range(1, 2):
+        for month in range(7, 9):
             day_count = calendar.monthrange(year, month)[1]
             if month < 10:
                 month = '0' + str(month)
