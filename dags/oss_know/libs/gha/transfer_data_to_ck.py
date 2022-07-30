@@ -1,7 +1,9 @@
 # -*-coding:utf-8-*-
 import copy
 import datetime
+import gzip
 import json
+import os
 import random
 import time
 from json import JSONDecodeError
@@ -16,6 +18,19 @@ from oss_know.libs.base_dict.clickhouse import CLICKHOUSE_RAW_DATA
 from oss_know.libs.base_dict.variable_key import CK_TABLE_DEFAULT_VAL_TPLT
 from oss_know.libs.util.base import get_opensearch_client
 from oss_know.libs.util.clickhouse_driver import CKServer
+
+
+def un_gzip(gz_filename):
+    try:
+        filename = gz_filename.replace('.gz', '')
+        # logger.info(filename)
+        # open(f'{filename}', 'wb+')
+        g_file = gzip.GzipFile(gz_filename)
+        open(f'{filename}', 'wb+').write(g_file.read())
+        logger.info(f"{gz_filename}  Decompression completed")
+        g_file.close()
+    except Exception as e:
+        logger.info(f"{gz_filename}Decompression failed ，failure reason：{e}")
 
 
 def get_index_name(index_name):
@@ -35,11 +50,17 @@ def parse_json_data(year, month, day, clickhouse_server_info, opensearch_conn_da
     count_map = {}
     for hour in range(24):
         file_name = f'{year}-{month}-{day}-{hour}.json'
+        un_gzip('/opt/airflow/gha/' + file_name + '.gz')
         parse_json_data_hour(clickhouse_server_info=clickhouse_server_info,
                              file_name=file_name,
                              opensearch_conn_infos=opensearch_conn_datas,
                              bulk_data_map=bulk_data_map,
-                             count_map=count_map,table_templates=table_templates)
+                             count_map=count_map, table_templates=table_templates)
+        try:
+            os.remove(f'/opt/airflow/gha/{file_name}')
+            logger.info(f"File deleted :{file_name}")
+        except FileNotFoundError as e:
+            logger.info(f"FileNotFound:{file_name}")
     for event_type in bulk_data_map:
         bulk_data = bulk_data_map.get(event_type)
         if bulk_data:
@@ -47,18 +68,19 @@ def parse_json_data(year, month, day, clickhouse_server_info, opensearch_conn_da
                                   table_name=event_type,
                                   tplt=table_templates.get(event_type), bulk_data=bulk_data)
             count_map[event_type] = count_map.get(event_type, 0) + len(bulk_data)
-            print(f"already insert into {event_type} {count_map[event_type]}")
+            logger.info(f"Successfully inserted {event_type} {count_map[event_type]}")
             bulk_data.clear()
 
 
-def parse_json_data_hour(clickhouse_server_info, file_name, opensearch_conn_infos, bulk_data_map, count_map,table_templates):
+def parse_json_data_hour(clickhouse_server_info, file_name, opensearch_conn_infos, bulk_data_map, count_map,
+                         table_templates):
     # client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_infos)
 
     gh_archive_year = file_name.split('-')[0]
     gh_archive_month = gh_archive_year + file_name.split('-')[1]
     gh_archive_day = gh_archive_month + file_name.split('-')[2]
     data_parents_path = '/opt/airflow/gha/'
-    print(file_name)
+    logger.info(f"Start importing {file_name} data...................")
     try:
         with open(data_parents_path + file_name, 'r+') as f:
             lines = f.readlines()
@@ -68,19 +90,18 @@ def parse_json_data_hour(clickhouse_server_info, file_name, opensearch_conn_info
                 result = json.loads(line)
                 event_type = get_index_name(result['type'])
                 # if event_type == 'issues_event':
-                # print("--------------------------------")
+                # logger.info("--------------------------------")
                 if event_type == 'issues_event' or event_type == 'issue_comment_event':
                     # result['payload']['issue']['body'] = ''
                     # if event_type == 'issue_comment_event':
                     #     result['payload']['comment']['body'] = ''
-
 
                     owner = result['repo']['name'].split('/')[0]
                     repo = result['repo']['name'].split('/')[1]
                     if result['payload']:
                         number = result['payload']['issue']['number']
                     else:
-                        print(f"wrong data :{result}")
+                        logger.info(f"wrong data :{result}")
                         number = 0
                     ll = bulk_data_map.get(event_type, [])
                     ll.append({"_index": event_type,
@@ -101,7 +122,7 @@ def parse_json_data_hour(clickhouse_server_info, file_name, opensearch_conn_info
                     if result['payload']:
                         number = result['payload']['pull_request']['number']
                     else:
-                        print(f"wrong data :{result}")
+                        logger.info(f"wrong data :{result}")
                         number = 0
                     ll = bulk_data_map.get(event_type, [])
                     ll.append({"_index": event_type,
@@ -114,32 +135,32 @@ def parse_json_data_hour(clickhouse_server_info, file_name, opensearch_conn_info
                     bulk_data_map[event_type] = ll
 
                 # if len(bulk_datas_list) % 1000 == 0:
-                #     print(bulk_datas_list)
-                #     print(len(bulk_datas_list))
+                #     logger.info(bulk_datas_list)
+                #     logger.info(len(bulk_datas_list))
                 #     return
                 for event_type in bulk_data_map:
                     bulk_data = bulk_data_map.get(event_type)
                     if len(bulk_data) == 10000:
                         transfer_data_by_repo(clickhouse_server_info=clickhouse_server_info,
-                                               table_name=event_type,
-                                              tplt=table_templates.get(event_type),  bulk_data=bulk_data)
+                                              table_name=event_type,
+                                              tplt=table_templates.get(event_type), bulk_data=bulk_data)
                         count_map[event_type] = count_map.get(event_type, 0) + 10000
-                        print(f"already insert into {event_type} {count_map[event_type]}")
+                        logger.info(f"Successfully inserted {event_type} {count_map[event_type]}")
                         bulk_data.clear()
 
             # for i in bulk_datas_dict:
             #     helpers.bulk(client=client, actions=bulk_datas_dict.get(i))
-            #     print(f"already_insert_{len(bulk_datas_dict.get(i))}")
-            #     print(file_name)
+            #     logger.info(f"already_insert_{len(bulk_datas_dict.get(i))}")
+            #     logger.info(file_name)
 
             # client.close()
     except FileNotFoundError as e:
-        print(e)
+        logger.info(e)
 
 
 # 从json直接导入
 def transfer_data_by_repo(clickhouse_server_info, table_name, tplt,
-                           bulk_data):
+                          bulk_data):
     ck = CKServer(host=clickhouse_server_info["HOST"],
                   port=clickhouse_server_info["PORT"],
                   user=clickhouse_server_info["USER"],
@@ -147,34 +168,6 @@ def transfer_data_by_repo(clickhouse_server_info, table_name, tplt,
                   database=clickhouse_server_info["DATABASE"])
     df = pd.json_normalize(tplt)
     template = parse_data_init(df)
-    # if transfer_type == "github_git_init_by_repo":
-    #     search_key_owner = search_key['owner']
-    #     search_key_repo = search_key['repo']
-    #     # 判断项目是否在ck中存在
-    #     if_null_sql = f"select count() from {table_name} where search_key__owner='{search_key_owner}' and search_key__repo='{search_key_repo}'"
-    #     if_null_result = ck.execute_no_params(if_null_sql)
-    #     if if_null_result[0][0] != 0:
-    #         keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
-    #                         table_name=table_name, transfer_type="github_git_init_by_repo")
-    #         pass
-    #     else:
-    #         logger.info("No data in CK")
-    #     logger.info("github_git_init_by_repo------------------------")
-    #     opensearch_datas = get_data_from_opensearch_by_repo(index=opensearch_index,
-    #                                                         opensearch_conn_datas=opensearch_conn_datas,
-    #                                                         repo=search_key)
-    # elif transfer_type == "maillist_init":
-    #     search_key_project_name = search_key['project_name']
-    #     search_key_mail_list_name = search_key['mail_list_name']
-    #     if_null_sql = f"select count() from {table_name} where search_key__project_name='{search_key_project_name}' and search_key__mail_list_name='{search_key_mail_list_name}'"
-    #     if_null_result = ck.execute_no_params(if_null_sql)
-    #     if not if_null_result:
-    #         keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
-    #                         table_name=table_name, transfer_type="maillist_init")
-    #     logger.info("maillist------------------------")
-    #     opensearch_datas = get_data_from_opensearch_maillist(index=opensearch_index,
-    #                                                          opensearch_conn_datas=opensearch_conn_datas,
-    #                                                          maillist_repo=search_key)
     opensearch_datas = bulk_data
 
     fields = get_table_structure(table_name=table_name, ck=ck)
@@ -206,7 +199,7 @@ def transfer_data_by_repo(clickhouse_server_info, table_name, tplt,
 
                         dict_dict[field] = dict_dict[field].encode('unicode-escape').decode('utf-8')
                     # except KeyError as e:
-                    #     print(dict_dict)
+                    #     logger.info(dict_dict)
                     #     raise Exception(e)
             bulk_data.append(dict_dict)
             ck_sql = f"INSERT INTO {table_name} VALUES"
@@ -225,24 +218,9 @@ def transfer_data_by_repo(clickhouse_server_info, table_name, tplt,
     #     bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, transfer_type)
     #     raise KeyError(error)
     except ServerException as error:
-        print(table_name)
-        # print(dict_dict)
+        logger.info(table_name)
+        # logger.info(dict_dict)
         raise ServerException(error)
-    # except AttributeError as error:
-    #     bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, transfer_type)
-    #     raise AttributeError(error)
-    # except Exception as error:
-    #     bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, transfer_type)
-    #     raise Exception(error)
-    # 将检查点放在这里插入
-
-    # time.sleep(10)
-    # if not if_data_eq_maillist(count=count, ck=ck, table_name=table_name,
-    #                            project_name=search_key.get('project_name'),
-    #                            mail_list_name=search_key.get('mail_list_name')):
-    #     raise Exception("Inconsistent data between opensearch and clickhouse")
-    # else:
-    #     logger.info("opensearch and clickhouse data are consistent")
 
     ck.close()
 
@@ -440,7 +418,7 @@ def get_table_structure(table_name, ck: CKServer):
             fields_structure_dict[field_structure[0]] = field_structure[1]
         else:
             logger.info("表结构中没有数据")
-    logger.info(fields_structure_dict)
+    # logger.info(fields_structure_dict)
     return fields_structure_dict
 
 
