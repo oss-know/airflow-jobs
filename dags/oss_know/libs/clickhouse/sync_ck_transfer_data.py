@@ -715,7 +715,7 @@ def keep_idempotent(ck, search_key, clickhouse_server_info, table_name, transfer
         project_name = search_key.get('project_name')
         mail_list_name = search_key.get('mail_list_name')
         delect_data_sql = f"ALTER TABLE {table_name}_local ON CLUSTER {clickhouse_server_info['CLUSTER_NAME']} DELETE WHERE {now} = {now} and search_key__project_name = '{project_name}' and search_key__mail_list_name = '{mail_list_name}'"
-        check_if_done_sql = f"select is_done from system.mutations m WHERE ` ` = '{table_name}_local' and command = 'DELETE WHERE ({now} = {now}) AND (search_key__project_name = \\'{project_name}\\') AND (search_key__mail_list_name = \\'{mail_list_name}\\') AND (search_key__updated_at = {search_key__updated_at})'"
+        check_if_done_sql = f"select is_done from system.mutations m WHERE `table` = '{table_name}_local' and command = 'DELETE WHERE ({now} = {now}) AND (search_key__project_name = \\'{project_name}\\') AND (search_key__mail_list_name = \\'{mail_list_name}\\') AND (search_key__updated_at = {search_key__updated_at})'"
     ck.execute_no_params(delect_data_sql)
     # logger.info("将同owner和repo的老数据进行删除")
 
