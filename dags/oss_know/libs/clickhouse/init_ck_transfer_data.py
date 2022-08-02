@@ -118,8 +118,6 @@ def alter_data_type(row):
         row = int(row)
     elif isinstance(row, numpy.float64):
         row = float(row)
-    else:
-        pass
     return row
 
 
@@ -156,7 +154,6 @@ def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, tabl
     if if_null_result[0][0] != 0:
         keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
                         table_name=table_name, transfer_type="github_git_init_by_repo")
-        pass
     else:
         logger.info("No data in CK")
     logger.info("github_git_init_by_repo------------------------")
@@ -516,7 +513,6 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
         if if_null_result[0][0] != 0:
             keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
                             table_name=table_name, transfer_type="github_git_init_by_repo")
-            pass
         else:
             logger.info("No data in CK")
         logger.info("github_git_init_by_repo------------------------")
@@ -736,7 +732,7 @@ def transfer_data_maillist(clickhouse_server_info, opensearch_index, table_name,
     ck.close()
 
 
-# 判断opensearch和ck是否数据对其
+# 判断opensearch和ck数据是否一致
 
 def if_data_eq_github(count, ck, table_name, owner, repo):
     sql = f"select count() from {table_name} where search_key__owner='{owner}' and search_key__repo='{repo}'"
@@ -940,8 +936,7 @@ def get_table_structure(table_name, ck: CKServer):
         if field_structure:
             fields_structure_dict[field_structure[0]] = field_structure[1]
         else:
-            logger.info("表结构中没有数据")
-    logger.info(fields_structure_dict)
+            logger.info("There is no data in the table")
     return fields_structure_dict
 
 

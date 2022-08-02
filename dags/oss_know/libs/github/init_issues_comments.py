@@ -84,10 +84,10 @@ def init_github_issues_comments(opensearch_conn_info, owner, repo, token_proxy_a
         ct = concurrent_threads(do_get_github_comments, args=(opensearch_client, token_proxy_accommodator, owner, repo, number))
         get_comment_tasks.append(ct)
         ct.start()
-        ct.join()
         # 执行并发任务并获取结果
-        if idx % 30 == 0:
+        if idx % 10 == 0:
             for tt in get_comment_tasks:
+                tt.join()
                 if tt.getResult()[0] != 200:
                     logger.info(f"get_timeline_fails_results:{tt},{tt.args}")
                     get_comment_fails_results.append(tt.getResult())

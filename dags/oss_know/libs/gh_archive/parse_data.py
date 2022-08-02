@@ -9,17 +9,6 @@ from opensearchpy import OpenSearch, helpers
 from oss_know.libs.util.base import get_opensearch_client
 
 
-# client = OpenSearch(
-#     hosts=[{'host': "192.168.8.110", 'port': 19201}],
-#     http_compress=True,
-#     http_auth=("admin", "admin"),
-#     use_ssl=True,
-#     verify_certs=False,
-#     ssl_assert_hostname=False,
-#     ssl_show_warn=False
-# )
-
-
 def un_gzip(gz_filename):
     filename = gz_filename.replace('.gz', '')
     print(filename)
@@ -61,12 +50,13 @@ def parse_json_data(file_name, opensearch_conn_infos):
                         number = 0
 
                     bulk_datas_list.append(
-                        {"_index": event_type, "_source": {"search_key": {"owner": owner, "repo": repo, "number": number,
-                                                                          "updated_at":int(datetime.datetime.now().timestamp() * 1000),
-                                                                          "gh_archive_year": gh_archive_year,
-                                                                          "gh_archive_month": gh_archive_month,
-                                                                          "gh_archive_day": gh_archive_day},
-                                                           "raw_data": result}})
+                        {"_index": event_type,
+                         "_source": {"search_key": {"owner": owner, "repo": repo, "number": number,
+                                                    "updated_at": int(datetime.datetime.now().timestamp() * 1000),
+                                                    "gh_archive_year": gh_archive_year,
+                                                    "gh_archive_month": gh_archive_month,
+                                                    "gh_archive_day": gh_archive_day},
+                                     "raw_data": result}})
                 elif event_type == 'pull_request_event' or event_type == 'pull_request_review_comment_event':
                     result['payload']['pull_request']['body'] = ''
                     if event_type == 'pull_request_review_comment_event':
@@ -79,13 +69,14 @@ def parse_json_data(file_name, opensearch_conn_infos):
                         print(f"wrong data :{result}")
                         number = 0
                     bulk_datas_list.append(
-                        {"_index": event_type, "_source": {"search_key": {"owner": owner, "repo": repo, "number": number,
-                                                                          "updated_at": int(datetime.datetime.now().timestamp() * 1000),
-                                                                          "gh_archive_year": gh_archive_year,
-                                                                          "gh_archive_month": gh_archive_month,
-                                                                          "gh_archive_day": gh_archive_day
-                                                                          },
-                                                           "raw_data": result}})
+                        {"_index": event_type,
+                         "_source": {"search_key": {"owner": owner, "repo": repo, "number": number,
+                                                    "updated_at": int(datetime.datetime.now().timestamp() * 1000),
+                                                    "gh_archive_year": gh_archive_year,
+                                                    "gh_archive_month": gh_archive_month,
+                                                    "gh_archive_day": gh_archive_day
+                                                    },
+                                     "raw_data": result}})
                 # if len(bulk_datas_list) % 1000 == 0:
                 #     print(bulk_datas_list)
                 #     print(len(bulk_datas_list))
