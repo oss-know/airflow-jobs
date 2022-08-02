@@ -30,7 +30,7 @@ def init_sync_github_issues_timeline(opensearch_conn_info, owner, repo, token_pr
         ssl_show_warn=False
     )
 
-    # 根据指定的 owner/repo , 获取现在所有的 issues，并根据所有 issues 便利相关的 comments
+    # 根据指定的 owner/repo , 获取现在所有的 issues，并根据所有 issues 便利相关的 timeline
     scan_results = opensearch_helpers.scan(opensearch_client,
                                            index=OPENSEARCH_INDEX_GITHUB_ISSUES,
                                            query={
@@ -86,12 +86,12 @@ def init_sync_github_issues_timeline(opensearch_conn_info, owner, repo, token_pr
         number = now_item["_source"]["raw_data"]["number"]
 
         # 创建并发任务
-        ct = concurrent_threads(do_get_github_timeline, args=(opensearch_client, token_proxy_accommodator, owner, repo, number))
+        ct = concurrent_threads(do_get_github_timeline,
+                                args=(opensearch_client, token_proxy_accommodator, owner, repo, number))
         get_timeline_tasks.append(ct)
         ct.start()
-
         # 执行并发任务并获取结果
-        if idx % 30 == 0:
+        if idx % 10 == 0:
             for tt in get_timeline_tasks:
                 tt.join()
                 if tt.getResult()[0] != 200:
@@ -101,7 +101,6 @@ def init_sync_github_issues_timeline(opensearch_conn_info, owner, repo, token_pr
                 get_timeline_results.append(tt.getResult())
         if len(get_timeline_fails_results) != 0:
             raise GithubException('github请求失败！', get_timeline_fails_results)
-
 
 
 # 在concurrent_threads中执行并发具体的业务方法
@@ -118,7 +117,8 @@ def do_get_github_timeline(opensearch_client, token_proxy_accommodator, owner, r
                 req_session, token_proxy_accommodator, owner, repo, number, page)
             one_page_github_issues_timeline = req.json()
         except GithubResourceNotFoundError as e:
-            logger.error(f"fail init github timeline, {owner}/{repo}, issues_number:{number}, now_page:{page}, Target timeline info does not exist: {e}, end")
+            logger.error(
+                f"fail init github timeline, {owner}/{repo}, issues_number:{number}, now_page:{page}, Target timeline info does not exist: {e}, end")
             # return 403, e
 
         if (one_page_github_issues_timeline is not None) and len(
@@ -128,6 +128,6 @@ def do_get_github_timeline(opensearch_client, token_proxy_accommodator, owner, r
 
         opensearch_api.bulk_github_issues_timeline(opensearch_client=opensearch_client,
                                                    issues_timelines=one_page_github_issues_timeline,
-                                                   owner=owner, repo=repo, number=number)
+                                                   owner=owner, repo=repo, number=number, if_sync=0)
 
         logger.info(f"success get github timeline, {owner}/{repo}, issues_number:{number}, page_index:{page}, end")

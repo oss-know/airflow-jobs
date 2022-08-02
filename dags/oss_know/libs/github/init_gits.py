@@ -85,7 +85,8 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
                             "owner": owner,
                             "repo": repo,
                             "origin": git_url,
-                            'updated_at': 0
+                            'updated_at': 0,
+                            'if_sync':0
                         },
                         "raw_data": {
                             "message": "",

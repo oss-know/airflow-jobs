@@ -1,7 +1,8 @@
 from datetime import datetime
+import time
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-
+from opensearchpy import OpenSearch, helpers
 # git_init_sync_v0.0.3
 from oss_know.libs.base_dict.variable_key import NEED_INIT_GITS
 
@@ -51,4 +52,4 @@ with DAG(
             op_kwargs={'params': git_info},
         )
 
-        op_init_sync_git_info >> op_do_init_sync_git_info
+        op_init_sync_git_info >>op_do_init_sync_git_info

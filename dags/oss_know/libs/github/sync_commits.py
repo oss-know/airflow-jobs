@@ -24,10 +24,11 @@ class SyncGithubCommitException(Exception):
         self.status = status
 
 
-def sync_github_commits(github_tokens,
-                        opensearch_conn_info,
-                        owner, repo):
-    github_tokens_iter = itertools.cycle(github_tokens)
+def sync_github_commits(opensearch_conn_info,
+                        owner,
+                        repo,
+                        token_proxy_accommodator):
+
 
     opensearch_client = OpenSearch(
         hosts=[{'host': opensearch_conn_info["HOST"], 'port': opensearch_conn_info["PORT"]}],
@@ -87,16 +88,21 @@ def sync_github_commits(github_tokens,
 
     # 生成本次同步的时间范围：同步到今天的 00:00:00
     since = datetime.datetime.fromtimestamp(github_commits_check["sync_until_timestamp"]).strftime('%Y-%m-%dT00:00:00Z')
-    until = datetime.datetime.now().strftime('%Y-%m-%dT00:00:00Z')
+    until = datetime.datetime.now().strftime('%Y-%m-%dT23:00:00Z')
     logger.info(f'sync github commits since：{since}，sync until：{until}')
 
     session = requests.Session()
     github_api = GithubAPI()
     opensearch_api = OpensearchAPI()
-    for page in range(1, 9999):
+    for page in range(1, 999999):
         time.sleep(random.uniform(GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX))
-        req = github_api.get_github_commits(http_session=session, github_tokens_iter=github_tokens_iter,
-                                            owner=owner, repo=repo, page=page, since=since, until=until)
+        req = github_api.get_github_commits(http_session=session,
+                                            token_proxy_accommodator=token_proxy_accommodator,
+                                            owner=owner,
+                                            repo=repo,
+                                            page=page,
+                                            since=since,
+                                            until=until)
         now_github_commits = req.json()
 
         if (now_github_commits is not None) and len(now_github_commits) == 0:
@@ -105,7 +111,7 @@ def sync_github_commits(github_tokens,
 
         opensearch_api.bulk_github_commits(opensearch_client=opensearch_client,
                                            github_commits=now_github_commits,
-                                           owner=owner, repo=repo)
+                                           owner=owner, repo=repo, if_sync=1)
 
         logger.info(f"success get github commits :: {owner}/{repo} page_index:{page}")
 

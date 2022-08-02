@@ -1,18 +1,24 @@
+import time
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 
 # git_init_sync_v0.0.3
 
+
 with DAG(
         dag_id='git_sync_v1',
+        # schedule_interval='*/5 * * * *',
         schedule_interval=None,
         start_date=datetime(2021, 1, 1),
         catchup=False,
         tags=['github'],
 ) as dag:
     def init_sync_git_info(ds, **kwargs):
+        elasticdump_time_point = int(datetime.now().timestamp() * 1000)
+        kwargs['ti'].xcom_push(key=f'gits_sync_elasticdump_time_point', value=elasticdump_time_point)
         return 'Start init_sync_git_info'
+
 
 
     op_init_sync_git_info = PythonOperator(
@@ -39,6 +45,8 @@ with DAG(
         return 'do_sync_git_info:::end'
 
 
+
+
     from airflow.models import Variable
 
     git_info_list = Variable.get("need_sync_gits", deserialize_json=True)
@@ -48,5 +56,5 @@ with DAG(
             python_callable=do_sync_git_info,
             op_kwargs={'params': git_info},
         )
-
         op_init_sync_git_info >> op_do_init_sync_git_info
+

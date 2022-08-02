@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 
 from airflow import DAG
@@ -6,7 +7,8 @@ from airflow.models import XCom
 from airflow.operators.python import PythonOperator
 from airflow.utils.db import provide_session
 
-from oss_know.libs.base_dict.variable_key import NEED_INIT_GITHUB_PROFILES_REPOS, LOCATIONGEO_TOKEN, PROXY_CONFS
+from oss_know.libs.base_dict.variable_key import NEED_INIT_GITHUB_PROFILES_REPOS, LOCATIONGEO_TOKEN, PROXY_CONFS, \
+    NEED_SYNC_GITHUB_PROFILES_REPOS
 from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
 from oss_know.libs.util.token import TokenManager
 
@@ -18,14 +20,13 @@ def cleanup_xcom(session=None):
 
 
 with DAG(
-        dag_id='github_init_profile_v1',
+        dag_id='github_sync_profile_v2',
         schedule_interval=None,
         start_date=datetime(2021, 1, 1),
         catchup=False,
         tags=['github'],
         on_success_callback=cleanup_xcom
 ) as dag:
-
     def start_load_github_profile(ds, **kwargs):
         return 'End start_load_github_profile'
 
@@ -35,6 +36,7 @@ with DAG(
         python_callable=start_load_github_profile,
         provide_context=True
     )
+
 
 
     def load_github_repo_id(params, **kwargs):
@@ -79,16 +81,15 @@ with DAG(
             # TODO Need more explorations on this
             github_users_ids.update(kwargs['ti'].xcom_pull(key=f'{owner}_{repo}_ids'))
         from oss_know.libs.github import init_profiles
-        if_sync, if_new_person = 0, 1
+        if_sync, if_new_person = 1, 1
         init_profiles.load_github_profiles(token_proxy_accommodator=proxy_accommodator,
                                            opensearch_conn_infos=opensearch_conn_infos,
-                                           github_users_ids=github_users_ids,
-                                           if_sync=if_sync,
+                                           github_users_ids=github_users_ids, if_sync=if_sync,
                                            if_new_person=if_new_person)
         return 'End load_github_repo_profile'
 
 
-    need_sync_github_profile_repos = Variable.get(NEED_INIT_GITHUB_PROFILES_REPOS, deserialize_json=True)
+    need_sync_github_profile_repos = Variable.get(NEED_SYNC_GITHUB_PROFILES_REPOS, deserialize_json=True)
 
     op_load_github_repo_profiles = PythonOperator(
         task_id='op_load_github_repo_profiles',

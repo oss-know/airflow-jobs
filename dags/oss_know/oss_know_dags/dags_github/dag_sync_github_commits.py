@@ -1,7 +1,11 @@
+import time
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from oss_know.libs.base_dict.variable_key import GITHUB_TOKENS, OPENSEARCH_CONN_DATA, NEED_SYNC_GITHUB_COMMITS_REPOS
+from oss_know.libs.base_dict.variable_key import GITHUB_TOKENS, OPENSEARCH_CONN_DATA, NEED_SYNC_GITHUB_COMMITS_REPOS, \
+    PROXY_CONFS
+from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
+from oss_know.libs.util.token import TokenManager
 
 # v0.0.1 初始化实现
 # v0.0.2 增加set_github_init_commits_check_data 用于设置初始化后更新的point data
@@ -28,14 +32,30 @@ with DAG(
         from oss_know.libs.github import sync_commits
 
         github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
+        proxy_confs = Variable.get(PROXY_CONFS, deserialize_json=True)
         opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
-
+        proxy_api_url = proxy_confs["api_url"]
+        proxy_order_id = proxy_confs["orderid"]
+        proxy_reserved_proxies = proxy_confs["reserved_proxies"]
+        proxies = []
+        for proxy in proxy_reserved_proxies:
+            proxies.append(f"http://{proxy}")
+        proxy_service = KuaiProxyService(api_url=proxy_api_url,
+                                         orderid=proxy_order_id)
+        token_manager = TokenManager(tokens=github_tokens)
+        proxy_manager = ProxyManager(proxies=proxies,
+                                     proxy_service=proxy_service)
+        proxy_accommodator = GithubTokenProxyAccommodator(token_manager=token_manager,
+                                                          proxy_manager=proxy_manager,
+                                                          shuffle=True,
+                                                          policy=GithubTokenProxyAccommodator.POLICY_FIXED_MAP)
         owner = params["owner"]
         repo = params["repo"]
 
-        do_init_sync_info = sync_commits.sync_github_commits(github_tokens,
-                                                             opensearch_conn_info,
-                                                             owner, repo)
+        do_init_sync_info = sync_commits.sync_github_commits(opensearch_conn_info=opensearch_conn_info,
+                                                             owner=owner,
+                                                             repo=repo,
+                                                             token_proxy_accommodator=proxy_accommodator)
         return params
 
 
