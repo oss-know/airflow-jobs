@@ -1,6 +1,8 @@
 GITHUB_TOKENS = "github_tokens"
 OPENSEARCH_CONN_DATA = "opensearch_conn_data"
 
+POSTGRES_CONN_INFO = "postgres_conn_info"
+
 NEED_INIT_GITHUB_COMMITS_REPOS = "need_init_github_commits_repos"
 NEED_INIT_GITHUB_ISSUES_REPOS = "need_init_github_issues_repos"
 NEED_INIT_GITHUB_PULL_REQUESTS_REPOS = "need_init_github_pull_requests_repos"
@@ -31,4 +33,4 @@ MAIL_LISTS = "mail_lists"
 PROXY_CONFS = "proxy_confs"
 REPO_LIST = "repo_list"
 SYNC_REPO_LIST = "sync_repo_list"
-MAILLIST_REPO="maillist_repo"
+MAILLIST_REPO = "maillist_repo"
