@@ -2,7 +2,6 @@ import copy
 import datetime
 import json
 import random
-import threading
 import uuid
 from typing import Tuple
 
@@ -105,7 +104,7 @@ class OpensearchAPI:
             template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES,
                         "_source": {"search_key": {"owner": owner, "repo": repo,
                                                    'updated_at': int(datetime.datetime.now().timestamp() * 1000),
-                                                   'if_sync':if_sync},
+                                                   'if_sync': if_sync},
                                     "raw_data": None}}
             commit_item = copy.deepcopy(template)
             commit_item["_source"]["raw_data"] = now_issue
@@ -117,7 +116,8 @@ class OpensearchAPI:
 
         return success, failed
 
-    def put_profile_into_opensearch(self, github_ids, token_proxy_accommodator, opensearch_client, if_sync, if_new_person):
+    def put_profile_into_opensearch(self, github_ids, token_proxy_accommodator, opensearch_client, if_sync,
+                                    if_new_person):
         """Put GitHub user profile into opensearch if it is not in opensearch."""
         # 获取github profile
         batch_size = 100
@@ -188,7 +188,7 @@ class OpensearchAPI:
                                     body={"search_key": {
                                         'updated_at': int(datetime.datetime.now().timestamp() * 1000),
                                         'if_sync': if_sync,
-                                        'if_new_person':if_new_person},
+                                        'if_new_person': if_new_person},
                                         "raw_data": latest_github_profile},
                                     refresh=True)
             logger.info(f"Put the github {github_id}'s profile into opensearch.")
@@ -225,7 +225,7 @@ class OpensearchAPI:
             template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS,
                         "_source": {"search_key": {"owner": owner, "repo": repo, "number": number,
                                                    'updated_at': int(datetime.datetime.now().timestamp() * 1000),
-                                                   'if_sync':if_sync},
+                                                   'if_sync': if_sync},
                                     "raw_data": None}}
             commit_comment_item = copy.deepcopy(template)
             commit_comment_item["_source"]["raw_data"] = val
@@ -323,7 +323,7 @@ class OpensearchAPI:
                                 refresh=True)
 
     def set_sync_gits_check(self, opensearch_client, owner,
-                                      repo,check_point_timestamp):
+                            repo, check_point_timestamp):
         now_time = datetime.datetime.now()
         check_update_info = {
             "search_key": {
@@ -353,7 +353,8 @@ class OpensearchAPI:
         for now_pr in github_pull_requests:
             template = {"_index": OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS,
                         "_source": {"search_key": {"owner": owner, "repo": repo,
-                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000),"if_sync":if_sync},
+                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000),
+                                                   "if_sync": if_sync},
                                     "raw_data": None}}
             pull_requests_item = copy.deepcopy(template)
             pull_requests_item["_source"]["raw_data"] = now_pr
@@ -406,7 +407,8 @@ class OpensearchAPI:
             logger.info(f"DELETE github pr result:{del_result}")
             template = {"_index": OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS,
                         "_source": {"search_key": {"owner": owner, "repo": repo,
-                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000),"if_sync":if_sync},
+                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000),
+                                                   "if_sync": if_sync},
                                     "raw_data": None}}
             pull_requests_item = copy.deepcopy(template)
             pull_requests_item["_source"]["raw_data"] = now_pr
@@ -462,3 +464,51 @@ class OpensearchAPI:
         # 强制抛出异常
         # raise OpenSearchException("do_opensearch_bulk Error")
         return success, failed
+
+    def get_uniq_owner_repos(self, opensearch_client, index):
+        aggregation_body = {
+            "aggs": {
+                "uniq_owners": {
+                    "terms": {
+                        "field": "search_key.owner.keyword",
+                        "size": 1000
+                    },
+                    "aggs": {
+                        "uniq_repos": {
+                            "terms": {
+                                "field": "search_key.repo.keyword",
+                                "size": 500
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if index == 'gits':
+            aggregation_body['aggs']['uniq_owners']['aggs']['uniq_repos']['aggs'] = {
+                "uniq_origin": {
+                    "terms": {
+                        "field": "search_key.origin.keyword",
+                        "size": 10
+                    }
+                }
+            }
+        result = opensearch_client.search(index=index, body=aggregation_body)
+
+        uniq_owner_repos = []  # A list of tuple of (owner, repo)
+        uniq_owners = result['aggregations']['uniq_owners']['buckets']
+        for uniq_owner in uniq_owners:
+            owner_name = uniq_owner['key']
+            uniq_repos = uniq_owner['uniq_repos']['buckets']
+            for uniq_repo in uniq_repos:
+                repo_name = uniq_repo['key']
+                uniq_item = {
+                    'owner': owner_name,
+                    'repo': repo_name
+                }
+                if index == 'gits':
+                    uniq_item['origin'] = uniq_repo['uniq_origin']['buckets'][0]['key']
+                uniq_owner_repos.append(uniq_item)
+
+        return uniq_owner_repos
