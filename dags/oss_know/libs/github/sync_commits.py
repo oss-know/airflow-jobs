@@ -76,14 +76,14 @@ def sync_github_commits(opensearch_conn_info,
                                                 }
                                                 )
     since = None
-    if True or len(has_commit_check["hits"]["hits"]) == 0:
+    if len(has_commit_check["hits"]["hits"]) == 0:
         # raise SyncGithubCommitException("没有得到上次github commits 同步的时间")
         # Try to get the latest commit date(committed_date field) from existing github_commits index
         # And make it the latest checkpoint
         latest_commit_date_str = get_latest_commit_date_str(opensearch_client, owner, repo)
         if not latest_commit_date_str:
             raise SyncGithubCommitException("没有得到上次github commits 同步的时间")
-        since = datetime.datetime.strptime('2022-01-24T06:36:16Z', '%Y-%m-%dT%H:%M:%SZ').strftime('%Y-%m-%dT00:00:00Z')
+        since = datetime.datetime.strptime(latest_commit_date_str, '%Y-%m-%dT%H:%M:%SZ').strftime('%Y-%m-%dT00:00:00Z')
     else:
         github_commits_check = has_commit_check["hits"]["hits"][0]["_source"]["github"]["commits"]
         since = datetime.datetime.fromtimestamp(github_commits_check["sync_until_timestamp"]).strftime(
