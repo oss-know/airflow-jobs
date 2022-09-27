@@ -141,12 +141,10 @@ with DAG(
         already_insert_into_opensearch_objs_list = []
         for result in already_insert_into_opensearch_objs:
             already_insert_into_opensearch_objs_list.append(result["_source"]["obj_name"])
-        # print(already_successful_download_objs)
         need_insert_objs = []
         for obj in already_successful_download_objs:
             if obj not in already_insert_into_opensearch_objs_list:
                 need_insert_objs.append(obj)
-        # print(need_insert_objs)
         need_insert_objs = ['opensearch_data/data_2022-07-08/github_issues_comments_init_2022-07-08T07-28-25Z+0000.json.gzip']
         for obj in need_insert_objs:
 
@@ -156,7 +154,6 @@ with DAG(
 
 
 
-    from airflow.models import Variable
 
     op_do_list_obs_data = PythonOperator(
         task_id=f'do_list_obs_data',

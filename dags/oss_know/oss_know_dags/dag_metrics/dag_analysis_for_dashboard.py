@@ -34,14 +34,20 @@ with DAG(
         from oss_know.libs.metrics.init_analysis_data_for_dashboard import get_dir_n
         owner = params["owner"]
         repo = params["repo"]
+        from airflow.models import Variable
 
-        get_dir_n(owner=owner, repo=repo)
+        clickhouse_conn = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
+
+        get_dir_n(owner=owner, repo=repo,ck_con=clickhouse_conn)
         return "end::do_analysis_for_dashboard"
 
 
     def do_analysis(params):
         from oss_know.libs.metrics.init_analysis_data_for_dashboard import get_alter_files_count
-        get_alter_files_count()
+        from airflow.models import Variable
+
+        clickhouse_conn = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
+        get_alter_files_count(ck_con=clickhouse_conn)
         return "end::do_analysis_for_dashboard"
 
 
@@ -50,7 +56,10 @@ with DAG(
 
     def do_analysis2(params):
         from oss_know.libs.metrics.init_analysis_data_for_dashboard import get_dir_contributer_count
-        get_dir_contributer_count()
+        from airflow.models import Variable
+
+        clickhouse_conn = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
+        get_dir_contributer_count(ck_con=clickhouse_conn)
         return "end::do_analysis_for_dashboard"
 
 
@@ -59,7 +68,10 @@ with DAG(
 
     def do_analysis3(params):
         from oss_know.libs.metrics.init_analysis_data_for_dashboard import get_alter_file_count_by_dir_email_domain
-        get_alter_file_count_by_dir_email_domain()
+        from airflow.models import Variable
+
+        clickhouse_conn = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
+        get_alter_file_count_by_dir_email_domain(ck_con=clickhouse_conn)
         return "end::do_analysis_for_dashboard"
 
 
@@ -68,7 +80,10 @@ with DAG(
 
     def do_analysis4(params):
         from oss_know.libs.metrics.init_analysis_data_for_dashboard import get_contributer_by_dir_email_domain
-        get_contributer_by_dir_email_domain()
+        from airflow.models import Variable
+
+        clickhouse_conn = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
+        get_contributer_by_dir_email_domain(ck_con=clickhouse_conn)
         return "end::do_analysis_for_dashboard"
 
 
@@ -76,38 +91,41 @@ with DAG(
 
     def do_analysis5(params):
         from oss_know.libs.metrics.init_analysis_data_for_dashboard import get_tz_distribution
-        get_tz_distribution()
+        from airflow.models import Variable
+
+        clickhouse_conn = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
+        get_tz_distribution(ck_con=clickhouse_conn)
         return "end::do_analysis_for_dashboard"
 
 
 
-    # op_do_analysis = PythonOperator(
-    #     task_id=f'do_analysis',
-    #     python_callable=do_analysis
-    #
-    # )
-    # op_do_analysis2 = PythonOperator(
-    #     task_id=f'do_analysis2',
-    #     python_callable=do_analysis2
-    #
-    # )
-    # op_do_analysis3 = PythonOperator(
-    #     task_id=f'do_analysis3',
-    #     python_callable=do_analysis3
-    #
-    # )
-    #
-    # op_do_analysis4 = PythonOperator(
-    #     task_id=f'do_analysis4',
-    #     python_callable=do_analysis4
-    #
-    # )
+    op_do_analysis = PythonOperator(
+        task_id=f'do_analysis',
+        python_callable=do_analysis
 
-    # op_do_analysis5 = PythonOperator(
-    #     task_id=f'do_analysis5',
-    #     python_callable=do_analysis5
-    #
-    # )
+    )
+    op_do_analysis2 = PythonOperator(
+        task_id=f'do_analysis2',
+        python_callable=do_analysis2
+
+    )
+    op_do_analysis3 = PythonOperator(
+        task_id=f'do_analysis3',
+        python_callable=do_analysis3
+
+    )
+
+    op_do_analysis4 = PythonOperator(
+        task_id=f'do_analysis4',
+        python_callable=do_analysis4
+
+    )
+
+    op_do_analysis5 = PythonOperator(
+        task_id=f'do_analysis5',
+        python_callable=do_analysis5
+
+    )
 
     results = Variable.get("dashboard_repo_list", deserialize_json=True)
 

@@ -37,7 +37,7 @@ with DAG(
 
     for year in range(2019, 2020):
 
-        for month in range(1, 7):
+        for month in range(12, 13):
             day_count = calendar.monthrange(year, month)[1]
             if month < 10:
                 month = '0' + str(month)

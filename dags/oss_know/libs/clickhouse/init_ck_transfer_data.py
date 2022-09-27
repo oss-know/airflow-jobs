@@ -126,19 +126,8 @@ def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, tabl
                                   search_key):
     bulk_datas = []
     template = {
-        "search_key": {
-            "owner": "",
-            "repo": "",
-            "number": 0,
-            "event": "",
-            "updated_at": 0,
-            "uuid": "",
-            "if_sync": 0
-        },
-               "deleted":0,
-        "raw_data": {
-            "timeline_raw": ""
-        }
+
+        "deleted":0
     }
     template["ck_data_insert_at"] = int(round(time.time() * 1000))
     ck = CKServer(host=clickhouse_server_info["HOST"],
@@ -148,8 +137,10 @@ def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, tabl
                   database=clickhouse_server_info["DATABASE"])
 
     transfer_type = 'github_issues_timeline_by_repo'
+    owner = search_key["owner"]
+    repo = search_key["repo"]
     # 判断项目是否在ck中存在
-    if_null_sql = f"select count() from {table_name} where search_key__owner='{search_key_owner}' and search_key__repo='{search_key_repo}'"
+    if_null_sql = f"select count() from {table_name} where search_key__owner='{owner}' and search_key__repo='{repo}'"
     if_null_result = ck.execute_no_params(if_null_sql)
     if if_null_result[0][0] != 0:
         keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
@@ -157,8 +148,8 @@ def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, tabl
     else:
         logger.info("No data in CK")
     logger.info("github_git_init_by_repo------------------------")
-    keep_idempotent(ck=ck, clickhouse_server_info=clickhouse_server_info, search_key=search_key,
-                    transfer_type=transfer_type, table_name=table_name)
+    # keep_idempotent(ck=ck, clickhouse_server_info=clickhouse_server_info, search_key=search_key,
+    #                 transfer_type=transfer_type, table_name=table_name)
     opensearch_datas = get_data_from_opensearch_by_repo(index=opensearch_index,
                                                         opensearch_conn_datas=opensearch_conn_datas, repo=search_key)
     max_timestamp = 0
@@ -176,12 +167,15 @@ def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, tabl
             insert_data['search_key__event'] = os_data["_source"]["search_key"]['event']
             insert_data['search_key__updated_at'] = os_data["_source"]["search_key"]['updated_at']
             insert_data['search_key__uuid'] = os_data["_source"]["search_key"]['uuid']
+            insert_data['search_key__if_sync'] = os_data["_source"]["search_key"]['if_sync']
             raw_data = os_data["_source"]["raw_data"]
             standard_data = json.dumps(raw_data, separators=(',', ':'), ensure_ascii=False)
             insert_data['timeline_raw'] = standard_data
             bulk_datas.append(insert_data)
             sql = f"INSERT INTO {table_name} (*) VALUES"
             count += 1
+            # print(insert_data)
+            # return
             if count % 50000 == 0:
                 result = ck.execute(sql, bulk_datas)
                 logger.info(f"已经插入的数据条数:{count}")
@@ -191,8 +185,10 @@ def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, tabl
             result = ck.execute(sql, bulk_datas)
         logger.info(f"已经插入的数据条数:{count}")
     except Exception as error:
-        bulk_except_repo(bulk_datas, opensearch_datas, opensearch_index, table_name, search_key,
-                         transfer_type=transfer_type)
+        # bulk_except_repo(bulk_datas, opensearch_datas, opensearch_index, table_name, search_key,
+        #                  transfer_type=transfer_type)
+        logger.error(error)
+        logger.info()
         raise Exception(error)
 
     # 将检查点放在这里插入

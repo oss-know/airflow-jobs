@@ -43,10 +43,11 @@ with DAG(
                                                                         opensearch_conn_datas=opensearch_conn_datas, search_key=search_key)
         else:
             table_templates = Variable.get(CK_TABLE_DEFAULT_VAL_TPLT, deserialize_json=True)
-            for table_template in table_templates:
-                if table_template.get("table_name") == table_name:
-                    template = table_template.get("temp")
-                    break
+            # for table_template in table_templates:
+            #     if table_template.get("table_name") == table_name:
+            #         template = table_template.get("temp")
+            #         break'
+            template = table_templates.get(table_name)
             df = pd.json_normalize(template)
             template = init_ck_transfer_data.parse_data_init(df)
             if table_name.startswith("maillist"):
