@@ -10,3 +10,13 @@ OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS = "github_pull_requests"
 OPENSEARCH_INDEX_GITHUB_PROFILE = "github_profile"
 
 OPENSEARCH_INDEX_MAILLISTS = "maillists"
+
+
+OPENSEARCH_DISCOURSE_RAW = "discourse"
+OPENSEARCH_DISCOURSE_CATEGORY = "discourse_category"
+OPENSEARCH_DISCOURSE_TOPIC_LIST = "discourse_topic_list"
+OPENSEARCH_DISCOURSE_TOPIC_CONTENT = "discourse_topic_content"
+# OPENSEARCH_DISCOURSE_TOPIC_CONTENT = "discourse_topic_content_tmp"
+OPENSEARCH_DISCOURSE_USER_LIST = "discourse_user"
+OPENSEARCH_DISCOURSE_USER_INFO = "discourse_user_info"
+OPENSEARCH_DISCOURSE_USER_ACTION = "discourse_user_action"

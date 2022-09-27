@@ -66,3 +66,4 @@ CLICKHOUSE_SYNC_COMBINATION_TYPE = "clickhouse_sync_combination_type"
 # Interval to sync gits, github related data for all owner/repos
 # in opensearch and then transfer the sync-ed part to clickhouse
 DATA_SYNC_INTERVAL = "data_sync_interval"
+NEED_INIT_DISCOURSE = 'need_init_discourse'
