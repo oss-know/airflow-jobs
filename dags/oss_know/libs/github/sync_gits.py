@@ -168,11 +168,6 @@ def latest_commit_query_body(owner, repo):
     return query_body
 
 
-def commit_query_body(owner, repo, sha):
-    query_body = owner_repo_query_body(owner, repo)
-    query_body['xxx'] = 'ooo'
-
-
 def owner_repo_query_body(owner, repo):
     return {
         "query": {
