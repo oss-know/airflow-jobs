@@ -126,8 +126,19 @@ def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, tabl
                                   search_key):
     bulk_datas = []
     template = {
-
-        "deleted":0
+        "search_key": {
+            "owner": "",
+            "repo": "",
+            "number": 0,
+            "event": "",
+            "updated_at": 0,
+            "uuid": "",
+            "if_sync": 0
+        },
+        "deleted": 0,
+        "raw_data": {
+            "timeline_raw": ""
+        }
     }
     template["ck_data_insert_at"] = int(round(time.time() * 1000))
     ck = CKServer(host=clickhouse_server_info["HOST"],
@@ -412,7 +423,8 @@ def bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, 
                                 clickhouse_table=table_name,
                                 updated_at=start_updated_at,
                                 maillist_repo=search_key)
-    logger.error(f'批量插入出现问题，将这一批的最小的updated时间插入check_point 这一批数据的updated 范围为{start_updated_at}----{end_updated_at}')
+    logger.error(
+        f'批量插入出现问题，将这一批的最小的updated时间插入check_point 这一批数据的updated 范围为{start_updated_at}----{end_updated_at}')
 
 
 def bulk_except_maillist(bulk_data, opensearch_datas, opensearch_index, table_name, maillist_repo):
@@ -422,7 +434,8 @@ def bulk_except_maillist(bulk_data, opensearch_datas, opensearch_index, table_na
                             opensearch_index=opensearch_index,
                             clickhouse_table=table_name,
                             updated_at=start_updated_at, maillist_repo=maillist_repo)
-    logger.error(f'批量插入出现问题，将这一批的最小的updated时间插入check_point 这一批数据的updated 范围为{start_updated_at}----{end_updated_at}')
+    logger.error(
+        f'批量插入出现问题，将这一批的最小的updated时间插入check_point 这一批数据的updated 范围为{start_updated_at}----{end_updated_at}')
 
 
 def bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name):
@@ -432,7 +445,8 @@ def bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name):
                    opensearch_index=opensearch_index,
                    clickhouse_table=table_name,
                    updated_at=start_updated_at)
-    logger.error(f'批量插入出现问题，将这一批的最小的updated时间插入check_point 这一批数据的updated 范围为{start_updated_at}----{end_updated_at}')
+    logger.error(
+        f'批量插入出现问题，将这一批的最小的updated时间插入check_point 这一批数据的updated 范围为{start_updated_at}----{end_updated_at}')
 
 
 # 保证插入数据的幂等性
@@ -748,7 +762,7 @@ def if_data_eq_maillist(count, ck, table_name, project_name, mail_list_name):
 
 
 def get_data_from_opensearch(index, opensearch_conn_datas):
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
     results = helpers.scan(client=opensearch_client,
                            query={
                                "query": {"match_all": {}},
@@ -769,7 +783,7 @@ def get_data_from_opensearch(index, opensearch_conn_datas):
 
 
 def get_data_from_opensearch_by_repo(index, opensearch_conn_datas, repo):
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
     results = helpers.scan(client=opensearch_client,
                            query={
                                "query": {
@@ -809,7 +823,7 @@ def get_data_from_opensearch_by_repo(index, opensearch_conn_datas, repo):
 
 
 def get_data_from_opensearch_maillist(index, opensearch_conn_datas, maillist_repo):
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
     results = helpers.scan(client=opensearch_client,
                            query={
                                "query": {

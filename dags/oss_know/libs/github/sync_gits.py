@@ -20,7 +20,7 @@ def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, gi
     check_point_timestamp = int(datetime.datetime.now().timestamp() * 1000)
 
     git_repo = None
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
     os_repo_commits = opensearch_client.search(index='gits', body=latest_commit_query_body(owner, repo))
 
     if not os_repo_commits['hits']['hits']:

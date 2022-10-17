@@ -21,7 +21,7 @@ def un_gzip(gz_filename):
 
 
 def parse_json_data(file_name, opensearch_conn_infos):
-    client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_infos)
+    client = get_opensearch_client(opensearch_conn_info=opensearch_conn_infos)
     gh_archive_year = file_name.split('-')[0]
     gh_archive_month = gh_archive_year + file_name.split('-')[1]
     gh_archive_day = gh_archive_month + file_name.split('-')[2]

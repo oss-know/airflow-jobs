@@ -76,7 +76,7 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
         repo_info = Repo.clone_from(url=git_url, to_path=repo_path,
                                     )
 
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
     # 删除在数据库中已经存在的此项目数据
     delete_old_data(owner=owner, repo=repo, client=opensearch_client)
     bulk_data_tp = {"_index": OPENSEARCH_GIT_RAW,
@@ -86,7 +86,7 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
                             "repo": repo,
                             "origin": git_url,
                             'updated_at': 0,
-                            'if_sync':0
+                            'if_sync': 0
                         },
                         "raw_data": {
                             "message": "",
