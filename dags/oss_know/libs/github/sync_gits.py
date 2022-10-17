@@ -34,9 +34,7 @@ def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, gi
         return
 
     if os.path.exists(repo_path):
-        # TODO Maybe we should fetch the active remote/branch
         git_repo = Repo(repo_path)
-        # pull_response = git_repo.git.pull()
         git_repo.remote('origin').fetch()
     else:
         git_repo = Repo.clone_from(url=git_url, to_path=repo_path, config=proxy_config)
@@ -56,7 +54,7 @@ def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, gi
                             git_save_local_path=git_save_local_path)
         return
 
-    # Get the children of MERGE BASE in two code bases:
+    # Get the children after MERGE BASE in two code bases:
     merge_base = merge_bases[0]
     children_in_os = git_repo.iter_commits(f'{merge_base}...{head_in_os}')
     children_in_repo = git_repo.iter_commits(f'{merge_base}...{head_in_repo}')
