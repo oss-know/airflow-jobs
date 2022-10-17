@@ -465,7 +465,7 @@ class OpensearchAPI:
         # raise OpenSearchException("do_opensearch_bulk Error")
         return success, failed
 
-    def get_uniq_owner_repos(self, opensearch_client, index):
+    def get_uniq_owner_repos(self, opensearch_client, index, excludes=None):
         aggregation_body = {
             "aggs": {
                 "uniq_owners": {
@@ -509,6 +509,12 @@ class OpensearchAPI:
                 }
                 if index == 'gits':
                     uniq_item['origin'] = uniq_repo['uniq_origin']['buckets'][0]['key']
-                uniq_owner_repos.append(uniq_item)
+
+                # The conditions here:
+                # 1. excludes is a Falsy value, add (owenr, repo) to the list
+                # 2. excludes is not Falsy(the or take effects here), and owner::repo is not in the
+                # excludes var, meaning it should not be excluded, add (owner, repo) to the list
+                if (not excludes) or f'{owner_name}::{repo_name}' not in excludes:
+                    uniq_owner_repos.append(uniq_item)
 
         return uniq_owner_repos
