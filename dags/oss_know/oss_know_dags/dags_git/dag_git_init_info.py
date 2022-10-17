@@ -4,7 +4,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from opensearchpy import OpenSearch, helpers
 # git_init_sync_v0.0.3
-from oss_know.libs.base_dict.variable_key import NEED_INIT_GITS
+from oss_know.libs.base_dict.variable_key import NEED_INIT_GITS, GITS_PROXY_CONFIG
 
 with DAG(
         dag_id='git_init_v1',
@@ -29,7 +29,7 @@ with DAG(
         owner = params["owner"]
         repo = params["repo"]
         url = params["url"]
-        proxy_config = params.get("proxy_config")
+        proxy_config = params.get(GITS_PROXY_CONFIG)
         opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
         git_save_local_path = Variable.get("git_save_local_path", deserialize_json=True)
         init_sync_git_info = init_gits.init_sync_git_datas(git_url=url,
@@ -52,4 +52,4 @@ with DAG(
             op_kwargs={'params': git_info},
         )
 
-        op_init_sync_git_info >>op_do_init_sync_git_info
+        op_init_sync_git_info >> op_do_init_sync_git_info

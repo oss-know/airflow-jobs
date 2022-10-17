@@ -6,7 +6,8 @@ import itertools
 
 from opensearchpy import OpenSearch
 
-from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_CHECK_SYNC_DATA
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_CHECK_SYNC_DATA, \
+    OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS
 from oss_know.libs.util.github_api import GithubAPI
 from oss_know.libs.util.log import logger
 from oss_know.libs.util.opensearch_api import OpensearchAPI
@@ -182,12 +183,21 @@ def sync_github_pull_requests(opensearch_conn_info,
                                                            ]
                                                        }
                                                        )
+
+    since = None
     if len(has_pull_requests_check["hits"]["hits"]) == 0:
-        raise SyncGithubPullRequestsException("没有得到上次github pull_requests 同步的时间")
-    github_pull_requests_check = has_pull_requests_check["hits"]["hits"][0]["_source"]["github"]["prs"]
+        # Try to get the latest PR date(created_at field) from existing github_pull_requests index
+        # And make it the latest checkpoint
+        latest_pr_date = get_latest_pr_date_str(opensearch_client, owner, repo)
+        if not latest_pr_date:
+            raise SyncGithubPullRequestsException("没有得到上次github pull_requests 同步的时间")
+        since = datetime.datetime.strptime(latest_pr_date, '%Y-%m-%dT%H:%M:%SZ').strftime('%Y-%m-%dT00:00:00Z')
+    else:
+        github_pull_requests_check = has_pull_requests_check["hits"]["hits"][0]["_source"]["github"]["prs"]
+        since = datetime.datetime.fromtimestamp(github_pull_requests_check["sync_timestamp"]).strftime(
+            '%Y-%m-%dT00:00:00Z')
 
     # 生成本次同步的时间范围：同步到今天的 00:00:00
-    since = datetime.datetime.fromtimestamp(github_pull_requests_check["sync_timestamp"]).strftime('%Y-%m-%dT00:00:00Z')
     logger.info(f'sync github pull_requests since：{since}')
 
     pull_requests_numbers = []
@@ -235,3 +245,42 @@ def sync_github_pull_requests(opensearch_conn_info,
 
     # todo 返回 pull_requests number，获取 pull_requests 独有的更新，进行后续处理
     return pull_requests_numbers
+
+
+def get_latest_pr_date_str(opensearch_client, owner, repo):
+    latest_pr_info = opensearch_client.search(index=OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS,
+                                              body={
+                                                  "size": 1,
+                                                  "query": {
+                                                      "bool": {
+                                                          "must": [
+                                                              {
+                                                                  "term": {
+                                                                      "search_key.owner.keyword": {
+                                                                          "value": owner
+                                                                      }
+                                                                  }
+                                                              },
+                                                              {
+                                                                  "term": {
+                                                                      "search_key.repo.keyword": {
+                                                                          "value": repo
+                                                                      }
+                                                                  }
+                                                              }
+                                                          ]
+                                                      }
+                                                  },
+                                                  "sort": [
+                                                      {
+                                                          "raw_data.created_at": {
+                                                              "order": "desc"
+                                                          }
+                                                      }
+                                                  ]
+                                              }
+                                              )
+    if len(latest_pr_info["hits"]["hits"]) == 0:
+        return None
+
+    return latest_pr_info["hits"]["hits"][0]["_source"]["raw_data"]["created_at"]

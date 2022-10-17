@@ -1,6 +1,7 @@
 version: '3'
 services:
   dev-opensearch-node1:
+    restart: always
     image: opensearchproject/opensearch:1.3.2
     container_name: dev-opensearch-node1
     environment:
@@ -29,6 +30,7 @@ services:
       - dev-network
 
   dev-opensearch-node2:
+    restart: always
     image: opensearchproject/opensearch:1.3.2
     container_name: dev-opensearch-node2
     environment:
@@ -57,6 +59,7 @@ services:
       - dev-network
 
   dev-opensearch-dashboards:
+    restart: always
     image: opensearchproject/opensearch-dashboards:1.3.2
     # image: opensearch-dashboards-no-security
     container_name: dev-opensearch-dashboards

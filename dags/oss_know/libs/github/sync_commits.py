@@ -1,20 +1,15 @@
-import copy
 import datetime
-import itertools
 import random
-
-import requests
 import time
 
+import requests
 from opensearchpy import OpenSearch
 
-from oss_know.libs.util.github_api import GithubAPI
-from oss_know.libs.util.opensearch_api import OpensearchAPI
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COMMITS, OPENSEARCH_INDEX_CHECK_SYNC_DATA
-from oss_know.libs.util.base import do_get_result
-    #, github_headers, do_opensearch_bulk, sync_github_commits_check_update_info
-from oss_know.libs.util.log import logger
 from oss_know.libs.base_dict.options import GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX
+from oss_know.libs.util.github_api import GithubAPI
+from oss_know.libs.util.log import logger
+from oss_know.libs.util.opensearch_api import OpensearchAPI
 
 
 class SyncGithubCommitException(Exception):
@@ -28,8 +23,6 @@ def sync_github_commits(opensearch_conn_info,
                         owner,
                         repo,
                         token_proxy_accommodator):
-
-
     opensearch_client = OpenSearch(
         hosts=[{'host': opensearch_conn_info["HOST"], 'port': opensearch_conn_info["PORT"]}],
         http_compress=True,
@@ -82,13 +75,22 @@ def sync_github_commits(opensearch_conn_info,
                                                     ]
                                                 }
                                                 )
+    since = None
     if len(has_commit_check["hits"]["hits"]) == 0:
-        raise SyncGithubCommitException("没有得到上次github commits 同步的时间")
-    github_commits_check = has_commit_check["hits"]["hits"][0]["_source"]["github"]["commits"]
+        # raise SyncGithubCommitException("没有得到上次github commits 同步的时间")
+        # Try to get the latest commit date(committed_date field) from existing github_commits index
+        # And make it the latest checkpoint
+        latest_commit_date_str = get_latest_commit_date_str(opensearch_client, owner, repo)
+        if not latest_commit_date_str:
+            raise SyncGithubCommitException("没有得到上次github commits 同步的时间")
+        since = datetime.datetime.strptime(latest_commit_date_str, '%Y-%m-%dT%H:%M:%SZ').strftime('%Y-%m-%dT00:00:00Z')
+    else:
+        github_commits_check = has_commit_check["hits"]["hits"][0]["_source"]["github"]["commits"]
+        since = datetime.datetime.fromtimestamp(github_commits_check["sync_until_timestamp"]).strftime(
+            '%Y-%m-%dT00:00:00Z')
 
     # 生成本次同步的时间范围：同步到今天的 00:00:00
-    since = datetime.datetime.fromtimestamp(github_commits_check["sync_until_timestamp"]).strftime('%Y-%m-%dT00:00:00Z')
-    until = datetime.datetime.now().strftime('%Y-%m-%dT23:00:00Z')
+    until = datetime.datetime.now().strftime('%Y-%m-%dT00:00:00Z')
     logger.info(f'sync github commits since：{since}，sync until：{until}')
 
     session = requests.Session()
@@ -115,7 +117,45 @@ def sync_github_commits(opensearch_conn_info,
 
         logger.info(f"success get github commits :: {owner}/{repo} page_index:{page}")
 
-
     opensearch_api.set_sync_github_commits_check(opensearch_client, owner, repo, since, until)
 
     return "END::sync_github_commits"
+
+
+def get_latest_commit_date_str(opensearch_client, owner, repo):
+    latest_commit_info = opensearch_client.search(index=OPENSEARCH_INDEX_GITHUB_COMMITS,
+                                                  body={
+                                                      "size": 1,
+                                                      "query": {
+                                                          "bool": {
+                                                              "must": [
+                                                                  {
+                                                                      "term": {
+                                                                          "search_key.owner.keyword": {
+                                                                              "value": owner
+                                                                          }
+                                                                      }
+                                                                  },
+                                                                  {
+                                                                      "term": {
+                                                                          "search_key.repo.keyword": {
+                                                                              "value": repo
+                                                                          }
+                                                                      }
+                                                                  }
+                                                              ]
+                                                          }
+                                                      },
+                                                      "sort": [
+                                                          {
+                                                              "raw_data.commit.committer.date": {
+                                                                  "order": "desc"
+                                                              }
+                                                          }
+                                                      ]
+                                                  }
+                                                  )
+    if len(latest_commit_info["hits"]["hits"]) == 0:
+        return None
+
+    return latest_commit_info["hits"]["hits"][0]["_source"]["raw_data"]["commit"]["committer"]["date"]
