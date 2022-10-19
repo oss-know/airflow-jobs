@@ -103,9 +103,33 @@ def ck_check_point_maillist(opensearch_client, opensearch_index, clickhouse_tabl
     response = opensearch_client.index(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA, body=check_info)
     logger.info(response)
 
+def ck_check_point_discourse(opensearch_client, opensearch_index, clickhouse_table, updated_at, repo):
+    now_time = datetime.datetime.now()
+    check_info = {
+        "search_key": {
+            "type": "os_ck",
+            "update_time": now_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "update_timestamp": now_time.timestamp(),
+            "opensearch_index": opensearch_index,
+            "clickhouse_table": clickhouse_table,
+            "owner": repo.get("owner"),
+            "repo": repo.get("repo")
+        },
+        "os_ck": {
+            "type": "os_ck",
+            "opensearch_index": opensearch_index,
+            "clickhouse_table": clickhouse_table,
+            "last_data": {
+                "updated_at": updated_at
+            }
+        }
+    }
+    # 插入一条数据
+    response = opensearch_client.index(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA, body=check_info)
+    logger.info(response)
 
 # 转换为基本数据类型
-def alter_data_type(row):
+def alter_data_type(row, template='None'):
     if isinstance(row, numpy.int64):
         row = int(row)
     elif isinstance(row, dict):
@@ -113,7 +137,13 @@ def alter_data_type(row):
     elif isinstance(row, numpy.bool_):
         row = int(bool(row))
     elif row is None:
-        row = "null"
+        # ATTN : Sometime a 'int' variable could be None.
+        if isinstance(template, int):
+            row = 0
+        elif isinstance(template, str):
+            row = "null"
+        else:
+            row = "null"
     elif isinstance(row, bool):
         row = int(row)
     elif isinstance(row, numpy.float64):
@@ -389,7 +419,6 @@ def transfer_data_check_structure(clickhouse_server_info, opensearch_index, tabl
                         dict_dict[field] = datetime.datetime.strptime(dict_dict[field], '%Y-%m-%dT%H:%M:%SZ')
                         flag = 1
                         mistake_structure.append(field)
-
                     except ValueError:
                         pass
         if flag:
@@ -543,6 +572,44 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
         opensearch_datas = get_data_from_opensearch_maillist(index=opensearch_index,
                                                              opensearch_conn_datas=opensearch_conn_datas,
                                                              maillist_repo=search_key)
+    elif transfer_type == "discourse":
+        search_key_owner = search_key['owner']
+        search_key_repo = search_key['repo']
+        if_null_sql = f"select count() from {table_name} where search_key__owner='{search_key_owner}' and search_key__repo='{search_key_repo}'"
+        if_null_result = ck.execute_no_params(if_null_sql)
+        if not if_null_result:
+            keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
+                            table_name=table_name, transfer_type="discourse_init")
+        logger.info("discourse------------------------")
+        opensearch_datas = get_data_from_opensearch_discourse(index=opensearch_index,
+                                                             opensearch_conn_datas=opensearch_conn_datas,
+                                                             repo=search_key)
+
+        # Done chenkx: Split discourse's contents data to two tables (POSTs and CONTENTs)
+        if opensearch_index == 'discourse_topic_content':
+            if table_name == 'discourse_topic_content_posts':
+                # To alias with below code.
+                opensearch_datas_part = []
+                for os_data in opensearch_datas[0]:
+                    # 注意copy.deepcopy才是深拷贝
+                    for post in os_data['_source']['raw_data']['post_stream']['posts']:
+                        cur = copy.deepcopy(os_data)
+                        cur['_source']['raw_data'] = copy.deepcopy(post)
+                        opensearch_datas_part.append(cur)
+                opensearch_datas = (opensearch_datas_part, *opensearch_datas[1:])
+            elif table_name == 'discourse_topic_content_info':
+                opensearch_datas_part = []
+                for os_data in opensearch_datas[0]:
+                    cur = copy.deepcopy(os_data)
+                    del cur['_source']['raw_data']['post_stream']['posts']
+                    # 将suggested_topics的字典内容压平
+                    if 'suggested_topics' in cur['_source']['raw_data']:
+                        cur['_source']['raw_data']['suggested_topics'] = json.dumps(cur['_source']['raw_data']['suggested_topics'])
+                    else:
+                        cur['_source']['raw_data']['suggested_topics'] = None
+                    opensearch_datas_part.append(cur)
+                opensearch_datas = (opensearch_datas_part, *opensearch_datas[1:])
+
     fields = get_table_structure(table_name=table_name, ck=ck)
     max_timestamp = 0
     count = 0
@@ -556,18 +623,31 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
             df = pd.json_normalize(df_data)
             template["ck_data_insert_at"] = now_timestamp()
             template["deleted"] = 0
-            dict_data = parse_data(df, template)
+            try:
+                dict_data = parse_data(df, template)
+            except Exception as e:
+                print(os_data)
+                raise e
             try:
                 dict_dict = json.loads(json.dumps(dict_data))
             except JSONDecodeError as error:
                 logger.error(error)
                 continue
+
             for field in fields:
                 if dict_dict.get(field) and fields.get(field) == 'DateTime64(3)':
-                    dict_dict[field] = datetime.datetime.strptime(dict_dict[field], '%Y-%m-%dT%H:%M:%SZ')
+                    dict_dict[field] = datetime.datetime.strptime(dict_dict[field], '%Y-%m-%dT%H:%M:%S.%fZ')
+                elif dict_dict.get(field) and fields.get(field) == 'Array(DateTime64(3))':
+                    for i, k in enumerate(dict_dict.get(field)):
+                        if k != 'null':
+                            dict_dict[field][i] = datetime.datetime.strptime(k, '%Y-%m-%dT%H:%M:%S.%fZ')
+                        else :
+                            dict_dict[field][i] = datetime.datetime.strptime("1999-03-01T16:47:08.370Z", '%Y-%m-%dT%H:%M:%S.%fZ')
                 elif fields.get(field) == 'String':
                     try:
-                        dict_dict[field].encode('utf-8')
+                        # Some file may not exist in dict
+                        if field in dict_dict:
+                            dict_dict[field].encode('utf-8')
                     except UnicodeEncodeError as error:
                         dict_dict[field] = dict_dict[field].encode('unicode-escape').decode('utf-8')
             bulk_data.append(dict_dict)
@@ -581,6 +661,7 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
                     bulk_data.clear()
                     max_timestamp = 0
                     logger.info(f'已经插入的数据的条数为:{count}')
+
             except KeyError as error:
                 bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, transfer_type)
                 raise KeyError(error)
@@ -647,7 +728,12 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
         #     raise Exception("Inconsistent data between opensearch and clickhouse")
         # else:
         #     logger.info("opensearch and clickhouse data are consistent")
-
+    elif transfer_type == "discourse":
+        ck_check_point_discourse(opensearch_client=opensearch_datas[1],
+                                opensearch_index=opensearch_index,
+                                clickhouse_table=table_name,
+                                updated_at=max_timestamp,
+                                repo=search_key)
     ck.close()
 
 
@@ -868,6 +954,46 @@ def get_data_from_opensearch_maillist(index, opensearch_conn_datas, maillist_rep
                            preserve_order=True)
     return results, opensearch_client
 
+# TODO : chenkx :: This function is same as get_data_from_opensearch_by_repo
+def get_data_from_opensearch_discourse(index, opensearch_conn_datas, repo):
+    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+    results = helpers.scan(client=opensearch_client,
+                           query={
+                               "query": {
+                                   "bool": {
+                                       "must": [
+                                           {
+                                               "term": {
+                                                   "search_key.owner.keyword": {
+                                                       "value": repo.get('owner')
+                                                   }
+                                               }
+                                           },
+                                           {
+                                               "term": {
+                                                   "search_key.repo.keyword": {
+                                                       "value": repo.get('repo')
+                                                   }
+                                               }
+                                           }
+                                       ]
+                                   }
+                               },
+                               "sort": [
+                                   {
+                                       "search_key.updated_at": {
+                                           "order": "asc"
+                                       }
+                                   }
+                               ]
+                           },
+                           index=index,
+                           size=5000,
+                           scroll="40m",
+                           request_timeout=100,
+                           preserve_order=True)
+    return results, opensearch_client
+
 
 def parse_data(df, temp):
     # 这个是最终插入ck的数据字典
@@ -885,27 +1011,101 @@ def parse_data(df, temp):
         # # 这里的字符串都转换成在ck中能够使用函数解析json的标准格式
         # if isinstance(row, str):
         #     row.replace(": ", ":")
-        # 解决嵌套array
+        # 解决嵌套 array
         if isinstance(row, list):
             # 数组中是字典
-            if isinstance(row[0], dict):
+            if row and isinstance(row[0], dict):
                 for key in row[0]:
                     data_name = f'{index}.{key}'
-                    dict_data[data_name] = []
+                    ## chenkx: 若直接使用模板，就不用新添加list
+                    # if data_name in dict_data:
+                    #     dict_data[data_name] = []
                 for data in row:
                     for key in data:
-                        filter_data = alter_data_type(data.get(key))
-                        dict_data.get(f'{index}.{key}').append(filter_data)
+                        if (f'{index}.{key}' not in dict_data):
+                            continue
+                        filter_data = alter_data_type(data.get(key), dict_data.get(f'{index}.{key}')[0])
+                        try:
+                            # BUG 如果一个list包含3个dict，其中只有第二个有某个键值对
+                            #     那这就会有问题。
+                            # 目前解决办法，多出来的部分直接过滤。
+                            dict_data.get(f'{index}.{key}').append(filter_data)
+                        except Exception as e:
+                            print(f'{index}.{key}')
+                            raise e
             else:
                 # 这种是数组类型
                 data_name = f'{index}'
-                dict_data[data_name] = row
+                if data_name in dict_data:
+                    dict_data[data_name] = row
         else:
             # 这种是非list类型
             data_name = f'{index}'
-            dict_data[data_name] = row
+            if data_name in dict_data:
+                dict_data[data_name] = row
+
     return dict_data
 
+
+# # todo 测试取代上侧方法
+# def parse_data(df, temp):
+#     # 这个是最终插入ck的数据字典
+#     dict_data = copy.deepcopy(temp)
+#     for index, row in df.iloc[0].iteritems():
+#         # 去除以raw_data开头的字段
+#         if index.startswith("raw"):
+#             index = index[9:]
+#         index = index.replace('.', '__')
+#         # 只要是空的就跳过
+#         if not row:
+#             continue
+#         # 第一步的转化
+#         row = alter_data_type(row)
+#         # # 这里的字符串都转换成在ck中能够使用函数解析json的标准格式
+#         # if isinstance(row, str):
+#         #     row.replace(": ", ":")
+#         # 解决嵌套array
+#         nest_depth = {}
+#         if isinstance(row, list):
+#             # 数组中是字典
+#             if isinstance(row[0], dict):
+#                 # for key in row[0]:
+#                 #     data_name = f'{index}.{key}'
+#                 #     dict_data[data_name] = []
+#                 count = 0
+#                 for data in row:
+#                     count += 1
+#                     for key in data:
+#                         if count == 1:
+#                             filter_data = alter_data_type(data.get(key))
+#                             dict_data.get(f'{index}.{key}')[0] = filter_data
+#                         else:
+#                             filter_data = alter_data_type(data.get(key))
+#                             dict_data.get(f'{index}.{key}').append(filter_data)
+#                 nest_depth[index] = count
+#             else:
+#                 # 这种是数组类型
+#                 data_name = f'{index}'
+#                 dict_data[data_name] = row
+#         else:
+#             # 这种是非list类型
+#             data_name = f'{index}'
+#             dict_data[data_name] = row
+#     for data_key in dict_data:
+#         if data_key.find('.') and isinstance(dict_data.get(data_key), list):
+#             data = dict_data.get(data_key)
+#             data_len = len(data)
+#             nest_depth_len = nest_depth[data_key.split('.')[0]]
+#             if nest_depth_len > data_len:
+#                 for i in range(nest_depth_len-data_len):
+#                     if isinstance(data[-1],str):
+#                         data.append("")
+#                     elif isinstance(data[-1],int):
+#                         data.append(0)
+#                     elif isinstance(data[-1],float):
+#                         data.append(0.0)
+# 
+#     return dict_data
 
 # # todo 测试取代上侧方法
 # def parse_data(df, temp):
@@ -992,6 +1192,7 @@ def parse_data_init(df):
                 for data in row:
                     for key in data:
                         filter_data = alter_data_type(data.get(key))
+                        # print(f'{index}.{key}')
                         dict_data.get(f'{index}.{key}').append(filter_data)
             else:
                 # 这种是数组类型
