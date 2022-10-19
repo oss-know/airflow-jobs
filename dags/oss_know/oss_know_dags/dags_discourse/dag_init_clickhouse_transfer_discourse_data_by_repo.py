@@ -66,8 +66,10 @@ with DAG(
     for index_and_repo in need_init_discourse_transfer_to_clickhouse:
         if index_and_repo["index"].startswith('discourse'):
             
-            if index_and_repo["index"] != "discourse_topic_content":
+            ### tmp
+            if index_and_repo["index"] != "discourse_user_info":
                 continue
+            ### tmp
             
             for repo in index_and_repo["repo_list"]:
                 op_do_ck_transfer_data_by_repo = PythonOperator(
