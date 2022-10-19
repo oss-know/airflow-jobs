@@ -67,3 +67,4 @@ CLICKHOUSE_SYNC_COMBINATION_TYPE = "clickhouse_sync_combination_type"
 # in opensearch and then transfer the sync-ed part to clickhouse
 DATA_SYNC_INTERVAL = "data_sync_interval"
 NEED_INIT_DISCOURSE = 'need_init_discourse'
+NEED_INIT_DISCOURSE_CLICKHOUSE = 'need_init_discourse_clickhouse'
