@@ -609,6 +609,9 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
                         cur['_source']['raw_data']['suggested_topics'] = None
                     opensearch_datas_part.append(cur)
                 opensearch_datas = (opensearch_datas_part, *opensearch_datas[1:])
+            else:
+                # Do as normal
+                pass
 
     fields = get_table_structure(table_name=table_name, ck=ck)
     max_timestamp = 0
@@ -1015,24 +1018,32 @@ def parse_data(df, temp):
         if isinstance(row, list):
             # 数组中是字典
             if row and isinstance(row[0], dict):
-                for key in row[0]:
-                    data_name = f'{index}.{key}'
-                    ## chenkx: 若直接使用模板，就不用新添加list
-                    # if data_name in dict_data:
-                    #     dict_data[data_name] = []
+                ## chenkx: 直接使用template模板
+                default_dict = {}
+                for key in dict_data:
+                    if key.startswith(f'{index}.'):
+                        default_dict[key] = dict_data[key][0]
+                        dict_data[key] = []
                 for data in row:
+                    vis = {}
                     for key in data:
+                        # 若不在模板中，则直接跳过
                         if (f'{index}.{key}' not in dict_data):
                             continue
-                        filter_data = alter_data_type(data.get(key), dict_data.get(f'{index}.{key}')[0])
+                        vis[f'{index}.{key}'] = 1
+                        filter_data = alter_data_type(data.get(key), default_dict.get(f'{index}.{key}'))
                         try:
                             # BUG 如果一个list包含3个dict，其中只有第二个有某个键值对
                             #     那这就会有问题。
-                            # 目前解决办法，多出来的部分直接过滤。
+                            #   目前解决办法：通过下面的default_dict处理
                             dict_data.get(f'{index}.{key}').append(filter_data)
                         except Exception as e:
                             print(f'{index}.{key}')
                             raise e
+                    # chenkx :: 若不存在该key，则添加默认值，保证list的完整性
+                    for key in default_dict:
+                        if key not in vis:
+                            dict_data[key].append(default_dict[key])
             else:
                 # 这种是数组类型
                 data_name = f'{index}'

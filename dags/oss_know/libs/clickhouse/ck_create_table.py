@@ -131,10 +131,6 @@ def create_ck_table(df,
         # dict1[index] = row
     result = ",\r\n".join(ck_data_type)
 
-    ## 用于删除表格
-    # if table_name not in ["discourse_category", "discourse_topic_list", "discourse_topic_content", "discourse_topic_content_posts"]:
-    #     drop_local_table_ddl = f'DROP TABLE  {database_name}.{table_name}_local SYNC'
-    #     drop_distributed_ddl = f'DROP TABLE  {database_name}.{table_name} SYNC'
 
     create_local_table_ddl = f'CREATE TABLE IF NOT EXISTS {database_name}.{table_name}_local on cluster {cluster_name}({result}) Engine={table_engine}'
     create_distributed_ddl = f'CREATE TABLE IF NOT EXISTS {database_name}.{table_name} on cluster {cluster_name} ({result}) Engine= Distributed({cluster_name},{database_name},{table_name}_local,{distributed_key})'
@@ -155,8 +151,21 @@ def create_ck_table(df,
                   password=clickhouse_server_info["PASSWD"],
                   database=clickhouse_server_info["DATABASE"])
     
-    ## 用于删除表格
+    ## 用于删除、清空表格
     # if table_name not in ["discourse_category", "discourse_topic_list", "discourse_topic_content", "discourse_topic_content_posts"]:
+    # if table_name == 'discourse_user_info':
+
+        # drop_local_table_ddl = f'DROP TABLE  {database_name}.{table_name}_local SYNC'
+        # drop_distributed_ddl = f'DROP TABLE  {database_name}.{table_name} SYNC'
+
+        # Clear all table data.
+        # drop_local_table_ddl = f'truncate TABLE  {database_name}.{table_name}_local SYNC'
+        # drop_distributed_ddl = f'truncate TABLE  {database_name}.{table_name} SYNC'
+         
+
+    # if table_name not in ["discourse_category", "discourse_topic_list", "discourse_topic_content", "discourse_topic_content_posts"]:
+    # if table_name == 'discourse_user_info':
+
     #     execute_ddl(ck, drop_local_table_ddl)
     #     execute_ddl(ck, drop_distributed_ddl)
 
