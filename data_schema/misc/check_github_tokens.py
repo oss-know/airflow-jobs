@@ -29,7 +29,7 @@ def getConnectDemo(token):
     print(result)
 
 
-tokens = ["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"]
+tokens = []
 
 
 for token in tokens:

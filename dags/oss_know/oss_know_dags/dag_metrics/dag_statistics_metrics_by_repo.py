@@ -49,7 +49,7 @@ with DAG(
     owner_repos = Variable.get("calculate_metrics_repo_list", deserialize_json=True)
     for owner_repo in owner_repos:
         owner = owner_repo["owner"]
-        repo = owner_repo["owner"]
+        repo = owner_repo["repo"]
         op_do_statistics_metrics = PythonOperator(
             task_id=f'do_statistics_metrics_owner_{owner}_repo_{repo}',
             python_callable=do_statistics_metrics,

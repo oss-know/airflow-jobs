@@ -10,6 +10,9 @@ def statistics_metrics_by_repo(clickhouse_server_info, owner, repo):
                   user=clickhouse_server_info["USER"],
                   password=clickhouse_server_info["PASSWD"],
                   database=clickhouse_server_info["DATABASE"])
+    if_exist = ck.execute_no_params(f"select count() from metrics where owner='{owner}' and repo = '{repo}'")
+    print(if_exist)
+    return
     results = ck.execute_no_params(f"""
     select
     if(a.owner != '',
@@ -1933,14 +1936,14 @@ def statistics_activities(clickhouse_server_info, owner='', repo=''):
     if owner == '' and repo == '':
         metrics = read_ck_server.execute_no_params(get_metrics_sql)
     else:
-        get_metrics_sql_by_repo = f'''
+        get_metrics_sql_by_repo = f"""
         select owner, repo, github_id, github_login, sum(commit_times), sum(changed_lines), sum(diff_file_counts),sum(prs_counts) / count(github_login), sum(pr_body_length_avg) / count(github_login), sum(issues_counts) / count(github_login), 
         sum(issue_body_length_avg) / count(github_login), sum(issues_comment_count) / count(github_login), sum(issues_comment_body_length_avg) / count(github_login), sum(pr_comment_count) / count(github_login), 
         sum(pr_comment_body_length_avg) / count(github_login), sum(be_mentioned_times_in_issues) / count(github_login), sum(be_mentioned_times_in_pr) / count(github_login), 
         sum(referred_other_issues_or_prs_in_issue) / count(github_login), sum(referred_other_issues_or_prs_in_pr) / count(github_login), sum(changed_label_times_in_issues) / count(github_login), 
         sum(changed_label_times_in_prs) / count(github_login), sum(closed_issues_times) / count(github_login), sum(closed_prs_times) / count(github_login) FROM  metrics 
-        where owner = {owner} and repo = {repo}
-        group by (owner, repo, github_id, github_login) order by owner'''
+        where owner = '{owner}' and repo = '{repo}'
+        group by (owner, repo, github_id, github_login) order by owner"""
         metrics = read_ck_server.execute_no_params(get_metrics_sql_by_repo)
     metrics_np = np.array(metrics)
     metrics_mat = metrics_np[:, 4:]

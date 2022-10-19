@@ -4,9 +4,9 @@ import time
 from oss_know.libs.util.clickhouse_driver import CKServer
 
 
-def get_dir_n(owner, repo):
-    ck1 = CKServer(host='192.168.8.2', port=19000, user='default', password='default', database='default')
-    ck2 = CKServer(host='192.168.8.2', port=19000, user='default', password='default', database='default')
+def get_dir_n(owner, repo, ck_con):
+    ck1 = CKServer(host=ck_con['HOST'], port=ck_con['PORT'], user=ck_con['USER'], password=ck_con['PASSWD'], database=ck_con['DATABASE'])
+    ck2 = CKServer(host=ck_con['HOST'], port=ck_con['PORT'], user=ck_con['USER'], password=ck_con['PASSWD'], database=ck_con['DATABASE'])
 
     results = ck1.execute_no_params(f"""
     SELECT search_key__owner,
@@ -102,8 +102,8 @@ def get_dir_n(owner, repo):
     ck2.close()
 
 
-def get_alter_files_count(owner='', repo=''):
-    ck = CKServer(host='192.168.8.2', port=19000, user='default', password='default', database='default')
+def get_alter_files_count(ck_con , owner='', repo=''):
+    ck = CKServer(host=ck_con['HOST'], port=ck_con['PORT'], user=ck_con['USER'], password=ck_con['PASSWD'], database=ck_con['DATABASE'])
     if owner == '' and repo == '':
 
         sql = f"""
@@ -424,8 +424,8 @@ def get_alter_files_count(owner='', repo=''):
     ck.close()
 
 
-def get_dir_contributer_count(owner='', repo=''):
-    ck = CKServer(host='192.168.8.2', port=19000, user='default', password='default', database='default')
+def get_dir_contributer_count(ck_con, owner='', repo=''):
+    ck = CKServer(host=ck_con['HOST'], port=ck_con['PORT'], user=ck_con['USER'], password=ck_con['PASSWD'], database=ck_con['DATABASE'])
     if owner == '' and repo == '':
         sql = f"""
     select * from (select search_key__owner,search_key__repo,in_dir,authored_date,area,count() as contributor_count from (select search_key__owner ,
@@ -789,8 +789,8 @@ group by search_key__owner, search_key__repo,
     ck.close()
 
 
-def get_alter_file_count_by_dir_email_domain(owner='', repo=''):
-    ck = CKServer(host='192.168.8.2', port=19000, user='default', password='default', database='default')
+def get_alter_file_count_by_dir_email_domain(ck_con,owner='', repo=''):
+    ck = CKServer(host=ck_con['HOST'], port=ck_con['PORT'], user=ck_con['USER'], password=ck_con['PASSWD'], database=ck_con['DATABASE'])
     if owner == '' and repo == '':
         sql = f"""
         select * from (select search_key__owner ,
@@ -867,8 +867,8 @@ def get_alter_file_count_by_dir_email_domain(owner='', repo=''):
     ck.close()
 
 
-def get_contributer_by_dir_email_domain(owner='', repo=''):
-    ck = CKServer(host='192.168.8.2', port=19000, user='default', password='default', database='default')
+def get_contributer_by_dir_email_domain(ck_con, owner='', repo=''):
+    ck = CKServer(host=ck_con['HOST'], port=ck_con['PORT'], user=ck_con['USER'], password=ck_con['PASSWD'], database=ck_con['DATABASE'])
     if owner == '' and repo == '':
         sql = f"""
         select * from (select search_key__owner, search_key__repo,
@@ -949,8 +949,8 @@ def get_contributer_by_dir_email_domain(owner='', repo=''):
     ck.close()
 
 
-def get_tz_distribution(owner='', repo=''):
-    ck = CKServer(host='192.168.8.2', port=19000, user='default', password='default', database='default')
+def get_tz_distribution(ck_con, owner='', repo=''):
+    ck = CKServer(host=ck_con['HOST'], port=ck_con['PORT'], user=ck_con['USER'], password=ck_con['PASSWD'], database=ck_con['DATABASE'])
     if owner == '' and repo == '':
         sql = f"""
         select * from (select search_key__owner,search_key__repo,in_dir,author_email,sum(alter_files_count) alter_files_count,groupArray(a) as tz_distribution

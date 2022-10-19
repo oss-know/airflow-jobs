@@ -43,11 +43,11 @@ with DAG(
                                                                         opensearch_conn_datas=opensearch_conn_datas)
         else:
             table_templates = Variable.get(CK_TABLE_DEFAULT_VAL_TPLT, deserialize_json=True)
-
-            for table_template in table_templates:
-                if table_template.get("table_name") == table_name:
-                    template = table_template.get("temp")
-                    break
+            template=table_templates.get(table_name)
+            # for table_template in table_templates:
+            #     if table_template.get("table_name") == table_name:
+            #         template = table_template.get("temp")
+            #         break
             df = pd.json_normalize(template)
             template = init_ck_transfer_data.parse_data_init(df)
 
