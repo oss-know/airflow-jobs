@@ -11,9 +11,9 @@ OPENSEARCH_INDEX_GITHUB_PROFILE = "github_profile"
 
 OPENSEARCH_INDEX_MAILLISTS = "maillists"
 
-
 OPENSEARCH_DISCOURSE_RAW = "discourse"
 OPENSEARCH_DISCOURSE_CATEGORY = "discourse_category"
+OPENSEARCH_DISCOURSE_TOPIC_LIST_OLD = "discourse_topic_list_old"
 OPENSEARCH_DISCOURSE_TOPIC_LIST = "discourse_topic_list"
 OPENSEARCH_DISCOURSE_TOPIC_CONTENT = "discourse_topic_content"
 # OPENSEARCH_DISCOURSE_TOPIC_CONTENT = "discourse_topic_content_tmp"
