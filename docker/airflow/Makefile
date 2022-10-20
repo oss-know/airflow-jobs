@@ -16,7 +16,7 @@ help: ## Help dialog.
 up_infra: ## Create and start containers
 # 	docker pull malin/aiflow:v2 &&
 	docker pull airflowjobs/airflow:dev-python3.8 && \
-	$(DOCKER_INFRA) up &
+	$(DOCKER_INFRA) up -d
 
 down_infra: ## Stop and remove all containers
 	$(DOCKER_INFRA) down
