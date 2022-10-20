@@ -11,6 +11,10 @@ from oss_know.libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TO
     CLICKHOUSE_DRIVER_INFO, CK_TABLE_DEFAULT_VAL_TPLT, POSTGRES_CONN_INFO
 # git_init_sync_v0.0.3
 from oss_know.libs.clickhouse import init_ck_transfer_data
+from oss_know.libs.metrics.init_analysis_data_for_dashboard import get_alter_files_count, \
+    get_contributer_by_dir_email_domain, get_dir_contributer_count, get_tz_distribution, \
+    get_alter_file_count_by_dir_email_domain, get_dir_n
+
 from oss_know.libs.util.log import logger
 from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
 from oss_know.libs.util.token import TokenManager
@@ -174,6 +178,34 @@ with DAG(
             callback(owner, repo, 'ck_transfer', e)
 
 
+    def do_ck_aggregation(callback, **kwargs):
+        owner = kwargs['dag_run'].conf.get('owner')
+        repo = kwargs['dag_run'].conf.get('repo')
+        update_status_template_str = \
+            f"""update triggered_git_repos 
+                            set ck_aggregation_status=$status 
+                            where owner='{owner}' and repo='{repo}'"""
+        update_status_template = Template(update_status_template_str)
+
+        try:
+            # get_dir_n must first run, since other aggregations depend on it.
+            get_dir_n(ck_con=clickhouse_server_info, owner=owner, repo=repo)
+
+            get_alter_files_count(ck_con=clickhouse_server_info, owner=owner, repo=repo)
+            get_dir_contributer_count(ck_con=clickhouse_server_info, owner=owner, repo=repo)
+            get_alter_file_count_by_dir_email_domain(ck_con=clickhouse_server_info, owner=owner, repo=repo)
+            get_contributer_by_dir_email_domain(ck_con=clickhouse_server_info, owner=owner, repo=repo)
+            get_tz_distribution(ck_con=clickhouse_server_info, owner=owner, repo=repo)
+
+            pg_cur.execute(update_status_template.substitute(status=2))
+            pg_conn.commit()
+            callback(owner, repo, 'ck_aggregation', None)
+        except Exception as e:
+            pg_cur.execute(update_status_template.substitute(status=3))
+            pg_conn.commit()
+            callback(owner, repo, 'ck_aggregation', e)
+
+
     def exec_job_and_update_db(job_callable, callback, res_type, additional_args=[], args=[], **kwargs):
         owner = None
         repo = None
@@ -187,7 +219,7 @@ with DAG(
 
         update_status_template_str = \
             f"""update triggered_git_repos 
-            set {res_type}_status=$status 
+            set {res_type}_status=$status
             where owner='{owner}' and repo='{repo}'"""
         update_status_template = Template(update_status_template_str)
 
@@ -241,6 +273,7 @@ with DAG(
                github_issues_comments_status,
                github_issues_timeline_status,
                ck_transfer_status
+               ck_aggregation_status
         from triggered_git_repos
         where owner='{owner}' and repo='{repo}'"""
         pg_cur.execute(get_statuses_sq)
@@ -306,9 +339,17 @@ with DAG(
         op_kwargs={'callback': job_callback}
     )
 
+    op_do_ck_aggregation = PythonOperator(
+        task_id='do_ck_analysis_data_aggs',
+        python_callable=do_ck_aggregation,
+        provide_context=True,
+        op_kwargs={'callback': job_callback}
+    )
+
     op_init_track_repo >> [op_do_init_gits, op_do_init_github_commits, op_do_init_github_pull_requests,
                            op_do_init_github_issues]
     op_do_init_github_issues >> [op_do_init_github_issues_comments,
                                  op_do_init_github_issues_timeline]
     [op_do_init_gits, op_do_init_github_commits, op_do_init_github_pull_requests,
      op_do_init_github_issues_comments, op_do_init_github_issues_timeline] >> op_do_ck_transfer
+    op_do_ck_transfer >> op_do_ck_aggregation
