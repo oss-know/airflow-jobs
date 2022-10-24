@@ -14,7 +14,6 @@ from oss_know.libs.clickhouse import init_ck_transfer_data
 from oss_know.libs.metrics.init_analysis_data_for_dashboard import get_alter_files_count, \
     get_contributer_by_dir_email_domain, get_dir_contributer_count, get_tz_distribution, \
     get_alter_file_count_by_dir_email_domain, get_dir_n
-
 from oss_know.libs.util.log import logger
 from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
 from oss_know.libs.util.token import TokenManager
@@ -98,9 +97,8 @@ with DAG(
 
 
     def do_init_github_issues(callback, **kwargs):
-        from oss_know.libs.github import init_issues_timeline
-        exec_job_and_update_db(init_issues_timeline.init_sync_github_issues_timeline, callback, 'github_issues',
-                               **kwargs)
+        from oss_know.libs.github import init_issues
+        exec_job_and_update_db(init_issues.init_github_issues, callback, 'github_issues', **kwargs)
 
 
     def do_init_github_issues_comments(callback, **kwargs):
