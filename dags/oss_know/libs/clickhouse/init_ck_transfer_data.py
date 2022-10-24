@@ -204,8 +204,6 @@ def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, tabl
             bulk_datas.append(insert_data)
             sql = f"INSERT INTO {table_name} (*) VALUES"
             count += 1
-            # print(insert_data)
-            # return
             if count % 50000 == 0:
                 result = ck.execute(sql, bulk_datas)
                 logger.info(f"已经插入的数据条数:{count}")
