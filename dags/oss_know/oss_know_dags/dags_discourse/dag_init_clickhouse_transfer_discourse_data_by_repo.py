@@ -31,7 +31,6 @@ with DAG(
         opensearch_index = params["index"]
         if opensearch_index == 'discourse_topic_content':
             table_names = [f'{params["index"]}_posts', f'{params["index"]}_info']
-            # table_names = [f'{params["index"]}_info']
         else:
             table_names = [params["index"]]
 
@@ -65,12 +64,7 @@ with DAG(
 
     for index_and_repo in need_init_discourse_transfer_to_clickhouse:
         if index_and_repo["index"].startswith('discourse'):
-            
-            ### tmp
-            if index_and_repo["index"] != "discourse_user_info":
-                continue
-            ### tmp
-            
+            # If u want transfer special table, write IF here.
             for repo in index_and_repo["repo_list"]:
                 op_do_ck_transfer_data_by_repo = PythonOperator(
                                 task_id=f'do_ck_transfer_os_index_{index_and_repo["index"]}_project_name_{repo.get("project_name")}_mail_list_name_{repo.get("mail_list_name")}',
