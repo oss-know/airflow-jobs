@@ -125,6 +125,21 @@ with DAG(
         search_key = {"owner": owner, "repo": repo}
         table_templates = Variable.get(CK_TABLE_DEFAULT_VAL_TPLT, deserialize_json=True)
 
+        check_status_sql = \
+            f"""select ck_transfer_status
+            from triggered_git_repos
+            where owner = '{owner}'
+              and repo = '{repo}';
+            """
+        pg_cur.execute(check_status_sql)
+        pg_conn.commit()
+        check_result = pg_cur.fetchall()
+
+        if check_result and check_result[0][0] == 2:
+            logger.info(f'{owner}/{repo} ck_transfer status is success, skip')
+            callback(owner, repo, 'ck_transfer', None)
+            return
+
         update_status_template_str = \
             f"""update triggered_git_repos 
                     set ck_transfer_status=$status 
@@ -214,6 +229,20 @@ with DAG(
             url = kwargs['dag_run'].conf.get('url')
         except KeyError:
             logger.error(f'Repo info not found in dag run config, init dag from Variable')
+
+        check_status_sql = \
+            f"""select {res_type}_status
+            from triggered_git_repos
+            where owner = '{owner}'
+            and repo = '{repo}'"""
+        pg_cur.execute(check_status_sql)
+        pg_conn.commit()
+        check_result = pg_cur.fetchall()
+
+        if check_result and check_result[0][0] == 2:
+            logger.info(f'{owner}/{repo} {res_type} status is success, skip')
+            callback(owner, repo, res_type, None)
+            return
 
         update_status_template_str = \
             f"""update triggered_git_repos 
@@ -338,7 +367,7 @@ with DAG(
     )
 
     op_do_ck_aggregation = PythonOperator(
-        task_id='do_ck_analysis_data_aggs',
+        task_id='do_ck_aggregation',
         python_callable=do_ck_aggregation,
         provide_context=True,
         op_kwargs={'callback': job_callback}
