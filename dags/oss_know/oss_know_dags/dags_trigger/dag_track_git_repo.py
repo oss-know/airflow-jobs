@@ -122,6 +122,7 @@ with DAG(
     def do_ck_transfer(callback, **kwargs):
         owner = kwargs['dag_run'].conf.get('owner')
         repo = kwargs['dag_run'].conf.get('repo')
+        dag_run_id = kwargs['dag_run'].conf.get('dag_run_id')
         search_key = {"owner": owner, "repo": repo}
         table_templates = Variable.get(CK_TABLE_DEFAULT_VAL_TPLT, deserialize_json=True)
 
@@ -129,7 +130,8 @@ with DAG(
             f"""select ck_transfer_status
             from triggered_git_repos
             where owner = '{owner}'
-              and repo = '{repo}';
+              and repo = '{repo}'
+              and dag_run_id='{dag_run_id}';
             """
         pg_cur.execute(check_status_sql)
         pg_conn.commit()
@@ -137,13 +139,13 @@ with DAG(
 
         if check_result and check_result[0][0] == 2:
             logger.info(f'{owner}/{repo} ck_transfer status is success, skip')
-            callback(owner, repo, 'ck_transfer', None)
+            callback(owner, repo, dag_run_id, 'ck_transfer', None)
             return
 
         update_status_template_str = \
             f"""update triggered_git_repos 
                     set ck_transfer_status=$status 
-                    where owner='{owner}' and repo='{repo}'"""
+                    where owner='{owner}' and repo='{repo}' and dag_run_id='{dag_run_id}'"""
         update_status_template = Template(update_status_template_str)
 
         try:
@@ -184,20 +186,22 @@ with DAG(
 
             pg_cur.execute(update_status_template.substitute(status=2))
             pg_conn.commit()
-            callback(owner, repo, 'ck_transfer', None)
+            callback(owner, repo, dag_run_id, 'ck_transfer', None)
         except Exception as e:
             pg_cur.execute(update_status_template.substitute(status=3))
             pg_conn.commit()
-            callback(owner, repo, 'ck_transfer', e)
+            callback(owner, repo, dag_run_id, 'ck_transfer', e)
 
 
     def do_ck_aggregation(callback, **kwargs):
         owner = kwargs['dag_run'].conf.get('owner')
         repo = kwargs['dag_run'].conf.get('repo')
+        dag_run_id = kwargs['dag_run'].conf.get('dag_run_id')
+
         update_status_template_str = \
             f"""update triggered_git_repos 
                             set ck_aggregation_status=$status 
-                            where owner='{owner}' and repo='{repo}'"""
+                            where owner='{owner}' and repo='{repo}' and dag_run_id='{dag_run_id}'"""
         update_status_template = Template(update_status_template_str)
 
         try:
@@ -212,20 +216,22 @@ with DAG(
 
             pg_cur.execute(update_status_template.substitute(status=2))
             pg_conn.commit()
-            callback(owner, repo, 'ck_aggregation', None)
+            callback(owner, repo, dag_run_id, 'ck_aggregation', None)
         except Exception as e:
             pg_cur.execute(update_status_template.substitute(status=3))
             pg_conn.commit()
-            callback(owner, repo, 'ck_aggregation', e)
+            callback(owner, repo, dag_run_id, 'ck_aggregation', e)
 
 
     def exec_job_and_update_db(job_callable, callback, res_type, additional_args=[], args=[], **kwargs):
         owner = None
         repo = None
         url = None
+        dag_run_id = None
         try:
             owner = kwargs['dag_run'].conf.get('owner')
             repo = kwargs['dag_run'].conf.get('repo')
+            dag_run_id = kwargs['dag_run'].conf.get('dag_run_id')
             url = kwargs['dag_run'].conf.get('url')
         except KeyError:
             logger.error(f'Repo info not found in dag run config, init dag from Variable')
@@ -234,27 +240,28 @@ with DAG(
             f"""select {res_type}_status
             from triggered_git_repos
             where owner = '{owner}'
-            and repo = '{repo}'"""
+            and repo = '{repo}'
+            and dag_run_id='{dag_run_id}'"""
         pg_cur.execute(check_status_sql)
         pg_conn.commit()
         check_result = pg_cur.fetchall()
 
         if check_result and check_result[0][0] == 2:
             logger.info(f'{owner}/{repo} {res_type} status is success, skip')
-            callback(owner, repo, res_type, None)
+            callback(owner, repo, dag_run_id, res_type, None)
             return
 
         update_status_template_str = \
             f"""update triggered_git_repos 
             set {res_type}_status=$status
-            where owner='{owner}' and repo='{repo}'"""
+            where owner='{owner}' and repo='{repo}' and dag_run_id='{dag_run_id}'"""
         update_status_template = Template(update_status_template_str)
 
         if 'github.com' not in url:
             logger.info('Not github repository, skip')
             pg_cur.execute(update_status_template.substitute(status=2))
             pg_conn.commit()
-            callback(owner, repo, res_type, None)
+            callback(owner, repo, dag_run_id, res_type, None)
             return
 
         since = '1970-01-01T00:00:00Z'
@@ -269,30 +276,30 @@ with DAG(
             pg_cur.execute(update_status_template.substitute(status=2))
             pg_conn.commit()
 
-            callback(owner, repo, res_type, None)
+            callback(owner, repo, dag_run_id, res_type, None)
         except Exception as e:
             pg_cur.execute(update_status_template.substitute(status=3))
             pg_conn.commit()
-            callback(owner, repo, res_type, e)
+            callback(owner, repo, dag_run_id, res_type, e)
 
 
-    def job_callback(owner, repo, res_type, e: Exception):
-        logger.info(f'Finish job on {owner}/{repo} {res_type}, exception:', e)
+    def job_callback(owner, repo, dag_run_id, res_type, e: Exception):
+        logger.info(f'Finish job on {owner}/{repo} {res_type} {dag_run_id}, exception:', e)
         job_status = 'failed' if e else 'success'
         update_status_sql = f"""update triggered_git_repos 
-                        set job_status='{job_status}' 
-                        where owner='{owner}' and repo='{repo}'"""
+                        set job_status=%s 
+                        where owner=%s and repo=%s and dag_run_id=%s"""
 
         if e:
             update_fail_reason_sql = f"""update triggered_git_repos 
-                        set {res_type}_fail_reason ='{e}' 
-                        where owner='{owner}' and repo='{repo}'"""
-            pg_cur.execute(update_status_sql)
-            pg_cur.execute(update_fail_reason_sql)
+                        set {res_type}_fail_reason = %s
+                        where owner=%s and repo=%s and dag_run_id=%s"""
+            pg_cur.execute(update_status_sql, (job_status, owner, repo, dag_run_id))
+            pg_cur.execute(update_fail_reason_sql, (str(e), owner, repo, dag_run_id))
             pg_conn.commit()
             raise e
 
-        get_statuses_sq = f"""
+        get_statuses_sql = f"""
         select gits_status,
                github_commits_status,
                github_pull_requests_status,
@@ -302,8 +309,8 @@ with DAG(
                ck_transfer_status
                ck_aggregation_status
         from triggered_git_repos
-        where owner='{owner}' and repo='{repo}'"""
-        pg_cur.execute(get_statuses_sq)
+        where owner='{owner}' and repo='{repo}' and dag_run_id='{dag_run_id}'"""
+        pg_cur.execute(get_statuses_sql)
         records = pg_cur.fetchall()
         if not records:  # or records' length is not 1
             raise Exception(f'Failed to check {owner}/{repo} job status, record not found')
@@ -313,7 +320,7 @@ with DAG(
             if status != 2:
                 job_finished = False
         if job_finished:
-            pg_cur.execute(update_status_sql)
+            pg_cur.execute(update_status_sql, (job_status, owner, repo, dag_run_id))
             pg_conn.commit()
 
 
