@@ -3,6 +3,7 @@ import datetime
 import os
 import shutil
 import uuid
+from time import sleep
 
 from git import Repo
 from loguru import logger
@@ -42,18 +43,35 @@ def sync_git_check_update_info(opensearch_client, owner, repo, head_commit):
     logger.info(response)
 
 
-def delete_old_data(owner, repo, client):
-    query = {
+def delete_old_data(owner, repo, client, sync=True):
+    query_body = {
         "query": {
             "bool": {
                 "must": [
                     {"term": {"search_key.owner.keyword": {"value": owner}}},
-                    {"term": {"search_key.repo.keyword": {"value": repo}}}]
+                    {"term": {"search_key.repo.keyword": {"value": repo}}}
+                ],
+                "must_not": [
+                    {
+                        "exists": {
+                            "field": "search_key.place_holder_uuid"
+                        }
+                    }
+                ]
             }
         }
     }
-    response = client.delete_by_query(index=OPENSEARCH_GIT_RAW, body=query)
-    logger.info(response)
+    response = client.delete_by_query(index=OPENSEARCH_GIT_RAW, body=query_body)
+    logger.info(f"Deleting old data of {owner}/{repo}, response: {response}")
+
+    # Make sure all the docs are deleted with a dummy polling
+    # TODO Maybe there are better solutions with OpenSearch's mechanism?
+    if sync:
+        for i in range(20):
+            sleep(0.5)
+            res = client.search(index=OPENSEARCH_GIT_RAW, body=query_body)
+            if res['hits']['total']['value'] == 0:
+                break
 
 
 # Generate a place-holder doc for (owner, repo) in gits index
@@ -62,27 +80,30 @@ def delete_old_data(owner, repo, client):
 # data docs
 def insert_flag_doc(client, owner, repo):
     _uuid = uuid.uuid1().hex
-    client.index(index=OPENSEARCH_GIT_RAW,
-                 body={
-                     "search_key": {
-                         "owner": owner,
-                         "repo": repo,
-                         "place_holder_uuid": _uuid
-                     }
-                 })
+    client.index(index=OPENSEARCH_GIT_RAW, body={
+        "search_key": {
+            "owner": owner,
+            "repo": repo,
+            "place_holder_uuid": _uuid
+        }
+    })
     return _uuid
 
 
 def remove_flag_doc(client, owner, repo, doc_uuid):
-    client.delete_by_query(index=OPENSEARCH_GIT_RAW, body={
+    search_body = {
         "query": {
             "bool": {
-                "must": [{"match": {"search_key.place_holder_uuid": doc_uuid}},
-                         {"match": {"search_key.owner.keyword": owner}},
-                         {"match": {"search_key.repo.keyword": repo}}]
+                "must": [
+                    {"term": {"search_key.place_holder_uuid": doc_uuid}},
+                    {"term": {"search_key.owner.keyword": owner}},
+                    {"term": {"search_key.repo.keyword": repo}}
+                ]
             }
         }
-    })
+    }
+    res = client.delete_by_query(index=OPENSEARCH_GIT_RAW, body=search_body)
+    logger.info(f"Deleting place holder doc response: {res}")
 
 
 def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, git_save_local_path=None):
@@ -107,11 +128,7 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
         "_index": OPENSEARCH_GIT_RAW,
         "_source": {
             "search_key": {
-                "owner": owner,
-                "repo": repo,
-                "origin": git_url,
-                'updated_at': 0,
-                'if_sync': 0
+                "owner": owner, "repo": repo, "origin": git_url, 'updated_at': 0, 'if_sync': 0
             },
             "raw_data": {
                 "message": "",
@@ -172,20 +189,17 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
         all_git_list.append(bulk_data)
         if now_count % 500 == 0:
             success, failed = opensearch_api.do_opensearch_bulk(opensearch_client=opensearch_client,
-                                                                bulk_all_data=all_git_list,
-                                                                owner=owner, repo=repo)
+                                                                bulk_all_data=all_git_list, owner=owner, repo=repo)
             logger.info(f"sync_bulk_git_datas::success:{success},failed:{failed}")
             logger.info(f"count:{now_count}::{owner}/{repo}::commit.hexsha:{commit.hexsha}")
             all_git_list.clear()
 
-    success, failed = opensearch_api.do_opensearch_bulk(opensearch_client=opensearch_client,
-                                                        bulk_all_data=all_git_list,
+    success, failed = opensearch_api.do_opensearch_bulk(opensearch_client=opensearch_client, bulk_all_data=all_git_list,
                                                         owner=owner, repo=repo)
     logger.info(f"sync_bulk_git_datas::success:{success},failed:{failed}")
     logger.info(f"count:{now_count}::{owner}/{repo}::commit.hexsha:{commit.hexsha}")
 
     # 这里记录更新位置（gitlog 最上边的一条）
     head_commit = repo_info.head.commit.hexsha
-    sync_git_check_update_info(opensearch_client=opensearch_client, owner=owner, repo=repo,
-                               head_commit=head_commit)
+    sync_git_check_update_info(opensearch_client=opensearch_client, owner=owner, repo=repo, head_commit=head_commit)
     return
