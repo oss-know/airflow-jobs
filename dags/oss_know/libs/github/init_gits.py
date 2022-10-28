@@ -1,10 +1,12 @@
 import copy
 import datetime
-import time
-import shutil
 import os
-from loguru import logger
+import shutil
+import uuid
+
 from git import Repo
+from loguru import logger
+
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_GIT_RAW, OPENSEARCH_INDEX_CHECK_SYNC_DATA
 from oss_know.libs.util.base import get_opensearch_client
 from oss_know.libs.util.opensearch_api import OpensearchAPI
@@ -32,7 +34,7 @@ def sync_git_check_update_info(opensearch_client, owner, repo, head_commit):
             "repo": repo,
             "commits": {
                 "sync_timestamp": now_time.timestamp(),
-                "sync_commit_sha": head_commit,
+                "sync_commit_sha": head_commit
             }
         }
     }
@@ -45,21 +47,42 @@ def delete_old_data(owner, repo, client):
         "query": {
             "bool": {
                 "must": [
-                    {"term": {
-                        "search_key.owner.keyword": {
-                            "value": owner
-                        }
-                    }}, {"term": {
-                        "search_key.repo.keyword": {
-                            "value": repo
-                        }
-                    }}
-                ]
+                    {"term": {"search_key.owner.keyword": {"value": owner}}},
+                    {"term": {"search_key.repo.keyword": {"value": repo}}}]
             }
         }
     }
     response = client.delete_by_query(index=OPENSEARCH_GIT_RAW, body=query)
     logger.info(response)
+
+
+# Generate a place-holder doc for (owner, repo) in gits index
+# Since the daily-gits-sync read uniq (owner, repo) pair and generate the tasks topology
+# The place-holder doc makes sure the topology won't change even we have to delete all (owner, repo)'s
+# data docs
+def insert_flag_doc(client, owner, repo):
+    _uuid = uuid.uuid1().hex
+    client.index(index=OPENSEARCH_GIT_RAW,
+                 body={
+                     "search_key": {
+                         "owner": owner,
+                         "repo": repo,
+                         "place_holder_uuid": _uuid
+                     }
+                 })
+    return _uuid
+
+
+def remove_flag_doc(client, owner, repo, doc_uuid):
+    client.delete_by_query(index=OPENSEARCH_GIT_RAW, body={
+        "query": {
+            "bool": {
+                "must": [{"match": {"search_key.place_holder_uuid": doc_uuid}},
+                         {"match": {"search_key.owner.keyword": owner}},
+                         {"match": {"search_key.repo.keyword": repo}}]
+            }
+        }
+    })
 
 
 def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, git_save_local_path=None):
@@ -68,45 +91,48 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
     if os.path.exists(repo_path):
         shutil.rmtree(repo_path)
 
-    if proxy_config:
-        repo_info = Repo.clone_from(url=git_url, to_path=repo_path,
-                                    config=proxy_config
-                                    )
-    else:
-        repo_info = Repo.clone_from(url=git_url, to_path=repo_path,
-                                    )
+    repo_info = Repo.clone_from(url=git_url, to_path=repo_path, config=proxy_config)
 
     opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
     # 删除在数据库中已经存在的此项目数据
+    # TODO Looking for a better solution rather than Create and Destroy a flag doc before/after deleting old data
+    # The flag doc here is used to makesure the (owner, repo) at least has ONE place-holder doc event
+    # when we try to remove all the real docs.
+    # Since the daily-sync DAGs read uniq (owner, repo) pairs from OpenSearch with aggs. The data deletion
+    # might make the daily-sync lose some being-deleted (owner, repo) pairs without place holder.
+    flag_doc_uuid = insert_flag_doc(opensearch_client, owner, repo)
     delete_old_data(owner=owner, repo=repo, client=opensearch_client)
-    bulk_data_tp = {"_index": OPENSEARCH_GIT_RAW,
-                    "_source": {
-                        "search_key": {
-                            "owner": owner,
-                            "repo": repo,
-                            "origin": git_url,
-                            'updated_at': 0,
-                            'if_sync': 0
-                        },
-                        "raw_data": {
-                            "message": "",
-                            "hexsha": "",
-                            "parents": "",
-                            "author_tz": "",
-                            "committer_tz": "",
-                            "author_name": "",
-                            "author_email": "",
-                            "committer_name": "",
-                            "committer_email": "",
-                            "authored_date": "",
-                            "authored_timestamp": "",
-                            "committed_date": "",
-                            "committed_timestamp": "",
-                            "files": "",
-                            "total": "",
-                            "if_merged": False
-                        }
-                    }}
+    remove_flag_doc(opensearch_client, owner, repo, flag_doc_uuid)
+    bulk_data_tp = {
+        "_index": OPENSEARCH_GIT_RAW,
+        "_source": {
+            "search_key": {
+                "owner": owner,
+                "repo": repo,
+                "origin": git_url,
+                'updated_at': 0,
+                'if_sync': 0
+            },
+            "raw_data": {
+                "message": "",
+                "hexsha": "",
+                "parents": "",
+                "author_tz": "",
+                "committer_tz": "",
+                "author_name": "",
+                "author_email": "",
+                "committer_name": "",
+                "committer_email": "",
+                "authored_date": "",
+                "authored_timestamp": "",
+                "committed_date": "",
+                "committed_timestamp": "",
+                "files": "",
+                "total": "",
+                "if_merged": False
+            }
+        }
+    }
     repo_iter_commits = repo_info.iter_commits()
     now_count = 0
     all_git_list = []
@@ -147,23 +173,19 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
         if now_count % 500 == 0:
             success, failed = opensearch_api.do_opensearch_bulk(opensearch_client=opensearch_client,
                                                                 bulk_all_data=all_git_list,
-                                                                owner=owner,
-                                                                repo=repo)
+                                                                owner=owner, repo=repo)
             logger.info(f"sync_bulk_git_datas::success:{success},failed:{failed}")
             logger.info(f"count:{now_count}::{owner}/{repo}::commit.hexsha:{commit.hexsha}")
             all_git_list.clear()
 
     success, failed = opensearch_api.do_opensearch_bulk(opensearch_client=opensearch_client,
                                                         bulk_all_data=all_git_list,
-                                                        owner=owner,
-                                                        repo=repo)
+                                                        owner=owner, repo=repo)
     logger.info(f"sync_bulk_git_datas::success:{success},failed:{failed}")
     logger.info(f"count:{now_count}::{owner}/{repo}::commit.hexsha:{commit.hexsha}")
 
     # 这里记录更新位置（gitlog 最上边的一条）
     head_commit = repo_info.head.commit.hexsha
-    sync_git_check_update_info(opensearch_client=opensearch_client,
-                               owner=owner,
-                               repo=repo,
+    sync_git_check_update_info(opensearch_client=opensearch_client, owner=owner, repo=repo,
                                head_commit=head_commit)
     return
