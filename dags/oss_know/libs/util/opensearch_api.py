@@ -575,3 +575,13 @@ class OpensearchAPI:
                     uniq_owner_repos.append(uniq_item)
 
         return uniq_owner_repos
+
+    def sync_delete(self, opensearch_client, index, search_body, retries=20, interval=0.5):
+        opensearch_client.delete_by_query(index, search_body)
+        logger.debug(f"Deleting sync with search body: {search_body}")
+
+        for i in range(retries):
+            sleep(interval)
+            res = opensearch_client.search(index=index, body=search_body)
+            if res['hits']['total']['value'] == 0:
+                break

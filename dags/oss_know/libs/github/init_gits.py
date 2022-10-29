@@ -80,13 +80,31 @@ def delete_old_data(owner, repo, client, sync=True):
 # data docs
 def insert_flag_doc(client, owner, repo):
     _uuid = uuid.uuid1().hex
-    client.index(index=OPENSEARCH_GIT_RAW, body={
+    doc_body = {
         "search_key": {
             "owner": owner,
             "repo": repo,
             "place_holder_uuid": _uuid
         }
-    })
+    }
+    client.index(index=OPENSEARCH_GIT_RAW, body=doc_body)
+
+    search_body = {
+        "query": {
+            "bool": {
+                "must": [
+                    {"term": {"search_key.place_holder_uuid": _uuid}},
+                    {"term": {"search_key.owner.keyword": owner}},
+                    {"term": {"search_key.repo.keyword": repo}}
+                ]
+            }
+        }
+    }
+    for i in range(20):
+        sleep(0.5)
+        res = client.search(index=OPENSEARCH_GIT_RAW, body=search_body)
+        if res['hits']['total']['value'] != 0:
+            break
     return _uuid
 
 
@@ -104,6 +122,13 @@ def remove_flag_doc(client, owner, repo, doc_uuid):
     }
     res = client.delete_by_query(index=OPENSEARCH_GIT_RAW, body=search_body)
     logger.info(f"Deleting place holder doc response: {res}")
+    for i in range(20):
+        sleep(0.5)
+        res = client.search(index=OPENSEARCH_GIT_RAW, body=search_body)
+        logger.info(f'{i} removing flag doc with polling: {res}')
+        if res['hits']['total']['value'] == 0:
+            # or, use res['deleted'] !=0 (or == 1)?
+            break
 
 
 def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, git_save_local_path=None):
