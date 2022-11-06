@@ -133,12 +133,13 @@ with DAG(
               and repo = '{repo}'
               and dag_run_id='{dag_run_id}';
             """
+
         pg_cur.execute(check_status_sql)
         pg_conn.commit()
         check_result = pg_cur.fetchall()
-
+        logger.info(f'checking last job status with sql:\n{check_status_sql}\n{check_result}')
         if check_result and check_result[0][0] == 2:
-            logger.info(f'{owner}/{repo} ck_transfer status is success, skip')
+            logger.info(f'{owner}/{repo}/{dag_run_id} ck_transfer status is success, skip')
             callback(owner, repo, dag_run_id, 'ck_transfer', None)
             return
 
@@ -245,9 +246,9 @@ with DAG(
         pg_cur.execute(check_status_sql)
         pg_conn.commit()
         check_result = pg_cur.fetchall()
-
+        logger.info(f'checking last job status with sql:\n{check_status_sql}\n{check_result}')
         if check_result and check_result[0][0] == 2:
-            logger.info(f'{owner}/{repo} {res_type} status is success, skip')
+            logger.info(f'{owner}/{repo} {res_type} / {dag_run_id} status is success, skip')
             callback(owner, repo, dag_run_id, res_type, None)
             return
 
