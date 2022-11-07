@@ -17,6 +17,7 @@ from oss_know.libs.base_dict.options import GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_
 def init_github_issues_comments(opensearch_conn_info, owner, repo, token_proxy_accommodator, since=None):
     opensearch_client = OpenSearch(
         hosts=[{'host': opensearch_conn_info["HOST"], 'port': opensearch_conn_info["PORT"]}],
+        request_timeout=60,
         http_compress=True,
         http_auth=(opensearch_conn_info["USER"], opensearch_conn_info["PASSWD"]),
         use_ssl=True,
@@ -43,7 +44,8 @@ def init_github_issues_comments(opensearch_conn_info, owner, repo, token_proxy_a
                                                         }}
                                                     ]}
                                                 }
-                                            }
+                                            },
+                                            request_timeout=60,
                                             )
     need_init_comments_all_issues = []
     for issues_item in issues_results:
@@ -67,8 +69,10 @@ def init_github_issues_comments(opensearch_conn_info, owner, repo, token_proxy_a
                                                                    }
                                                                }}
                                                            ]}
-                                                       }
-                                                   })
+                                                       },
+                                                   },
+                                                   request_timeout=60,
+                                                   )
 
     logger.info(f"DELETE github issues comment result:{del_result}")
 
