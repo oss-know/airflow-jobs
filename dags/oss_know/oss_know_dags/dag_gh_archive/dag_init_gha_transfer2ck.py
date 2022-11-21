@@ -35,13 +35,16 @@ with DAG(
         parse_json_data(year, month, day, clickhouse_server_info=clickhouse_server_info)
         return "end do_transfer_gha_2ck"
 
-    for year in range(2019, 2020):
+    for year in [2022]:
 
-        for month in range(12, 13):
+
+        for month in range(9, 10):
+
             day_count = calendar.monthrange(year, month)[1]
             if month < 10:
                 month = '0' + str(month)
-            for i in range(1, day_count + 1):
+            # for i in range(1, day_count + 1):
+            for i in range(1, 2):
                 if i < 10:
                     i = '0' + str(i)
                 op_do_transfer_gha_2ck = PythonOperator(

@@ -1,4 +1,5 @@
 # -*-coding:utf-8-*-
+# -*-coding:utf-8-*-
 import datetime
 import gzip
 import json
@@ -40,7 +41,7 @@ def parse_json_data(year, month, day, clickhouse_server_info):
     bulk_data_map = {}
     count_map = {}
     for hour in [0]:
-    # for hour in range(24):
+        # for hour in range(24):
         file_name = f'{year}-{month}-{day}-{hour}.json'
         parse_json_data_hour(clickhouse_server_info=clickhouse_server_info,
                              file_name=file_name,
@@ -50,9 +51,19 @@ def parse_json_data(year, month, day, clickhouse_server_info):
     for event_type in bulk_data_map:
         bulk_data = bulk_data_map.get(event_type)
         if bulk_data:
+            # transfer_data_by_repo(clickhouse_server_info=clickhouse_server_info,
+            #                       table_name=event_type,
+            #                       tplt=table_templates.get(event_type), bulk_data=bulk_data[0:1])
+            # try:
             transfer_data_by_repo(clickhouse_server_info=clickhouse_server_info,
                                   table_name=event_type,
                                   tplt=table_templates.get(event_type), bulk_data=bulk_data)
+            # except Exception as e:
+            #     # print(event_type)
+            #     print(json.dumps(bulk_data[0]))
+            #     transfer_data_by_repo(clickhouse_server_info=clickhouse_server_info,
+            #                           table_name=event_type,
+            #                           tplt=table_templates.get(event_type), bulk_data=[bulk_data[0]])
             count_map[event_type] = count_map.get(event_type, 0) + len(bulk_data)
             logger.info(f"Successfully inserted {event_type} {count_map[event_type]}")
             bulk_data.clear()
@@ -73,9 +84,7 @@ def parse_json_data_hour(clickhouse_server_info, file_name, bulk_data_map, count
                 result = json.loads(line)
                 # 如将 PushEvent 修改成 push_event
                 event_type = get_index_name(result['type'])
-                if event_type == 'issues_event' or event_type == 'issue_comment_event':
-                    # 临时加 coninue需要删除
-                    # continue
+                if event_type == 'release_event':
                     owner = result['repo']['name'].split('/')[0]
                     repo = result['repo']['name'].split('/')[1]
                     # if result['payload']:
@@ -93,66 +102,82 @@ def parse_json_data_hour(clickhouse_server_info, file_name, bulk_data_map, count
                                                           "gh_archive_hour": gh_archive_hour},
                                            "raw_data": result}})
                     bulk_data_map[event_type] = ll
-
-                elif event_type == 'pull_request_event' or event_type == 'pull_request_review_comment_event':
-                    # 临时加上 需要删除
-                    # continue
-                    owner = result['repo']['name'].split('/')[0]
-                    repo = result['repo']['name'].split('/')[1]
-                    # if result['payload']:
-                    #     number = result['payload']['pull_request']['number']
-                    # else:
-                    #     logger.info(f"wrong data :{result}")
-                    #     number = 0
-                    ll = bulk_data_map.get(event_type, [])
-                    ll.append({"_index": event_type,
-                               "_source": {"search_key": {"owner": owner, "repo": repo,
-                                                          "updated_at": int(datetime.datetime.now().timestamp() * 1000),
-                                                          "gh_archive_year": gh_archive_year,
-                                                          "gh_archive_month": gh_archive_month,
-                                                          "gh_archive_day": gh_archive_day,
-                                                          "gh_archive_hour": gh_archive_hour},
-                                           "raw_data": result}})
-                    bulk_data_map[event_type] = ll
-
-                elif event_type == 'push_event':
-                    owner = result['repo']['name'].split('/')[0]
-                    repo = result['repo']['name'].split('/')[1]
-                    if result['payload']:
-                        branch = result['payload']['ref']
-                    else:
-                        # ???
-                        logger.info(f"wrong data :{result}")
-                        number = 0
-                    ll = bulk_data_map.get(event_type, [])
-                    # ..模拟opensearch数据格式。。？？？
-                    ll.append({"_index": event_type,
-                               "_source": {"search_key": {"owner": owner, "repo": repo, "branch": branch,
-                                                          "updated_at": int(datetime.datetime.now().timestamp() * 1000),
-                                                          "gh_archive_year": gh_archive_year,
-                                                          "gh_archive_month": gh_archive_month,
-                                                          "gh_archive_day": gh_archive_day,
-                                                          "gh_archive_hour": gh_archive_hour},
-                                           "raw_data": result}})
-                    bulk_data_map[event_type] = ll
-                else:
-                    owner = result['repo']['name'].split('/')[0]
-                    repo = result['repo']['name'].split('/')[1]
-                    ll = bulk_data_map.get(event_type, [])
-                    # ..模拟opensearch数据格式。。？？？
-                    ll.append({"_index": event_type,
-                               "_source": {"search_key": {"owner": owner, "repo": repo,
-                                                          "updated_at": int(datetime.datetime.now().timestamp() * 1000),
-                                                          "gh_archive_year": gh_archive_year,
-                                                          "gh_archive_month": gh_archive_month,
-                                                          "gh_archive_day": gh_archive_day,
-                                                          "gh_archive_hour": gh_archive_hour},
-                                           "raw_data": result}})
-                    bulk_data_map[event_type] = ll
-
-
-
-
+                # if event_type == 'issues_event' or event_type == 'issue_comment_event':
+                #     # 临时加 coninue需要删除
+                #     # continue
+                #     owner = result['repo']['name'].split('/')[0]
+                #     repo = result['repo']['name'].split('/')[1]
+                #     # if result['payload']:
+                #     #     number = result['payload']['issue']['number']
+                #     # else:
+                #     #     logger.info(f"wrong data :{result}")
+                #     #     number = 0
+                #     ll = bulk_data_map.get(event_type, [])
+                #     ll.append({"_index": event_type,
+                #                "_source": {"search_key": {"owner": owner, "repo": repo,
+                #                                           "updated_at": int(datetime.datetime.now().timestamp() * 1000),
+                #                                           "gh_archive_year": gh_archive_year,
+                #                                           "gh_archive_month": gh_archive_month,
+                #                                           "gh_archive_day": gh_archive_day,
+                #                                           "gh_archive_hour": gh_archive_hour},
+                #                            "raw_data": result}})
+                #     bulk_data_map[event_type] = ll
+                #
+                # elif event_type == 'pull_request_event' or event_type == 'pull_request_review_comment_event':
+                #     # 临时加上 需要删除
+                #     # continue
+                #     owner = result['repo']['name'].split('/')[0]
+                #     repo = result['repo']['name'].split('/')[1]
+                #     # if result['payload']:
+                #     #     number = result['payload']['pull_request']['number']
+                #     # else:
+                #     #     logger.info(f"wrong data :{result}")
+                #     #     number = 0
+                #     ll = bulk_data_map.get(event_type, [])
+                #     ll.append({"_index": event_type,
+                #                "_source": {"search_key": {"owner": owner, "repo": repo,
+                #                                           "updated_at": int(datetime.datetime.now().timestamp() * 1000),
+                #                                           "gh_archive_year": gh_archive_year,
+                #                                           "gh_archive_month": gh_archive_month,
+                #                                           "gh_archive_day": gh_archive_day,
+                #                                           "gh_archive_hour": gh_archive_hour},
+                #                            "raw_data": result}})
+                #     bulk_data_map[event_type] = ll
+                #
+                # elif event_type == 'push_event':
+                #     owner = result['repo']['name'].split('/')[0]
+                #     repo = result['repo']['name'].split('/')[1]
+                #     if result['payload']:
+                #         branch = result['payload']['ref']
+                #     else:
+                #         # ???
+                #         logger.info(f"wrong data :{result}")
+                #         number = 0
+                #     ll = bulk_data_map.get(event_type, [])
+                #     # ..模拟opensearch数据格式。。？？？
+                #     ll.append({"_index": event_type,
+                #                "_source": {"search_key": {"owner": owner, "repo": repo, "branch": branch,
+                #                                           "updated_at": int(datetime.datetime.now().timestamp() * 1000),
+                #                                           "gh_archive_year": gh_archive_year,
+                #                                           "gh_archive_month": gh_archive_month,
+                #                                           "gh_archive_day": gh_archive_day,
+                #                                           "gh_archive_hour": gh_archive_hour},
+                #                            "raw_data": result}})
+                #     bulk_data_map[event_type] = ll
+                # else:
+                #     owner = result['repo']['name'].split('/')[0]
+                #     repo = result['repo']['name'].split('/')[1]
+                #     ll = bulk_data_map.get(event_type, [])
+                #     # ..模拟opensearch数据格式。。？？？
+                #     ll.append({"_index": event_type,
+                #                "_source": {"search_key": {"owner": owner, "repo": repo,
+                #                                           "updated_at": int(datetime.datetime.now().timestamp() * 1000),
+                #                                           "gh_archive_year": gh_archive_year,
+                #                                           "gh_archive_month": gh_archive_month,
+                #                                           "gh_archive_day": gh_archive_day,
+                #                                           "gh_archive_hour": gh_archive_hour},
+                #                            "raw_data": result}})
+                #     bulk_data_map[event_type] = ll
 
                 for event_type in bulk_data_map:
                     bulk_data = bulk_data_map.get(event_type)
@@ -164,15 +189,17 @@ def parse_json_data_hour(clickhouse_server_info, file_name, bulk_data_map, count
                         logger.info(f"Successfully inserted {event_type} {count_map[event_type]}")
                         bulk_data.clear()
 
-
             # client.close()
     except FileNotFoundError as e:
         logger.info(e)
 
 
-# 从json直接导入
+# 从json直接导入()
 def transfer_data_by_repo(clickhouse_server_info, table_name, tplt,
                           bulk_data):
+    """
+    先解析 ， 将解析后的数据放入列表 ，批量插入
+    """
     ck = CKServer(host=clickhouse_server_info["HOST"],
                   port=clickhouse_server_info["PORT"],
                   user=clickhouse_server_info["USER"],
@@ -204,6 +231,9 @@ def transfer_data_by_repo(clickhouse_server_info, table_name, tplt,
             for field in fields:
                 if dict_dict.get(field) and fields.get(field) == 'DateTime64(3)':
                     dict_dict[field] = datetime.datetime.strptime(dict_dict[field], '%Y-%m-%dT%H:%M:%SZ')
+                elif dict_dict.get(field) and fields.get(field) == 'Array(DateTime64(3))':
+                    for i, v in enumerate(dict_dict[field]):
+                        dict_dict[field][i] = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%SZ')
                 elif fields.get(field) == 'String':
                     try:
                         dict_dict[field].encode('utf-8')
@@ -219,7 +249,7 @@ def transfer_data_by_repo(clickhouse_server_info, table_name, tplt,
     # airflow dag的中断
     except Exception as error:
         raise Exception(error)
-    # 处理尾部多余的数据
+    # 批量插入clickhouse
     try:
         if bulk_data:
             ck.execute(ck_sql, bulk_data)
@@ -228,6 +258,37 @@ def transfer_data_by_repo(clickhouse_server_info, table_name, tplt,
     except ServerException as error:
         logger.info(table_name)
         raise ServerException(error)
+    except AttributeError as e:
+        print(bulk_data)
 
     ck.close()
 
+
+if __name__ == '__main__':
+    clickhouse_server_info = {
+        "CLUSTER_NAME": "replicated",
+        "DATABASE": "default",
+        "HOST": "192.168.8.50",
+        "PASSWD": "default",
+        "PORT": "19000",
+        "USER": "default"
+    }
+    tplt = {
+
+        "payload": {
+                "assets": [
+                    {
+                        "created_at": "1970-01-01T00:00:00Z",
+                        "updated_at": "1970-01-01T00:00:00Z",
+                    }
+                ]}
+
+
+    }
+
+    bulk_data = [
+        {"_index": "release_event", "_source": {
+            }}
+    ]
+    transfer_data_by_repo(clickhouse_server_info=clickhouse_server_info, table_name='release_event', tplt=tplt,
+                          bulk_data=bulk_data)
