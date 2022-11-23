@@ -172,7 +172,7 @@ from
                                     SUM(total__lines)   as all_lines
                              from gits
                              where search_key__owner = '{owner}'
-                               and search_key__owner = '{repo}'
+                               and search_key__repo = '{repo}'
                                and author_email != ''
                              group by search_key__owner,
                                       search_key__repo,
@@ -201,7 +201,7 @@ from
                                       from `gits`
                                                array join `files.file_name`
                                       where search_key__owner = '{owner}'
-                                        and search_key__owner = '{repo}'
+                                        and search_key__repo = '{repo}'
                                         and author_email != '')
                              group by search_key__owner,
                                       search_key__repo,
@@ -226,7 +226,7 @@ from
                     from github_commits gct
                     where author__id != 0
                       and search_key__owner = '{owner}'
-                      and search_key__owner = '{repo}') b
+                      and search_key__repo = '{repo}') b
                 on
                             a.search_key__owner = b.search_key__owner
                         and a.search_key__repo = b.search_key__repo
@@ -372,7 +372,7 @@ from
                                                        from (select *
                                                              from github_issues_timeline
                                                              where search_key__owner = '{owner}'
-                                                               and search_key__owner = '{repo}'
+                                                               and search_key__repo = '{repo}'
                                                                and search_key__event = 'mentioned') github_issues_timeline global semi
                                                                 left join (
                                                            select DISTINCT `number`,
@@ -381,7 +381,7 @@ from
                                                            from github_issues gict
                                                            WHERE pull_request__url = ''
                                                              and search_key__owner = '{owner}'
-                                                             and search_key__owner = '{repo}') as issues_number
+                                                             and search_key__repo = '{repo}') as issues_number
                                                                           on
                                                                               github_issues_timeline.search_key__number = issues_number.number
                                                        )
@@ -423,7 +423,7 @@ from
                                                        from (select *
                                                              from github_issues_timeline
                                                              where search_key__owner = '{owner}'
-                                                               and search_key__owner = '{repo}'
+                                                               and search_key__repo = '{repo}'
                                                                and search_key__event = 'mentioned') github_issues_timeline global semi
                                                                 left join (
                                                            select DISTINCT `number`,
@@ -432,7 +432,7 @@ from
                                                            from github_issues gict
                                                            WHERE pull_request__url != ''
                                                              and search_key__owner = '{owner}'
-                                                             and search_key__owner = '{repo}') as pr_number
+                                                             and search_key__repo = '{repo}') as pr_number
                                                                           on
                                                                               github_issues_timeline.search_key__number = pr_number.number
                                                        )
@@ -506,7 +506,7 @@ from
                                                                          'number') as number
                                                           from github_issues_timeline
                                                           where search_key__owner = '{owner}'
-                                                            and search_key__owner = '{repo}'
+                                                            and search_key__repo = '{repo}'
                                                             and search_key__event = 'cross-referenced') github_issues_timeline GLOBAL
                                                              JOIN
                                                          (
@@ -516,7 +516,7 @@ from
                                                              from github_issues gict
                                                              WHERE pull_request__url = ''
                                                                and search_key__owner = '{owner}'
-                                                               and search_key__owner = '{repo}') issues
+                                                               and search_key__repo = '{repo}') issues
                                                          on github_issues_timeline.search_key__owner =
                                                             issues.search_key__owner
                                                              and
@@ -569,7 +569,7 @@ from
                                                                          'number') as number
                                                           from github_issues_timeline
                                                           where search_key__owner = '{owner}'
-                                                            and search_key__owner = '{repo}'
+                                                            and search_key__repo = '{repo}'
                                                             and search_key__event = 'cross-referenced') github_issues_timeline GLOBAL
                                                              JOIN
                                                          (
@@ -579,7 +579,7 @@ from
                                                              from github_issues gict
                                                              WHERE pull_request__url != ''
                                                                and search_key__owner = '{owner}'
-                                                               and search_key__owner = '{repo}') prs
+                                                               and search_key__repo = '{repo}') prs
                                                          ON
                                                                      github_issues_timeline.search_key__owner =
                                                                      prs.search_key__owner
@@ -676,7 +676,7 @@ from
                                          from (select *
                                                from github_issues_timeline
                                                where search_key__owner = '{owner}'
-                                                 and search_key__owner = '{repo}'
+                                                 and search_key__repo = '{repo}'
                                                  and (search_key__event = 'labeled' or search_key__event = 'unlabeled')) github_issues_timeline
                                                   global
                                                   join
@@ -687,7 +687,7 @@ from
                                                   from github_issues gict
                                                   WHERE pull_request__url = ''
                                                     and search_key__owner = '{owner}'
-                                                    and search_key__owner = '{repo}') as issues_number
+                                                    and search_key__repo = '{repo}') as issues_number
                                               on
                                                           github_issues_timeline.search_key__number =
                                                           issues_number.number
@@ -726,7 +726,7 @@ from
                                          from (select *
                                                from github_issues_timeline
                                                where search_key__owner = '{owner}'
-                                                 and search_key__owner = '{repo}'
+                                                 and search_key__repo = '{repo}'
                                                  and (search_key__event = 'labeled' or search_key__event = 'unlabeled')) github_issues_timeline
                                                   global
                                                   join
@@ -737,7 +737,7 @@ from
                                                   from github_issues gict
                                                   WHERE pull_request__url != ''
                                                     and search_key__owner = '{owner}'
-                                                    and search_key__owner = '{repo}') as pr_number
+                                                    and search_key__repo = '{repo}') as pr_number
                                               on
                                                           github_issues_timeline.search_key__number = pr_number.number
                                                       and
@@ -803,7 +803,7 @@ from
                                                   from (select *
                                                         from github_issues_timeline
                                                         where search_key__owner = '{owner}'
-                                                          and search_key__owner = '{repo}'
+                                                          and search_key__repo = '{repo}'
                                                           and search_key__event = 'closed') github_issues_timeline global
                                                            join (
                                                       select DISTINCT `number`,
@@ -812,7 +812,7 @@ from
                                                       from github_issues gict
                                                       WHERE pull_request__url = ''
                                                         and search_key__owner = '{owner}'
-                                                        and search_key__owner = '{repo}') as issues_number
+                                                        and search_key__repo = '{repo}') as issues_number
                                                                 on
                                                                             github_issues_timeline.search_key__number =
                                                                             issues_number.number
@@ -850,7 +850,7 @@ from
                                                   from (select *
                                                         from github_issues_timeline
                                                         where search_key__owner = '{owner}'
-                                                          and search_key__owner = '{repo}'
+                                                          and search_key__repo = '{repo}'
                                                           and search_key__event = 'closed') github_issues_timeline global
                                                            join (
                                                       select DISTINCT `number`,
@@ -859,7 +859,7 @@ from
                                                       from github_issues gict
                                                       WHERE pull_request__url != ''
                                                         and search_key__owner = '{owner}'
-                                                        and search_key__owner = '{repo}') as pr_number
+                                                        and search_key__repo = '{repo}') as pr_number
                                                                 on
                                                                             github_issues_timeline.search_key__number =
                                                                             pr_number.number
@@ -960,7 +960,7 @@ from
                                        avg(lengthUTF8(body)) `body_length_avg`
                                 from github_pull_requests
                                 where search_key__owner = '{owner}'
-                                  and search_key__owner = '{repo}'
+                                  and search_key__repo = '{repo}'
                                 group by `search_key__owner`,
                                          `search_key__repo`,
                                          created_at_year,
@@ -982,7 +982,7 @@ from
                                 from github_issues
                                 where pull_request__url == ''
                                   and search_key__owner = '{owner}'
-                                  and search_key__owner = '{repo}'
+                                  and search_key__repo = '{repo}'
                                 group by `search_key__owner`,
                                          `search_key__repo`,
                                          created_at_year,
@@ -1036,7 +1036,7 @@ from
                                              from (select *
                                                    from github_issues_comments
                                                    where search_key__owner = '{owner}'
-                                                     and search_key__owner = '{repo}') github_issues_comments global
+                                                     and search_key__repo = '{repo}') github_issues_comments global
                                                       semi
                                                       left join (
                                                  select DISTINCT `number`,
@@ -1045,7 +1045,7 @@ from
                                                  from github_issues gict
                                                  WHERE pull_request__url = ''
                                                    and search_key__owner = '{owner}'
-                                                   and search_key__owner = '{repo}') as pr_number
+                                                   and search_key__repo = '{repo}') as pr_number
                                                                 on
                                                                     github_issues_comments.search_key__number = pr_number.number
                                              )
@@ -1071,7 +1071,7 @@ from
                                              from (select *
                                                    from github_issues_comments
                                                    where search_key__owner = '{owner}'
-                                                     and search_key__owner = '{repo}') github_issues_comments global
+                                                     and search_key__repo = '{repo}') github_issues_comments global
                                                       semi
                                                       left join (
                                                  select DISTINCT `number`,
@@ -1080,7 +1080,7 @@ from
                                                  from github_issues gict
                                                  WHERE pull_request__url != ''
                                                    and search_key__owner = '{owner}'
-                                                   and search_key__owner = '{repo}') as pr_number
+                                                   and search_key__repo = '{repo}') as pr_number
                                                                 on
                                                                     github_issues_comments.search_key__number = pr_number.number
                                              )
