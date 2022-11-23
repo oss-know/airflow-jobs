@@ -17,13 +17,13 @@ def quarter_metrics_by_repo(clickhouse_server_info, owner, repo):
     # return
     create_table_distribute_ddl = """
     -- auto-generated definition
-create table if not exists quarter_metrics on cluster replicated
+create table if not exists month_metrics on cluster replicated
 (
     ck_data_insert_at                     Int64,
     owner                                 String,
     repo                                  String,
     created_at_year                       Int64,
-    created_at_quarter                    Int64,
+    created_at_month                    Int64,
     github_id                             Int64,
     commit_times                          Int64,
     changed_lines                         Int64,
@@ -49,7 +49,7 @@ create table if not exists quarter_metrics on cluster replicated
     closed_issues_times                   Int64,
     closed_prs_times                      Int64
 )
-    engine = Distributed('replicated', 'default', 'quarter_metrics_local', ck_data_insert_at);
+    engine = Distributed('replicated', 'default', 'month_metrics_local', ck_data_insert_at);
 
 
 
@@ -57,13 +57,13 @@ create table if not exists quarter_metrics on cluster replicated
     """
     create_table_local_ddl = """
     -- auto-generated definition
-create table if not exists quarter_metrics_local on cluster replicated
+create table if not exists month_metrics_local on cluster replicated
 (
     ck_data_insert_at                     Int64,
     owner                                 String,
     repo                                  String,
     created_at_year                       Int64,
-    created_at_quarter                    Int64,
+    created_at_month                    Int64,
     github_id                             Int64,
     github_login                          String,
     commit_times                          Int64,
@@ -91,14 +91,13 @@ create table if not exists quarter_metrics_local on cluster replicated
     closed_prs_times                      Int64,
     ck_data_create_at                     Int64
 )
-    engine = ReplicatedMergeTree('/clickhouse/tables/{shard}/quarter_metrics', '{replica}')
+    engine = ReplicatedMergeTree('/clickhouse/tables/{shard}/month_metrics', '{replica}')
         PARTITION BY owner
         ORDER BY (owner, repo, github_id)
         SETTINGS index_granularity = 8192;"""
     create_table_if_not_exist(ck, create_table_local_ddl)
     create_table_if_not_exist(ck, create_table_distribute_ddl)
     results = ck.execute_no_params(f"""
-    
 select if(a.owner != '',
           a.owner,
           b.owner)        as owner,
@@ -109,8 +108,8 @@ select if(a.owner != '',
           a.commite_date_year,
           b.created_at_year)   as created_at_year,
     if(a.github_id != 0,
-          a.commite_date_quarter,
-          b.created_at_quarter)   as created_at_quarter,
+          a.commit_date_month,
+          b.created_at_month)   as created_at_month,
        if(a.github_id != 0,
           a.github_id,
           b.github_id)    as github_id,
@@ -142,7 +141,7 @@ from
     --1 2 3
     (select owner,
             repo,
-            commite_date_year,commite_date_quarter,
+            commite_date_year,commit_date_month,
             github_id,
             sum(commit_times) as commit_times,
             sum(all_lines)    as all_lines,
@@ -150,7 +149,7 @@ from
      from (select a.search_key__owner as owner,
                   a.search_key__repo  as repo,
                   a.commite_date_year,
-                  a.commite_date_quarter,
+                  a.commit_date_month,
                   b.author__id        as github_id,
                   author_email        as git_author_email,
                   commit_times,
@@ -167,17 +166,17 @@ from
                                     author_email,
                                     toYear(toDate(committed_date))
                                      commite_date_year,
-                                 toQuarter(toDate(committed_date)) commite_date_quarter,
+                                 toMonth(toDate(committed_date)) commit_date_month,
                                     COUNT(author_email) as commit_times,
                                     SUM(total__lines)   as all_lines
                              from gits
                              where search_key__owner = '{owner}'
-                               and search_key__repo = '{repo}'
+                               and search_key__repo =  '{repo}'
                                and author_email != ''
                              group by search_key__owner,
                                       search_key__repo,
                                       commite_date_year,
-                                      commite_date_quarter,
+                                      commit_date_month,
                                       author_email
                              ) commits_all_lines
                              GLOBAL
@@ -187,7 +186,7 @@ from
                              select search_key__owner,
                                     search_key__repo,
                                     commite_date_year,
-                                      commite_date_quarter,
+                                      commit_date_month,
                                     author_email,
                                     COUNT(*) file_counts
                              from (
@@ -196,17 +195,17 @@ from
                                                       `author_email`,
                                                       toYear(toDate(committed_date))
                                      commite_date_year,
-                                 toQuarter(toDate(committed_date)) commite_date_quarter,
+                                 toMonth(toDate(committed_date)) commit_date_month,
                                                       `files.file_name` as   file_name
                                       from `gits`
                                                array join `files.file_name`
                                       where search_key__owner = '{owner}'
-                                        and search_key__repo = '{repo}'
+                                        and search_key__repo =  '{repo}'
                                         and author_email != '')
                              group by search_key__owner,
                                       search_key__repo,
                                       commite_date_year,
-                                      commite_date_quarter,
+                                      commit_date_month,
                                       author_email) changed_files
                          ON
                                      commits_all_lines.search_key__owner = changed_files.search_key__owner
@@ -215,7 +214,7 @@ from
                                  AND
                                      commits_all_lines.author_email = changed_files.author_email
                                  and commits_all_lines.commite_date_year = changed_files.commite_date_year
-                                 and commits_all_lines.commite_date_quarter = changed_files.commite_date_quarter) a
+                                 and commits_all_lines.commit_date_month = changed_files.commit_date_month) a
                     GLOBAL
                     JOIN
                 (
@@ -226,12 +225,12 @@ from
                     from github_commits gct
                     where author__id != 0
                       and search_key__owner = '{owner}'
-                      and search_key__repo = '{repo}') b
+                      and search_key__repo =  '{repo}') b
                 on
                             a.search_key__owner = b.search_key__owner
                         and a.search_key__repo = b.search_key__repo
                         and a.author_email = b.commit__author__email)
-     group by owner, repo, commite_date_year,commite_date_quarter, github_id
+     group by owner, repo, commite_date_year,commit_date_month, github_id
         ) a
         global
         full join
@@ -247,8 +246,8 @@ from
                    a.created_at_year,
                    b.created_at_year)   as created_at_year,
              if(a.github_id != '',
-                   a.created_at_quarter,
-                   b.created_at_quarter)   as created_at_quarter,
+                   a.created_at_month,
+                   b.created_at_month)   as created_at_month,
                 if(a.github_id != '',
                    toInt64(a.github_id),
                    b.github_id)    as github_id,
@@ -286,8 +285,8 @@ from
                         a.created_at_year,
                         b.created_at_year)   as created_at_year,
                   if(a.github_id != '',
-                        a.created_at_quarter,
-                        b.created_at_quarter)   as created_at_quarter,
+                        a.created_at_month,
+                        b.created_at_month)   as created_at_month,
                      if(a.github_id != '',
                         a.github_id,
                         b.github_id)    as github_id,
@@ -314,8 +313,8 @@ from
                              a.created_at_year,
                              b.created_at_year)   as created_at_year,
                        if(a.github_id != '',
-                             a.created_at_quarter,
-                             b.created_at_quarter)   as created_at_quarter,
+                             a.created_at_month,
+                             b.created_at_month)   as created_at_month,
                           if(a.github_id != '',
                              a.github_id,
                              b.github_id)    as github_id,
@@ -337,8 +336,8 @@ from
                                       a.created_at_year,
                                       b.created_at_year)        as created_at_year,
                                    if(a.id != '',
-                                      a.created_at_quarter,
-                                      b.created_at_quarter)        as created_at_quarter,
+                                      a.created_at_month,
+                                      b.created_at_month)        as created_at_month,
                                    if(a.id != '',
                                       a.id,
                                       b.id)                as github_id,
@@ -349,7 +348,7 @@ from
                                      select search_key__owner,
                                             search_key__repo,
                                             created_at_year,
-                                            created_at_quarter,
+                                            created_at_month,
                                             id,
 
                                             COUNT() as be_mentioned_times_in_issues
@@ -360,9 +359,9 @@ from
                                                                                         'created_at'), 1, 10)))
 
                                                                                 as created_at_year,
-                                                     toQuarter(toDate(substring(JSONExtractString(timeline_raw,
+                                                     toMonth(toDate(substring(JSONExtractString(timeline_raw,
                                                                                         'created_at'), 1, 10))) as
-                                                                                        created_at_quarter,
+                                                                                        created_at_month,
                                                      JSONExtractString(JSONExtractString(timeline_raw,
                                                                                          'actor'),
                                                                        'id')    as id
@@ -372,7 +371,7 @@ from
                                                        from (select *
                                                              from github_issues_timeline
                                                              where search_key__owner = '{owner}'
-                                                               and search_key__repo = '{repo}'
+                                                               and search_key__repo =  '{repo}'
                                                                and search_key__event = 'mentioned') github_issues_timeline global semi
                                                                 left join (
                                                            select DISTINCT `number`,
@@ -381,7 +380,7 @@ from
                                                            from github_issues gict
                                                            WHERE pull_request__url = ''
                                                              and search_key__owner = '{owner}'
-                                                             and search_key__repo = '{repo}') as issues_number
+                                                             and search_key__repo =  '{repo}') as issues_number
                                                                           on
                                                                               github_issues_timeline.search_key__number = issues_number.number
                                                        )
@@ -392,7 +391,7 @@ from
                                      group by search_key__owner,
                                               search_key__repo,
                                               created_at_year,
-                                              created_at_quarter,
+                                              created_at_month,
                                               id
                                               ) a
                                      GLOBAL
@@ -401,7 +400,7 @@ from
                                      select search_key__owner,
                                             search_key__repo,
                                             created_at_year,
-                                            created_at_quarter,
+                                            created_at_month,
                                             id,
 
                                             COUNT() as be_mentioned_times_in_pr
@@ -412,9 +411,9 @@ from
                                                                                         'created_at'), 1, 10)))
 
                                                                                 as created_at_year,
-                                                     toQuarter(toDate(substring(JSONExtractString(timeline_raw,
+                                                     toMonth(toDate(substring(JSONExtractString(timeline_raw,
                                                                                         'created_at'), 1, 10))) as
-                                                                                        created_at_quarter,
+                                                                                        created_at_month,
                                                      JSONExtractString(JSONExtractString(timeline_raw,
                                                                                          'actor'),
                                                                        'id')    as id
@@ -423,7 +422,7 @@ from
                                                        from (select *
                                                              from github_issues_timeline
                                                              where search_key__owner = '{owner}'
-                                                               and search_key__repo = '{repo}'
+                                                               and search_key__repo =  '{repo}'
                                                                and search_key__event = 'mentioned') github_issues_timeline global semi
                                                                 left join (
                                                            select DISTINCT `number`,
@@ -432,7 +431,7 @@ from
                                                            from github_issues gict
                                                            WHERE pull_request__url != ''
                                                              and search_key__owner = '{owner}'
-                                                             and search_key__repo = '{repo}') as pr_number
+                                                             and search_key__repo =  '{repo}') as pr_number
                                                                           on
                                                                               github_issues_timeline.search_key__number = pr_number.number
                                                        )
@@ -443,14 +442,14 @@ from
                                      group by search_key__owner,
                                               search_key__repo,
                                               created_at_year,
-                                              created_at_quarter,
+                                              created_at_month,
                                               id
                                               ) b
                                  ON
                                              a.id = b.id
 
                                          and a.created_at_year = b.created_at_year
-                                         and a.created_at_quarter=b.created_at_quarter
+                                         and a.created_at_month=b.created_at_month
                                          and a.search_key__owner = b.search_key__owner
                                          and a.search_key__repo = b.search_key__repo) a
                             GLOBAL
@@ -467,8 +466,8 @@ from
                                       a.created_at_year,
                                       b.created_at_year)        as created_at_year,
                                    if(a.id != '',
-                                      a.created_at_quarter,
-                                      b.created_at_quarter)        as created_at_quarter,
+                                      a.created_at_month,
+                                      b.created_at_month)        as created_at_month,
                                    if(a.id != '',
                                       a.id,
                                       b.id)                as github_id,
@@ -479,7 +478,7 @@ from
                                      select cross_referenced.search_key__owner,
                                             cross_referenced.search_key__repo,
                                             created_at_year,
-                                            created_at_quarter,
+                                            created_at_month,
                                             id,
 
                                             COUNT(id) as referred_other_issues_or_prs_in_issue
@@ -490,9 +489,9 @@ from
                                                                                         'created_at'), 1, 10)))
 
                                                                                 as created_at_year,
-                                                     toQuarter(toDate(substring(JSONExtractString(timeline_raw,
+                                                     toMonth(toDate(substring(JSONExtractString(timeline_raw,
                                                                                         'created_at'), 1, 10))) as
-                                                                                        created_at_quarter,
+                                                                                        created_at_month,
                                                      JSONExtractString(JSONExtractString(timeline_raw,
                                                                                          'actor'),
                                                                        'id')    as id
@@ -506,7 +505,7 @@ from
                                                                          'number') as number
                                                           from github_issues_timeline
                                                           where search_key__owner = '{owner}'
-                                                            and search_key__repo = '{repo}'
+                                                            and search_key__repo =  '{repo}'
                                                             and search_key__event = 'cross-referenced') github_issues_timeline GLOBAL
                                                              JOIN
                                                          (
@@ -516,7 +515,7 @@ from
                                                              from github_issues gict
                                                              WHERE pull_request__url = ''
                                                                and search_key__owner = '{owner}'
-                                                               and search_key__repo = '{repo}') issues
+                                                               and search_key__repo =  '{repo}') issues
                                                          on github_issues_timeline.search_key__owner =
                                                             issues.search_key__owner
                                                              and
@@ -532,7 +531,7 @@ from
                                      GROUP BY cross_referenced.search_key__owner,
                                               cross_referenced.search_key__repo,
                                               created_at_year,
-                                            created_at_quarter,
+                                            created_at_month,
                                               id
                                               ) a
                                      GLOBAL
@@ -541,7 +540,7 @@ from
                                      select cross_referenced.search_key__owner,
                                             cross_referenced.search_key__repo,
                                             created_at_year,
-                                            created_at_quarter,
+                                            created_at_month,
                                             id,
 
                                             COUNT(id) as referred_other_issues_or_prs_in_pr
@@ -552,9 +551,9 @@ from
                                                                                         'created_at'), 1, 10)))
 
                                                                                 as created_at_year,
-                                                     toQuarter(toDate(substring(JSONExtractString(timeline_raw,
+                                                     toMonth(toDate(substring(JSONExtractString(timeline_raw,
                                                                                         'created_at'), 1, 10))) as
-                                                                                        created_at_quarter,
+                                                                                        created_at_month,
                                                      JSONExtractString(JSONExtractString(timeline_raw,
                                                                                          'actor'),
                                                                        'id')    as id
@@ -569,7 +568,7 @@ from
                                                                          'number') as number
                                                           from github_issues_timeline
                                                           where search_key__owner = '{owner}'
-                                                            and search_key__repo = '{repo}'
+                                                            and search_key__repo =  '{repo}'
                                                             and search_key__event = 'cross-referenced') github_issues_timeline GLOBAL
                                                              JOIN
                                                          (
@@ -579,7 +578,7 @@ from
                                                              from github_issues gict
                                                              WHERE pull_request__url != ''
                                                                and search_key__owner = '{owner}'
-                                                               and search_key__repo = '{repo}') prs
+                                                               and search_key__repo =  '{repo}') prs
                                                          ON
                                                                      github_issues_timeline.search_key__owner =
                                                                      prs.search_key__owner
@@ -596,21 +595,21 @@ from
                                      GROUP BY cross_referenced.search_key__owner,
                                               cross_referenced.search_key__repo,
                                               created_at_year,
-                                            created_at_quarter,
+                                            created_at_month,
                                               id
                                               ) b
                                  ON
                                              a.id = b.id
 
                                          and a.created_at_year = b.created_at_year
-                                         and a.created_at_quarter=b.created_at_quarter
+                                         and a.created_at_month=b.created_at_month
                                          and a.search_key__owner = b.search_key__owner
                                          and a.search_key__repo = b.search_key__repo) b
                         ON
                                     a.github_id = b.github_id
 
                                 and a.created_at_year = b.created_at_year
-                                and a.created_at_quarter = b.created_at_quarter
+                                and a.created_at_month = b.created_at_month
                                 and a.owner = b.owner
                                 and a.repo = b.repo) a
                       global
@@ -627,8 +626,8 @@ from
                                  a.created_at_year,
                                  b.created_at_year)   as created_at_year,
                             if(a.github_id != '',
-                                 a.created_at_quarter,
-                                 b.created_at_quarter)   as created_at_quarter,
+                                 a.created_at_month,
+                                 b.created_at_month)   as created_at_month,
                               if(a.github_id != '',
                                  a.github_id,
                                  b.github_id)    as github_id,
@@ -650,8 +649,8 @@ from
                                           a.created_at_year,
                                           b.created_at_year)        as created_at_year,
                                     if(a.id != '',
-                                          a.created_at_quarter,
-                                          b.created_at_quarter)        as created_at_quarter,
+                                          a.created_at_month,
+                                          b.created_at_month)        as created_at_month,
                                        if(a.id != '',
                                           a.id,
                                           b.id)                as github_id,
@@ -665,9 +664,9 @@ from
                                                                                         'created_at'), 1, 10)))
 
                                                                                 as created_at_year,
-                                                     toQuarter(toDate(substring(JSONExtractString(timeline_raw,
+                                                     toMonth(toDate(substring(JSONExtractString(timeline_raw,
                                                                                         'created_at'), 1, 10))) as
-                                                                                        created_at_quarter,
+                                                                                        created_at_month,
                                                 JSONExtractString(JSONExtractString(timeline_raw,
                                                                                     'actor'),
                                                                   'id')    as id,
@@ -676,7 +675,7 @@ from
                                          from (select *
                                                from github_issues_timeline
                                                where search_key__owner = '{owner}'
-                                                 and search_key__repo = '{repo}'
+                                                 and search_key__repo =  '{repo}'
                                                  and (search_key__event = 'labeled' or search_key__event = 'unlabeled')) github_issues_timeline
                                                   global
                                                   join
@@ -687,7 +686,7 @@ from
                                                   from github_issues gict
                                                   WHERE pull_request__url = ''
                                                     and search_key__owner = '{owner}'
-                                                    and search_key__repo = '{repo}') as issues_number
+                                                    and search_key__repo =  '{repo}') as issues_number
                                               on
                                                           github_issues_timeline.search_key__number =
                                                           issues_number.number
@@ -703,7 +702,7 @@ from
                                          GROUP BY github_issues_timeline.search_key__owner,
                                                   github_issues_timeline.search_key__repo,
                                                   created_at_year,
-                                                  created_at_quarter,
+                                                  created_at_month,
                                                   id
                                                   ) a
                                          GLOBAL
@@ -715,9 +714,9 @@ from
                                                                                         'created_at'), 1, 10)))
 
                                                                                 as created_at_year,
-                                                     toQuarter(toDate(substring(JSONExtractString(timeline_raw,
+                                                     toMonth(toDate(substring(JSONExtractString(timeline_raw,
                                                                                         'created_at'), 1, 10))) as
-                                                                                        created_at_quarter,
+                                                                                        created_at_month,
                                                 JSONExtractString(JSONExtractString(timeline_raw,
                                                                                     'actor'),
                                                                   'id')    as id,
@@ -726,7 +725,7 @@ from
                                          from (select *
                                                from github_issues_timeline
                                                where search_key__owner = '{owner}'
-                                                 and search_key__repo = '{repo}'
+                                                 and search_key__repo =  '{repo}'
                                                  and (search_key__event = 'labeled' or search_key__event = 'unlabeled')) github_issues_timeline
                                                   global
                                                   join
@@ -737,7 +736,7 @@ from
                                                   from github_issues gict
                                                   WHERE pull_request__url != ''
                                                     and search_key__owner = '{owner}'
-                                                    and search_key__repo = '{repo}') as pr_number
+                                                    and search_key__repo =  '{repo}') as pr_number
                                               on
                                                           github_issues_timeline.search_key__number = pr_number.number
                                                       and
@@ -752,14 +751,14 @@ from
                                          GROUP BY github_issues_timeline.search_key__owner,
                                                   github_issues_timeline.search_key__repo,
                                                   created_at_year,
-                                                  created_at_quarter,
+                                                  created_at_month,
                                                   id) b
                                      ON
                                                  a.id = b.id
                                              and a.search_key__owner = b.search_key__owner
                                              and a.search_key__repo = b.search_key__repo
                                              and a.created_at_year = b.created_at_year
-                                             and a.created_at_quarter = b.created_at_quarter) a
+                                             and a.created_at_month = b.created_at_month) a
                                 GLOBAL
                                 FULL JOIN
                             (
@@ -775,8 +774,8 @@ from
                                           a.created_at_year,
                                           b.created_at_year)        as created_at_year,
                                     if(a.actor_id != '',
-                                          a.created_at_quarter,
-                                          b.created_at_quarter)        as created_at_quarter,
+                                          a.created_at_month,
+                                          b.created_at_month)        as created_at_month,
                                        if(a.actor_id != '',
                                           a.actor_id,
                                           b.actor_id)          as github_id,
@@ -790,9 +789,9 @@ from
                                                                                         'created_at'), 1, 10)))
 
                                                                                 as created_at_year,
-                                                     toQuarter(toDate(substring(JSONExtractString(timeline_raw,
+                                                     toMonth(toDate(substring(JSONExtractString(timeline_raw,
                                                                                         'created_at'), 1, 10))) as
-                                                                                        created_at_quarter,
+                                                                                        created_at_month,
                                                 JSONExtractString(JSONExtractString(timeline_raw,
                                                                                     'actor'),
                                                                   'id')    as actor_id,
@@ -803,7 +802,7 @@ from
                                                   from (select *
                                                         from github_issues_timeline
                                                         where search_key__owner = '{owner}'
-                                                          and search_key__repo = '{repo}'
+                                                          and search_key__repo =  '{repo}'
                                                           and search_key__event = 'closed') github_issues_timeline global
                                                            join (
                                                       select DISTINCT `number`,
@@ -812,7 +811,7 @@ from
                                                       from github_issues gict
                                                       WHERE pull_request__url = ''
                                                         and search_key__owner = '{owner}'
-                                                        and search_key__repo = '{repo}') as issues_number
+                                                        and search_key__repo =  '{repo}') as issues_number
                                                                 on
                                                                             github_issues_timeline.search_key__number =
                                                                             issues_number.number
@@ -826,7 +825,7 @@ from
                                          group by search_key__owner,
                                                   search_key__repo,
                                                   created_at_year,
-                                                  created_at_quarter,
+                                                  created_at_month,
                                                   actor_id) a
                                          GLOBAL
                                          FULL JOIN
@@ -837,9 +836,9 @@ from
                                                                                         'created_at'), 1, 10)))
 
                                                                                 as created_at_year,
-                                                     toQuarter(toDate(substring(JSONExtractString(timeline_raw,
+                                                     toMonth(toDate(substring(JSONExtractString(timeline_raw,
                                                                                         'created_at'), 1, 10))) as
-                                                                                        created_at_quarter,
+                                                                                        created_at_month,
                                                 JSONExtractString(JSONExtractString(timeline_raw,
                                                                                     'actor'),
                                                                   'id')    as actor_id,
@@ -850,7 +849,7 @@ from
                                                   from (select *
                                                         from github_issues_timeline
                                                         where search_key__owner = '{owner}'
-                                                          and search_key__repo = '{repo}'
+                                                          and search_key__repo =  '{repo}'
                                                           and search_key__event = 'closed') github_issues_timeline global
                                                            join (
                                                       select DISTINCT `number`,
@@ -859,7 +858,7 @@ from
                                                       from github_issues gict
                                                       WHERE pull_request__url != ''
                                                         and search_key__owner = '{owner}'
-                                                        and search_key__repo = '{repo}') as pr_number
+                                                        and search_key__repo =  '{repo}') as pr_number
                                                                 on
                                                                             github_issues_timeline.search_key__number =
                                                                             pr_number.number
@@ -873,24 +872,24 @@ from
                                          group by search_key__owner,
                                                   search_key__repo,
                                                   created_at_year,
-                                                  created_at_quarter,
+                                                  created_at_month,
                                                   actor_id) b
                                      ON
                                                  a.actor_id = b.actor_id
                                              and a.created_at_year = b.created_at_year
-                                            and a.created_at_quarter = b.created_at_quarter
+                                            and a.created_at_month = b.created_at_month
                                              and a.search_key__owner = b.search_key__owner
                                              and a.search_key__repo = b.search_key__repo) b
                             ON
                                         a.github_id = b.github_id
                                     and a.created_at_year = b.created_at_year
-                                            and a.created_at_quarter = b.created_at_quarter
+                                            and a.created_at_month = b.created_at_month
                                     and a.owner = b.owner
                                     and a.repo = b.repo) b
                   on
                               a.github_id = b.github_id and
                               a.created_at_year = b.created_at_year and
-                              a.created_at_quarter = b.created_at_quarter) a
+                              a.created_at_month = b.created_at_month) a
                  global
                  full join
              -- 4 5 6 7 8 9 10 11
@@ -905,8 +904,8 @@ from
                             a.created_at_year,
                             b.created_at_year)   as created_at_year,
                       if(a.github_id != 0,
-                            a.created_at_quarter,
-                            b.created_at_quarter)   as created_at_quarter,
+                            a.created_at_month,
+                            b.created_at_month)   as created_at_month,
                          if(a.github_id != 0,
                             a.github_id,
                             b.github_id)    as github_id,
@@ -936,8 +935,8 @@ from
                                  a.created_at_year,
                                  b.created_at_year)        as created_at_year,
                            if(a.user__id != 0,
-                                 a.created_at_quarter,
-                                 b.created_at_quarter)        as created_at_quarter,
+                                 a.created_at_month,
+                                 b.created_at_month)        as created_at_month,
                               if(a.user__id != 0,
                                  a.user__id,
                                  b.user__id)          as github_id,
@@ -953,18 +952,18 @@ from
                                        `search_key__repo`,
                                        toYear(toDate(created_at))
                                            created_at_year,
-                                        toQuarter(toDate(created_at)) created_at_quarter,
+                                        toMonth(toDate(created_at)) created_at_month,
                                        `user__id`,
                                        COUNT(user__id) as    `user_prs_counts`,
                                        sum(lengthUTF8(body)) body_length_sum,
                                        avg(lengthUTF8(body)) `body_length_avg`
                                 from github_pull_requests
                                 where search_key__owner = '{owner}'
-                                  and search_key__repo = '{repo}'
+                                  and search_key__repo =  '{repo}'
                                 group by `search_key__owner`,
                                          `search_key__repo`,
                                          created_at_year,
-                                         created_at_quarter,
+                                         created_at_month,
                                          `user__id`) a
                                 GLOBAL
                                 FULL JOIN
@@ -974,7 +973,7 @@ from
                                        `search_key__repo`,
                                        toYear(toDate(created_at))
                                            created_at_year,
-                                        toQuarter(toDate(created_at)) created_at_quarter,
+                                        toMonth(toDate(created_at)) created_at_month,
                                        `user__id`,
                                        COUNT(user__id) as    `user_issues_counts`,
                                        sum(lengthUTF8(body)) body_length_sum,
@@ -982,16 +981,16 @@ from
                                 from github_issues
                                 where pull_request__url == ''
                                   and search_key__owner = '{owner}'
-                                  and search_key__repo = '{repo}'
+                                  and search_key__repo =  '{repo}'
                                 group by `search_key__owner`,
                                          `search_key__repo`,
                                          created_at_year,
-                                         created_at_quarter,
+                                         created_at_month,
                                          `user__id`) b
                             ON
                                         a.user__id = b.user__id
                                     and a.created_at_year = b.created_at_year
-                                    and a.created_at_quarter = b.created_at_quarter
+                                    and a.created_at_month = b.created_at_month
                                     and a.search_key__owner = b.search_key__owner
                                     and a.search_key__repo = b.search_key__repo) a
                           global
@@ -1008,8 +1007,8 @@ from
                                      a.created_at_year,
                                      b.created_at_year)        as created_at_year,
                                if(a.user__id != 0,
-                                     a.created_at_quarter,
-                                     b.created_at_quarter)        as created_at_quarter,
+                                     a.created_at_month,
+                                     b.created_at_month)        as created_at_month,
                                   if(a.user__id != 0,
                                      a.user__id,
                                      b.user__id)          as github_id,
@@ -1025,7 +1024,7 @@ from
                                            search_key__repo,
                                            toYear(toDate(created_at))
                                            created_at_year,
-                                        toQuarter(toDate(created_at)) created_at_quarter,
+                                        toMonth(toDate(created_at)) created_at_month,
                                            user__id,
 
                                            COUNT() as            issues_comment_count,
@@ -1036,7 +1035,7 @@ from
                                              from (select *
                                                    from github_issues_comments
                                                    where search_key__owner = '{owner}'
-                                                     and search_key__repo = '{repo}') github_issues_comments global
+                                                     and search_key__repo =  '{repo}') github_issues_comments global
                                                       semi
                                                       left join (
                                                  select DISTINCT `number`,
@@ -1045,14 +1044,14 @@ from
                                                  from github_issues gict
                                                  WHERE pull_request__url = ''
                                                    and search_key__owner = '{owner}'
-                                                   and search_key__repo = '{repo}') as pr_number
+                                                   and search_key__repo =  '{repo}') as pr_number
                                                                 on
                                                                     github_issues_comments.search_key__number = pr_number.number
                                              )
                                     group by search_key__owner,
                                              search_key__repo,
                                              created_at_year,
-                                             created_at_quarter,
+                                             created_at_month,
                                              user__id) a
                                     GLOBAL
                                     FULL JOIN
@@ -1061,7 +1060,7 @@ from
                                            search_key__repo,
                                            toYear(toDate(created_at))
                                            created_at_year,
-                                        toQuarter(toDate(created_at)) created_at_quarter,
+                                        toMonth(toDate(created_at)) created_at_month,
                                            user__id,
                                            COUNT() as            pr_comment_count,
                                            sum(lengthUTF8(body)) body_length_sum,
@@ -1071,7 +1070,7 @@ from
                                              from (select *
                                                    from github_issues_comments
                                                    where search_key__owner = '{owner}'
-                                                     and search_key__repo = '{repo}') github_issues_comments global
+                                                     and search_key__repo =  '{repo}') github_issues_comments global
                                                       semi
                                                       left join (
                                                  select DISTINCT `number`,
@@ -1080,37 +1079,38 @@ from
                                                  from github_issues gict
                                                  WHERE pull_request__url != ''
                                                    and search_key__owner = '{owner}'
-                                                   and search_key__repo = '{repo}') as pr_number
+                                                   and search_key__repo =  '{repo}') as pr_number
                                                                 on
                                                                     github_issues_comments.search_key__number = pr_number.number
                                              )
                                     group by search_key__owner,
                                              search_key__repo,
                                              created_at_year,
-                                             created_at_quarter,
+                                             created_at_month,
                                              user__id) b
                                 ON
                                             a.user__id = b.user__id and
                                             a.created_at_year = b.created_at_year
-                                                and a.created_at_quarter = b.created_at_quarter
+                                                and a.created_at_month = b.created_at_month
                                         and a.search_key__owner = b.search_key__owner
                                         and a.search_key__repo = b.search_key__repo) b
                       on
                                   a.github_id = b.github_id and
                                   a.created_at_year = b.created_at_year
                      and
-                                  a.created_at_quarter = b.created_at_quarter) b
+                                  a.created_at_month = b.created_at_month) b
              on
                          toInt64(a.github_id) = b.github_id and
 
                          a.created_at_year = b.created_at_year and
-                         a.created_at_quarter=b.created_at_quarter) b
+                         a.created_at_month=b.created_at_month) b
     on
                 a.github_id = b.github_id and
 
                 a.commite_date_year = b.created_at_year and
-                a.commite_date_quarter = b.created_at_quarter
+                a.commit_date_month = b.created_at_month
                 ;
+
 """)
     all_data = []
     ck_sql = "INSERT INTO quarter_metrics VALUES"
