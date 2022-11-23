@@ -1113,14 +1113,14 @@ from
 
 """)
     all_data = []
-    ck_sql = "INSERT INTO quarter_metrics VALUES"
+    ck_sql = "INSERT INTO month_metrics VALUES"
     for result in results:
         data_dict = {}
         data_dict["ck_data_insert_at"] = int(time.time() * 1000)
         data_dict["owner"] = result[0]
         data_dict["repo"] = result[1]
         data_dict["created_at_year"] = result[2]
-        data_dict["created_at_quarter"] = result[3]
+        data_dict["created_at_month"] = result[3]
         data_dict["github_id"] = result[4]
         # data_dict["github_login"] = result[4]
         # data_dict["git_author_email"] = result[5]
@@ -1150,11 +1150,11 @@ from
         all_data.append(data_dict)
         if len(all_data) >= 10000:
             response = ck.execute(ck_sql, all_data)
-            logger.info(f"INSERT INTO quarter_metrics {response}")
+            logger.info(f"INSERT INTO month_metrics {response}")
             all_data.clear()
     if all_data:
         response = ck.execute(ck_sql, all_data)
-        logger.info(f"INSERT INTO quarter_metrics {response}")
+        logger.info(f"INSERT INTO month_metrics {response}")
 
     return "end::statistics_metrics"
 
