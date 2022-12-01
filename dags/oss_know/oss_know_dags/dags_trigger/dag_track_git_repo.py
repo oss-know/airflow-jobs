@@ -258,7 +258,7 @@ with DAG(
             where owner='{owner}' and repo='{repo}' and dag_run_id='{dag_run_id}'"""
         update_status_template = Template(update_status_template_str)
 
-        if 'github.com' not in url:
+        if res_type != 'gits' and 'github.com' not in url:
             logger.info('Not github repository, skip')
             pg_cur.execute(update_status_template.substitute(status=2))
             pg_conn.commit()
