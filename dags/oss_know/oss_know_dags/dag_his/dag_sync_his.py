@@ -51,7 +51,7 @@ with DAG(
                                     proxy_password=1)
         objs = list_objs(bucketname=bucketname, obs_client=obs_client, prefix=prefix)
         opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
-        opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+        opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
         results = helpers.scan(client=opensearch_client,
                                query={
                                    "query": {
@@ -83,7 +83,8 @@ with DAG(
         from airflow.models import Variable
         ak_sk = Variable.get("obs_ak_sk", deserialize_json=True)
         objs_need_to_download = kwargs['ti'].xcom_pull(key=f'objs_need_to_download')
-        objs_need_to_download = ['opensearch_data/data_2022-07-08/github_issues_comments_init_2022-07-08T07-28-25Z+0000.json.gzip']
+        objs_need_to_download = [
+            'opensearch_data/data_2022-07-08/github_issues_comments_init_2022-07-08T07-28-25Z+0000.json.gzip']
 
         ak = ak_sk['ak']
         sk = ak_sk['sk']
@@ -95,33 +96,20 @@ with DAG(
                                     proxy_password=None)
         bucketname = 'oss-know-bj'
         opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
-        opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+        opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
         for obj in objs_need_to_download:
             download_from_obs(obs_client=obs_client, bucketname=bucketname, objectname=obj,
                               opensearch_client=opensearch_client)
         return 'do_sync_git_info:::end'
 
+
     def excute_elasticdump_input_script():
         from airflow.models import Variable
 
         opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
-        opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+        opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
         # 一个index 是记录从obs下载的记录，另外一个是记录从压缩包导入opensearch的情况
         download_objs = helpers.scan(client=opensearch_client,
-                               query={
-                                   "query": {
-                                       "term": {
-                                           "if_successful": {
-                                               "value": "true"
-                                           }
-                                       }
-                                   }
-                               }, index='check_download_obs_data',
-                               size=5000,
-                               scroll="20m",
-                               request_timeout=100,
-                               preserve_order=True)
-        already_insert_into_opensearch_objs = helpers.scan(client=opensearch_client,
                                      query={
                                          "query": {
                                              "term": {
@@ -130,11 +118,25 @@ with DAG(
                                                  }
                                              }
                                          }
-                                     }, index='check_insert_into_os_objs',
+                                     }, index='check_download_obs_data',
                                      size=5000,
                                      scroll="20m",
                                      request_timeout=100,
                                      preserve_order=True)
+        already_insert_into_opensearch_objs = helpers.scan(client=opensearch_client,
+                                                           query={
+                                                               "query": {
+                                                                   "term": {
+                                                                       "if_successful": {
+                                                                           "value": "true"
+                                                                       }
+                                                                   }
+                                                               }
+                                                           }, index='check_insert_into_os_objs',
+                                                           size=5000,
+                                                           scroll="20m",
+                                                           request_timeout=100,
+                                                           preserve_order=True)
         already_successful_download_objs = []
         for result in download_objs:
             already_successful_download_objs.append(result["_source"]["obj_name"])
@@ -145,15 +147,13 @@ with DAG(
         for obj in already_successful_download_objs:
             if obj not in already_insert_into_opensearch_objs_list:
                 need_insert_objs.append(obj)
-        need_insert_objs = ['opensearch_data/data_2022-07-08/github_issues_comments_init_2022-07-08T07-28-25Z+0000.json.gzip']
+        need_insert_objs = [
+            'opensearch_data/data_2022-07-08/github_issues_comments_init_2022-07-08T07-28-25Z+0000.json.gzip']
         for obj in need_insert_objs:
-
             excute_script(obj_name=obj, opensearch_client=opensearch_client)
 
 
-
-
-
+    from airflow.models import Variable
 
     op_do_list_obs_data = PythonOperator(
         task_id=f'do_list_obs_data',

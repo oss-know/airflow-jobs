@@ -46,11 +46,17 @@ class OpensearchAPI:
                                                   }
                                                   )
             if len(has_commit["hits"]["hits"]) == 0:
-                template = {"_index": OPENSEARCH_INDEX_GITHUB_COMMITS,
-                            "_source": {"search_key": {"owner": owner, "repo": repo,
-                                                       'updated_at': int(datetime.datetime.now().timestamp() * 1000),
-                                                       'if_sync': if_sync},
-                                        "raw_data": None}}
+                template = {
+                    "_index": OPENSEARCH_INDEX_GITHUB_COMMITS,
+                    "_source": {
+                        "search_key": {
+                            "owner": owner, "repo": repo,
+                            'updated_at': int(datetime.datetime.now().timestamp() * 1000),
+                            'if_sync': if_sync
+                        },
+                        "raw_data": None
+                    }
+                }
                 commit_item = copy.deepcopy(template)
                 commit_item["_source"]["raw_data"] = now_commit
                 bulk_all_github_commits.append(commit_item)
@@ -101,11 +107,17 @@ class OpensearchAPI:
                                                            })
             logger.info(f"DELETE github issues result:{del_result}")
 
-            template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES,
-                        "_source": {"search_key": {"owner": owner, "repo": repo,
-                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000),
-                                                   'if_sync': if_sync},
-                                    "raw_data": None}}
+            template = {
+                "_index": OPENSEARCH_INDEX_GITHUB_ISSUES,
+                "_source": {
+                    "search_key": {
+                        "owner": owner, "repo": repo,
+                        'updated_at': int(datetime.datetime.now().timestamp() * 1000),
+                        'if_sync': if_sync
+                    },
+                    "raw_data": None
+                }
+            }
             commit_item = copy.deepcopy(template)
             commit_item["_source"]["raw_data"] = now_issue
             bulk_all_github_issues.append(commit_item)
@@ -185,11 +197,14 @@ class OpensearchAPI:
                 latest_github_profile[key] = None
             infer_country_company_geo_insert_into_profile(latest_github_profile)
             opensearch_client.index(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
-                                    body={"search_key": {
-                                        'updated_at': int(datetime.datetime.now().timestamp() * 1000),
-                                        'if_sync': if_sync,
-                                        'if_new_person': if_new_person},
-                                        "raw_data": latest_github_profile},
+                                    body={
+                                        "search_key": {
+                                            'updated_at': int(datetime.datetime.now().timestamp() * 1000),
+                                            'if_sync': if_sync,
+                                            'if_new_person': if_new_person
+                                        },
+                                        "raw_data": latest_github_profile
+                                    },
                                     refresh=True)
             logger.info(f"Put the github {github_id}'s profile into opensearch.")
         else:
@@ -203,12 +218,18 @@ class OpensearchAPI:
         bulk_all_datas = []
 
         for val in issues_timelines:
-            template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE,
-                        "_source": {"search_key": {"owner": owner, "repo": repo, "number": number, "event": None,
-                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000),
-                                                   'if_sync': if_sync,
-                                                   'uuid': ''.join(str(uuid.uuid1()).split('-'))},
-                                    "raw_data": None}}
+            template = {
+                "_index": OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE,
+                "_source": {
+                    "search_key": {
+                        "owner": owner, "repo": repo, "number": number, "event": None,
+                        'updated_at': int(datetime.datetime.now().timestamp() * 1000),
+                        'if_sync': if_sync,
+                        'uuid': ''.join(str(uuid.uuid1()).split('-'))
+                    },
+                    "raw_data": None
+                }
+            }
             append_item = copy.deepcopy(template)
             append_item["_source"]["raw_data"] = val
             append_item["_source"]["search_key"]["event"] = val["event"]
@@ -222,11 +243,17 @@ class OpensearchAPI:
         bulk_all_github_issues_comments = []
 
         for val in issues_comments:
-            template = {"_index": OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS,
-                        "_source": {"search_key": {"owner": owner, "repo": repo, "number": number,
-                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000),
-                                                   'if_sync': if_sync},
-                                    "raw_data": None}}
+            template = {
+                "_index": OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS,
+                "_source": {
+                    "search_key": {
+                        "owner": owner, "repo": repo, "number": number,
+                        'updated_at': int(datetime.datetime.now().timestamp() * 1000),
+                        'if_sync': if_sync
+                    },
+                    "raw_data": None
+                }
+            }
             commit_comment_item = copy.deepcopy(template)
             commit_comment_item["_source"]["raw_data"] = val
             bulk_all_github_issues_comments.append(commit_comment_item)
@@ -350,20 +377,43 @@ class OpensearchAPI:
 
     def bulk_github_pull_requests(self, github_pull_requests, opensearch_client, owner, repo, if_sync):
         bulk_all_github_pull_requests = []
+        batch_size = 200
+        batch = []
+        total_success = 0
+        total_fail = []
+
         for now_pr in github_pull_requests:
-            template = {"_index": OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS,
-                        "_source": {"search_key": {"owner": owner, "repo": repo,
-                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000),
-                                                   "if_sync": if_sync},
-                                    "raw_data": None}}
+            template = {
+                "_index": OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS,
+                "_source": {
+                    "search_key": {
+                        "owner": owner, "repo": repo,
+                        'updated_at': int(datetime.datetime.now().timestamp() * 1000),
+                        "if_sync": if_sync
+                    },
+                    "raw_data": None
+                }
+            }
             pull_requests_item = copy.deepcopy(template)
             pull_requests_item["_source"]["raw_data"] = now_pr
-            bulk_all_github_pull_requests.append(pull_requests_item)
-            logger.info(f"add init sync github pull_requests number:{now_pr['number']}")
+            batch.append(pull_requests_item)
+            if len(batch) >= batch_size:
+                success, failed = self.do_opensearch_bulk(opensearch_client, batch, owner, repo)
+                total_success += success
+                total_fail += failed
+                logger.info(
+                    f"now page:{len(batch)} sync github pull_requests success:{success}/{total_success} & "
+                    f"failed:{failed}/{total_fail}")
+                batch = []
+            logger.debug(f"add init sync github pull_requests number:{now_pr['number']}")
 
-        success, failed = self.do_opensearch_bulk(opensearch_client, bulk_all_github_pull_requests, owner, repo)
-        logger.info(
-            f"now page:{len(bulk_all_github_pull_requests)} sync github pull_requests success:{success} & failed:{failed}")
+        if batch:
+            success, failed = self.do_opensearch_bulk(opensearch_client, batch, owner, repo)
+            total_success += success
+            total_fail += failed
+            logger.info(
+                f"now page:{len(batch)} sync github pull_requests success:{success}/{total_success} & "
+                f"failed:{failed}/{total_fail}")
 
         return success, failed
 
@@ -404,17 +454,24 @@ class OpensearchAPI:
                                                                    }
                                                                }
                                                            })
-            logger.info(f"DELETE github pr result:{del_result}")
-            template = {"_index": OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS,
-                        "_source": {"search_key": {"owner": owner, "repo": repo,
-                                                   'updated_at': int(datetime.datetime.now().timestamp() * 1000),
-                                                   "if_sync": if_sync},
-                                    "raw_data": None}}
+            logger.debug(f"DELETE github pr result:{del_result}")
+            template = {
+                "_index": OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS,
+                "_source": {
+                    "search_key": {
+                        "owner": owner, "repo": repo,
+                        'updated_at': int(datetime.datetime.now().timestamp() * 1000),
+                        "if_sync": if_sync
+                    },
+                    "raw_data": None
+                }
+            }
             pull_requests_item = copy.deepcopy(template)
             pull_requests_item["_source"]["raw_data"] = now_pr
             bulk_all_github_pull_requests.append(pull_requests_item)
-            logger.info(f"add init sync github pull_requests number:{now_pr['number']}")
+            logger.debug(f"add init sync github pull_requests number:{now_pr['number']}")
 
+        # Add batching, instead of inserting all docs at once.
         success, failed = self.do_opensearch_bulk(opensearch_client, bulk_all_github_pull_requests, owner, repo)
         logger.info(
             f"now page:{len(bulk_all_github_pull_requests)} sync github pull_requests success:{success} & failed:{failed}")
@@ -465,7 +522,7 @@ class OpensearchAPI:
         # raise OpenSearchException("do_opensearch_bulk Error")
         return success, failed
 
-    def get_uniq_owner_repos(self, opensearch_client, index):
+    def get_uniq_owner_repos(self, opensearch_client, index, excludes=None):
         aggregation_body = {
             "aggs": {
                 "uniq_owners": {
@@ -509,6 +566,22 @@ class OpensearchAPI:
                 }
                 if index == 'gits':
                     uniq_item['origin'] = uniq_repo['uniq_origin']['buckets'][0]['key']
-                uniq_owner_repos.append(uniq_item)
+
+                # The conditions here:
+                # 1. excludes is a Falsy value, add (owenr, repo) to the list
+                # 2. excludes is not Falsy(the or take effects here), and owner::repo is not in the
+                # excludes var, meaning it should not be excluded, add (owner, repo) to the list
+                if (not excludes) or f'{owner_name}::{repo_name}' not in excludes:
+                    uniq_owner_repos.append(uniq_item)
 
         return uniq_owner_repos
+
+    def sync_delete(self, opensearch_client, index, search_body, retries=20, interval=0.5):
+        opensearch_client.delete_by_query(index, search_body)
+        logger.debug(f"Deleting sync with search body: {search_body}")
+
+        for i in range(retries):
+            sleep(interval)
+            res = opensearch_client.search(index=index, body=search_body)
+            if res['hits']['total']['value'] == 0:
+                break

@@ -4,7 +4,9 @@ from airflow import DAG
 from airflow.models import Variable
 from airflow.operators.python import PythonOperator
 
-from oss_know.libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TOKENS, PROXY_CONFS
+from oss_know.libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TOKENS, PROXY_CONFS, \
+    DAILY_SYNC_GITHUB_ISSUES_EXCLUDES
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES
 from oss_know.libs.github import sync_issues, sync_issues_comments, sync_issues_timelines
 from oss_know.libs.util.base import get_opensearch_client
 from oss_know.libs.util.opensearch_api import OpensearchAPI
@@ -103,9 +105,11 @@ with DAG(
             issues_numbers=issues_numbers)
 
 
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_info)
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_info)
     opensearch_api = OpensearchAPI()
-    uniq_owner_repos = opensearch_api.get_uniq_owner_repos(opensearch_client, 'github_pull_requests')
+
+    excludes = Variable.get(DAILY_SYNC_GITHUB_ISSUES_EXCLUDES, deserialize_json=True, default_var=None)
+    uniq_owner_repos = opensearch_api.get_uniq_owner_repos(opensearch_client, OPENSEARCH_INDEX_GITHUB_ISSUES, excludes)
     for uniq_owner_repo in uniq_owner_repos:
         owner = uniq_owner_repo['owner']
         repo = uniq_owner_repo['repo']

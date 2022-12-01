@@ -42,7 +42,7 @@ with DAG(
 
 
     # git_info_list = Variable.get("git_info_list", deserialize_json=True)
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
     # 拿出opensearch中所有去重后的项目
     results = opensearch_helpers.scan(client=opensearch_client,
                                       index=OPENSEARCH_GIT_RAW,

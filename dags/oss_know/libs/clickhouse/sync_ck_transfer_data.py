@@ -19,7 +19,7 @@ from oss_know.libs.util.clickhouse_driver import CKServer
 
 
 def get_data_from_opensearch(opensearch_index, opensearch_conn_datas, clickhouse_table):
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
     # 获取上一次的检查点
     response = opensearch_client.search(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA, body={
         "size": 1,
@@ -257,7 +257,8 @@ def sync_transfer_data_spacial_by_repo(clickhouse_server_info, opensearch_index,
                   database=clickhouse_server_info["DATABASE"])
     opensearch_datas = get_data_from_opensearch_by_repo(opensearch_index=opensearch_index,
                                                         opensearch_conn_datas=opensearch_conn_datas,
-                                                        clickhouse_table=table_name, repo=owner_repo,transfer_type=transfer_type)
+                                                        clickhouse_table=table_name, repo=owner_repo,
+                                                        transfer_type=transfer_type)
 
     # 保证幂等将处于check updated_at 临界点的数据进行删除
 
@@ -422,8 +423,8 @@ def sync_transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_n
                                 maillist_repo=owner_repo)
         time.sleep(5)
         if not if_data_eq_maillist(opensearch_conn_datas=opensearch_conn_datas, ck=ck, table_name=table_name,
-                                 project_name=owner_repo.get('project_name'),
-                                 mail_list_name=owner_repo.get('mail_list_name')):
+                                   project_name=owner_repo.get('project_name'),
+                                   mail_list_name=owner_repo.get('mail_list_name')):
             raise Exception("Inconsistent data between opensearch and clickhouse")
         else:
             logger.info("opensearch and clickhouse data are consistent")
@@ -432,7 +433,7 @@ def sync_transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_n
 
 
 def if_data_eq_github(opensearch_conn_datas, ck, table_name, owner, repo):
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
     response = opensearch_client.search(index=table_name, body={
         "size": 0,
         "track_total_hits": True,
@@ -467,7 +468,7 @@ def if_data_eq_github(opensearch_conn_datas, ck, table_name, owner, repo):
 
 
 def if_data_eq_maillist(opensearch_conn_datas, ck, table_name, project_name, mail_list_name):
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
     response = opensearch_client.search(index=table_name, body={
         "size": 0,
         "track_total_hits": True,
@@ -501,8 +502,8 @@ def if_data_eq_maillist(opensearch_conn_datas, ck, table_name, project_name, mai
     return count == result[0][0]
 
 
-def  get_data_from_opensearch_by_repo(opensearch_index, opensearch_conn_datas, clickhouse_table, repo, transfer_type):
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+def get_data_from_opensearch_by_repo(opensearch_index, opensearch_conn_datas, clickhouse_table, repo, transfer_type):
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
     if transfer_type == 'github_git_sync_by_repo' or transfer_type == 'github_issues_timeline_by_repo':
         body = {
             "size": 1,
