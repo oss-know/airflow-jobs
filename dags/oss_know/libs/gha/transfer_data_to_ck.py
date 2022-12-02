@@ -76,9 +76,13 @@ def parse_json_data_hour(clickhouse_server_info, file_name, bulk_data_map, count
 
                 # 2015年之前和2015年之后的数据结构不一致
                 if int(gh_archive_year) < 2015:
-                    owner = result['repository']['full_name'].split('/')[0]
-                    repo = result['repository']['full_name'].split('/')[1]
-                    event_type = event_type + "_old"
+                    try:
+                        owner = result['repository']['full_name'].split('/')[0]
+                        repo = result['repository']['full_name'].split('/')[1]
+                        event_type = event_type + "_old"
+                    except KeyError as e:
+                        print(result)
+                        raise KeyError
                 else:
                     owner = result['repo']['name'].split('/')[0]
                     repo = result['repo']['name'].split('/')[1]
