@@ -39,8 +39,8 @@ def parse_json_data(year, month, day, clickhouse_server_info):
     table_templates = Variable.get(CK_TABLE_DEFAULT_VAL_TPLT, deserialize_json=True)
     bulk_data_map = {}
     count_map = {}
-    for hour in [0]:
-        # for hour in range(24):
+    # for hour in [0]:
+    for hour in range(24):
         file_name = f'{year}-{month}-{day}-{hour}.json'
         parse_json_data_hour(clickhouse_server_info=clickhouse_server_info,
                              file_name=file_name,
