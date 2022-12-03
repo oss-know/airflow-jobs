@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from string import Template
 
@@ -42,6 +43,8 @@ OS_CK_MAPPING = [
         "OPENSEARCH_INDEX": "github_issues_comments"
     }
 ]
+
+HTTP_DOMAIN_REGEX = "^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/?\n]+)"
 
 with DAG(
         dag_id='git_track_repo',
@@ -258,7 +261,7 @@ with DAG(
             where owner='{owner}' and repo='{repo}' and dag_run_id='{dag_run_id}'"""
         update_status_template = Template(update_status_template_str)
 
-        if res_type != 'gits' and 'github.com' not in url:
+        if res_type != 'gits' and 'github.com' not in re.match(HTTP_DOMAIN_REGEX, url).group():
             logger.info('Not github repository, skip')
             pg_cur.execute(update_status_template.substitute(status=2))
             pg_conn.commit()
