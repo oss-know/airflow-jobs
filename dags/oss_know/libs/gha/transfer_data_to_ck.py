@@ -23,7 +23,7 @@ def un_gzip(gz_filename):
     except Exception as e:
         logger.info(f"{gz_filename}Decompression failed ，failure reason：{e}")
 
-def error_log(year,month,day,log_info,clickhouse_server_info)
+def error_log(year,month,day,log_info,clickhouse_server_info):
     ck = CKServer(host=clickhouse_server_info["HOST"],
                   port=clickhouse_server_info["PORT"],
                   user=clickhouse_server_info["USER"],
