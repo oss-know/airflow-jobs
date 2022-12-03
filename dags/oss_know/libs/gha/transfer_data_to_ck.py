@@ -79,10 +79,12 @@ def parse_json_data_hour(clickhouse_server_info, file_name, bulk_data_map, count
                     try:
                         owner = result['repository']['full_name'].split('/')[0]
                         repo = result['repository']['full_name'].split('/')[1]
-                        event_type = event_type + "_old"
+
                     except KeyError as e:
-                        print(result)
-                        raise KeyError
+                        owner = 'null'
+                        repo = 'null'
+
+                    event_type = event_type + "_old"
                 else:
                     owner = result['repo']['name'].split('/')[0]
                     repo = result['repo']['name'].split('/')[1]
