@@ -40,7 +40,7 @@ def parse_json_data(year, month, day, clickhouse_server_info):
     bulk_data_map = {}
     count_map = {}
     # for hour in [0]:
-    for hour in range(24):
+    for hour in range(2):
         file_name = f'{year}-{month}-{day}-{hour}.json'
         parse_json_data_hour(clickhouse_server_info=clickhouse_server_info,
                              file_name=file_name,
@@ -98,6 +98,8 @@ def parse_json_data_hour(clickhouse_server_info, file_name, bulk_data_map, count
                                                              "gh_archive_day": gh_archive_day,
                                                              "gh_archive_hour": gh_archive_hour},
                                               "raw_data": result}})
+               # if event_type == 'release_event_old':
+
                 bulk_data_map[event_type] = raw_datas
 
                 for event_type in bulk_data_map:
@@ -261,7 +263,19 @@ def transfer_data_by_repo(clickhouse_server_info, table_name, tplt,
                 continue
             for field in fields:
                 if dict_dict.get(field) and fields.get(field) == 'DateTime64(3)':
-                    dict_dict[field] = datetime.datetime.strptime(dict_dict[field], '%Y-%m-%dT%H:%M:%SZ')
+                    try:
+                        dict_dict[field] = datetime.datetime.strptime(dict_dict[field], '%Y-%m-%dT%H:%M:%SZ')
+                    except ValueError as e:
+                        #logger.error(e)
+                        dict_dict[field] = timestamp_to_utc(datetime.datetime.strptime(dict_dict[field], '%Y-%m-%dT%H:%M:%S%z').timestamp())
+                        dict_dict[field] = datetime.datetime.strptime(dict_dict[field], '%Y-%m-%dT%H:%M:%SZ')
+                        #print("--------------------------------")
+                        #print(dict_dict[field])
+                        #raise Exception
+                elif dict_dict.get(field) and fields.get(field) == 'Array(DateTime64(3))':
+                    for i, v in enumerate(dict_dict.get(field)):
+                        if v!='':
+                            dict_dict[field][i] = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%SZ')
                 elif fields.get(field) == 'String':
                     try:
                         dict_dict[field].encode('utf-8')
@@ -274,7 +288,7 @@ def transfer_data_by_repo(clickhouse_server_info, table_name, tplt,
             bulk_data.append(dict_dict)
             ck_sql = f"INSERT INTO {table_name} VALUES"
 
-        print(bulk_data)
+       # print(bulk_data)
 
     # airflow dag的中断
     except Exception as error:
@@ -287,5 +301,13 @@ def transfer_data_by_repo(clickhouse_server_info, table_name, tplt,
     except ServerException as error:
         logger.info(table_name)
         raise ServerException(error)
-
+    except Exception as e:
+        #print('-------',bulk_data)
+        #print(e)
+        raise Exception
     ck.close()
+
+
+def timestamp_to_utc(timestamp):
+    # 10位时间戳
+    return datetime.datetime.utcfromtimestamp(int(timestamp)).strftime("%Y-%m-%dT%H:%M:%SZ")

@@ -24,6 +24,18 @@ def do_sync_transfer_gha_2ck(year_month_day_list):
     # parse_json_data(year, month, day, clickhouse_server_info=clickhouse_server_info)
     return "end do_transfer_gha_2ck"
 
+with DAG(
+        dag_id='sync_gha_transfer',
+        schedule_interval=None,
+        start_date=datetime(2021, 1, 1),
+        catchup=False,
+        tags=['gh_archive'],
+        concurrency=6
+) as dag:
+    def init_clickhouse_transfer_data(ds, **kwargs):
+        return 'Start init_gha_transfer2ck'
+
+
 
 for result in results:
     date_array = result.split('-')
