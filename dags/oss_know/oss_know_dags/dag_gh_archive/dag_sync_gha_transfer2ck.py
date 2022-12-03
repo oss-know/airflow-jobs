@@ -10,7 +10,7 @@ from oss_know.libs.base_dict.variable_key import CLICKHOUSE_DRIVER_INFO
 
 
 with DAG(
-        dag_id='init_gha_transfer2ck.',
+        dag_id='sync_gha_transfer',
         schedule_interval=None,
         start_date=datetime(2021, 1, 1),
         catchup=False,
