@@ -23,6 +23,15 @@ def un_gzip(gz_filename):
     except Exception as e:
         logger.info(f"{gz_filename}Decompression failed ，failure reason：{e}")
 
+def error_log(year,month,day,log_info,clickhouse_server_info)
+    ck = CKServer(host=clickhouse_server_info["HOST"],
+                  port=clickhouse_server_info["PORT"],
+                  user=clickhouse_server_info["USER"],
+                  password=clickhouse_server_info["PASSWD"],
+                  database=clickhouse_server_info["DATABASE"])
+    results = ck.execute_no_params(f"insert into table transfer_gha_error_log values({year},{month},{day},{log_info},{datetime.datetime.now()},{datetime.datetime.now().timestamp()})")
+    print(results)
+    ck.close()
 
 def get_index_name(index_name):
     result = index_name[0].lower()
@@ -64,7 +73,7 @@ def parse_json_data_hour(clickhouse_server_info, file_name, bulk_data_map, count
     gh_archive_month = file_name.split('-')[1]
     gh_archive_day = file_name.split('-')[2]
     gh_archive_hour = file_name.split('-')[3][0:-5]
-    data_parents_path = '/opt/airflow/gha/'
+    data_parents_path = f'/opt/airflow/gha/{gh_archive_year}'
     logger.info(f"Start importing {file_name} data...................")
     try:
         with open(data_parents_path + file_name, 'r+') as f:
@@ -115,6 +124,7 @@ def parse_json_data_hour(clickhouse_server_info, file_name, bulk_data_map, count
             # client.close()
     except FileNotFoundError as e:
         logger.info(e)
+        error_log(log_info=str(e),year=int(gh_archive_year),month=int(gh_archive_month),day=int(gh_archive_day),clickhouse_server_info=clickhouse_server_info)
 
 
 # todo 在此函数基础上修改测试
@@ -246,12 +256,18 @@ def transfer_data_by_repo(clickhouse_server_info, table_name, tplt,
     max_timestamp = 0
     count = 0
     bulk_data = []
+    year = 0
+    month = 0
+    day = 0
     try:
         for os_data in opensearch_datas:
             updated_at = os_data["_source"]["search_key"]["updated_at"]
             if updated_at > max_timestamp:
                 max_timestamp = updated_at
             df_data = os_data["_source"]
+            year = df_data["search_key"]["gh_archive_year"]
+            month = df_data["search_key"]["gh_archive_month"]
+            day = df_data["search_key"]["gh_archive_day"]
             df = pd.json_normalize(df_data)
             template["ck_data_insert_at"] = int(round(time.time() * 1000))
             template["deleted"] = 0
@@ -292,7 +308,10 @@ def transfer_data_by_repo(clickhouse_server_info, table_name, tplt,
 
     # airflow dag的中断
     except Exception as error:
+        error_log(log_info=str(error), year=int(year), month=int(month), day=int(day),
+                  clickhouse_server_info=clickhouse_server_info)
         raise Exception(error)
+
     try:
         if bulk_data:
             ck.execute(ck_sql, bulk_data)
