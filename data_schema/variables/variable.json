@@ -213,7 +213,7 @@
           "if_sync": 0
         },
         "ck_data_insert_at": 0,
-        "delete": 0,
+        "deleted": 0,
         "raw_data": {
           "url": "",
           "id": 0,
@@ -696,7 +696,7 @@
           "if_sync": 0
         },
         "ck_data_insert_at": 0,
-        "delete": 0,
+        "deleted": 0,
         "raw_data": {
           "sha": "",
           "node_id": "",
@@ -789,7 +789,7 @@
           "if_sync": 0
         },
         "ck_data_insert_at": 0,
-        "delete": 0,
+        "deleted": 0,
         "raw_data": {
           "message": "",
           "hexsha": "",
@@ -842,7 +842,7 @@
           "if_sync": 0
         },
         "ck_data_insert_at": 0,
-        "delete": 0,
+        "deleted": 0,
         "raw_data": {
           "url": "",
           "repository_url": "",
@@ -1009,7 +1009,7 @@
           "if_sync": 0
         },
         "ck_data_insert_at": 0,
-        "delete": 0,
+        "deleted": 0,
         "raw_data": {
           "url": "",
           "html_url": "",
@@ -1412,7 +1412,7 @@
           "if_sync": 0
         },
         "ck_data_insert_at": 0,
-        "delete": 0,
+        "deleted": 0,
         "raw_data": {
           "message": "",
           "hexsha": "",
@@ -1546,7 +1546,7 @@
           "if_sync": 0
         },
         "ck_data_insert_at": 0,
-        "delete": 0,
+        "deleted": 0,
         "raw_data": {
           "sha": "",
           "node_id": "",
@@ -1649,7 +1649,7 @@
           "if_sync": 0
         },
         "ck_data_insert_at": 0,
-        "delete": 0,
+        "deleted": 0,
         "raw_data": {
           "url": "",
           "html_url": "",
@@ -1715,7 +1715,7 @@
           "if_sync": 0
         },
         "ck_data_insert_at": 0,
-        "delete": 0,
+        "deleted": 0,
         "raw_data": {
           "url": "",
           "repository_url": "",
@@ -1890,7 +1890,7 @@
           "if_sync": 0
         },
         "ck_data_insert_at": 0,
-        "delete": 0,
+        "deleted": 0,
         "raw_data": {
           "url": "",
           "id": 0,
