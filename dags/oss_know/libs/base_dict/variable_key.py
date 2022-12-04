@@ -26,6 +26,7 @@ NEED_INIT_GITS = "need_init_gits"
 GITS_PROXY_CONFIG = "gits_proxy_config"
 
 CLICKHOUSE_DRIVER_INFO = "clickhouse_conn_data"
+SYNC_FROM_CLICKHOUSE_DRIVER_INFO = "sync_from_clickhouse_conn_data"
 CK_TABLE_MAP_FROM_OS_INDEX = "ck_table_map_from_os_index"
 CK_TABLE_SYNC_MAP_FROM_OS_INDEX = "ck_table_sync_map_from_os_index"
 CK_CREATE_TABLE_COLS_DATATYPE_TPLT = "ck_create_table_cols_datatype_tplt"
