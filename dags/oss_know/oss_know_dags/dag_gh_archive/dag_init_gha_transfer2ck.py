@@ -42,13 +42,13 @@ with DAG(
     for year in insert_gha_years:
 
 
-        for month in range(1, 13):
+        for month in range(11, 12):
 
             day_count = calendar.monthrange(year, month)[1]
             if month < 10:
                 month = '0' + str(month)
-            for i in range(1, day_count + 1):
-            # for i in range(1, 3):
+            #for i in range(1, day_count + 1):
+            for i in range(1, 3):
                 if i < 10:
                     i = '0' + str(i)
                 op_do_transfer_gha_2ck = PythonOperator(

@@ -29,7 +29,24 @@ def error_log(year,month,day,log_info,clickhouse_server_info):
                   user=clickhouse_server_info["USER"],
                   password=clickhouse_server_info["PASSWD"],
                   database=clickhouse_server_info["DATABASE"])
-    results = ck.execute_no_params(f"insert into table transfer_gha_error_log values({year},{month},{day},{log_info},{datetime.datetime.now()},{datetime.datetime.now().timestamp()})")
+    print(year)
+    print(month)
+    print(day)
+    print(log_info)
+    print(datetime.datetime.now())
+    print(datetime.datetime.now().timestamp())
+#    sql = f"insert into table transfer_gha_error_log values({year},{month},{day},{log_info},{datetime.datetime.now()},{datetime.datetime.now().timestamp()})"
+ #   print(sql)
+    current_datetime = datetime.datetime.now()
+    current_timestamp = int(current_datetime.timestamp())
+    error_data = [{"year":year,"month":month,"day":day,"error_info":log_info,"update_date":datetime.datetime(current_datetime.year,
+                        current_datetime.month,
+                        current_datetime.day,
+                        current_datetime.hour,
+                        current_datetime.minute,
+                        current_datetime.second),"update_timestamp":current_timestamp}]
+    print(error_data)
+    results = ck.execute(f"insert into table transfer_gha_error_log values",error_data)
     print(results)
     ck.close()
 
@@ -73,7 +90,7 @@ def parse_json_data_hour(clickhouse_server_info, file_name, bulk_data_map, count
     gh_archive_month = file_name.split('-')[1]
     gh_archive_day = file_name.split('-')[2]
     gh_archive_hour = file_name.split('-')[3][0:-5]
-    data_parents_path = f'/opt/airflow/gha/{gh_archive_year}'
+    data_parents_path = f'/opt/airflow/gha/{gh_archive_year}/'
     logger.info(f"Start importing {file_name} data...................")
     try:
         with open(data_parents_path + file_name, 'r+') as f:
@@ -123,7 +140,9 @@ def parse_json_data_hour(clickhouse_server_info, file_name, bulk_data_map, count
 
             # client.close()
     except FileNotFoundError as e:
-        logger.info(e)
+        #logger.info(e)
+        #print(str(e))
+        #print(type(str(e)))
         error_log(log_info=str(e),year=int(gh_archive_year),month=int(gh_archive_month),day=int(gh_archive_day),clickhouse_server_info=clickhouse_server_info)
 
 
