@@ -848,12 +848,53 @@ def get_data_from_opensearch_maillist(index, opensearch_conn_datas, maillist_rep
     return results, opensearch_client
 
 
+
+
+#def parse_data(df, temp):
+#     # 这个是最终插入ck的数据字典
+#     dict_data = copy.deepcopy(temp)
+#     for index, row in df.iloc[0].iteritems():
+#         # 去除以raw_data开头的字段
+#         if index.startswith(CLICKHOUSE_RAW_DATA):
+#             index = index[9:]
+#         index = index.replace('.', '__')
+#         # 只要是空的就跳过
+#         if not row:
+#             continue
+#         # 第一步的转化
+#         row = alter_data_type(row)
+#         # # 这里的字符串都转换成在ck中能够使用函数解析json的标准格式
+#         # if isinstance(row, str):
+#         #     row.replace(": ", ":")
+#         # 解决嵌套array
+#         if isinstance(row, list):
+#             # 数组中是字典
+#             if isinstance(row[0], dict):
+#                 for key in row[0]:
+#                     data_name = f'{index}.{key}'
+#                     dict_data[data_name] = []
+#                 for data in row:
+#                     for key in data:
+#                         filter_data = alter_data_type(data.get(key))
+#                         dict_data.get(f'{index}.{key}').append(filter_data)
+#             else:
+#                 # 这种是数组类型
+#                 data_name = f'{index}'
+#                 dict_data[data_name] = row
+#         else:
+#             # 这种是非list类型
+#             data_name = f'{index}'
+#             dict_data[data_name] = row
+#     return dict_data
+
+
+# todo 测试取代上侧方法
 def parse_data(df, temp):
     # 这个是最终插入ck的数据字典
     dict_data = copy.deepcopy(temp)
     for index, row in df.iloc[0].iteritems():
         # 去除以raw_data开头的字段
-        if index.startswith(CLICKHOUSE_RAW_DATA):
+        if index.startswith("raw"):
             index = index[9:]
         index = index.replace('.', '__')
         # 只要是空的就跳过
@@ -865,16 +906,24 @@ def parse_data(df, temp):
         # if isinstance(row, str):
         #     row.replace(": ", ":")
         # 解决嵌套array
+        nest_depth = {}
         if isinstance(row, list):
             # 数组中是字典
             if isinstance(row[0], dict):
-                for key in row[0]:
-                    data_name = f'{index}.{key}'
-                    dict_data[data_name] = []
+                # for key in row[0]:
+                #     data_name = f'{index}.{key}'
+                #     dict_data[data_name] = []
+                count = 0
                 for data in row:
+                    count += 1
                     for key in data:
-                        filter_data = alter_data_type(data.get(key))
-                        dict_data.get(f'{index}.{key}').append(filter_data)
+                        if count == 1:
+                            filter_data = alter_data_type(data.get(key))
+                            dict_data.get(f'{index}.{key}')[0] = filter_data
+                        else:
+                            filter_data = alter_data_type(data.get(key))
+                            dict_data.get(f'{index}.{key}').append(filter_data)
+                nest_depth[index] = count
             else:
                 # 这种是数组类型
                 data_name = f'{index}'
@@ -883,8 +932,21 @@ def parse_data(df, temp):
             # 这种是非list类型
             data_name = f'{index}'
             dict_data[data_name] = row
-    return dict_data
+    for data_key in dict_data:
+        if data_key.find('.') and isinstance(dict_data.get(data_key), list):
+            data = dict_data.get(data_key)
+            data_len = len(data)
+            nest_depth_len = nest_depth[data_key.split('.')[0]]
+            if nest_depth_len > data_len:
+                for i in range(nest_depth_len-data_len):
+                    if isinstance(data[-1],str):
+                        data.append("")
+                    elif isinstance(data[-1],int):
+                        data.append(0)
+                    elif isinstance(data[-1],float):
+                        data.append(0.0)
 
+    return dict_data
 
 def parse_data_init(df):
     dict_data = {}

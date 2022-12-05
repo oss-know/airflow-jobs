@@ -66,7 +66,7 @@ def parse_json_data(year, month, day, clickhouse_server_info):
     bulk_data_map = {}
     count_map = {}
     # for hour in [0]:
-    for hour in range(2):
+    for hour in range(24):
         file_name = f'{year}-{month}-{day}-{hour}.json'
         parse_json_data_hour(clickhouse_server_info=clickhouse_server_info,
                              file_name=file_name,
@@ -76,6 +76,7 @@ def parse_json_data(year, month, day, clickhouse_server_info):
     for event_type in bulk_data_map:
         bulk_data = bulk_data_map.get(event_type)
         if bulk_data:
+            print(f'start transfer {event_type} ................................')
             transfer_data_by_repo(clickhouse_server_info=clickhouse_server_info,
                                   table_name=event_type,
                                   tplt=table_templates.get(event_type), bulk_data=bulk_data)
@@ -103,8 +104,8 @@ def parse_json_data_hour(clickhouse_server_info, file_name, bulk_data_map, count
                 # 2015年之前和2015年之后的数据结构不一致
                 if int(gh_archive_year) < 2015:
                     try:
-                        owner = result['repository']['full_name'].split('/')[0]
-                        repo = result['repository']['full_name'].split('/')[1]
+                        owner = result['repository']['owner'].split('/')[0]
+                        repo = result['repository']['repo'].split('/')[1]
 
                     except KeyError as e:
                         owner = 'null'
@@ -131,6 +132,7 @@ def parse_json_data_hour(clickhouse_server_info, file_name, bulk_data_map, count
                 for event_type in bulk_data_map:
                     bulk_data = bulk_data_map.get(event_type)
                     if len(bulk_data) == 20000:
+                        print(f'start transfer {event_type} ................................')
                         transfer_data_by_repo(clickhouse_server_info=clickhouse_server_info,
                                               table_name=event_type,
                                               tplt=table_templates.get(event_type), bulk_data=bulk_data)
