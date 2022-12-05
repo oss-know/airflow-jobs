@@ -41,6 +41,7 @@ with DAG(dag_id='daily_gits_sync_from_clickhouse',  # schedule_interval='*/5 * *
         owner, _ = owner_repo_pair
         task_groups_by_capital_letter[owner[0].lower()].append(owner_repo_pair)
 
+    prev_group = None
     for letter, owner_repos in task_groups_by_capital_letter.items():
         op_sync_gits_from_clickhouse_group = PythonOperator(
             task_id=f'op_sync_gits_from_clickhouse_group_{letter}',
@@ -51,4 +52,8 @@ with DAG(dag_id='daily_gits_sync_from_clickhouse',  # schedule_interval='*/5 * *
                 }
             }
         )
-        op_init >> op_sync_gits_from_clickhouse_group
+        if not prev_group:
+            op_init >> op_sync_gits_from_clickhouse_group
+        else:
+            prev_group >> op_sync_gits_from_clickhouse_group
+        prev_group = op_sync_gits_from_clickhouse_group

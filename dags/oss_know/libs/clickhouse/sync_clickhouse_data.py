@@ -21,7 +21,12 @@ def union_remote_owner_repos(local_ck_conn_info, remote_ck_conn_info, table_name
                          port=local_ck_conn_info.get("PORT"),
                          user=local_ck_conn_info.get("USER"),
                          password=local_ck_conn_info.get("PASSWD"),
-                         database=local_ck_conn_info.get("DATABASE"))
+                         database=local_ck_conn_info.get("DATABASE"),
+                         kwargs={
+                             "connect_timeout": 200,
+                             "send_receive_timeout": 6000,
+                             "sync_request_timeout": 100,
+                         })
 
     local_owner_repos = [tup[0] for tup in ck_client.execute_no_params(uniq_owner_repos_sql)]
     remote_owner_repos = [tup[0] for tup in ck_client.execute_no_params(remote_uniq_owner_repos_sql)]
@@ -86,6 +91,7 @@ def sync_from_remote_by_repo(local_ck_conn_info, remote_ck_conn_info, table_name
        and search_key__repo = '{repo}'
         and search_key__updated_at > {local_latest_updated_at}
     """
+    logger.info(f"Syncing {owner}/{repo}(updated_at > {local_latest_updated_at})")
     local_ck_client.execute_no_params(insert_sql)
 
     # Log for the inserted data
