@@ -2,12 +2,44 @@ from oss_know.libs.util.clickhouse_driver import CKServer
 from oss_know.libs.util.log import logger
 
 
+def union_remote_owner_repos(local_ck_conn_info, remote_ck_conn_info, table_name):
+    remote_uniq_owner_repos_sql = f"""
+    select distinct(search_key__owner, search_key__repo)
+    from remote(
+            '{remote_ck_conn_info["HOST"]}:{remote_ck_conn_info["PORT"]}',
+            '{remote_ck_conn_info["DATABASE"]}.{table_name}',
+            '{remote_ck_conn_info["USER"]}',
+            '{remote_ck_conn_info["PASSWD"]}'
+        )
+    """
+
+    uniq_owner_repos_sql = f"""
+    select distinct(search_key__owner, search_key__repo)
+    from gits;
+    """
+    ck_client = CKServer(host=local_ck_conn_info.get("HOST"),
+                         port=local_ck_conn_info.get("PORT"),
+                         user=local_ck_conn_info.get("USER"),
+                         password=local_ck_conn_info.get("PASSWD"),
+                         database=local_ck_conn_info.get("DATABASE"))
+
+    local_owner_repos = [tup[0] for tup in ck_client.execute_no_params(uniq_owner_repos_sql)]
+    remote_owner_repos = [tup[0] for tup in ck_client.execute_no_params(remote_uniq_owner_repos_sql)]
+    return set(local_owner_repos).union(set(remote_owner_repos))
+
+
+def sync_from_remote_by_repos(local_ck_conn_info, remote_ck_conn_info, table_name, owner_repos):
+    for owner_repo_pair in owner_repos:
+        owner, repo = owner_repo_pair
+        sync_from_remote_by_repo(local_ck_conn_info, remote_ck_conn_info, table_name, owner, repo)
+
+
 def sync_from_remote_by_repo(local_ck_conn_info, remote_ck_conn_info, table_name, owner, repo):
-    local_ck_client = CKServer(host=local_ck_conn_info["HOST"],
-                               port=local_ck_conn_info["PORT"],
-                               user=local_ck_conn_info["USER"],
-                               password=local_ck_conn_info["PASSWD"],
-                               database=local_ck_conn_info["DATABASE"],
+    local_ck_client = CKServer(host=local_ck_conn_info.get("HOST"),
+                               port=local_ck_conn_info.get("PORT"),
+                               user=local_ck_conn_info.get("USER"),
+                               password=local_ck_conn_info.get("PASSWD"),
+                               database=local_ck_conn_info.get("DATABASE"),
                                kwargs={
                                    "connect_timeout": 200,
                                    "send_receive_timeout": 6000,
