@@ -27,7 +27,7 @@ with DAG(dag_id='daily_github_prs_sync_from_clickhouse',  # schedule_interval='*
 
     def do_sync_github_prs_from_clickhouse_by_group(params):
         sync_from_remote_by_repos(clickhouse_conn_info, sync_from_clickhouse_conn_info,
-                                  "github_prs",
+                                  "github_pull_requests",
                                   params.get('owner_repos'))
 
 
