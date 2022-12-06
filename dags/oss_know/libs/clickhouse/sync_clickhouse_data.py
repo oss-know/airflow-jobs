@@ -1,3 +1,5 @@
+import clickhouse_driver
+
 from oss_know.libs.util.clickhouse_driver import CKServer
 from oss_know.libs.util.log import logger
 
@@ -34,9 +36,17 @@ def union_remote_owner_repos(local_ck_conn_info, remote_ck_conn_info, table_name
 
 
 def sync_from_remote_by_repos(local_ck_conn_info, remote_ck_conn_info, table_name, owner_repos):
+    failed_owner_repos = []
     for owner_repo_pair in owner_repos:
         owner, repo = owner_repo_pair
-        sync_from_remote_by_repo(local_ck_conn_info, remote_ck_conn_info, table_name, owner, repo)
+        try:
+            sync_from_remote_by_repo(local_ck_conn_info, remote_ck_conn_info, table_name, owner, repo)
+        except clickhouse_driver.errors.ServerException as e:
+            logger.error(f"Failed to sync {owner}/{repo}: {e.code}")
+            failed_owner_repos.append((owner, repo, e.code))
+
+    if failed_owner_repos:
+        raise Exception(f"Failed to sync {len(failed_owner_repos)} repos: {failed_owner_repos}")
 
 
 def sync_from_remote_by_repo(local_ck_conn_info, remote_ck_conn_info, table_name, owner, repo):
