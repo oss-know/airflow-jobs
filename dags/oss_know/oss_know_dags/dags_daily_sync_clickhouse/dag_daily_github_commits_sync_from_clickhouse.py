@@ -5,15 +5,17 @@ from airflow import DAG
 from airflow.models import Variable
 from airflow.operators.python import PythonOperator
 
-from oss_know.libs.base_dict.variable_key import CLICKHOUSE_DRIVER_INFO, SYNC_FROM_CLICKHOUSE_DRIVER_INFO
+from oss_know.libs.base_dict.variable_key import CLICKHOUSE_DRIVER_INFO, SYNC_FROM_CLICKHOUSE_DRIVER_INFO, \
+    SYNC_CLICKHOUSE_INTERVAL
 from oss_know.libs.clickhouse.sync_clickhouse_data import sync_from_remote_by_repos, union_remote_owner_repos
 
 clickhouse_conn_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
 sync_from_clickhouse_conn_info = Variable.get(SYNC_FROM_CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
+sync_interval = Variable.get(SYNC_CLICKHOUSE_INTERVAL, default_var=None)
 
 # Daily sync github_commits data from other clickhouse environment by owner/repo
 with DAG(dag_id='daily_github_commits_sync_from_clickhouse',  # schedule_interval='*/5 * * * *',
-         schedule_interval=None, start_date=datetime(2021, 1, 1), catchup=False,
+         schedule_interval=sync_interval, start_date=datetime(2021, 1, 1), catchup=False,
          tags=['github', 'daily sync clickhouse'], ) as dag:
     def do_init():
         return 'Start init_daily_github_commits_sync'

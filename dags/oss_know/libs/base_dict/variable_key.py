@@ -43,3 +43,10 @@ PROXY_CONFS = "proxy_confs"
 REPO_LIST = "repo_list"
 SYNC_REPO_LIST = "sync_repo_list"
 MAILLIST_REPO = "maillist_repo"
+
+# Variables for sync
+# Interval to sync clickhouse data from other environments
+SYNC_CLICKHOUSE_INTERVAL = "sync_clickhouse_interval"
+# Interval to sync gits, github related data for all owner/repos
+# in opensearch and then transfer the sync-ed part to clickhouse
+DATA_SYNC_INTERVAL = "data_sync_interval"
