@@ -29,7 +29,6 @@ with DAG(dag_id='daily_github_commits_sync_from_clickhouse',  # schedule_interva
 
 
     all_owner_repos = union_remote_owner_repos(clickhouse_conn_info, sync_from_clickhouse_conn_info, "github_commits")
-
     # Init 26 sub groups by letter(to make the task DAG static)
     # Split all tasks into 26 groups by their capital letter, all tasks inside a group are executed sequentially
     # To avoid to many parallel tasks and keep the DAG static
@@ -41,14 +40,20 @@ with DAG(dag_id='daily_github_commits_sync_from_clickhouse',  # schedule_interva
         owner, _ = owner_repo_pair
         task_groups_by_capital_letter[owner[0].lower()].append(owner_repo_pair)
 
+    prev_group = None
     for letter, owner_repos in task_groups_by_capital_letter.items():
         op_sync_github_commits_from_clickhouse_group = PythonOperator(
             task_id=f'op_sync_github_commits_from_clickhouse_group_{letter}',
             python_callable=do_sync_github_commits_from_clickhouse_by_group,
+            trigger_rule='all_done',
             op_kwargs={
                 "params": {
                     "owner_repos": owner_repos
                 }
             }
         )
-        op_init >> op_sync_github_commits_from_clickhouse_group
+        if not prev_group:
+            op_init >> op_sync_github_commits_from_clickhouse_group
+        else:
+            prev_group >> op_sync_github_commits_from_clickhouse_group
+        prev_group = op_sync_github_commits_from_clickhouse_group
