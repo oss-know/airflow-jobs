@@ -46,6 +46,7 @@ with DAG(dag_id='daily_gits_sync_from_clickhouse',  # schedule_interval='*/5 * *
         op_sync_gits_from_clickhouse_group = PythonOperator(
             task_id=f'op_sync_gits_from_clickhouse_group_{letter}',
             python_callable=do_sync_gits_from_clickhouse_by_group,
+            trigger_rule='all_done',
             op_kwargs={
                 "params": {
                     "owner_repos": owner_repos
