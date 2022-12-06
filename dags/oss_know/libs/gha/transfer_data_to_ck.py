@@ -115,6 +115,7 @@ def parse_json_data_hour(clickhouse_server_info, file_name, bulk_data_map, count
                 else:
                     owner = result['repo']['name'].split('/')[0]
                     repo = result['repo']['name'].split('/')[1]
+                #if event_type != 'gist_event_old':
                 raw_datas = bulk_data_map.get(event_type, [])
                 raw_datas.append({"_index": event_type,
                                   "_source": {"search_key": {"owner": owner, "repo": repo,
@@ -125,9 +126,9 @@ def parse_json_data_hour(clickhouse_server_info, file_name, bulk_data_map, count
                                                              "gh_archive_day": gh_archive_day,
                                                              "gh_archive_hour": gh_archive_hour},
                                               "raw_data": result}})
-               # if event_type == 'release_event_old':
+                if event_type != 'release_event_old':
 
-                bulk_data_map[event_type] = raw_datas
+                    bulk_data_map[event_type] = raw_datas
 
                 for event_type in bulk_data_map:
                     bulk_data = bulk_data_map.get(event_type)
@@ -282,6 +283,8 @@ def transfer_data_by_repo(clickhouse_server_info, table_name, tplt,
     day = 0
     try:
         for os_data in opensearch_datas:
+            #print(os_data)
+            #break
             updated_at = os_data["_source"]["search_key"]["updated_at"]
             if updated_at > max_timestamp:
                 max_timestamp = updated_at
