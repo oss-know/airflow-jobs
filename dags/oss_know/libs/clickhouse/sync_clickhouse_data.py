@@ -92,7 +92,7 @@ def sync_from_remote_by_repo(local_ck_conn_info, remote_ck_conn_info, table_name
       and table = '{table_name}'
     """
     cols = local_ck_client.execute_no_params(table_col_names_sql)
-    cols_str = ",".join([col[0] for col in cols])
+    cols_str = ",".join([f'`{col[0]}`' for col in cols])
 
     insert_sql = f"""
     insert into table {local_db}.{table_name}
