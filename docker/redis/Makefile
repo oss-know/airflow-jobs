@@ -2,7 +2,7 @@
 
 .DEFAULT_GOAL := help
 
-DOCKER_COMPOSE := docker-compose
+DOCKER_COMPOSE := docker compose
 DOCKER_COMPOSE_FILE_INFRA := docker-compose.yml
 
 DOCKER_INFRA := $(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE_INFRA)
