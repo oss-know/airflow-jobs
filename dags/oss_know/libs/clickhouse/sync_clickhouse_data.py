@@ -5,8 +5,11 @@ import clickhouse_driver
 from oss_know.libs.util.clickhouse_driver import CKServer
 from oss_know.libs.util.log import logger
 
+# TODO: Make the fail over timeout configurable
+FAIL_OVER_TIMEOUT_SETTING_SQL = "set connect_timeout_with_failover_ms = 100000"
 
-def union_remote_owner_repos(local_ck_conn_info, remote_ck_conn_info, table_name):
+
+def combine_remote_owner_repos(local_ck_conn_info, remote_ck_conn_info, table_name, combination_type='union'):
     remote_uniq_owner_repos_sql = f"""
     select distinct(search_key__owner, search_key__repo)
     from remote(
@@ -26,15 +29,45 @@ def union_remote_owner_repos(local_ck_conn_info, remote_ck_conn_info, table_name
                          user=local_ck_conn_info.get("USER"),
                          password=local_ck_conn_info.get("PASSWD"),
                          database=local_ck_conn_info.get("DATABASE"),
+                         settings={
+                             "max_execution_time": 1000000,
+                         },
                          kwargs={
                              "connect_timeout": 200,
                              "send_receive_timeout": 6000,
                              "sync_request_timeout": 100,
                          })
+    ck_client.execute_no_params(FAIL_OVER_TIMEOUT_SETTING_SQL)
 
-    local_owner_repos = [tup[0] for tup in ck_client.execute_no_params(uniq_owner_repos_sql)]
-    remote_owner_repos = [tup[0] for tup in ck_client.execute_no_params(remote_uniq_owner_repos_sql)]
-    return set(local_owner_repos).union(set(remote_owner_repos))
+    # TODO Extend the clickhouse client to provide __enter__ mechanism
+    # So the block can be wrapped inside a with statement to close the client
+    # Another consideration: return the same type
+
+    # Types could be: union, intersection, only_local, only_remote
+    if combination_type == 'only_local':
+        local_owner_repos = [tup[0] for tup in ck_client.execute_no_params(uniq_owner_repos_sql)]
+        ck_client.close()
+        return local_owner_repos
+
+    if combination_type == 'only_remote':
+        remote_owner_repos = [tup[0] for tup in ck_client.execute_no_params(remote_uniq_owner_repos_sql)]
+        ck_client.close()
+        return remote_owner_repos
+
+    local_owner_repos = set([tup[0] for tup in ck_client.execute_no_params(uniq_owner_repos_sql)])
+    remote_owner_repos = set([tup[0] for tup in ck_client.execute_no_params(remote_uniq_owner_repos_sql)])
+    ck_client.close()
+
+    if combination_type == 'union':
+        return local_owner_repos.union(remote_owner_repos)
+    elif combination_type == 'intersection':
+        return local_owner_repos.intersection(remote_owner_repos)
+    elif combination_type == 'diff_local':
+        return local_owner_repos.difference(remote_owner_repos)
+    elif combination_type == 'diff_remote':
+        return remote_owner_repos.difference(local_owner_repos)
+    else:
+        raise ValueError(f"Unknown combination type: {combination_type}")
 
 
 def sync_from_remote_by_repos(local_ck_conn_info, remote_ck_conn_info, table_name, owner_repos):
@@ -61,11 +94,16 @@ def sync_from_remote_by_repo(local_ck_conn_info, remote_ck_conn_info, table_name
                                user=local_ck_conn_info.get("USER"),
                                password=local_ck_conn_info.get("PASSWD"),
                                database=local_ck_conn_info.get("DATABASE"),
+                               settings={
+                                   "max_execution_time": 1000000,
+                               },
                                kwargs={
                                    "connect_timeout": 200,
                                    "send_receive_timeout": 6000,
                                    "sync_request_timeout": 100,
                                })
+    local_ck_client.execute_no_params(FAIL_OVER_TIMEOUT_SETTING_SQL)
+
     local_db = local_ck_conn_info.get("DATABASE")
 
     remote_host = remote_ck_conn_info.get('HOST')

@@ -46,7 +46,17 @@ MAILLIST_REPO = "maillist_repo"
 
 # Variables for sync
 # Interval to sync clickhouse data from other environments
-SYNC_CLICKHOUSE_INTERVAL = "sync_clickhouse_interval"
+CLICKHOUSE_SYNC_INTERVAL = "clickhouse_sync_interval"
+# Clickhouse sync combination type
+# Enum:
+# union: union of local and remote owner repos
+# intersection: intersection of local and remote owner repos
+# only_local: only local owner repos
+# only_remote: only remote owner repos
+# diff_local: local owner repos - remote owner repos
+# diff_remote: remote owner repos - local owner repos
+CLICKHOUSE_SYNC_COMBINATION_TYPE = "clickhouse_sync_combination_type"
+
 # Interval to sync gits, github related data for all owner/repos
 # in opensearch and then transfer the sync-ed part to clickhouse
 DATA_SYNC_INTERVAL = "data_sync_interval"

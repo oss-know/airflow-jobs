@@ -6,12 +6,13 @@ from airflow.models import Variable
 from airflow.operators.python import PythonOperator
 
 from oss_know.libs.base_dict.variable_key import CLICKHOUSE_DRIVER_INFO, SYNC_FROM_CLICKHOUSE_DRIVER_INFO, \
-    SYNC_CLICKHOUSE_INTERVAL
-from oss_know.libs.clickhouse.sync_clickhouse_data import sync_from_remote_by_repos, union_remote_owner_repos
+    CLICKHOUSE_SYNC_INTERVAL, CLICKHOUSE_SYNC_COMBINATION_TYPE
+from oss_know.libs.clickhouse.sync_clickhouse_data import sync_from_remote_by_repos, combine_remote_owner_repos
 
 clickhouse_conn_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
 sync_from_clickhouse_conn_info = Variable.get(SYNC_FROM_CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
-sync_interval = Variable.get(SYNC_CLICKHOUSE_INTERVAL, default_var=None)
+sync_interval = Variable.get(CLICKHOUSE_SYNC_INTERVAL, default_var=None)
+sync_combination_type = Variable.get(CLICKHOUSE_SYNC_COMBINATION_TYPE, default_var="union")
 
 # Daily sync gits data from other clickhouse environment by owner/repo
 with DAG(dag_id='daily_gits_sync_from_clickhouse',  # schedule_interval='*/5 * * * *',
@@ -30,7 +31,9 @@ with DAG(dag_id='daily_gits_sync_from_clickhouse',  # schedule_interval='*/5 * *
                                   params.get('owner_repos'))
 
 
-    all_owner_repos = union_remote_owner_repos(clickhouse_conn_info, sync_from_clickhouse_conn_info, "gits")
+    all_owner_repos = combine_remote_owner_repos(clickhouse_conn_info, sync_from_clickhouse_conn_info,
+                                                 "gits",
+                                                 sync_combination_type)
 
     # Init 26 sub groups by letter(to make the task DAG static)
     # Split all tasks into 26 groups by their capital letter, all tasks inside a group are executed sequentially

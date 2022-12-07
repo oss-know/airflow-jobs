@@ -125,7 +125,8 @@
     "DATABASE": "default",
     "CLUSTER_NAME": "replicated"
   },
-  "sync_clickhouse_interval": "0 */2 * * *",
+  "clickhouse_sync_interval": "0 */2 * * *",
+  "clickhouse_sync_combination_type": "union",
   "redis_client_data": {
     "HOST": "192.168.8.120",
     "PORT": "6379"
