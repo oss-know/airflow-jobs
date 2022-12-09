@@ -43,6 +43,8 @@ def combine_remote_owner_repos(local_ck_conn_info, remote_ck_conn_info, table_na
     # So the block can be wrapped inside a with statement to close the client
     # Another consideration: return the same type
 
+    logger.info(f'Get owner-repo pairs combination with type {combination_type}')
+
     # Types could be: union, intersection, only_local, only_remote
     if combination_type == 'only_local':
         local_owner_repos = [tup[0] for tup in ck_client.execute_no_params(uniq_owner_repos_sql)]
@@ -58,16 +60,20 @@ def combine_remote_owner_repos(local_ck_conn_info, remote_ck_conn_info, table_na
     remote_owner_repos = set([tup[0] for tup in ck_client.execute_no_params(remote_uniq_owner_repos_sql)])
     ck_client.close()
 
+    owner_repos = None
     if combination_type == 'union':
-        return local_owner_repos.union(remote_owner_repos)
+        owner_repos = local_owner_repos.union(remote_owner_repos)
     elif combination_type == 'intersection':
-        return local_owner_repos.intersection(remote_owner_repos)
+        owner_repos = local_owner_repos.intersection(remote_owner_repos)
     elif combination_type == 'diff_local':
-        return local_owner_repos.difference(remote_owner_repos)
+        owner_repos = local_owner_repos.difference(remote_owner_repos)
     elif combination_type == 'diff_remote':
-        return remote_owner_repos.difference(local_owner_repos)
+        owner_repos = remote_owner_repos.difference(local_owner_repos)
     else:
         raise ValueError(f"Unknown combination type: {combination_type}")
+
+    logger.info(f"Combined owner-repo pairs: {owner_repos}")
+    return owner_repos
 
 
 def sync_from_remote_by_repos(local_ck_conn_info, remote_ck_conn_info, table_name, owner_repos):
