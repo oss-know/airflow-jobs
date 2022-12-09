@@ -104,8 +104,11 @@ def parse_json_data_hour(clickhouse_server_info, file_name, bulk_data_map, count
                 # 2015年之前和2015年之后的数据结构不一致
                 if int(gh_archive_year) < 2015:
                     try:
-                        owner = result['repository']['owner'].split('/')[0]
-                        repo = result['repository']['repo'].split('/')[1]
+                       # print(result)
+                    
+                        owner = result['repository']['owner']
+                        repo = result['repository']['name']
+                        
 
                     except KeyError as e:
                         owner = 'null'
@@ -132,12 +135,12 @@ def parse_json_data_hour(clickhouse_server_info, file_name, bulk_data_map, count
 
                 for event_type in bulk_data_map:
                     bulk_data = bulk_data_map.get(event_type)
-                    if len(bulk_data) == 20000:
+                    if len(bulk_data) == 40000:
                         print(f'start transfer {event_type} ................................')
                         transfer_data_by_repo(clickhouse_server_info=clickhouse_server_info,
                                               table_name=event_type,
                                               tplt=table_templates.get(event_type), bulk_data=bulk_data)
-                        count_map[event_type] = count_map.get(event_type, 0) + 20000
+                        count_map[event_type] = count_map.get(event_type, 0) + 40000
                         logger.info(f"Successfully inserted {event_type} {count_map[event_type]}")
                         bulk_data.clear()
 
