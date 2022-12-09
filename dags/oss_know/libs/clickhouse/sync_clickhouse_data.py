@@ -22,7 +22,7 @@ def combine_remote_owner_repos(local_ck_conn_info, remote_ck_conn_info, table_na
 
     uniq_owner_repos_sql = f"""
     select distinct(search_key__owner, search_key__repo)
-    from gits;
+    from {table_name}
     """
     ck_client = CKServer(host=local_ck_conn_info.get("HOST"),
                          port=local_ck_conn_info.get("PORT"),
