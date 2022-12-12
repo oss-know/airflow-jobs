@@ -26,6 +26,7 @@ NEED_INIT_GITS = "need_init_gits"
 GITS_PROXY_CONFIG = "gits_proxy_config"
 
 CLICKHOUSE_DRIVER_INFO = "clickhouse_conn_data"
+SYNC_FROM_CLICKHOUSE_DRIVER_INFO = "sync_from_clickhouse_conn_data"
 CK_TABLE_MAP_FROM_OS_INDEX = "ck_table_map_from_os_index"
 CK_TABLE_SYNC_MAP_FROM_OS_INDEX = "ck_table_sync_map_from_os_index"
 CK_CREATE_TABLE_COLS_DATATYPE_TPLT = "ck_create_table_cols_datatype_tplt"
@@ -42,3 +43,20 @@ PROXY_CONFS = "proxy_confs"
 REPO_LIST = "repo_list"
 SYNC_REPO_LIST = "sync_repo_list"
 MAILLIST_REPO = "maillist_repo"
+
+# Variables for sync
+# Interval to sync clickhouse data from other environments
+CLICKHOUSE_SYNC_INTERVAL = "clickhouse_sync_interval"
+# Clickhouse sync combination type
+# Enum:
+# union: union of local and remote owner repos
+# intersection: intersection of local and remote owner repos
+# only_local: only local owner repos
+# only_remote: only remote owner repos
+# diff_local: local owner repos - remote owner repos
+# diff_remote: remote owner repos - local owner repos
+CLICKHOUSE_SYNC_COMBINATION_TYPE = "clickhouse_sync_combination_type"
+
+# Interval to sync gits, github related data for all owner/repos
+# in opensearch and then transfer the sync-ed part to clickhouse
+DATA_SYNC_INTERVAL = "data_sync_interval"
