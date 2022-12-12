@@ -1,6 +1,6 @@
 import time
 from datetime import datetime
-from loguru import logger
+from oss_know.libs.util.log import logger
 from airflow import DAG
 from airflow.models import Variable
 from airflow.operators.python import PythonOperator

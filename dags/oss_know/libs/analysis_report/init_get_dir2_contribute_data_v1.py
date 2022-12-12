@@ -2,7 +2,7 @@
 import time
 import csv
 from datetime import datetime
-from loguru import logger
+from oss_know.libs.util.log import logger
 from clickhouse_driver import Client, connect
 
 

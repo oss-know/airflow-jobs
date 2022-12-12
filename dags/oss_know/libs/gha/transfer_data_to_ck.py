@@ -6,7 +6,7 @@ import random
 import time
 import pandas as pd
 from json import JSONDecodeError
-from loguru import logger
+from oss_know.libs.util.log import logger
 from clickhouse_driver.errors import ServerException
 from oss_know.libs.base_dict.variable_key import CK_TABLE_DEFAULT_VAL_TPLT
 from oss_know.libs.clickhouse.init_ck_transfer_data import parse_data_init, get_table_structure, parse_data
