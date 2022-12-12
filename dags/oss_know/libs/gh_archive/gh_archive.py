@@ -1,6 +1,6 @@
 import datetime
 import gzip
-
+import logger
 import pytz
 import urllib3
 
@@ -19,11 +19,11 @@ class GHArchive:
         # 维护一个
         req = None
         try:
-            print(f'download {url}')
+            logger.info(f'download {url}')
             file_name = url.split('/')[-1]
-            # print(file_name)
+            # logger.info(file_name)
             file_path = f"{parent_path}{file_name.split('-')[0]}/{file_name}"
-            print(file_path)
+            logger.info(file_path)
             date_parts = file_name.rstrip('.json.gz').split('-')
             year = int(date_parts[0])
             month = int(date_parts[1])
@@ -41,10 +41,10 @@ class GHArchive:
                         break
                     out.write(data)
         except urllib3.exceptions.HTTPError as e:
-            print('HTTPError::', e)
+            logger.info('HTTPError::', e)
             # failed_urls.append(url)
         except ValueError as e:
-            print('failed to handle value', e)
+            logger.info('failed to handle value', e)
         finally:
             if req:
                 req.release_conn()
@@ -65,7 +65,7 @@ class GHArchive:
             open(f'{parent_path}{filename}', 'wb+').write(g_file.read())
             g_file.close()
         except Exception as e:
-            print(e)
+            logger.info(e)
 
     # 在半点时候执行
     def get_hour(self, current_date):

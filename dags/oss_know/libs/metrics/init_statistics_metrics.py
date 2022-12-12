@@ -1122,8 +1122,6 @@ from
         data_dict["created_at_year"] = result[2]
         data_dict["created_at_month"] = result[3]
         data_dict["github_id"] = result[4]
-        # data_dict["github_login"] = result[4]
-        # data_dict["git_author_email"] = result[5]
         data_dict["commit_times"] = result[5]
         data_dict["changed_lines"] = result[6]
         data_dict["diff_file_counts"] = result[7]

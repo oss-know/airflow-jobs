@@ -36,14 +36,7 @@ with DAG(
         return "end::do_statistics_metrics"
 
 
-    # def do_statistics_activities(params):
-    #     owner = params["owner"]
-    #     repo = params["repo"]
-    #     clickhouse_server_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
-    #     statistics_activities(clickhouse_server_info=clickhouse_server_info,
-    #                           owner=owner,
-    #                           repo=repo)
-    #     return "end::do_statistics_activities"
+
 
 
     owner_repos = Variable.get("calculate_metrics_repo_list", deserialize_json=True)
@@ -55,11 +48,7 @@ with DAG(
             python_callable=do_statistics_metrics,
             op_kwargs={'params': owner_repo}
         )
-        # op_do_statistics_activities = PythonOperator(
-        #     task_id=f'do_statistics_activities_owner_{owner}_repo_{repo}',
-        #     python_callable=do_statistics_activities,
-        #     op_kwargs={'params': owner_repo}
-        # )
+
 
         op_init_statistics_metrics >> op_do_statistics_metrics
-        # >> op_do_statistics_activities
+
