@@ -121,7 +121,10 @@
     "HOST": "192.168.8.120",
     "PORT": "6379"
   },
-  "obs_ak_sk": {"ak": "","sk": ""},
+  "obs_ak_sk": {
+    "ak": "",
+    "sk": ""
+  },
   "redis_conn_data": "redis_client_data",
   "ck_table_map_from_os_index": [
     {
@@ -206,8 +209,11 @@
         "search_key": {
           "owner": "",
           "repo": "",
-          "updated_at": 0
+          "updated_at": 0,
+          "if_sync": 0
         },
+        "ck_data_insert_at": 0,
+        "deleted": 0,
         "raw_data": {
           "url": "",
           "id": 0,
@@ -686,8 +692,11 @@
         "search_key": {
           "owner": "",
           "repo": "",
-          "updated_at": 0
+          "updated_at": 0,
+          "if_sync": 0
         },
+        "ck_data_insert_at": 0,
+        "deleted": 0,
         "raw_data": {
           "sha": "",
           "node_id": "",
@@ -776,8 +785,11 @@
           "owner": "",
           "repo": "",
           "origin": "",
-          "updated_at": 0
+          "updated_at": 0,
+          "if_sync": 0
         },
+        "ck_data_insert_at": 0,
+        "deleted": 0,
         "raw_data": {
           "message": "",
           "hexsha": "",
@@ -826,8 +838,11 @@
         "search_key": {
           "owner": "",
           "repo": "",
-          "updated_at": 0
+          "updated_at": 0,
+          "if_sync": 0
         },
+        "ck_data_insert_at": 0,
+        "deleted": 0,
         "raw_data": {
           "url": "",
           "repository_url": "",
@@ -990,8 +1005,11 @@
           "owner": "",
           "repo": "",
           "number": 0,
-          "updated_at": 0
+          "updated_at": 0,
+          "if_sync": 0
         },
+        "ck_data_insert_at": 0,
+        "deleted": 0,
         "raw_data": {
           "url": "",
           "html_url": "",
@@ -1041,58 +1059,64 @@
     {
       "table_name": "github_profile",
       "temp": {
-        "login": "",
-        "id": 0,
-        "node_id": "",
-        "avatar_url": "",
-        "gravatar_id": "",
-        "url": "",
-        "html_url": "",
-        "followers_url": "",
-        "following_url": "",
-        "gists_url": "",
-        "starred_url": "",
-        "subscriptions_url": "",
-        "organizations_url": "",
-        "repos_url": "",
-        "events_url": "",
-        "received_events_url": "",
-        "type": "",
-        "site_admin": false,
-        "name": "",
-        "company": "",
-        "blog": "",
-        "location": "",
-        "email": "",
-        "hireable": false,
-        "bio": "",
-        "twitter_username": "",
-        "public_repos": 0,
-        "public_gists": 0,
-        "followers": 0,
-        "following": 0,
-        "created_at": "1970-01-01T00:00:00Z",
-        "updated_at": "1970-01-01T00:00:00Z",
-        "country_inferred_from_email_cctld": "",
-        "country_inferred_from_email_domain_company": "",
-        "country_inferred_from_location": "",
-        "country_inferred_from_company": "",
-        "final_company_inferred_from_company": "",
-        "company_inferred_from_email_domain_company": "",
-        "inferred_from_location": {
-          "administrative_area_level_1": "",
-          "administrative_area_level_2": "",
-          "administrative_area_level_3": "",
-          "colloquial_area": "",
-          "continent": "",
-          "country": "",
-          "locality": "",
-          "political": "",
-          "postal_code": "",
-          "postal_code_suffix": "",
-          "postal_town": "",
-          "route": "",
-          "street_number": ""
+        "search_key": {
+          "updated_at": 0
+        },
+        "ck_data_insert_at": 0,
+        "raw_data": {
+          "login": "",
+          "id": 0,
+          "node_id": "",
+          "avatar_url": "",
+          "gravatar_id": "",
+          "url": "",
+          "html_url": "",
+          "followers_url": "",
+          "following_url": "",
+          "gists_url": "",
+          "starred_url": "",
+          "subscriptions_url": "",
+          "organizations_url": "",
+          "repos_url": "",
+          "events_url": "",
+          "received_events_url": "",
+          "type": "",
+          "site_admin": false,
+          "name": "",
+          "company": "",
+          "blog": "",
+          "location": "",
+          "email": "",
+          "hireable": false,
+          "bio": "",
+          "twitter_username": "",
+          "public_repos": 0,
+          "public_gists": 0,
+          "followers": 0,
+          "following": 0,
+          "created_at": "1970-01-01T00:00:00Z",
+          "updated_at": "1970-01-01T00:00:00Z",
+          "country_inferred_from_email_cctld": "",
+          "country_inferred_from_email_domain_company": "",
+          "country_inferred_from_location": "",
+          "country_inferred_from_company": "",
+          "final_company_inferred_from_company": "",
+          "company_inferred_from_email_domain_company": "",
+          "inferred_from_location": {
+            "administrative_area_level_1": "",
+            "administrative_area_level_2": "",
+            "administrative_area_level_3": "",
+            "colloquial_area": "",
+            "continent": "",
+            "country": "",
+            "locality": "",
+            "political": "",
+            "postal_code": "",
+            "postal_code_suffix": "",
+            "postal_town": "",
+            "route": "",
+            "street_number": ""
+          }
         }
       }
     },
@@ -1388,7 +1412,7 @@
           "if_sync": 0
         },
         "ck_data_insert_at": 0,
-        "delete": 0,
+        "deleted": 0,
         "raw_data": {
           "message": "",
           "hexsha": "",
@@ -1522,7 +1546,7 @@
           "if_sync": 0
         },
         "ck_data_insert_at": 0,
-        "delete": 0,
+        "deleted": 0,
         "raw_data": {
           "sha": "",
           "node_id": "",
@@ -1625,7 +1649,7 @@
           "if_sync": 0
         },
         "ck_data_insert_at": 0,
-        "delete": 0,
+        "deleted": 0,
         "raw_data": {
           "url": "",
           "html_url": "",
@@ -1691,7 +1715,7 @@
           "if_sync": 0
         },
         "ck_data_insert_at": 0,
-        "delete": 0,
+        "deleted": 0,
         "raw_data": {
           "url": "",
           "repository_url": "",
@@ -1866,7 +1890,7 @@
           "if_sync": 0
         },
         "ck_data_insert_at": 0,
-        "delete": 0,
+        "deleted": 0,
         "raw_data": {
           "url": "",
           "id": 0,
@@ -2818,13 +2842,13 @@
       ],
       "parse_data": {
         "author_email_account": "",
-          "author_email_domain": "",
-          "author_github_login": "",
-          "author_github_id": 0,
-          "committer_email_account": "",
-          "committer_email_domain": "",
-          "committer_github_login": "",
-          "committer_github_id": 0,
+        "author_email_domain": "",
+        "author_github_login": "",
+        "author_github_id": 0,
+        "committer_email_account": "",
+        "committer_email_domain": "",
+        "committer_github_login": "",
+        "committer_github_id": 0,
         "search_key": {
           "owner": "",
           "repo": "",
@@ -2874,76 +2898,76 @@
       }
     },
     {
-  "table_name": "metrics_day_timeline",
-  "cluster_name": "replicated",
-  "database_name": "default",
-  "distributed_key": "ck_data_insert_at",
-  "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/metrics_day_timeline','{replica}')",
-  "partition_by": "owner",
-  "order_by": [
-    "owner",
-    "repo",
-    "github_id"
-  ],
-  "parse_data": {
-    "ck_data_insert_at": 0,
-    "owner": "",
-    "repo": "",
-    "created_at": "1970-01-01T00:00:00Z",
-    "github_id": 0,
-    "commit_times": 0,
-    "changed_lines": 0,
-    "diff_file_counts": 0,
-    "prs_counts": 0,
-    "pr_body_length_avg": 0.0,
-    "pr_body_length_sum": 0,
-    "issues_counts": 0,
-    "issue_body_length_avg": 0.0,
-    "issue_body_length_sum": 0,
-    "issues_comment_count": 0,
-    "issues_comment_body_length_avg": 0.0,
-    "issues_comment_body_length_sum": 0,
-    "pr_comment_count": 0,
-    "pr_comment_body_length_avg": 0.0,
-    "pr_comment_body_length_sum": 0,
-    "be_mentioned_times_in_issues": 0,
-    "be_mentioned_times_in_pr": 0,
-    "referred_other_issues_or_prs_in_issue": 0,
-    "referred_other_issues_or_prs_in_pr": 0,
-    "changed_label_times_in_issues": 0,
-    "changed_label_times_in_prs": 0,
-    "closed_issues_times": 0,
-    "closed_prs_times": 0
-  }
-},
+      "table_name": "metrics_day_timeline",
+      "cluster_name": "replicated",
+      "database_name": "default",
+      "distributed_key": "ck_data_insert_at",
+      "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/metrics_day_timeline','{replica}')",
+      "partition_by": "owner",
+      "order_by": [
+        "owner",
+        "repo",
+        "github_id"
+      ],
+      "parse_data": {
+        "ck_data_insert_at": 0,
+        "owner": "",
+        "repo": "",
+        "created_at": "1970-01-01T00:00:00Z",
+        "github_id": 0,
+        "commit_times": 0,
+        "changed_lines": 0,
+        "diff_file_counts": 0,
+        "prs_counts": 0,
+        "pr_body_length_avg": 0.0,
+        "pr_body_length_sum": 0,
+        "issues_counts": 0,
+        "issue_body_length_avg": 0.0,
+        "issue_body_length_sum": 0,
+        "issues_comment_count": 0,
+        "issues_comment_body_length_avg": 0.0,
+        "issues_comment_body_length_sum": 0,
+        "pr_comment_count": 0,
+        "pr_comment_body_length_avg": 0.0,
+        "pr_comment_body_length_sum": 0,
+        "be_mentioned_times_in_issues": 0,
+        "be_mentioned_times_in_pr": 0,
+        "referred_other_issues_or_prs_in_issue": 0,
+        "referred_other_issues_or_prs_in_pr": 0,
+        "changed_label_times_in_issues": 0,
+        "changed_label_times_in_prs": 0,
+        "closed_issues_times": 0,
+        "closed_prs_times": 0
+      }
+    },
     {
-    "table_name": "dir2_analysis_v1",
-    "cluster_name": "replicated",
-    "database_name": "default",
-    "distributed_key": "ck_data_insert_at",
-    "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/dir2_analysis_v1','{replica}')",
-    "partition_by": "owner",
-    "order_by": [
-      "owner",
-      "repo"
-    ],
-    "parse_data": {
-      "ck_data_insert_at": 0,
-      "department": "",
-      "owner": "",
-      "repo": "",
-      "dir_level2": "",
-      "domain_distribution": "",
-      "tz_distribution": "",
-      "email": "",
-      "sum_tz_commit_files_count": 0,
-      "tz_commit_files_count": "",
-      "profile_location": "",
-      "profile_company": "",
-      "inferred_from_location_country_or_region": "",
-      "inferred_from_location_locality_or_region": ""
+      "table_name": "dir2_analysis_v1",
+      "cluster_name": "replicated",
+      "database_name": "default",
+      "distributed_key": "ck_data_insert_at",
+      "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/dir2_analysis_v1','{replica}')",
+      "partition_by": "owner",
+      "order_by": [
+        "owner",
+        "repo"
+      ],
+      "parse_data": {
+        "ck_data_insert_at": 0,
+        "department": "",
+        "owner": "",
+        "repo": "",
+        "dir_level2": "",
+        "domain_distribution": "",
+        "tz_distribution": "",
+        "email": "",
+        "sum_tz_commit_files_count": 0,
+        "tz_commit_files_count": "",
+        "profile_location": "",
+        "profile_company": "",
+        "inferred_from_location_country_or_region": "",
+        "inferred_from_location_locality_or_region": ""
+      }
     }
-  }
   ],
   "ck_alter_table_cols_datatype_tplt": [
     {
@@ -3008,9 +3032,24 @@
       }
     }
   ],
-  "dashboard_repo_list": [{"owner": "","repo": ""}],
-  "calculate_metrics_repo_list": [{"owner": "","repo": ""}],
-  "calculate_metrics_by_day_repos": [{"owner": "","repo": ""}],
+  "dashboard_repo_list": [
+    {
+      "owner": "",
+      "repo": ""
+    }
+  ],
+  "calculate_metrics_repo_list": [
+    {
+      "owner": "",
+      "repo": ""
+    }
+  ],
+  "calculate_metrics_by_day_repos": [
+    {
+      "owner": "",
+      "repo": ""
+    }
+  ],
   "mail_lists": [
     {
       "project_name": "gawk",
@@ -3188,33 +3227,33 @@
       "mail_list_name": ""
     }
   ],
-  "need_init_transfer_to_clickhouse":[
+  "need_init_transfer_to_clickhouse": [
+    {
+      "index": "gits",
+      "repo_list": [
         {
-            "index": "gits",
-            "repo_list": [
-                {
-                    "owner": "linruoma",
-                    "repo": "learngit"
-                }
-            ]
-        },
-        {
-            "index": "github_commits",
-            "repo_list": [
-                {
-                    "owner": "linruoma",
-                    "repo": "learngit"
-                }
-            ]
-        },
-        {
-            "index": "maillist",
-            "repo_list": [
-                {
-                    "project_name": "linruoma",
-                    "mail_list_name": "learngit"
-                }
-            ]
+          "owner": "linruoma",
+          "repo": "learngit"
         }
-    ]
+      ]
+    },
+    {
+      "index": "github_commits",
+      "repo_list": [
+        {
+          "owner": "linruoma",
+          "repo": "learngit"
+        }
+      ]
+    },
+    {
+      "index": "maillist",
+      "repo_list": [
+        {
+          "project_name": "linruoma",
+          "mail_list_name": "learngit"
+        }
+      ]
+    }
+  ]
 }

@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-DOCKER_COMPOSE := docker-compose
+DOCKER_COMPOSE := docker compose
 DOCKER_COMPOSE_FILE_INFRA := ../../docker-compose.yaml
 
 DOCKER_INFRA := $(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE_INFRA)
@@ -16,7 +16,7 @@ help: ## Help dialog.
 up_infra: ## Create and start containers
 # 	docker pull malin/aiflow:v2 &&
 	docker pull airflowjobs/airflow:dev-python3.8 && \
-	$(DOCKER_INFRA) up &
+	$(DOCKER_INFRA) up -d
 
 down_infra: ## Stop and remove all containers
 	$(DOCKER_INFRA) down

@@ -48,7 +48,8 @@ def init_sync_github_issues_timeline(opensearch_conn_info, owner, repo, token_pr
                                                        }}
                                                    ]}
                                                }
-                                           }
+                                           },
+                                           request_timeout=60,
                                            )
     need_init_all_results = []
     for now_item in scan_results:
@@ -75,7 +76,9 @@ def init_sync_github_issues_timeline(opensearch_conn_info, owner, repo, token_pr
                                                                }}
                                                            ]}
                                                        }
-                                                   })
+                                                   },
+                                                   request_timeout=60,
+                                                   )
 
     logger.info(f"DELETE github issues_timeline result:", del_result)
 

@@ -4,7 +4,9 @@ from airflow import DAG
 from airflow.models import Variable
 from airflow.operators.python import PythonOperator
 
-from oss_know.libs.base_dict.variable_key import GITHUB_TOKENS, OPENSEARCH_CONN_DATA, PROXY_CONFS
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS
+from oss_know.libs.base_dict.variable_key import GITHUB_TOKENS, OPENSEARCH_CONN_DATA, PROXY_CONFS, \
+    DAILY_SYNC_GITHUB_PRS_EXCLUDES
 from oss_know.libs.github.sync_pull_requests import sync_github_pull_requests
 from oss_know.libs.util.base import get_opensearch_client
 from oss_know.libs.util.opensearch_api import OpensearchAPI
@@ -14,12 +16,12 @@ from oss_know.libs.util.token import TokenManager
 with DAG(dag_id='daily_github_pull_requests_sync',  # schedule_interval='*/5 * * * *',
          schedule_interval=None, start_date=datetime(2021, 1, 1), catchup=False,
          tags=['github', 'daily sync']) as dag:
-    def op_init_daily_gits_sync():
+    def op_init_daily_github_pull_requests_sync():
         return 'Start init_daily_github_pull_requests_sync'
 
 
-    op_init_daily_github_pull_requests_sync = PythonOperator(task_id='op_init_daily_gits_sync',
-                                                             python_callable=op_init_daily_gits_sync)
+    op_init_daily_github_pull_requests_sync = PythonOperator(task_id='op_init_daily_github_pull_requests_sync',
+                                                             python_callable=op_init_daily_github_pull_requests_sync)
 
     github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
     proxy_confs = Variable.get(PROXY_CONFS, deserialize_json=True)
@@ -46,10 +48,12 @@ with DAG(dag_id='daily_github_pull_requests_sync',  # schedule_interval='*/5 * *
         return 'do_sync_github_pull_requests:::end'
 
 
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_info)
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_info)
     opensearch_api = OpensearchAPI()
 
-    uniq_owner_repos = opensearch_api.get_uniq_owner_repos(opensearch_client, 'github_pull_requests')
+    excludes = Variable.get(DAILY_SYNC_GITHUB_PRS_EXCLUDES, deserialize_json=True, default_var=None)
+    uniq_owner_repos = opensearch_api.get_uniq_owner_repos(opensearch_client, OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS,
+                                                           excludes)
     for uniq_item in uniq_owner_repos:
         owner = uniq_item['owner']
         repo = uniq_item['repo']

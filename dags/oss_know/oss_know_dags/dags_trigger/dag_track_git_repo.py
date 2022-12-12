@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from string import Template
 
@@ -11,6 +12,9 @@ from oss_know.libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TO
     CLICKHOUSE_DRIVER_INFO, CK_TABLE_DEFAULT_VAL_TPLT, POSTGRES_CONN_INFO
 # git_init_sync_v0.0.3
 from oss_know.libs.clickhouse import init_ck_transfer_data
+from oss_know.libs.metrics.init_analysis_data_for_dashboard import get_alter_files_count, \
+    get_contributer_by_dir_email_domain, get_dir_contributer_count, get_tz_distribution, \
+    get_alter_file_count_by_dir_email_domain, get_dir_n
 from oss_know.libs.util.log import logger
 from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
 from oss_know.libs.util.token import TokenManager
@@ -39,6 +43,8 @@ OS_CK_MAPPING = [
         "OPENSEARCH_INDEX": "github_issues_comments"
     }
 ]
+
+HTTP_DOMAIN_REGEX = "^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/?\n]+)"
 
 with DAG(
         dag_id='git_track_repo',
@@ -94,9 +100,8 @@ with DAG(
 
 
     def do_init_github_issues(callback, **kwargs):
-        from oss_know.libs.github import init_issues_timeline
-        exec_job_and_update_db(init_issues_timeline.init_sync_github_issues_timeline, callback, 'github_issues',
-                               **kwargs)
+        from oss_know.libs.github import init_issues
+        exec_job_and_update_db(init_issues.init_github_issues, callback, 'github_issues', **kwargs)
 
 
     def do_init_github_issues_comments(callback, **kwargs):
@@ -120,13 +125,31 @@ with DAG(
     def do_ck_transfer(callback, **kwargs):
         owner = kwargs['dag_run'].conf.get('owner')
         repo = kwargs['dag_run'].conf.get('repo')
+        dag_run_id = kwargs['dag_run'].conf.get('dag_run_id')
         search_key = {"owner": owner, "repo": repo}
         table_templates = Variable.get(CK_TABLE_DEFAULT_VAL_TPLT, deserialize_json=True)
+
+        check_status_sql = \
+            f"""select ck_transfer_status
+            from triggered_git_repos
+            where owner = '{owner}'
+              and repo = '{repo}'
+              and dag_run_id='{dag_run_id}';
+            """
+
+        pg_cur.execute(check_status_sql)
+        pg_conn.commit()
+        check_result = pg_cur.fetchall()
+        logger.info(f'checking last job status with sql:\n{check_status_sql}\n{check_result}')
+        if check_result and check_result[0][0] == 2:
+            logger.info(f'{owner}/{repo}/{dag_run_id} ck_transfer status is success, skip')
+            callback(owner, repo, dag_run_id, 'ck_transfer', None)
+            return
 
         update_status_template_str = \
             f"""update triggered_git_repos 
                     set ck_transfer_status=$status 
-                    where owner='{owner}' and repo='{repo}'"""
+                    where owner='{owner}' and repo='{repo}' and dag_run_id='{dag_run_id}'"""
         update_status_template = Template(update_status_template_str)
 
         try:
@@ -167,35 +190,82 @@ with DAG(
 
             pg_cur.execute(update_status_template.substitute(status=2))
             pg_conn.commit()
-            callback(owner, repo, 'ck_transfer', None)
+            callback(owner, repo, dag_run_id, 'ck_transfer', None)
         except Exception as e:
             pg_cur.execute(update_status_template.substitute(status=3))
             pg_conn.commit()
-            callback(owner, repo, 'ck_transfer', e)
+            callback(owner, repo, dag_run_id, 'ck_transfer', e)
+
+
+    def do_ck_aggregation(callback, **kwargs):
+        owner = kwargs['dag_run'].conf.get('owner')
+        repo = kwargs['dag_run'].conf.get('repo')
+        dag_run_id = kwargs['dag_run'].conf.get('dag_run_id')
+
+        update_status_template_str = \
+            f"""update triggered_git_repos 
+                            set ck_aggregation_status=$status 
+                            where owner='{owner}' and repo='{repo}' and dag_run_id='{dag_run_id}'"""
+        update_status_template = Template(update_status_template_str)
+
+        try:
+            # get_dir_n must first run, since other aggregations depend on it.
+            get_dir_n(ck_con=clickhouse_server_info, owner=owner, repo=repo)
+
+            get_alter_files_count(ck_con=clickhouse_server_info, owner=owner, repo=repo)
+            get_dir_contributer_count(ck_con=clickhouse_server_info, owner=owner, repo=repo)
+            get_alter_file_count_by_dir_email_domain(ck_con=clickhouse_server_info, owner=owner, repo=repo)
+            get_contributer_by_dir_email_domain(ck_con=clickhouse_server_info, owner=owner, repo=repo)
+            get_tz_distribution(ck_con=clickhouse_server_info, owner=owner, repo=repo)
+
+            pg_cur.execute(update_status_template.substitute(status=2))
+            pg_conn.commit()
+            callback(owner, repo, dag_run_id, 'ck_aggregation', None)
+        except Exception as e:
+            pg_cur.execute(update_status_template.substitute(status=3))
+            pg_conn.commit()
+            callback(owner, repo, dag_run_id, 'ck_aggregation', e)
 
 
     def exec_job_and_update_db(job_callable, callback, res_type, additional_args=[], args=[], **kwargs):
         owner = None
         repo = None
         url = None
+        dag_run_id = None
         try:
             owner = kwargs['dag_run'].conf.get('owner')
             repo = kwargs['dag_run'].conf.get('repo')
+            dag_run_id = kwargs['dag_run'].conf.get('dag_run_id')
             url = kwargs['dag_run'].conf.get('url')
         except KeyError:
             logger.error(f'Repo info not found in dag run config, init dag from Variable')
 
+        check_status_sql = \
+            f"""select {res_type}_status
+            from triggered_git_repos
+            where owner = '{owner}'
+            and repo = '{repo}'
+            and dag_run_id='{dag_run_id}'"""
+        pg_cur.execute(check_status_sql)
+        pg_conn.commit()
+        check_result = pg_cur.fetchall()
+        logger.info(f'checking last job status with sql:\n{check_status_sql}\n{check_result}')
+        if check_result and check_result[0][0] == 2:
+            logger.info(f'{owner}/{repo} {res_type} / {dag_run_id} status is success, skip')
+            callback(owner, repo, dag_run_id, res_type, None)
+            return
+
         update_status_template_str = \
             f"""update triggered_git_repos 
-            set {res_type}_status=$status 
-            where owner='{owner}' and repo='{repo}'"""
+            set {res_type}_status=$status
+            where owner='{owner}' and repo='{repo}' and dag_run_id='{dag_run_id}'"""
         update_status_template = Template(update_status_template_str)
 
-        if 'github.com' not in url:
+        if res_type != 'gits' and 'github.com' not in re.match(HTTP_DOMAIN_REGEX, url).group():
             logger.info('Not github repository, skip')
             pg_cur.execute(update_status_template.substitute(status=2))
             pg_conn.commit()
-            callback(owner, repo, res_type, None)
+            callback(owner, repo, dag_run_id, res_type, None)
             return
 
         since = '1970-01-01T00:00:00Z'
@@ -210,30 +280,30 @@ with DAG(
             pg_cur.execute(update_status_template.substitute(status=2))
             pg_conn.commit()
 
-            callback(owner, repo, res_type, None)
+            callback(owner, repo, dag_run_id, res_type, None)
         except Exception as e:
             pg_cur.execute(update_status_template.substitute(status=3))
             pg_conn.commit()
-            callback(owner, repo, res_type, e)
+            callback(owner, repo, dag_run_id, res_type, e)
 
 
-    def job_callback(owner, repo, res_type, e: Exception):
-        logger.info(f'Finish job on {owner}/{repo} {res_type}, exception:', e)
+    def job_callback(owner, repo, dag_run_id, res_type, e: Exception):
+        logger.info(f'Finish job on {owner}/{repo} {res_type} {dag_run_id}, exception:', e)
         job_status = 'failed' if e else 'success'
         update_status_sql = f"""update triggered_git_repos 
-                        set job_status='{job_status}' 
-                        where owner='{owner}' and repo='{repo}'"""
+                        set job_status=%s 
+                        where owner=%s and repo=%s and dag_run_id=%s"""
 
         if e:
             update_fail_reason_sql = f"""update triggered_git_repos 
-                        set {res_type}_fail_reason ='{e}' 
-                        where owner='{owner}' and repo='{repo}'"""
-            pg_cur.execute(update_status_sql)
-            pg_cur.execute(update_fail_reason_sql)
+                        set {res_type}_fail_reason = %s
+                        where owner=%s and repo=%s and dag_run_id=%s"""
+            pg_cur.execute(update_status_sql, (job_status, owner, repo, dag_run_id))
+            pg_cur.execute(update_fail_reason_sql, (str(e), owner, repo, dag_run_id))
             pg_conn.commit()
             raise e
 
-        get_statuses_sq = f"""
+        get_statuses_sql = f"""
         select gits_status,
                github_commits_status,
                github_pull_requests_status,
@@ -241,9 +311,10 @@ with DAG(
                github_issues_comments_status,
                github_issues_timeline_status,
                ck_transfer_status
+               ck_aggregation_status
         from triggered_git_repos
-        where owner='{owner}' and repo='{repo}'"""
-        pg_cur.execute(get_statuses_sq)
+        where owner='{owner}' and repo='{repo}' and dag_run_id='{dag_run_id}'"""
+        pg_cur.execute(get_statuses_sql)
         records = pg_cur.fetchall()
         if not records:  # or records' length is not 1
             raise Exception(f'Failed to check {owner}/{repo} job status, record not found')
@@ -253,7 +324,7 @@ with DAG(
             if status != 2:
                 job_finished = False
         if job_finished:
-            pg_cur.execute(update_status_sql)
+            pg_cur.execute(update_status_sql, (job_status, owner, repo, dag_run_id))
             pg_conn.commit()
 
 
@@ -306,9 +377,17 @@ with DAG(
         op_kwargs={'callback': job_callback}
     )
 
+    op_do_ck_aggregation = PythonOperator(
+        task_id='do_ck_aggregation',
+        python_callable=do_ck_aggregation,
+        provide_context=True,
+        op_kwargs={'callback': job_callback}
+    )
+
     op_init_track_repo >> [op_do_init_gits, op_do_init_github_commits, op_do_init_github_pull_requests,
                            op_do_init_github_issues]
     op_do_init_github_issues >> [op_do_init_github_issues_comments,
                                  op_do_init_github_issues_timeline]
     [op_do_init_gits, op_do_init_github_commits, op_do_init_github_pull_requests,
      op_do_init_github_issues_comments, op_do_init_github_issues_timeline] >> op_do_ck_transfer
+    op_do_ck_transfer >> op_do_ck_aggregation

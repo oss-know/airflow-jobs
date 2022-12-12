@@ -4,22 +4,20 @@ from datetime import datetime
 from threading import Thread
 from urllib.parse import urlparse
 
-from geopy.exc import GeocoderServiceError, GeocoderTimedOut
-import geopy
 import redis
 import requests
 import urllib3
+from geopy.exc import GeocoderServiceError, GeocoderTimedOut
 from geopy.geocoders import GoogleV3
 from multidict import CIMultiDict
 from opensearchpy import OpenSearch
 from tenacity import *
 
 from oss_know.libs.base_dict.infer_file import CCTLD, COMPANY_COUNTRY
-from oss_know.libs.base_dict.variable_key import LOCATIONGEO_TOKEN
+from oss_know.libs.exceptions import GithubResourceNotFoundError, GithubInternalServerError
 from oss_know.libs.util.clickhouse_driver import CKServer
 from oss_know.libs.util.proxy import GithubTokenProxyAccommodator
 from ..util.log import logger
-from oss_know.libs.exceptions import GithubResourceNotFoundError, GithubInternalServerError
 
 
 class HttpGetException(Exception):
@@ -85,6 +83,7 @@ class EmptyResponse:
     def json(self):
         return {}
 
+
 class EmptyListResponse:
     """An fake empty http response"""
 
@@ -93,6 +92,7 @@ class EmptyListResponse:
 
     def json(self):
         return []
+
 
 class EmptyObjectResponse:
     """An fake empty http response"""
@@ -180,17 +180,17 @@ def do_get_github_result(req_session, url, headers, params, accommodator: Github
     return res
 
 
-def get_opensearch_client(opensearch_conn_infos):
+def get_opensearch_client(opensearch_conn_info):
     client = OpenSearch(
-        hosts=[{'host': opensearch_conn_infos["HOST"], 'port': opensearch_conn_infos["PORT"]}],
+        hosts=[{'host': opensearch_conn_info["HOST"], 'port': opensearch_conn_info["PORT"]}],
         http_compress=True,
-        http_auth=(opensearch_conn_infos["USER"], opensearch_conn_infos["PASSWD"]),
+        http_auth=(opensearch_conn_info["USER"], opensearch_conn_info["PASSWD"]),
         use_ssl=True,
         verify_certs=False,
         ssl_assert_hostname=False,
         ssl_show_warn=False,
         timeout=180,
-        retry_on_timeout = True
+        retry_on_timeout=True
     )
     return client
 
@@ -282,7 +282,8 @@ def infer_geo_info_from_location(github_location):
             except KeyError as e:
                 logger.info(f"The key not exists in address_component :{e}")
             except IndexError as e:
-                logger.info(f"github_location:{github_location}, address_components:{address_components}, IndexError:{e}")
+                logger.info(
+                    f"github_location:{github_location}, address_components:{address_components}, IndexError:{e}")
         return geo_info_from_location
     return None
 

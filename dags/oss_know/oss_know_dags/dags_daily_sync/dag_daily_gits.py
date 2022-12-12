@@ -1,5 +1,8 @@
 from datetime import datetime
 from oss_know.libs.util.base import get_opensearch_client
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_GIT_RAW
+from oss_know.libs.base_dict.variable_key import DAILY_SYNC_GITS_EXCLUDES
+
 from oss_know.libs.util.opensearch_api import OpensearchAPI
 from oss_know.libs.github.sync_gits import sync_git_datas
 from airflow.operators.python import PythonOperator
@@ -32,10 +35,11 @@ with DAG(dag_id='daily_gits_sync',  # schedule_interval='*/5 * * * *',
         return 'do_sync_git_info:::end'
 
 
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_info)
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_info)
     opensearch_api = OpensearchAPI()
 
-    uniq_owner_repos = opensearch_api.get_uniq_owner_repos(opensearch_client, 'gits')
+    excludes = Variable.get(DAILY_SYNC_GITS_EXCLUDES, deserialize_json=True, default_var=None)
+    uniq_owner_repos = opensearch_api.get_uniq_owner_repos(opensearch_client, OPENSEARCH_GIT_RAW, excludes)
     for uniq_item in uniq_owner_repos:
         owner = uniq_item['owner']
         repo = uniq_item['repo']

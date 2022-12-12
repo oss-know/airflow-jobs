@@ -3,9 +3,9 @@ from opensearchpy import OpenSearch
 from loguru import logger
 from oss_know.libs.util.base import get_opensearch_client
 from oss_know.libs.base_dict.opensearch_index import (OPENSEARCH_GIT_RAW,
-                                          OPENSEARCH_INDEX_GITHUB_COMMITS,
-                                          OPENSEARCH_GIT_GITHUB_CLEAN,
-                                          OPENSEARCH_INDEX_GITHUB_PROFILE)
+                                                      OPENSEARCH_INDEX_GITHUB_COMMITS,
+                                                      OPENSEARCH_GIT_GITHUB_CLEAN,
+                                                      OPENSEARCH_INDEX_GITHUB_PROFILE)
 from oss_know.libs.util.opensearch_api import OpensearchAPI
 
 
@@ -20,7 +20,7 @@ def data_clean(owner, repo, opensearch_conn_datas):
     #     ssl_show_warn=False
     # )
     # 先有opensearch客户端查询数据
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
     delete_old_data(owner=owner,
                     repo=repo,
                     client=opensearch_client)
@@ -207,5 +207,3 @@ def delete_old_data(owner, repo, client):
     }
     response = client.delete_by_query(index=OPENSEARCH_GIT_GITHUB_CLEAN, body=query)
     logger.info(response)
-
-

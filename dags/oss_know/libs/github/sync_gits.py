@@ -20,7 +20,7 @@ def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, gi
     check_point_timestamp = int(datetime.datetime.now().timestamp() * 1000)
 
     git_repo = None
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
     os_repo_commits = opensearch_client.search(index='gits', body=latest_commit_query_body(owner, repo))
 
     if not os_repo_commits['hits']['hits']:
@@ -40,6 +40,25 @@ def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, gi
         git_repo = Repo.clone_from(url=git_url, to_path=repo_path, config=proxy_config)
 
     head_in_os = os_repo_commits['hits']['hits'][0]['_source']['raw_data']['hexsha']
+
+    try:
+        git_repo.commit(head_in_os)
+    except ValueError as e:
+        # TODO We actually can walk through the head_in_os's ancestors to look for the merge base
+        # but this brings much more complexity(handle multiple parents manually) and search cost
+
+        # So after doing the re-init, we should reset --hard to the remotes/origin/{active_branch}, making
+        # it more likely to find the merge base for next sync
+        logger.warning(
+            f"head in OpenSearch {head_in_os} may not exist in git commit tree, error: {e}, init repo from scratch")
+        init_sync_git_datas(git_url=git_url,
+                            owner=owner,
+                            repo=repo,
+                            proxy_config=proxy_config,
+                            opensearch_conn_datas=opensearch_conn_datas,
+                            git_save_local_path=git_save_local_path)
+        return
+
     active_branch_name = git_repo.active_branch.name
     head_in_repo = git_repo.commit(f'origin/{active_branch_name}').hexsha
 
@@ -95,6 +114,9 @@ def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, gi
                                        owner=owner,
                                        repo=repo,
                                        check_point_timestamp=check_point_timestamp)
+
+    # Keep track of the current latest remote, making it more likely to get the merge base for next sync
+    git_repo.git.reset('--hard', f'origin/{active_branch_name}')
 
 
 def create_commit_doc(owner, repo, git_repo, sha, check_point_timestamp):
@@ -166,11 +188,6 @@ def latest_commit_query_body(owner, repo):
     query_body['size'] = 1
 
     return query_body
-
-
-def commit_query_body(owner, repo, sha):
-    query_body = owner_repo_query_body(owner, repo)
-    query_body['xxx'] = 'ooo'
 
 
 def owner_repo_query_body(owner, repo):
