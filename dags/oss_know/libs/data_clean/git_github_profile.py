@@ -1,6 +1,6 @@
 from opensearchpy import helpers
 from opensearchpy import OpenSearch
-from loguru import logger
+from oss_know.libs.util.log import logger
 from oss_know.libs.util.base import get_opensearch_client
 from oss_know.libs.base_dict.opensearch_index import (OPENSEARCH_GIT_RAW,
                                                       OPENSEARCH_INDEX_GITHUB_COMMITS,

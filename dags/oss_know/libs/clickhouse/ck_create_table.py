@@ -1,7 +1,7 @@
 import datetime
 import re
 import numpy
-from loguru import logger
+from oss_know.libs.util.log import logger
 from oss_know.libs.util.clickhouse_driver import CKServer
 
 

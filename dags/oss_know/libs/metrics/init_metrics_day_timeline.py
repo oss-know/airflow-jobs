@@ -2,7 +2,7 @@ import time
 from datetime import datetime
 
 from clickhouse_driver import Client, connect
-from loguru import logger
+from oss_know.libs.util.log import logger
 
 
 class CKServer:

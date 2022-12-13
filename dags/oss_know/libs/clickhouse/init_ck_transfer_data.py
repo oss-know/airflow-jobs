@@ -10,7 +10,7 @@ import copy
 from clickhouse_driver.columns.exceptions import StructPackException
 from json import JSONDecodeError
 from clickhouse_driver.errors import ServerException
-from loguru import logger
+from oss_know.libs.util.log import logger
 from opensearchpy import helpers
 from airflow.exceptions import AirflowException
 from opensearchpy.exceptions import NotFoundError

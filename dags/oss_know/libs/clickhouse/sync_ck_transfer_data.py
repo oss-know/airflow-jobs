@@ -7,7 +7,7 @@ import psycopg2
 from json import JSONDecodeError
 from airflow import AirflowException
 from clickhouse_driver.errors import ServerException
-from loguru import logger
+from oss_know.libs.util.log import logger
 from opensearchpy import helpers
 from opensearchpy.exceptions import NotFoundError
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_CHECK_SYNC_DATA

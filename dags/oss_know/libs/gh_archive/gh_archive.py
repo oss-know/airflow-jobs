@@ -1,6 +1,6 @@
 import datetime
 import gzip
-import logger
+from oss_know.libs.util.log import logger
 import pytz
 import urllib3
 
