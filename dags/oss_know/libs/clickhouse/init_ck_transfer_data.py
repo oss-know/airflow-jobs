@@ -777,7 +777,7 @@ def get_data_from_opensearch(index, opensearch_conn_datas):
                            index=index,
                            size=5000,
                            scroll="40m",
-                           request_timeout=100,
+                           request_timeout=120,
                            preserve_order=True)
     return results, opensearch_client
 
@@ -817,7 +817,7 @@ def get_data_from_opensearch_by_repo(index, opensearch_conn_datas, repo):
                            index=index,
                            size=5000,
                            scroll="40m",
-                           request_timeout=100,
+                           request_timeout=120,
                            preserve_order=True)
     return results, opensearch_client
 
@@ -857,7 +857,7 @@ def get_data_from_opensearch_maillist(index, opensearch_conn_datas, maillist_rep
                            index=index,
                            size=5000,
                            scroll="40m",
-                           request_timeout=100,
+                           request_timeout=120,
                            preserve_order=True)
     return results, opensearch_client
 
