@@ -64,7 +64,7 @@ with DAG(
                                }, index='check_download_obs_data',
                                size=5000,
                                scroll="20m",
-                               request_timeout=100,
+                               request_timeout=120,
                                preserve_order=True)
         already_successful_objs = []
         need_download_objs = []
@@ -121,7 +121,7 @@ with DAG(
                                      }, index='check_download_obs_data',
                                      size=5000,
                                      scroll="20m",
-                                     request_timeout=100,
+                                     request_timeout=120,
                                      preserve_order=True)
         already_insert_into_opensearch_objs = helpers.scan(client=opensearch_client,
                                                            query={
@@ -135,7 +135,7 @@ with DAG(
                                                            }, index='check_insert_into_os_objs',
                                                            size=5000,
                                                            scroll="20m",
-                                                           request_timeout=100,
+                                                           request_timeout=120,
                                                            preserve_order=True)
         already_successful_download_objs = []
         for result in download_objs:

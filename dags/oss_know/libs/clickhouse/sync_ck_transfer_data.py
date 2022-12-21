@@ -91,7 +91,7 @@ def get_data_from_opensearch(opensearch_index, opensearch_conn_datas, clickhouse
                            }, index=opensearch_index,
                            size=5000,
                            scroll="20m",
-                           request_timeout=100,
+                           request_timeout=120,
                            preserve_order=True)
     return results, opensearch_client
 
@@ -687,7 +687,7 @@ def get_data_from_opensearch_by_repo(opensearch_index, opensearch_conn_datas, cl
                            query=scan_body, index=opensearch_index,
                            size=5000,
                            scroll="20m",
-                           request_timeout=100,
+                           request_timeout=120,
                            preserve_order=True)
     return results, opensearch_client, last_check_timestamp
 
