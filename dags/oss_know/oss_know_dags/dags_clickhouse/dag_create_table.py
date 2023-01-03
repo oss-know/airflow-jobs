@@ -23,27 +23,6 @@ with DAG(
         python_callable=init_clickhouse_ddl,
     )
 
-#     "ck_table_infos": [
-#         {
-#             "local_table": """
-#             create table github_id_main_tz_map_local on cluster replicated
-# (
-#     update_at           DateTime64(3),
-#     update_at_timestamp Int64,
-#     github_id           Int64,
-#     main_tz_area        String,
-#     top_n_tz_area Array(Tuple(Array(String),String,Int64))
-# )
-#     engine = ReplicatedMergeTree('/clickhouse/tables/{shard}/github_id_main_tz_map', '{replica}')
-#         ORDER BY (github_id)
-#         SETTINGS index_granularity = 8192;
-#             """,
-#             "distributed_table": """
-#             create table github_id_main_tz_map on cluster replicated as github_id_main_tz_map_local
-# engine = Distributed('replicated', 'default', 'github_id_main_tz_map_local', update_at_timestamp);
-#             """
-#         }
-#     ]
     def do_ck_create_table(params):
         from airflow.models import Variable
         from oss_know.libs.clickhouse import ck_create_table

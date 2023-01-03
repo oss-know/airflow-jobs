@@ -31,6 +31,8 @@ ck_ddl = {"ck_create_table_ddl": [
             update_at_timestamp Int64,
             github_id           Int64,
             main_tz_area        String,
+            inferred_area       String,
+            location            String,
             top_n_tz_area Array(Tuple(Array(String),String,Int64))
         )
         engine = ReplicatedMergeTree('/clickhouse/tables/{shard}/github_id_main_tz_map', '{replica}')
@@ -228,6 +230,46 @@ ck_ddl = {"ck_create_table_ddl": [
         engine = Distributed('replicated', 'default', 'gits_dir_contributer_local', ck_data_insert_at);
 
        """
+    },
+    {
+
+        "table_name": "country_tz_region_map",
+        "local_table": """
+         create table country_tz_region_map_local on cluster replicated
+        (
+            update_at DateTime64(3),
+            country_or_region String,
+            area String
+        )
+        engine = ReplicatedMergeTree('/clickhouse/tables/{shard}/country_tz_region_map_local', '{replica}')
+        ORDER BY country_or_region
+        SETTINGS index_granularity = 8192;
+""",
+        "distributed_table": """
+         create table country_tz_region_map on cluster replicated as country_tz_region_map_local
+         engine = Distributed('replicated', 'default', 'country_tz_region_map_local', rand());
+"""
+    },
+    {
+
+        "table_name": "country_tz_region_map",
+        "local_table": """
+         create table github_id_email_map_local on cluster replicated
+        (
+            update_at DateTime64(3),
+            update_at_timestamp Int64,
+            github_id Int64,
+            email String
+        )
+        engine = ReplicatedMergeTree('/clickhouse/tables/{shard}/github_id_email_map', '{replica}')
+        ORDER BY github_id
+        SETTINGS index_granularity = 8192;
+""",
+        "distributed_table": """
+         create table github_id_email_map on cluster replicated as github_id_email_map_local
+         engine = Distributed('replicated', 'default', 'github_id_email_map_local', rand());
+
+"""
     }
 ]}
 with open('ddl.json', 'w') as f:
