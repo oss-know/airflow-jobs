@@ -149,7 +149,7 @@ class GZipArchive(FileArchive):
             remove(gzip_filepath)
 
 
-def sync_archive(opensearch_conn_info, **maillist_params):
+def init_archive(opensearch_conn_info, **maillist_params):
     archive_type = maillist_params['archive_type']
     project_name = maillist_params['project_name']
     list_name = maillist_params['list_name']
