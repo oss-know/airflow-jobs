@@ -181,7 +181,8 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
     # 实例化opensearchapi
     opensearch_api = OpensearchAPI()
     for commit in repo_iter_commits:
-        files = commit.stats.files
+        commit_stats = commit.stats
+        files = commit_stats.files
         files_list = []
         for file in files:
             file_dict = files[file]
@@ -204,7 +205,7 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
         bulk_data["_source"]["raw_data"]["committed_date"] = timestamp_to_utc(commit.committed_datetime.timestamp())
         bulk_data["_source"]["raw_data"]["committed_timestamp"] = commit.committed_date
         bulk_data["_source"]["raw_data"]["files"] = files_list
-        bulk_data["_source"]["raw_data"]["total"] = commit.stats.total
+        bulk_data["_source"]["raw_data"]["total"] = commit_stats.total
         if_merged = False
         if len(bulk_data["_source"]["raw_data"]["parents"]) == 2:
             if_merged = True
