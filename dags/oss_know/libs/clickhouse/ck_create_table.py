@@ -130,8 +130,6 @@ def create_ck_table(df,
         ck_data_type.append(data_type_outer)
         # dict1[index] = row
     result = ",\r\n".join(ck_data_type)
-
-
     create_local_table_ddl = f'CREATE TABLE IF NOT EXISTS {database_name}.{table_name}_local on cluster {cluster_name}({result}) Engine={table_engine}'
     create_distributed_ddl = f'CREATE TABLE IF NOT EXISTS {database_name}.{table_name} on cluster {cluster_name} ({result}) Engine= Distributed({cluster_name},{database_name},{table_name}_local,{distributed_key})'
     if partition_by:
@@ -150,7 +148,6 @@ def create_ck_table(df,
                   user=clickhouse_server_info["USER"],
                   password=clickhouse_server_info["PASSWD"],
                   database=clickhouse_server_info["DATABASE"])
-    
     execute_ddl(ck, create_local_table_ddl)
     execute_ddl(ck, create_distributed_ddl)
     ck.close()
