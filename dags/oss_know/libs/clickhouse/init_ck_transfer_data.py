@@ -579,7 +579,7 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
             keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
                             table_name=table_name, transfer_type="discourse_init")
         logger.info("discourse------------------------")
-        opensearch_datas = get_data_from_opensearch_discourse(index=opensearch_index,
+        opensearch_datas = get_data_from_opensearch_by_repo(index=opensearch_index,
                                                              opensearch_conn_datas=opensearch_conn_datas,
                                                              repo=search_key)
 
@@ -952,46 +952,6 @@ def get_data_from_opensearch_maillist(index, opensearch_conn_datas, maillist_rep
                            size=5000,
                            scroll="40m",
                            request_timeout=120,
-                           preserve_order=True)
-    return results, opensearch_client
-
-# TODO : chenkx :: This function is same as get_data_from_opensearch_by_repo
-def get_data_from_opensearch_discourse(index, opensearch_conn_datas, repo):
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
-    results = helpers.scan(client=opensearch_client,
-                           query={
-                               "query": {
-                                   "bool": {
-                                       "must": [
-                                           {
-                                               "term": {
-                                                   "search_key.owner.keyword": {
-                                                       "value": repo.get('owner')
-                                                   }
-                                               }
-                                           },
-                                           {
-                                               "term": {
-                                                   "search_key.repo.keyword": {
-                                                       "value": repo.get('repo')
-                                                   }
-                                               }
-                                           }
-                                       ]
-                                   }
-                               },
-                               "sort": [
-                                   {
-                                       "search_key.updated_at": {
-                                           "order": "asc"
-                                       }
-                                   }
-                               ]
-                           },
-                           index=index,
-                           size=5000,
-                           scroll="40m",
-                           request_timeout=100,
                            preserve_order=True)
     return results, opensearch_client
 
