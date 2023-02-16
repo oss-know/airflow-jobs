@@ -21,6 +21,15 @@ from oss_know.libs.util.base import get_opensearch_client, now_timestamp
 from oss_know.libs.util.clickhouse_driver import CKServer
 
 
+def try_parsing_date(text):
+    for fmt in ('%Y-%m-%dT%H:%M:%SZ', '%Y-%m-%dT%H:%M:%S.%fZ'):
+        try:
+            return datetime.datetime.strptime(text, fmt)
+        except ValueError:
+            pass
+    raise ValueError('no valid date format found')
+
+
 def clickhouse_type(data_type):
     type_init = "String"
     if isinstance(data_type, int):
@@ -637,13 +646,13 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
 
             for field in fields:
                 if dict_dict.get(field) and fields.get(field) == 'DateTime64(3)':
-                    dict_dict[field] = datetime.datetime.strptime(dict_dict[field], '%Y-%m-%dT%H:%M:%S.%fZ')
+                    dict_dict[field] = try_parsing_date(dict_dict[field])
                 elif dict_dict.get(field) and fields.get(field) == 'Array(DateTime64(3))':
                     for i, k in enumerate(dict_dict.get(field)):
                         if k != 'null':
-                            dict_dict[field][i] = datetime.datetime.strptime(k, '%Y-%m-%dT%H:%M:%S.%fZ')
+                            dict_dict[field][i] = try_parsing_date(k)
                         else :
-                            dict_dict[field][i] = datetime.datetime.strptime("1999-03-01T16:47:08.370Z", '%Y-%m-%dT%H:%M:%S.%fZ')
+                            dict_dict[field][i] = try_parsing_date("1999-03-01T16:47:08.370Z")
                 elif fields.get(field) == 'String':
                     try:
                         # Some file may not exist in dict
