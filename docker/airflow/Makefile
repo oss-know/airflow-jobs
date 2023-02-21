@@ -26,3 +26,5 @@ logs: ## View the output from containers
 
 ps: ## View the running containers
 	$(DOCKER_INFRA) ps
+
+.PHONY: logs
