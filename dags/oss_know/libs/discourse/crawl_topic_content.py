@@ -21,6 +21,7 @@ import asyncio
 # import tqdm
 import tqdm.asyncio
 import random
+from random import randint
 
 def get_api(url, session):
     headers = {"charset": "utf-8", "Content-Type": "application/json"}
@@ -29,20 +30,27 @@ def get_api(url, session):
         try:
             r = session.get(url, headers=headers, timeout=10)
         except Exception:
-            time.sleep(2)
             flag = 0
             pass
         if flag and r.ok:
             break
+        time.sleep(randint(5,60))
     js = json.loads(r.text)
     return js
 
 
-def get_data_from_opensearch(index, opensearch_conn_datas):
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+def get_data_from_opensearch(index, owner, repo, opensearch_conn_datas):
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
     results = helpers.scan(client=opensearch_client,
                            query={
-                               "query": {"match_all": {}},
+                               "query": {
+                                    "bool": {
+                                        "must": [
+                                            {"match": {"search_key.owner": owner}},
+                                            {"match": {"search_key.repo" : repo}}
+                                        ]
+                                    }
+                                },
                                "sort": [
                                    {
                                        "search_key.updated_at": {
@@ -54,7 +62,7 @@ def get_data_from_opensearch(index, opensearch_conn_datas):
                            index=index,
                            size=5000,
                            scroll="40m",
-                           request_timeout=100,
+                           request_timeout=120,
                            preserve_order=True)
     return results, opensearch_client
 
@@ -142,16 +150,16 @@ def crawl_topic_content(base_url, owner, repo, opensearch_conn_datas):
     # url format = https://discuss.pytorch.org/t/gradients-w-r-t-loss-component/161814.json
 
     # 从opensearch中取回category list
-    opensearch_datas = get_data_from_opensearch(OPENSEARCH_DISCOURSE_TOPIC_LIST, opensearch_conn_datas)
+    opensearch_datas = get_data_from_opensearch(OPENSEARCH_DISCOURSE_TOPIC_LIST, owner, repo, opensearch_conn_datas)
     topic_list = []
     q = 0   # currently only 2015 results.  
-    for page_data in opensearch_datas[0]:
+    for data in opensearch_datas[0]:
         q += 1
-        for topic_data in page_data["_source"]["raw_data"]["topic_list"]["topics"]:
-            topic = base_url + '/t/' + topic_data["slug"] + '/' + str(topic_data["id"]) + ".json"
-            topic_list.append(topic)
+        topic_data = data['_source']['raw_data']
+        topic = base_url + '/t/' + topic_data["slug"] + '/' + str(topic_data["id"]) + ".json"
+        topic_list.append(topic)
 
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
     opensearch_api = OpensearchAPI()
 
     bulk_data_tp = {"_index": OPENSEARCH_DISCOURSE_TOPIC_CONTENT,
@@ -160,13 +168,13 @@ def crawl_topic_content(base_url, owner, repo, opensearch_conn_datas):
                             "owner": owner,
                             "repo": repo,
                             "origin": base_url,
-                            'updated_at': 0,
+                            'updated_at': round(datetime.datetime.now().timestamp()),
                             'if_sync':0
                         },
                         "raw_data": {}
                     }}
 
-    topic_list_len = len(topic_list)    # 59564
+    topic_list_len = len(topic_list)
     now_count = 0
     cur_tasks = []
     for idx, topic in enumerate(topic_list):
@@ -186,8 +194,6 @@ def crawl_topic_content(base_url, owner, repo, opensearch_conn_datas):
             logger.info(f"sync_bulk_git_datas::success:{success},failed:{failed}")
             logger.info(f"count:{now_count}/{topic_list_len}::{owner}/{repo}")
 
-            # tmp
-            break
     all_topic_content, cur_count = solve(cur_tasks, bulk_data_tp)
     cur_tasks.clear()
     now_count += cur_count

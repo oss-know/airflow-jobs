@@ -14,7 +14,7 @@ import requests
 import time
 
 from opensearchpy import helpers
-
+from random import randint
 def get_api(url, session):
     headers = {"charset": "utf-8", "Content-Type": "application/json"}
     while(True):
@@ -22,19 +22,26 @@ def get_api(url, session):
         try:
             r = session.get(url, headers=headers, timeout=10)
         except Exception:
-            time.sleep(2)
             flag = 0
-            pass
         if flag and r.ok:
             break
+        time.sleep(randint(5,60))
+    
     js = json.loads(r.text)
     return js
 
-def get_data_from_opensearch(index, opensearch_conn_datas):
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+def get_data_from_opensearch(index, owner, repo, opensearch_conn_datas):
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
     results = helpers.scan(client=opensearch_client,
                            query={
-                               "query": {"match_all": {}},
+                               "query": {
+                                    "bool": {
+                                        "must": [
+                                            {"match": {"search_key.owner": owner}},
+                                            {"match": {"search_key.repo" : repo}}
+                                        ]
+                                    }
+                                },
                                "sort": [
                                    {
                                        "search_key.updated_at": {
@@ -46,7 +53,7 @@ def get_data_from_opensearch(index, opensearch_conn_datas):
                            index=index,
                            size=5000,
                            scroll="40m",
-                           request_timeout=100,
+                           request_timeout=120,
                            preserve_order=True)
     return results, opensearch_client
 
@@ -54,29 +61,28 @@ def get_data_from_opensearch(index, opensearch_conn_datas):
 def crawl_topic_list(base_url, owner, repo, opensearch_conn_datas):
 
     # 从opensearch中取回category list
-    opensearch_datas = get_data_from_opensearch(OPENSEARCH_DISCOURSE_CATEGORY, opensearch_conn_datas)
+    opensearch_datas = get_data_from_opensearch(OPENSEARCH_DISCOURSE_CATEGORY, owner, repo, opensearch_conn_datas)
     category_list = []
     for category_data in opensearch_datas[0]:
         category = '/c/' + category_data["_source"]["raw_data"]["slug"] + '/' + str(category_data["_source"]["raw_data"]["id"])
         category_list.append((category, category_data["_source"]["raw_data"]["slug"], category_data["_source"]["raw_data"]["id"]))
         # logger.info(f"########{category}########")
 
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
     opensearch_api = OpensearchAPI()
 
     bulk_data_tp = {"_index": OPENSEARCH_DISCOURSE_TOPIC_LIST,
-                "_source": {
-                    "search_key": {
-                        "owner": owner,
-                        "repo": repo,
-                        "category_id": 0,
-                        "category_name": "",
-                        'updated_at': 0,
-                        'if_sync':0
-                    },
-                   "raw_data": {}
-                }}
-
+                    "_source": {
+                        "search_key": {
+                            "owner": owner,
+                            "repo": repo,
+                            "category_id": 0,
+                            "category_name": "",
+                            'updated_at': round(datetime.datetime.now().timestamp()),
+                            'if_sync':0
+                        },
+                    "raw_data": {}
+                    }}
     all_topic_list = []
     category_cnt = len(category_list)
     for idx, category in enumerate(category_list):
@@ -88,12 +94,13 @@ def crawl_topic_list(base_url, owner, repo, opensearch_conn_datas):
         category , category_name, category_id = category
 
         while(flag):
-            logger.info(f"Working about {category} [{idx}/{category_cnt}] at page {cur_page}, cur get {get_list_cnt} discussion!")
+            logger.info(f"Working about {owner}/{repo}:{category} [{idx}/{category_cnt}] at page {cur_page}, cur get {get_list_cnt} discussion!")
             
             url = f"{base_url}/{category}.json?page={cur_page}"
 
-            disscuss_list = get_api(url, session)          
-
+            disscuss_list = get_api(url, session)
+            if not disscuss_list:
+                break
             for topics in disscuss_list['topic_list']['topics']:
 
                 bulk_data = copy.deepcopy(bulk_data_tp)
