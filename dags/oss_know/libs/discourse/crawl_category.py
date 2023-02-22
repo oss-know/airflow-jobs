@@ -50,7 +50,7 @@ def crawl_discourse_category(base_url, owner, repo, proxy_config, opensearch_con
             break
     js = json.loads(r.text)
 
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
 
     delete_old_data(owner=owner, repo=repo, client=opensearch_client)
 

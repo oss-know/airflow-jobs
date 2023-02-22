@@ -15,6 +15,7 @@ import time
 
 from opensearchpy import helpers
 from tqdm import tqdm
+from random import randint
 '''
 需要传入三个参数
 username    ：
@@ -38,20 +39,20 @@ ALL_TYPE="1,2,4,5,6,7,9,11,12,13,15,16"
 
 def get_api(url, session):
     headers = {"charset": "utf-8", "Content-Type": "application/json"}
-    max_try = 10
+    max_try = 20
     while(True):
         flag = 1
         try:
-            r = session.get(url, headers=headers, timeout=1)
+            r = session.get(url, headers=headers, timeout=10)
         except Exception:
             flag = 0
         if flag and r.ok:
             break
+        time.sleep(randint(5,60))
         max_try -= 1
         if max_try == 0:
             logger.info(f"ERROR of {url}")
             return {}
-        time.sleep(2)
     js = json.loads(r.text)
     return js
 
@@ -71,11 +72,18 @@ def get_user_action(url, user_name, session, fliter=ALL_TYPE):
     return res
 
 
-def get_data_from_opensearch(index, opensearch_conn_datas):
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+def get_data_from_opensearch(index, owner, repo, opensearch_conn_datas):
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
     results = helpers.scan(client=opensearch_client,
                            query={
-                               "query": {"match_all": {}},
+                               "query": {
+                                    "bool": {
+                                        "must": [
+                                            {"match": {"search_key.owner": owner}},
+                                            {"match": {"search_key.repo" : repo}}
+                                        ]
+                                    }
+                                },
                                "sort": [
                                    {
                                        "search_key.updated_at": {
@@ -87,15 +95,15 @@ def get_data_from_opensearch(index, opensearch_conn_datas):
                            index=index,
                            size=5000,
                            scroll="40m",
-                           request_timeout=100,
+                           request_timeout=120,
                            preserve_order=True)
     return results, opensearch_client
 
 
 def crawl_user_action(base_url, owner, repo, opensearch_conn_datas):
     # 从opensearch中取回 user list
-    opensearch_datas = get_data_from_opensearch(OPENSEARCH_DISCOURSE_USER_LIST, opensearch_conn_datas)
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+    opensearch_datas = get_data_from_opensearch(OPENSEARCH_DISCOURSE_USER_LIST, owner, repo, opensearch_conn_datas)
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
     opensearch_api = OpensearchAPI()
 
     user_list = []
@@ -109,7 +117,7 @@ def crawl_user_action(base_url, owner, repo, opensearch_conn_datas):
                         "owner": owner,
                         "repo": repo,
                         "origin": base_url,
-                        'updated_at': 0,
+                        'updated_at': round(datetime.datetime.now().timestamp()),
                         'if_sync':0
                     },
                     "raw_data": {
@@ -125,12 +133,11 @@ def crawl_user_action(base_url, owner, repo, opensearch_conn_datas):
     for idx, user in enumerate(tqdm(user_list)):
         session = requests.Session()
         user_name = user['username']
-        url = f'https://discuss.pytorch.org/'
 
-        user_action = get_user_action(url, user_name, session)
+        user_action = get_user_action(base_url, user_name, session)
 
         bulk_data = copy.deepcopy(bulk_data_tp)
-        bulk_data["_source"]["search_key"]["origin"] = url
+        bulk_data["_source"]["search_key"]["origin"] = base_url
         bulk_data["_source"]["raw_data"]['user_action'] = user_action
 
         all_user_list.append(bulk_data)

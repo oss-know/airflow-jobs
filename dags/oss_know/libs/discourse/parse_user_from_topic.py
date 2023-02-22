@@ -10,11 +10,18 @@ from oss_know.libs.util.opensearch_api import OpensearchAPI
 
 from opensearchpy import helpers
 
-def get_data_from_opensearch(index, opensearch_conn_datas):
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+def get_data_from_opensearch(index, owner, repo, opensearch_conn_datas):
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
     results = helpers.scan(client=opensearch_client,
                            query={
-                               "query": {"match_all": {}},
+                               "query": {
+                                    "bool": {
+                                        "must": [
+                                            {"match": {"search_key.owner": owner}},
+                                            {"match": {"search_key.repo" : repo}}
+                                        ]
+                                    }
+                                },
                                "sort": [
                                    {
                                        "search_key.updated_at": {
@@ -26,28 +33,28 @@ def get_data_from_opensearch(index, opensearch_conn_datas):
                            index=index,
                            size=5000,
                            scroll="40m",
-                           request_timeout=100,
+                           request_timeout=120,
                            preserve_order=True)
     return results, opensearch_client
 
 
 def parse_user_from_topic(base_url, owner, repo, opensearch_conn_datas):
-    # 从opensearch中取回 topic list
-    opensearch_datas = get_data_from_opensearch(OPENSEARCH_DISCOURSE_TOPIC_CONTENT, opensearch_conn_datas)
-    opensearch_client = get_opensearch_client(opensearch_conn_infos=opensearch_conn_datas)
+    # 从opensearch中取回 topic content
+    opensearch_datas = get_data_from_opensearch(OPENSEARCH_DISCOURSE_TOPIC_CONTENT, owner, repo, opensearch_conn_datas)
+    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
     opensearch_api = OpensearchAPI()
 
     bulk_data_tp = {"_index": OPENSEARCH_DISCOURSE_USER_LIST,
-                "_source": {
-                    "search_key": {
-                        "owner": owner,
-                        "repo": repo,
-                        "origin": base_url,
-                        'updated_at': 0,
-                        'if_sync':0
-                    },
-                    "raw_data": {}
-                }}
+                    "_source": {
+                        "search_key": {
+                            "owner": owner,
+                            "repo": repo,
+                            "origin": base_url,
+                            'updated_at': round(datetime.datetime.now().timestamp()),
+                            'if_sync':0
+                        },
+                        "raw_data": {}
+                    }}
     
     vis = {}
     all_user_list = []
