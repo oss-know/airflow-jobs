@@ -6,9 +6,11 @@ from airflow.operators.python import PythonOperator
 
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES
 from oss_know.libs.base_dict.variable_key import GITHUB_TOKENS, OPENSEARCH_CONN_DATA, PROXY_CONFS, \
-    DAILY_SYNC_GITHUB_ISSUES_EXCLUDES
+    DAILY_SYNC_GITHUB_ISSUES_EXCLUDES, CLICKHOUSE_DRIVER_INFO, CK_TABLE_DEFAULT_VAL_TPLT, \
+    DAILY_SYNC_GITHUB_ISSUES_INCLUDES
 from oss_know.libs.github.sync_issues import sync_github_issues
 from oss_know.libs.util.base import get_opensearch_client
+from oss_know.libs.util.data_transfer import sync_clickhouse_from_opensearch
 from oss_know.libs.util.opensearch_api import OpensearchAPI
 from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
 from oss_know.libs.util.token import TokenManager
@@ -39,29 +41,58 @@ with DAG(dag_id='daily_github_issues_sync',  # schedule_interval='*/5 * * * *',
                                                       proxy_manager=proxy_manager, shuffle=True,
                                                       policy=GithubTokenProxyAccommodator.POLICY_FIXED_MAP)
 
+    clickhouse_conn_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
+    table_templates = Variable.get(CK_TABLE_DEFAULT_VAL_TPLT, deserialize_json=True)
+    github_issue_table_template = table_templates.get(OPENSEARCH_INDEX_GITHUB_ISSUES)
 
-    def do_sync_github_issues(params):
-        owner = params["owner"]
-        repo = params["repo"]
 
+    def do_sync_github_issues_opensearch(owner, repo):
         sync_github_issues(opensearch_conn_info, owner, repo, proxy_accommodator)
         return 'do_sync_github_issues:::end'
+
+
+    def do_sync_github_issues_clickhouse(owner, repo):
+        sync_clickhouse_from_opensearch(owner, repo, OPENSEARCH_INDEX_GITHUB_ISSUES, opensearch_conn_info,
+                                        OPENSEARCH_INDEX_GITHUB_ISSUES, clickhouse_conn_info,
+                                        github_issue_table_template)
 
 
     opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_info)
     opensearch_api = OpensearchAPI()
 
-    excludes = Variable.get(DAILY_SYNC_GITHUB_ISSUES_EXCLUDES, deserialize_json=True, default_var=None)
-    uniq_owner_repos = opensearch_api.get_uniq_owner_repos(opensearch_client, OPENSEARCH_INDEX_GITHUB_ISSUES, excludes)
+    uniq_owner_repos = []
+    includes = Variable.get(DAILY_SYNC_GITHUB_ISSUES_INCLUDES, deserialize_json=True, default_var=None)
+    if not includes:
+        excludes = Variable.get(DAILY_SYNC_GITHUB_ISSUES_EXCLUDES, deserialize_json=True, default_var=None)
+        uniq_owner_repos = opensearch_api.get_uniq_owner_repos(opensearch_client, OPENSEARCH_INDEX_GITHUB_ISSUES,
+                                                               excludes)
+    else:
+        for owner_repo_str, origin in includes.items():
+            owner, repo = owner_repo_str.split('::')
+            uniq_owner_repos.append({
+                'owner': owner,
+                'repo': repo,
+                'origin': origin
+            })
+
     for uniq_item in uniq_owner_repos:
         owner = uniq_item['owner']
         repo = uniq_item['repo']
 
-        op_do_sync_github_issues = PythonOperator(task_id=f'do_sync_github_issues_{owner}_{repo}',
-                                                  python_callable=do_sync_github_issues,
-                                                  op_kwargs={
-                                                      'params': {
-                                                          "owner": owner, "repo": repo
-                                                      }
-                                                  })
-        op_init_daily_github_issues_sync >> op_do_sync_github_issues
+        op_sync_github_issues_opensearch = PythonOperator(
+            task_id=f'do_sync_github_issues_opensearch_{owner}_{repo}',
+            python_callable=do_sync_github_issues_opensearch,
+            op_kwargs={
+                "owner": owner,
+                "repo": repo
+            })
+
+        op_sync_github_issues_clickhouse = PythonOperator(
+            task_id=f'do_sync_github_issues_clickhouse_{owner}_{repo}',
+            python_callable=do_sync_github_issues_clickhouse,
+            op_kwargs={
+                "owner": owner,
+                "repo": repo
+            })
+
+        op_init_daily_github_issues_sync >> op_sync_github_issues_opensearch >> op_sync_github_issues_clickhouse
