@@ -1,11 +1,17 @@
 GITHUB_TOKENS = "github_tokens"
 OPENSEARCH_CONN_DATA = "opensearch_conn_data"
 
+DAILY_SYNC_GITS_INCLUDES = "gits_sync_includes"
 DAILY_SYNC_GITS_EXCLUDES = "gits_sync_excludes"
 DAILY_SYNC_GITHUB_COMMITS_EXCLUDES = "github_commits_sync_excludes"
+DAILY_SYNC_GITHUB_COMMITS_INCLUDES = "github_commits_sync_includes"
+DAILY_SYNC_GITHUB_PRS_INCLUDES = "github_prs_sync_includes"
 DAILY_SYNC_GITHUB_PRS_EXCLUDES = "github_prs_sync_excludes"
+DAILY_SYNC_GITHUB_ISSUES_INCLUDES = "github_issues_sync_includes"
 DAILY_SYNC_GITHUB_ISSUES_EXCLUDES = "github_issues_sync_excludes"
+DAILY_SYNC_GITHUB_ISSUES_COMMENTS_INCLUDES = "github_issues_comments_sync_includes"
 DAILY_SYNC_GITHUB_ISSUES_COMMENTS_EXCLUDES = "github_issues_comments_sync_excludes"
+DAILY_SYNC_GITHUB_ISSUES_TIMELINE_INCLUDES = "github_issues_timeline_sync_includes"
 DAILY_SYNC_GITHUB_ISSUES_TIMELINE_EXCLUDES = "github_issues_timeline_sync_excludes"
 
 POSTGRES_CONN_INFO = "postgres_conn_info"

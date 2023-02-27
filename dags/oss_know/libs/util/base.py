@@ -156,7 +156,8 @@ def do_get_github_result(req_session, url, headers, params, accommodator: Github
             #         f'Github Internal Server Error, url:{url}, params:{params}, text:{res.text}', res.status_code)
             # else:
             #     logger.warning(
-            #         f'Unexpected Github Internal Server Error, url:{url}, params:{params}, res.status_code:{res.status_code}')
+            #         f'Unexpected Github Internal Server Error, url:{url}, params:{params}, res.status_code:{
+            #         res.status_code}')
             #     raise GithubInternalServerError(
             #         f'Github Internal Server Error, url:{url}, params:{params}, text:{res.text}', res.status_code)
             # return EmptyResponse()
@@ -331,7 +332,8 @@ def infer_country_company_geo_insert_into_profile(latest_github_profile):
             latest_github_profile[key] = infer(original_property) if original_property else None
     except (urllib3.exceptions.MaxRetryError, requests.exceptions.ProxyError) as e:
         logger.error(
-            f"error occurs when inferring information by github profile, exception message: {e},the type of exception: {type(e)}")
+            f"error occurs when inferring information by github profile, exception message: {e},"
+            f"the type of exception: {type(e)}")
         for inferrer in inferrers:
             latest_github_profile[inferrer[0]] = None
 

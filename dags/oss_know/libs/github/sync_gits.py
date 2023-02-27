@@ -15,7 +15,7 @@ def timestamp_to_utc(timestamp):
     return datetime.datetime.utcfromtimestamp(int(timestamp)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, git_save_local_path=None):
+def sync_gits_opensearch(git_url, owner, repo, proxy_config, opensearch_conn_datas, git_save_local_path=None):
     repo_path = f'{git_save_local_path["PATH"]}/{owner}/{repo}'
     check_point_timestamp = int(datetime.datetime.now().timestamp() * 1000)
 
@@ -77,6 +77,8 @@ def sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, gi
     merge_base = merge_bases[0]
     children_in_os = git_repo.iter_commits(f'{merge_base}...{head_in_os}')
     children_in_repo = git_repo.iter_commits(f'{merge_base}...{head_in_repo}')
+    logger.info(f'children in opensearch: {merge_base}...{head_in_os}')
+    logger.info(f'children in git repo: {merge_base}...{head_in_repo}')
 
     batch = []
     opensearch_api = OpensearchAPI()
@@ -147,7 +149,8 @@ def create_commit_doc(owner, repo, git_repo, sha, check_point_timestamp):
                           "total": "",
                           "if_merged": False
                       }
-                  }}
+                  }
+                  }
     commit = git_repo.commit(sha)
     files = commit.stats.files
     files_list = []
@@ -199,12 +202,14 @@ def owner_repo_query_body(owner, repo):
                         "search_key.owner.keyword": {
                             "value": owner
                         }
-                    }},
+                    }
+                    },
                     {"term": {
                         "search_key.repo.keyword": {
                             "value": repo
                         }
-                    }}
+                    }
+                    }
                 ]
             }
         }

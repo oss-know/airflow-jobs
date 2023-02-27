@@ -19,10 +19,10 @@ class SyncGithubCommitException(Exception):
         self.status = status
 
 
-def sync_github_commits(opensearch_conn_info,
-                        owner,
-                        repo,
-                        token_proxy_accommodator):
+def sync_github_commits_opensearch(opensearch_conn_info,
+                                   owner,
+                                   repo,
+                                   token_proxy_accommodator):
     opensearch_client = OpenSearch(
         hosts=[{'host': opensearch_conn_info["HOST"], 'port': opensearch_conn_info["PORT"]}],
         http_compress=True,

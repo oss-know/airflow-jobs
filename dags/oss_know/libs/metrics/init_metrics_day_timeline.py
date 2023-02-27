@@ -2,6 +2,8 @@ import time
 from datetime import datetime
 
 from clickhouse_driver import Client, connect
+
+from oss_know.libs.util.base import now_timestamp
 from oss_know.libs.util.log import logger
 
 
@@ -281,7 +283,8 @@ from
                                                              from github_issues_timeline
                                                              where search_key__owner = '{owner}'
                                                                and search_key__repo = '{repo}'
-                                                               and search_key__event = 'mentioned') github_issues_timeline global semi
+                                                               and search_key__event = 'mentioned') 
+                                                               github_issues_timeline global semi
                                                                 left join (
                                                            select DISTINCT `number`,
                                                                            search_key__owner,
@@ -326,7 +329,8 @@ from
                                                              from github_issues_timeline
                                                              where search_key__owner = '{owner}'
                                                                and search_key__repo = '{repo}'
-                                                               and search_key__event = 'mentioned') github_issues_timeline global semi
+                                                               and search_key__event = 'mentioned') 
+                                                               github_issues_timeline global semi
                                                                 left join (
                                                            select DISTINCT `number`,
                                                                            search_key__owner,
@@ -399,7 +403,8 @@ from
                                                           from github_issues_timeline
                                                           where search_key__owner = '{owner}'
                                                             and search_key__repo = '{repo}'
-                                                            and search_key__event = 'cross-referenced') github_issues_timeline GLOBAL
+                                                            and search_key__event = 'cross-referenced') 
+                                                            github_issues_timeline GLOBAL
                                                              JOIN
                                                          (
                                                              select DISTINCT `number`,
@@ -456,7 +461,8 @@ from
                                                           from github_issues_timeline
                                                           where search_key__owner = '{owner}'
                                                             and search_key__repo = '{repo}'
-                                                            and search_key__event = 'cross-referenced') github_issues_timeline GLOBAL
+                                                            and search_key__event = 'cross-referenced') 
+                                                            github_issues_timeline GLOBAL
                                                              JOIN
                                                          (
                                                              select DISTINCT `number`,
@@ -548,7 +554,8 @@ from
                                                from github_issues_timeline
                                                where search_key__owner = '{owner}'
                                                  and search_key__repo = '{repo}'
-                                                 and (search_key__event = 'labeled' or search_key__event = 'unlabeled')) github_issues_timeline
+                                                 and (search_key__event = 'labeled' or search_key__event = 
+                                                 'unlabeled')) github_issues_timeline
                                                   global
                                                   join
                                               (
@@ -593,7 +600,8 @@ from
                                                from github_issues_timeline
                                                where search_key__owner = '{owner}'
                                                  and search_key__repo = '{repo}'
-                                                 and (search_key__event = 'labeled' or search_key__event = 'unlabeled')) github_issues_timeline
+                                                 and (search_key__event = 'labeled' or search_key__event = 
+                                                 'unlabeled')) github_issues_timeline
                                                   global
                                                   join
                                               (
@@ -660,7 +668,8 @@ from
                                                         from github_issues_timeline
                                                         where search_key__owner = '{owner}'
                                                           and search_key__repo = '{repo}'
-                                                          and search_key__event = 'closed') github_issues_timeline global
+                                                          and search_key__event = 'closed') github_issues_timeline 
+                                                          global
                                                            join (
                                                       select DISTINCT `number`,
                                                                       search_key__owner,
@@ -702,7 +711,8 @@ from
                                                         from github_issues_timeline
                                                         where search_key__owner = '{owner}'
                                                           and search_key__repo = '{repo}'
-                                                          and search_key__event = 'closed') github_issues_timeline global
+                                                          and search_key__event = 'closed') github_issues_timeline 
+                                                          global
                                                            join (
                                                       select DISTINCT `number`,
                                                                       search_key__owner,
@@ -873,7 +883,8 @@ from
                                                    and search_key__owner = '{owner}'
                                                    and search_key__repo = '{repo}') as pr_number
                                                                 on
-                                                                    github_issues_comments.search_key__number = pr_number.number
+                                                                    github_issues_comments.search_key__number = 
+                                                                    pr_number.number
                                              )
                                     group by search_key__owner,
                                              search_key__repo,
@@ -905,7 +916,8 @@ from
                                                    and search_key__owner = '{owner}'
                                                    and search_key__repo = '{repo}') as pr_number
                                                                 on
-                                                                    github_issues_comments.search_key__number = pr_number.number
+                                                                    github_issues_comments.search_key__number = 
+                                                                    pr_number.number
                                              )
                                     group by search_key__owner,
                                              search_key__repo,
@@ -940,7 +952,7 @@ from
     for result in results:
         count += 1
         data_dict = {}
-        data_dict["ck_data_insert_at"] = int(time.time() * 1000)
+        data_dict["ck_data_insert_at"] = now_timestamp()
         data_dict["owner"] = result[0]
         data_dict["repo"] = result[1]
         data_dict["created_at"] = datetime.combine(result[2], datetime.min.time())
@@ -987,7 +999,6 @@ from
     else:
         logger.info("Successfully inserted: datas are consistent")
     ck.close()
-
 
 
 def get_metries_month_timeline_by_repo(ck, owner="", repo="", table_name=""):
@@ -1238,7 +1249,8 @@ from
                                                              from github_issues_timeline
                                                              where search_key__owner = '{owner}'
                                                                and search_key__repo = '{repo}'
-                                                               and search_key__event = 'mentioned') github_issues_timeline global semi
+                                                               and search_key__event = 'mentioned') 
+                                                               github_issues_timeline global semi
                                                                 left join (
                                                            select DISTINCT `number`,
                                                                            search_key__owner,
@@ -1284,7 +1296,8 @@ from
                                                              from github_issues_timeline
                                                              where search_key__owner = '{owner}'
                                                                and search_key__repo = '{repo}'
-                                                               and search_key__event = 'mentioned') github_issues_timeline global semi
+                                                               and search_key__event = 'mentioned') 
+                                                               github_issues_timeline global semi
                                                                 left join (
                                                            select DISTINCT `number`,
                                                                            search_key__owner,
@@ -1358,7 +1371,8 @@ from
                                                           from github_issues_timeline
                                                           where search_key__owner = '{owner}'
                                                             and search_key__repo = '{repo}'
-                                                            and search_key__event = 'cross-referenced') github_issues_timeline GLOBAL
+                                                            and search_key__event = 'cross-referenced') 
+                                                            github_issues_timeline GLOBAL
                                                              JOIN
                                                          (
                                                              select DISTINCT `number`,
@@ -1416,7 +1430,8 @@ from
                                                           from github_issues_timeline
                                                           where search_key__owner = '{owner}'
                                                             and search_key__repo = '{repo}'
-                                                            and search_key__event = 'cross-referenced') github_issues_timeline GLOBAL
+                                                            and search_key__event = 'cross-referenced') 
+                                                            github_issues_timeline GLOBAL
                                                              JOIN
                                                          (
                                                              select DISTINCT `number`,
@@ -1509,7 +1524,8 @@ from
                                                from github_issues_timeline
                                                where search_key__owner = '{owner}'
                                                  and search_key__repo = '{repo}'
-                                                 and (search_key__event = 'labeled' or search_key__event = 'unlabeled')) github_issues_timeline
+                                                 and (search_key__event = 'labeled' or search_key__event = 
+                                                 'unlabeled')) github_issues_timeline
                                                   global
                                                   join
                                               (
@@ -1555,7 +1571,8 @@ from
                                                from github_issues_timeline
                                                where search_key__owner = '{owner}'
                                                  and search_key__repo = '{repo}'
-                                                 and (search_key__event = 'labeled' or search_key__event = 'unlabeled')) github_issues_timeline
+                                                 and (search_key__event = 'labeled' or search_key__event = 
+                                                 'unlabeled')) github_issues_timeline
                                                   global
                                                   join
                                               (
@@ -1623,7 +1640,8 @@ from
                                                         from github_issues_timeline
                                                         where search_key__owner = '{owner}'
                                                           and search_key__repo = '{repo}'
-                                                          and search_key__event = 'closed') github_issues_timeline global
+                                                          and search_key__event = 'closed') github_issues_timeline 
+                                                          global
                                                            join (
                                                       select DISTINCT `number`,
                                                                       search_key__owner,
@@ -1666,7 +1684,8 @@ from
                                                         from github_issues_timeline
                                                         where search_key__owner = '{owner}'
                                                           and search_key__repo = '{repo}'
-                                                          and search_key__event = 'closed') github_issues_timeline global
+                                                          and search_key__event = 'closed') github_issues_timeline 
+                                                          global
                                                            join (
                                                       select DISTINCT `number`,
                                                                       search_key__owner,
@@ -1840,7 +1859,8 @@ from
                                                    and search_key__owner = '{owner}'
                                                    and search_key__repo = '{repo}') as pr_number
                                                                 on
-                                                                    github_issues_comments.search_key__number = pr_number.number
+                                                                    github_issues_comments.search_key__number = 
+                                                                    pr_number.number
                                              )
                                     group by search_key__owner,
                                              search_key__repo,
@@ -1873,7 +1893,8 @@ from
                                                    and search_key__owner = '{owner}'
                                                    and search_key__repo = '{repo}') as pr_number
                                                                 on
-                                                                    github_issues_comments.search_key__number = pr_number.number
+                                                                    github_issues_comments.search_key__number = 
+                                                                    pr_number.number
                                              )
                                     group by search_key__owner,
                                              search_key__repo,
@@ -1905,7 +1926,7 @@ from
     for result in results:
         count += 1
         data_dict = {}
-        data_dict["ck_data_insert_at"] = int(time.time() * 1000)
+        data_dict["ck_data_insert_at"] = now_timestamp()
         data_dict["owner"] = result[0]
         data_dict["repo"] = result[1]
         data_dict["created_at"] = datetime.combine(result[2], datetime.min.time())
@@ -2202,7 +2223,8 @@ from
                                                              from github_issues_timeline
                                                              where search_key__owner = '{owner}'
                                                                and search_key__repo = '{repo}'
-                                                               and search_key__event = 'mentioned') github_issues_timeline global semi
+                                                               and search_key__event = 'mentioned') 
+                                                               github_issues_timeline global semi
                                                                 left join (
                                                            select DISTINCT `number`,
                                                                            search_key__owner,
@@ -2248,7 +2270,8 @@ from
                                                              from github_issues_timeline
                                                              where search_key__owner = '{owner}'
                                                                and search_key__repo = '{repo}'
-                                                               and search_key__event = 'mentioned') github_issues_timeline global semi
+                                                               and search_key__event = 'mentioned') 
+                                                               github_issues_timeline global semi
                                                                 left join (
                                                            select DISTINCT `number`,
                                                                            search_key__owner,
@@ -2322,7 +2345,8 @@ from
                                                           from github_issues_timeline
                                                           where search_key__owner = '{owner}'
                                                             and search_key__repo = '{repo}'
-                                                            and search_key__event = 'cross-referenced') github_issues_timeline GLOBAL
+                                                            and search_key__event = 'cross-referenced') 
+                                                            github_issues_timeline GLOBAL
                                                              JOIN
                                                          (
                                                              select DISTINCT `number`,
@@ -2380,7 +2404,8 @@ from
                                                           from github_issues_timeline
                                                           where search_key__owner = '{owner}'
                                                             and search_key__repo = '{repo}'
-                                                            and search_key__event = 'cross-referenced') github_issues_timeline GLOBAL
+                                                            and search_key__event = 'cross-referenced') 
+                                                            github_issues_timeline GLOBAL
                                                              JOIN
                                                          (
                                                              select DISTINCT `number`,
@@ -2473,7 +2498,8 @@ from
                                                from github_issues_timeline
                                                where search_key__owner = '{owner}'
                                                  and search_key__repo = '{repo}'
-                                                 and (search_key__event = 'labeled' or search_key__event = 'unlabeled')) github_issues_timeline
+                                                 and (search_key__event = 'labeled' or search_key__event = 
+                                                 'unlabeled')) github_issues_timeline
                                                   global
                                                   join
                                               (
@@ -2519,7 +2545,8 @@ from
                                                from github_issues_timeline
                                                where search_key__owner = '{owner}'
                                                  and search_key__repo = '{repo}'
-                                                 and (search_key__event = 'labeled' or search_key__event = 'unlabeled')) github_issues_timeline
+                                                 and (search_key__event = 'labeled' or search_key__event = 
+                                                 'unlabeled')) github_issues_timeline
                                                   global
                                                   join
                                               (
@@ -2587,7 +2614,8 @@ from
                                                         from github_issues_timeline
                                                         where search_key__owner = '{owner}'
                                                           and search_key__repo = '{repo}'
-                                                          and search_key__event = 'closed') github_issues_timeline global
+                                                          and search_key__event = 'closed') github_issues_timeline 
+                                                          global
                                                            join (
                                                       select DISTINCT `number`,
                                                                       search_key__owner,
@@ -2630,7 +2658,8 @@ from
                                                         from github_issues_timeline
                                                         where search_key__owner = '{owner}'
                                                           and search_key__repo = '{repo}'
-                                                          and search_key__event = 'closed') github_issues_timeline global
+                                                          and search_key__event = 'closed') github_issues_timeline 
+                                                          global
                                                            join (
                                                       select DISTINCT `number`,
                                                                       search_key__owner,
@@ -2804,7 +2833,8 @@ from
                                                    and search_key__owner = '{owner}'
                                                    and search_key__repo = '{repo}') as pr_number
                                                                 on
-                                                                    github_issues_comments.search_key__number = pr_number.number
+                                                                    github_issues_comments.search_key__number = 
+                                                                    pr_number.number
                                              )
                                     group by search_key__owner,
                                              search_key__repo,
@@ -2837,7 +2867,8 @@ from
                                                    and search_key__owner = '{owner}'
                                                    and search_key__repo = '{repo}') as pr_number
                                                                 on
-                                                                    github_issues_comments.search_key__number = pr_number.number
+                                                                    github_issues_comments.search_key__number = 
+                                                                    pr_number.number
                                              )
                                     group by search_key__owner,
                                              search_key__repo,
@@ -2868,7 +2899,7 @@ from
     for result in results:
         count += 1
         data_dict = {}
-        data_dict["ck_data_insert_at"] = int(time.time() * 1000)
+        data_dict["ck_data_insert_at"] = now_timestamp()
         data_dict["owner"] = result[0]
         data_dict["repo"] = result[1]
         data_dict["created_at"] = datetime.combine(result[2], datetime.min.time())
@@ -2917,12 +2948,8 @@ from
     ck.close()
 
 
-
 def if_data_eq_github(count, ck, table_name, owner, repo):
     sql = f"select count() from {table_name} where owner='{owner}' and repo='{repo}'"
     result = ck.execute_no_params(sql)
     logger.info(f'data count in ck {result[0][0]}')
     return count == result[0][0]
-
-
-
