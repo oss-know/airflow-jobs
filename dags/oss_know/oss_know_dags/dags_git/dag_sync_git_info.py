@@ -20,7 +20,6 @@ with DAG(
         return 'Start init_sync_git_info'
 
 
-
     op_init_sync_git_info = PythonOperator(
         task_id='init_sync_git_info',
         python_callable=init_sync_git_info,
@@ -36,15 +35,13 @@ with DAG(
         proxy_config = params.get("proxy_config")
         opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
         git_save_local_path = Variable.get("git_save_local_path", deserialize_json=True)
-        sync_git_info = sync_gits.sync_git_datas(git_url=url,
-                                                 owner=owner,
-                                                 repo=repo,
-                                                 proxy_config=proxy_config,
-                                                 opensearch_conn_datas=opensearch_conn_datas,
-                                                 git_save_local_path=git_save_local_path)
+        sync_git_info = sync_gits.sync_gits_opensearch(git_url=url,
+                                                       owner=owner,
+                                                       repo=repo,
+                                                       proxy_config=proxy_config,
+                                                       opensearch_conn_datas=opensearch_conn_datas,
+                                                       git_save_local_path=git_save_local_path)
         return 'do_sync_git_info:::end'
-
-
 
 
     from airflow.models import Variable
@@ -57,4 +54,3 @@ with DAG(
             op_kwargs={'params': git_info},
         )
         op_init_sync_git_info >> op_do_init_sync_git_info
-

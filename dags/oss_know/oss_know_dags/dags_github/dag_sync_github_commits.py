@@ -52,10 +52,10 @@ with DAG(
         owner = params["owner"]
         repo = params["repo"]
 
-        do_init_sync_info = sync_commits.sync_github_commits(opensearch_conn_info=opensearch_conn_info,
-                                                             owner=owner,
-                                                             repo=repo,
-                                                             token_proxy_accommodator=proxy_accommodator)
+        do_init_sync_info = sync_commits.sync_github_commits_opensearch(opensearch_conn_info=opensearch_conn_info,
+                                                                        owner=owner,
+                                                                        repo=repo,
+                                                                        token_proxy_accommodator=proxy_accommodator)
         return params
 
 
