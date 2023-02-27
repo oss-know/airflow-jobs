@@ -2,6 +2,8 @@
 import time
 import csv
 from datetime import datetime
+
+from oss_know.libs.util.base import now_timestamp
 from oss_know.libs.util.log import logger
 from clickhouse_driver import Client, connect
 
@@ -80,7 +82,8 @@ LIMIT {limit}
 
 def get_top_n_email(ck, owner, repo, top_dir_level2, limit):
     sql = f"""
-    select search_key__owner, search_key__repo,dir_level2,author_email ,sum(alter_file_count) as total_alter_file_count from (select search_key__owner ,
+    select search_key__owner, search_key__repo,dir_level2,author_email ,sum(alter_file_count) as 
+    total_alter_file_count from (select search_key__owner ,
     search_key__repo ,
     dir_level2 , 
     author_email,
@@ -399,21 +402,21 @@ def get_dir2_contribute_data(ck_conn_info, project_info):
         # print(results)
         for dir_email in results:
             row_dict = {
-                        "ck_data_insert_at": int(time.time()*1000),
-                        "department": project_line,
-                        "owner": owner,
-                        "repo": repo,
-                        "dir_level2": dir_email[2],
-                        "domain_distribution": domain_distribution,
-                        "tz_distribution": tz_distribution,
-                        "email": dir_email[3],
-                        "sum_tz_commit_files_count": 0,
-                        "tz_commit_files_count": "",
-                        "profile_location": "",
-                        "profile_company": "",
-                        "inferred_from_location_country_or_region": "",
-                        "inferred_from_location_locality_or_region": ""
-                        }
+                "ck_data_insert_at": now_timestamp(),
+                "department": project_line,
+                "owner": owner,
+                "repo": repo,
+                "dir_level2": dir_email[2],
+                "domain_distribution": domain_distribution,
+                "tz_distribution": tz_distribution,
+                "email": dir_email[3],
+                "sum_tz_commit_files_count": 0,
+                "tz_commit_files_count": "",
+                "profile_location": "",
+                "profile_company": "",
+                "inferred_from_location_country_or_region": "",
+                "inferred_from_location_locality_or_region": ""
+            }
             per_people_datas = get_tz_file_count(ck=ck,
                                                  owner=dir_email[0],
                                                  repo=dir_email[1],
@@ -429,12 +432,15 @@ def get_dir2_contribute_data(ck_conn_info, project_info):
 
                 if per_people_data[4] > 0:
                     row_dict["tz_commit_files_count"] = row_dict[
-                                                            "tz_commit_files_count"] + f"+{per_people_data[4]}:{format(per_people_data[8] / row_dict['sum_tz_commit_files_count'], '.1%')}".ljust(
+                                                            "tz_commit_files_count"] + f"+{per_people_data[4]}:" \
+                                                                                       f"{format(per_people_data[8] / row_dict['sum_tz_commit_files_count'], '.1%')}".ljust(
                         10, ' ') + '| '
 
                 else:
                     row_dict["tz_commit_files_count"] = row_dict[
-                                                            "tz_commit_files_count"] + f"{per_people_data[4]}:{format(per_people_data[8] / row_dict['sum_tz_commit_files_count'], '.1%')}".ljust(
+                                                            "tz_commit_files_count"
+                                                        ] + f"{per_people_data[4]}:" \
+                                                            f"{format(per_people_data[8] / row_dict['sum_tz_commit_files_count'], '.1%')}".ljust(
                         10, ' ') + '| '
             profile_data = get_profile_by_email(ck=ck, email=dir_email[3])
             if profile_data:
@@ -453,4 +459,3 @@ def get_dir2_contribute_data(ck_conn_info, project_info):
     end_time = int(time.time())
     logger.info(f"analysis spend time {(end_time - start_time) / 60} min-----------------------")
     ck.close()
-

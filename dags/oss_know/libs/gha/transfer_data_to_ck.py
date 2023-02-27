@@ -6,6 +6,8 @@ import random
 import time
 import pandas as pd
 from json import JSONDecodeError
+
+from oss_know.libs.util.base import now_timestamp
 from oss_know.libs.util.log import logger
 from clickhouse_driver.errors import ServerException
 from oss_know.libs.base_dict.variable_key import CK_TABLE_DEFAULT_VAL_TPLT
@@ -23,7 +25,8 @@ def un_gzip(gz_filename):
     except Exception as e:
         logger.info(f"{gz_filename}Decompression failed ，failure reason：{e}")
 
-def error_log(year,month,day,log_info,clickhouse_server_info):
+
+def error_log(year, month, day, log_info, clickhouse_server_info):
     ck = CKServer(host=clickhouse_server_info["HOST"],
                   port=clickhouse_server_info["PORT"],
                   user=clickhouse_server_info["USER"],
@@ -38,16 +41,19 @@ def error_log(year,month,day,log_info,clickhouse_server_info):
 
     current_datetime = datetime.datetime.now()
     current_timestamp = int(current_datetime.timestamp())
-    error_data = [{"year":year,"month":month,"day":day,"error_info":log_info,"update_date":datetime.datetime(current_datetime.year,
-                        current_datetime.month,
-                        current_datetime.day,
-                        current_datetime.hour,
-                        current_datetime.minute,
-                        current_datetime.second),"update_timestamp":current_timestamp}]
+    error_data = [{"year": year, "month": month, "day": day, "error_info": log_info,
+                   "update_date": datetime.datetime(current_datetime.year,
+                                                    current_datetime.month,
+                                                    current_datetime.day,
+                                                    current_datetime.hour,
+                                                    current_datetime.minute,
+                                                    current_datetime.second), "update_timestamp": current_timestamp
+                   }]
     logger.info(error_data)
-    results = ck.execute(f"insert into table transfer_gha_error_log values",error_data)
+    results = ck.execute(f"insert into table transfer_gha_error_log values", error_data)
     logger.info(results)
     ck.close()
+
 
 def get_index_name(index_name):
     result = index_name[0].lower()
@@ -103,10 +109,10 @@ def parse_json_data_hour(clickhouse_server_info, file_name, bulk_data_map, count
                 # 2015年之前和2015年之后的数据结构不一致
                 if int(gh_archive_year) < 2015:
                     try:
-                    
+
                         owner = result['repository']['owner']
                         repo = result['repository']['name']
-                        
+
 
                     except KeyError as e:
                         owner = 'null'
@@ -124,10 +130,12 @@ def parse_json_data_hour(clickhouse_server_info, file_name, bulk_data_map, count
                                                              "gh_archive_year": gh_archive_year,
                                                              "gh_archive_month": gh_archive_month,
                                                              "gh_archive_day": gh_archive_day,
-                                                             "gh_archive_hour": gh_archive_hour},
-                                              "raw_data": result}})
+                                                             "gh_archive_hour": gh_archive_hour
+                                                             },
+                                              "raw_data": result
+                                              }
+                                  })
                 if event_type != 'release_event_old':
-
                     bulk_data_map[event_type] = raw_datas
 
                 for event_type in bulk_data_map:
@@ -144,8 +152,8 @@ def parse_json_data_hour(clickhouse_server_info, file_name, bulk_data_map, count
             # client.close()
     except FileNotFoundError as e:
 
-        error_log(log_info=str(e),year=int(gh_archive_year),month=int(gh_archive_month),day=int(gh_archive_day),clickhouse_server_info=clickhouse_server_info)
-
+        error_log(log_info=str(e), year=int(gh_archive_year), month=int(gh_archive_month), day=int(gh_archive_day),
+                  clickhouse_server_info=clickhouse_server_info)
 
 
 # 从json直接导入
@@ -169,8 +177,8 @@ def transfer_data_by_repo(clickhouse_server_info, table_name, tplt,
     day = 0
     try:
         for os_data in opensearch_datas:
-            #logger.info(os_data)
-            #break
+            # logger.info(os_data)
+            # break
             updated_at = os_data["_source"]["search_key"]["updated_at"]
             if updated_at > max_timestamp:
                 max_timestamp = updated_at
@@ -179,7 +187,7 @@ def transfer_data_by_repo(clickhouse_server_info, table_name, tplt,
             month = df_data["search_key"]["gh_archive_month"]
             day = df_data["search_key"]["gh_archive_day"]
             df = pd.json_normalize(df_data)
-            template["ck_data_insert_at"] = int(round(time.time() * 1000))
+            template["ck_data_insert_at"] = now_timestamp()
             template["deleted"] = 0
             dict_data = parse_data(df, template)
             try:
@@ -193,12 +201,13 @@ def transfer_data_by_repo(clickhouse_server_info, table_name, tplt,
                         dict_dict[field] = datetime.datetime.strptime(dict_dict[field], '%Y-%m-%dT%H:%M:%SZ')
                     except ValueError as e:
 
-                        dict_dict[field] = timestamp_to_utc(datetime.datetime.strptime(dict_dict[field], '%Y-%m-%dT%H:%M:%S%z').timestamp())
+                        dict_dict[field] = timestamp_to_utc(
+                            datetime.datetime.strptime(dict_dict[field], '%Y-%m-%dT%H:%M:%S%z').timestamp())
                         dict_dict[field] = datetime.datetime.strptime(dict_dict[field], '%Y-%m-%dT%H:%M:%SZ')
 
                 elif dict_dict.get(field) and fields.get(field) == 'Array(DateTime64(3))':
                     for i, v in enumerate(dict_dict.get(field)):
-                        if v!='':
+                        if v != '':
                             dict_dict[field][i] = datetime.datetime.strptime(v, '%Y-%m-%dT%H:%M:%SZ')
                 elif fields.get(field) == 'String':
                     try:
