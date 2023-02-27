@@ -14,10 +14,10 @@ from oss_know.libs.util.log import logger
 from opensearchpy import helpers
 from airflow.exceptions import AirflowException
 from opensearchpy.exceptions import NotFoundError
-from oss_know.libs.base_dict.clickhouse import CLICKHOUSE_RAW_DATA
+from oss_know.libs.base_dict.clickhouse import CLICKHOUSE_RAW_DATA, GITHUB_ISSUES_TIMELINE_TEMPLATE
 from oss_know.libs.util.airflow import get_postgres_conn
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_GIT_RAW, OPENSEARCH_INDEX_CHECK_SYNC_DATA
-from oss_know.libs.util.base import get_opensearch_client
+from oss_know.libs.util.base import get_opensearch_client, now_timestamp
 from oss_know.libs.util.clickhouse_driver import CKServer
 
 
@@ -125,22 +125,8 @@ def alter_data_type(row):
 def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, table_name, opensearch_conn_datas,
                                   search_key):
     bulk_datas = []
-    template = {
-        "search_key": {
-            "owner": "",
-            "repo": "",
-            "number": 0,
-            "event": "",
-            "updated_at": 0,
-            "uuid": "",
-            "if_sync": 0
-        },
-        "deleted": 0,
-        "raw_data": {
-            "timeline_raw": ""
-        }
-    }
-    template["ck_data_insert_at"] = int(round(time.time() * 1000))
+    github_issues_timeline_template = copy.deepcopy(GITHUB_ISSUES_TIMELINE_TEMPLATE)
+    github_issues_timeline_template["ck_data_insert_at"] = now_timestamp()
     ck = CKServer(host=clickhouse_server_info["HOST"],
                   port=clickhouse_server_info["PORT"],
                   user=clickhouse_server_info["USER"],
@@ -171,14 +157,17 @@ def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, tabl
             updated_at = os_data["_source"]["search_key"]["updated_at"]
             if updated_at > max_timestamp:
                 max_timestamp = updated_at
-            insert_data = copy.deepcopy(template)
+            insert_data = copy.deepcopy(github_issues_timeline_template)
             insert_data['search_key__owner'] = os_data["_source"]["search_key"]['owner']
             insert_data['search_key__repo'] = os_data["_source"]["search_key"]['repo']
             insert_data['search_key__number'] = os_data["_source"]["search_key"]['number']
             insert_data['search_key__event'] = os_data["_source"]["search_key"]['event']
             insert_data['search_key__updated_at'] = os_data["_source"]["search_key"]['updated_at']
-            insert_data['search_key__uuid'] = os_data["_source"]["search_key"]['uuid']
-            insert_data['search_key__if_sync'] = os_data["_source"]["search_key"]['if_sync']
+
+            # TODO uuid and if_sync is no longer used, delete the comments in the future
+            # TODO Abstract os doc <-> ck row conversion into an util helper, and replace these code
+            # insert_data['search_key__uuid'] = os_data["_source"]["search_key"]['uuid']
+            # insert_data['search_key__if_sync'] = os_data["_source"]["search_key"]['if_sync']
             raw_data = os_data["_source"]["raw_data"]
             standard_data = json.dumps(raw_data, separators=(',', ':'), ensure_ascii=False)
             insert_data['timeline_raw'] = standard_data
@@ -294,7 +283,7 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
             df_data = os_data["_source"]
 
             df = pd.json_normalize(df_data)
-            template["ck_data_insert_at"] = int(round(time.time() * 1000))
+            template["ck_data_insert_at"] = now_timestamp()
             dict_data = parse_data(df, template)
             try:
                 dict_dict = json.loads(json.dumps(dict_data))
@@ -335,7 +324,9 @@ def transfer_data(clickhouse_server_info, opensearch_index, table_name, opensear
     except NotFoundError as error:
         bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name)
         raise NotFoundError(
-            f'scroll error raise HTTP_EXCEPTIONS.get(status_code, TransportError)(opensearchpy.exceptions.NotFoundError: NotFoundError(404, "search_phase_execution_exception", "No search context found for id [631]"){error}')
+            f'scroll error raise HTTP_EXCEPTIONS.get(status_code, TransportError)('
+            f'opensearchpy.exceptions.NotFoundError: NotFoundError(404, "search_phase_execution_exception", '
+            f'"No search context found for id [631]"){error}')
     except Exception as error:
         bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name)
         raise Exception(error)
@@ -453,7 +444,8 @@ def bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name):
 def keep_idempotent(ck, search_key, clickhouse_server_info, table_name, transfer_type):
     # print(f"{transfer_type}-------------------------------------------------------------")
     # 获取clickhouse集群节点信息
-    get_clusters_sql = f"select host_name from system.clusters where cluster = '{clickhouse_server_info['CLUSTER_NAME']}'"
+    get_clusters_sql = f"select host_name from system.clusters" \
+                       f"where cluster = '{clickhouse_server_info['CLUSTER_NAME']}'"
     # print(get_clusters_sql)
     clusters_info = ck.execute_no_params(get_clusters_sql)
     delect_data_sql = ''
@@ -467,13 +459,21 @@ def keep_idempotent(ck, search_key, clickhouse_server_info, table_name, transfer
     if transfer_type == 'github_git_init_by_repo' or transfer_type == 'github_issues_timeline_by_repo':
         owner = search_key.get('owner')
         repo = search_key.get('repo')
-        delect_data_sql = f"ALTER TABLE {table_name}_local ON CLUSTER {clickhouse_server_info['CLUSTER_NAME']} DELETE WHERE {now}={now} and search_key__owner = '{owner}' and search_key__repo = '{repo}'"
-        check_if_done_sql = f"select is_done from system.mutations m WHERE `table` = '{table_name}_local' and command = 'DELETE WHERE ({now} = {now}) AND (search_key__owner = \\'{owner}\\') AND (search_key__repo = \\'{repo}\\')'"
+        delect_data_sql = f"ALTER TABLE {table_name}_local ON CLUSTER {clickhouse_server_info['CLUSTER_NAME']} " \
+                          f"DELETE WHERE {now}={now} and search_key__owner = '{owner}' and search_key__repo = '{repo}'"
+        check_if_done_sql = f"select is_done from system.mutations m WHERE `table` = '{table_name}_local'" \
+                            f"and command = 'DELETE WHERE ({now} = {now}) AND (search_key__owner = \\'{owner}\\')" \
+                            f"AND (search_key__repo = \\'{repo}\\')'"
     elif transfer_type == 'maillist_init':
         project_name = search_key.get('project_name')
         mail_list_name = search_key.get('mail_list_name')
-        delect_data_sql = f"ALTER TABLE {table_name}_local ON CLUSTER {clickhouse_server_info['CLUSTER_NAME']} DELETE WHERE {now} = {now} and search_key__project_name = '{project_name}' and search_key__mail_list_name = '{mail_list_name}'"
-        check_if_done_sql = f"select is_done from system.mutations m WHERE `table` = '{table_name}_local' and command = 'DELETE WHERE ({now} = {now}) AND (search_key__project_name = \\'{project_name}\\') AND (search_key__mail_list_name = \\'{mail_list_name}\\')'"
+        delect_data_sql = f"ALTER TABLE {table_name}_local ON CLUSTER {clickhouse_server_info['CLUSTER_NAME']}" \
+                          f"DELETE WHERE {now} = {now} and search_key__project_name = '{project_name}'" \
+                          f"and search_key__mail_list_name = '{mail_list_name}'"
+        check_if_done_sql = f"select is_done from system.mutations m WHERE `table` = '{table_name}_local' " \
+                            f"AND command = 'DELETE WHERE ({now} = {now}) " \
+                            f"AND (search_key__project_name = \\'{project_name}\\') " \
+                            f"AND (search_key__mail_list_name = \\'{mail_list_name}\\')'"
     ck.execute_no_params(delect_data_sql)
     logger.info("将同owner和repo的老数据进行删除")
 
@@ -518,7 +518,8 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
         search_key_owner = search_key['owner']
         search_key_repo = search_key['repo']
         # 判断项目是否在ck中存在
-        if_null_sql = f"select count() from {table_name} where search_key__owner='{search_key_owner}' and search_key__repo='{search_key_repo}'"
+        if_null_sql = f"select count() from {table_name} where search_key__owner='{search_key_owner}' and " \
+                      f"search_key__repo='{search_key_repo}'"
         if_null_result = ck.execute_no_params(if_null_sql)
         if if_null_result[0][0] != 0:
             keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
@@ -532,7 +533,8 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
     elif transfer_type == "maillist_init":
         search_key_project_name = search_key['project_name']
         search_key_mail_list_name = search_key['mail_list_name']
-        if_null_sql = f"select count() from {table_name} where search_key__project_name='{search_key_project_name}' and search_key__mail_list_name='{search_key_mail_list_name}'"
+        if_null_sql = f"select count() from {table_name} where search_key__project_name='{search_key_project_name}' " \
+                      f"and search_key__mail_list_name='{search_key_mail_list_name}'"
         if_null_result = ck.execute_no_params(if_null_sql)
         if not if_null_result:
             keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
@@ -552,7 +554,7 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
                 max_timestamp = updated_at
             df_data = os_data["_source"]
             df = pd.json_normalize(df_data)
-            template["ck_data_insert_at"] = int(round(time.time() * 1000))
+            template["ck_data_insert_at"] = now_timestamp()
             template["deleted"] = 0
             dict_data = parse_data(df, template)
             try:
@@ -595,7 +597,9 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
     except NotFoundError as error:
         bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, transfer_type)
         raise NotFoundError(
-            f'scroll error raise HTTP_EXCEPTIONS.get(status_code, TransportError)(opensearchpy.exceptions.NotFoundError: NotFoundError(404, "search_phase_execution_exception", "No search context found for id [631]"){error}')
+            f'scroll error raise HTTP_EXCEPTIONS.get(status_code, TransportError)('
+            f'opensearchpy.exceptions.NotFoundError: NotFoundError(404, "search_phase_execution_exception", '
+            f'"No search context found for id [631]"){error}')
     except Exception as error:
         bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, search_key, transfer_type)
         raise Exception(error)
@@ -671,7 +675,7 @@ def transfer_data_maillist(clickhouse_server_info, opensearch_index, table_name,
             df_data = os_data["_source"]
 
             df = pd.json_normalize(df_data)
-            template["ck_data_insert_at"] = int(round(time.time() * 1000))
+            template["ck_data_insert_at"] = now_timestamp()
             dict_data = parse_data(df, template)
             try:
                 dict_dict = json.loads(json.dumps(dict_data))
@@ -712,7 +716,9 @@ def transfer_data_maillist(clickhouse_server_info, opensearch_index, table_name,
     except NotFoundError as error:
         bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, maillist_repo)
         raise NotFoundError(
-            f'scroll error raise HTTP_EXCEPTIONS.get(status_code, TransportError)(opensearchpy.exceptions.NotFoundError: NotFoundError(404, "search_phase_execution_exception", "No search context found for id [631]"){error}')
+            f'scroll error raise HTTP_EXCEPTIONS.get(status_code, TransportError)('
+            f'opensearchpy.exceptions.NotFoundError: NotFoundError(404, "search_phase_execution_exception", '
+            f'"No search context found for id [631]"){error}')
     except Exception as error:
         bulk_except_repo(bulk_data, opensearch_datas, opensearch_index, table_name, maillist_repo)
         raise Exception(error)
@@ -753,7 +759,8 @@ def if_data_eq_github(count, ck, table_name, owner, repo):
 
 
 def if_data_eq_maillist(count, ck, table_name, project_name, mail_list_name):
-    sql = f"select count() from {table_name} where search_key__project_name='{project_name}' and search_key__mail_list_name='{mail_list_name}'"
+    sql = f"select count() from {table_name} where search_key__project_name='{project_name}'" \
+          f"and search_key__mail_list_name='{mail_list_name}'"
     # logger.info(sql)
     result = ck.execute_no_params(sql)
     # logger.info(result)
@@ -860,8 +867,6 @@ def get_data_from_opensearch_maillist(index, opensearch_conn_datas, maillist_rep
                            request_timeout=120,
                            preserve_order=True)
     return results, opensearch_client
-
-
 
 
 def parse_data(df, temp):

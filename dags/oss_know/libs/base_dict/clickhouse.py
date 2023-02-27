@@ -9,3 +9,19 @@ EMAIL_ADDRESS_COUNTRY_INFERRED_FROM_EMAILDOMAIN = 'country_inferred_from_emaildo
 EMAIL_ADDRESS_COMPANY_INFERRED_FROM_EMAIL = 'company_inferred_from_email'
 EMAIL_ADDRESS_COUNTRY_INFERRED_FROM_COMPANY = 'country_inferred_from_company'
 EMAIL_ALIASE = 'email_aliase'
+
+GITHUB_ISSUES_TIMELINE_TEMPLATE = {
+    "search_key": {
+        "owner": "",
+        "repo": "",
+        "number": 0,
+        "event": "",
+        "updated_at": 0,
+        "uuid": "",
+        "if_sync": 0
+    },
+    "deleted": 0,
+    "raw_data": {
+        "timeline_raw": ""
+    }
+}
