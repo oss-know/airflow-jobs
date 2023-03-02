@@ -3319,5 +3319,1657 @@
       "local_table": "\n         create table github_id_email_map_local on cluster replicated\n        (\n            update_at DateTime64(3),\n            update_at_timestamp Int64,\n            github_id Int64,\n            email String\n        )\n        engine = ReplicatedMergeTree('/clickhouse/tables/{shard}/github_id_email_map', '{replica}')\n        ORDER BY github_id\n        SETTINGS index_granularity = 8192;\n",
       "distributed_table": "\n         create table github_id_email_map on cluster replicated as github_id_email_map_local\n         engine = Distributed('replicated', 'default', 'github_id_email_map_local', rand());\n\n"
     }
+  ],
+  "need_init_discourse":
+  [
+      {
+          "owner": "pytorch",
+          "repo": "pytorch",
+          "url": "https://discuss.pytorch.org"
+      },
+      {
+          "owner": "rust-lang",
+          "repo": "rust",
+          "url": "https://internals.rust-lang.org"
+      }
+  ],
+  "need_init_discourse_ck_template":
+  [
+      {
+          "table_name": "discourse_category",
+          "temp":
+          {
+              "search_key":
+              {
+                  "owner": "",
+                  "repo": "",
+                  "origin": "",
+                  "updated_at": 0,
+                  "if_sync": 0
+              },
+              "raw_data":
+              {
+                  "id": 0,
+                  "name": "",
+                  "color": "",
+                  "text_color": "",
+                  "slug": "",
+                  "topic_count": 0,
+                  "post_count": 0,
+                  "position": 0,
+                  "description": "",
+                  "description_text": "",
+                  "description_excerpt": "",
+                  "topic_url": "",
+                  "read_restricted": false,
+                  "permission": "",
+                  "notification_level": 0,
+                  "topic_template": "",
+                  "has_children": false,
+                  "sort_order": "",
+                  "sort_ascending": "",
+                  "show_subcategory_list": false,
+                  "num_featured_topics": 0,
+                  "default_view": "",
+                  "subcategory_list_style": "",
+                  "default_top_period": "",
+                  "default_list_filter": "",
+                  "minimum_required_tags": 0,
+                  "navigate_to_first_post_after_read": false,
+                  "topics_day": 0,
+                  "topics_week": 0,
+                  "topics_month": 0,
+                  "topics_year": 0,
+                  "topics_all_time": 0,
+                  "subcategory_ids":
+                  [
+                      0,
+                      0
+                  ],
+                  "uploaded_logo": "",
+                  "uploaded_background": ""
+              }
+          }
+      },
+      {
+          "table_name": "discourse_topic_list",
+          "temp":
+          {
+              "search_key":
+              {
+                  "owner": "",
+                  "repo": "",
+                  "category_id": 0,
+                  "category_name": "",
+                  "updated_at": 0,
+                  "if_sync": 0
+              },
+              "raw_data":
+              {
+                  "id": 0,
+                  "title": "",
+                  "fancy_title": "",
+                  "slug": "",
+                  "posts_count": 0,
+                  "reply_count": 0,
+                  "highest_post_number": 0,
+                  "image_url": "",
+                  "created_at": "1970-01-01T00:00:00.000Z",
+                  "last_posted_at": "1970-01-01T00:00:00.000Z",
+                  "bumped": false,
+                  "bumped_at": "1970-01-01T00:00:00.000Z",
+                  "archetype": "",
+                  "unseen": false,
+                  "pinned": false,
+                  "unpinned": "",
+                  "excerpt": "",
+                  "visible": false,
+                  "closed": false,
+                  "archived": false,
+                  "bookmarked": "",
+                  "liked": "",
+                  "tags_descriptions": "",
+                  "views": 0,
+                  "like_count": 0,
+                  "has_summary": false,
+                  "last_poster_username": "",
+                  "category_id": 0,
+                  "pinned_globally": false,
+                  "featured_link": "",
+                  "has_accepted_answer": false,
+                  "posters":
+                  [
+                      {
+                          "extras": "",
+                          "description": "",
+                          "user_id": 0,
+                          "primary_group_id": "",
+                          "flair_group_id": ""
+                      }
+                  ]
+              }
+          }
+      },
+      {
+          "table_name": "discourse_topic_content",
+          "temp":
+          {
+              "search_key":
+              {
+                  "owner": "",
+                  "repo": "",
+                  "origin": "",
+                  "updated_at": 0,
+                  "if_sync": 0
+              },
+              "raw_data":
+              {
+                  "post_stream":
+                  {
+                      "posts":
+                      [
+                          {
+                              "id": 0,
+                              "name": "",
+                              "username": "",
+                              "avatar_template": "",
+                              "created_at": "1970-01-01T00:00:00.000Z",
+                              "cooked": "",
+                              "post_number": 0,
+                              "post_type": 0,
+                              "updated_at": "1970-01-01T00:00:00.000Z",
+                              "reply_count": 0,
+                              "reply_to_post_number": "",
+                              "quote_count": 0,
+                              "incoming_link_count": 0,
+                              "reads": 0,
+                              "readers_count": 0,
+                              "score": 0,
+                              "yours": false,
+                              "topic_id": 0,
+                              "topic_slug": "",
+                              "display_username": "",
+                              "primary_group_name": "",
+                              "flair_name": "",
+                              "flair_url": "",
+                              "flair_bg_color": "",
+                              "flair_color": "",
+                              "version": 0,
+                              "can_edit": false,
+                              "can_delete": false,
+                              "can_recover": false,
+                              "can_wiki": false,
+                              "link_counts":
+                              [
+                                  {
+                                      "url": "",
+                                      "internal": false,
+                                      "reflection": false,
+                                      "clicks": 0
+                                  }
+                              ],
+                              "read": false,
+                              "user_title": "",
+                              "title_is_group": false,
+                              "reply_to_user":
+                              {
+                                  "username": "",
+                                  "name": "",
+                                  "avatar_template": ""
+                              },
+                              "bookmarked": false,
+                              "actions_summary":
+                              [
+                                  {
+                                      "id": 0,
+                                      "count": 0,
+                                      "hidden": false,
+                                      "can_act": false
+                                  }
+                              ],
+                              "moderator": false,
+                              "admin": false,
+                              "staff": false,
+                              "user_id": 0,
+                              "hidden": false,
+                              "trust_level": 0,
+                              "deleted_at": "1970-01-01T00:00:00.000Z",
+                              "user_deleted": false,
+                              "edit_reason": "",
+                              "can_view_edit_history": false,
+                              "wiki": false,
+                              "via_email": false,
+                              "can_accept_answer": false,
+                              "can_unaccept_answer": false,
+                              "accepted_answer": false,
+                              "action_code": ""
+                          }
+                      ],
+                      "stream":
+                      [
+                          0,
+                          0,
+                          0
+                      ]
+                  },
+                  "timeline_lookup":
+                  [
+                      [
+                          0,
+                          0
+                      ]
+                  ],
+                  "tags_descriptions": "",
+                  "id": 0,
+                  "title": "",
+                  "fancy_title": "",
+                  "posts_count": 0,
+                  "created_at": "1970-01-01T00:00:00.000Z",
+                  "views": 0,
+                  "reply_count": 0,
+                  "like_count": 0,
+                  "last_posted_at": "1970-01-01T00:00:00.000Z",
+                  "visible": false,
+                  "closed": false,
+                  "archived": false,
+                  "has_summary": false,
+                  "archetype": "",
+                  "slug": "",
+                  "category_id": 0,
+                  "word_count": 0,
+                  "deleted_at": "1970-01-01T00:00:00.000Z",
+                  "user_id": 0,
+                  "featured_link": "",
+                  "pinned_globally": false,
+                  "pinned_at": "1970-01-01T00:00:00.000Z",
+                  "pinned_until": "",
+                  "image_url": "",
+                  "slow_mode_seconds": 0,
+                  "draft": "",
+                  "draft_key": "",
+                  "draft_sequence": "",
+                  "unpinned": "",
+                  "pinned": false,
+                  "current_post_number": 0,
+                  "highest_post_number": 0,
+                  "deleted_by": "",
+                  "actions_summary":
+                  [
+                      {
+                          "id": 0,
+                          "count": 0,
+                          "hidden": false,
+                          "can_act": false
+                      }
+                  ],
+                  "chunk_size": 0,
+                  "bookmarked": false,
+                  "bookmarks": "",
+                  "topic_timer": "",
+                  "message_bus_last_id": 0,
+                  "participant_count": 0,
+                  "show_read_indicator": false,
+                  "thumbnails":
+                  [
+                      {
+                          "max_width": "",
+                          "max_height": "",
+                          "width": 0,
+                          "height": 0,
+                          "url": ""
+                      }
+                  ],
+                  "slow_mode_enabled_until": "",
+                  "details":
+                  {
+                      "can_edit": false,
+                      "notification_level": 0,
+                      "participants":
+                      [
+                          {
+                              "id": 0,
+                              "username": "",
+                              "name": "",
+                              "avatar_template": "",
+                              "post_count": 0,
+                              "primary_group_name": "",
+                              "flair_name": "",
+                              "flair_url": "",
+                              "flair_color": "",
+                              "flair_bg_color": "",
+                              "trust_level": 0,
+                              "admin": "",
+                              "moderator": ""
+                          }
+                      ],
+                      "created_by":
+                      {
+                          "id": 0,
+                          "username": "",
+                          "name": "",
+                          "avatar_template": ""
+                      },
+                      "last_poster":
+                      {
+                          "id": 0,
+                          "username": "",
+                          "name": "",
+                          "avatar_template": ""
+                      },
+                      "links":
+                      [
+                          {
+                              "url": "",
+                              "title": "",
+                              "internal": false,
+                              "attachment": false,
+                              "reflection": false,
+                              "clicks": 0,
+                              "user_id": 0,
+                              "domain": "",
+                              "root_domain": ""
+                          }
+                      ]
+                  }
+              }
+          }
+      },
+      {
+          "table_name": "discourse_topic_content_posts",
+          "temp":
+          {
+              "search_key":
+              {
+                  "owner": "",
+                  "repo": "",
+                  "origin": "",
+                  "updated_at": 0,
+                  "if_sync": 0
+              },
+              "raw_data":
+              {
+                  "id": 0,
+                  "name": "",
+                  "username": "",
+                  "avatar_template": "",
+                  "created_at": "1970-01-01T00:00:00.000Z",
+                  "cooked": "",
+                  "post_number": 0,
+                  "post_type": 0,
+                  "updated_at": "1970-01-01T00:00:00.000Z",
+                  "reply_count": 0,
+                  "reply_to_post_number": 0,
+                  "quote_count": 0,
+                  "incoming_link_count": 0,
+                  "reads": 0,
+                  "readers_count": 0,
+                  "score": 0.0,
+                  "yours": false,
+                  "topic_id": 0,
+                  "topic_slug": "",
+                  "display_username": "",
+                  "primary_group_name": "",
+                  "flair_name": "",
+                  "flair_url": "",
+                  "flair_bg_color": "",
+                  "flair_color": "",
+                  "version": 1,
+                  "can_edit": false,
+                  "can_delete": false,
+                  "can_recover": false,
+                  "can_wiki": false,
+                  "read": false,
+                  "user_title": "",
+                  "bookmarked": false,
+                  "actions_summary":
+                  [
+                      {
+                          "id": 0,
+                          "count": 0,
+                          "hidden": false,
+                          "can_act": false
+                      }
+                  ],
+                  "link_counts":
+                  [
+                      {
+                          "url": "",
+                          "internal": false,
+                          "reflection": false,
+                          "clicks": 0
+                      }
+                  ],
+                  "moderator": false,
+                  "admin": false,
+                  "staff": false,
+                  "user_id": 0,
+                  "hidden": false,
+                  "trust_level": 0,
+                  "deleted_at": "1970-01-01T00:00:00.000Z",
+                  "user_deleted": false,
+                  "edit_reason": "",
+                  "can_view_edit_history": false,
+                  "wiki": false,
+                  "can_accept_answer": false,
+                  "can_unaccept_answer": false,
+                  "accepted_answer": false
+              }
+          }
+      },
+      {
+          "table_name": "discourse_topic_content_info",
+          "temp":
+          {
+              "search_key":
+              {
+                  "owner": "",
+                  "repo": "",
+                  "origin": "",
+                  "updated_at": 0,
+                  "if_sync": 0
+              },
+              "raw_data":
+              {
+                  "post_stream":
+                  {
+                      "stream":
+                      [
+                          0
+                      ]
+                  },
+                  "timeline_lookup":
+                  [
+                      [
+                          0,
+                          0
+                      ]
+                  ],
+                  "suggested_topics": "",
+                  "tags_descriptions": "",
+                  "id": 0,
+                  "title": "",
+                  "fancy_title": "",
+                  "posts_count": 0,
+                  "created_at": "1970-01-01T00:00:00.000Z",
+                  "views": 0,
+                  "reply_count": 0,
+                  "like_count": 0,
+                  "last_posted_at": "1970-01-01T00:00:00.000Z",
+                  "visible": false,
+                  "closed": false,
+                  "archived": false,
+                  "has_summary": false,
+                  "archetype": "",
+                  "slug": "",
+                  "category_id": 0,
+                  "word_count": 0,
+                  "deleted_at": "1970-01-01T00:00:00.000Z",
+                  "user_id": 0,
+                  "featured_link": "",
+                  "pinned_globally": false,
+                  "pinned_at": "1970-01-01T00:00:00.000Z",
+                  "pinned_until": "",
+                  "image_url": "",
+                  "slow_mode_seconds": 0,
+                  "draft": "",
+                  "draft_key": "",
+                  "draft_sequence": "",
+                  "unpinned": "",
+                  "pinned": false,
+                  "current_post_number": 0,
+                  "highest_post_number": 0,
+                  "deleted_by": null,
+                  "actions_summary":
+                  [
+                      {
+                          "id": 0,
+                          "count": 0,
+                          "hidden": false,
+                          "can_act": false
+                      }
+                  ],
+                  "chunk_size": 0,
+                  "bookmarked": false,
+                  "bookmarks": "",
+                  "topic_timer": "",
+                  "message_bus_last_id": 0,
+                  "participant_count": 0,
+                  "show_read_indicator": false,
+                  "thumbnails":
+                  [
+                      {
+                          "max_width": 0,
+                          "max_height": 0,
+                          "width": 0,
+                          "height": 0,
+                          "url": ""
+                      }
+                  ],
+                  "slow_mode_enabled_until": "",
+                  "details":
+                  {
+                      "can_edit": false,
+                      "notification_level": 0,
+                      "participants":
+                      [
+                          {
+                              "id": 0,
+                              "username": "",
+                              "name": "",
+                              "avatar_template": "",
+                              "post_count": 0,
+                              "primary_group_name": "",
+                              "flair_name": "",
+                              "flair_url": "",
+                              "flair_color": "",
+                              "flair_bg_color": "",
+                              "trust_level": 0
+                          }
+                      ],
+                      "created_by":
+                      {
+                          "id": 0,
+                          "username": "",
+                          "name": "",
+                          "avatar_template": ""
+                      },
+                      "last_poster":
+                      {
+                          "id": 0,
+                          "username": "",
+                          "name": "",
+                          "avatar_template": ""
+                      }
+                  }
+              }
+          }
+      },
+      {
+          "table_name": "discourse_user_info",
+          "temp":
+          {
+              "search_key":
+              {
+                  "owner": "",
+                  "repo": "",
+                  "origin": "",
+                  "updated_at": 0,
+                  "if_sync": 0
+              },
+              "raw_data":
+              {
+                  "user_summary":
+                  {
+                      "topics":
+                      [
+                          {
+                              "id": 0,
+                              "title": "",
+                              "fancy_title": "",
+                              "slug": "",
+                              "posts_count": 0,
+                              "category_id": 0,
+                              "like_count": 0,
+                              "created_at": "1970-01-01T00:00:00.000Z",
+                              "has_accepted_answer": false
+                          }
+                      ],
+                      "badges":
+                      [
+                          {
+                              "id": 0,
+                              "name": "",
+                              "description": "",
+                              "grant_count": 0,
+                              "allow_title": false,
+                              "multiple_grant": false,
+                              "icon": "",
+                              "image_url": "",
+                              "listable": false,
+                              "enabled": false,
+                              "badge_grouping_id": 0,
+                              "system": false,
+                              "slug": "",
+                              "manually_grantable": false,
+                              "badge_type_id": 0
+                          }
+                      ],
+                      "badge_types":
+                      [
+                          {
+                              "id": 0,
+                              "name": "",
+                              "sort_order": 0
+                          }
+                      ],
+                      "users":
+                      [
+                          {
+                              "id": 0,
+                              "username": "",
+                              "name": "",
+                              "avatar_template": "",
+                              "flair_name": "",
+                              "trust_level": 0,
+                              "admin": false,
+                              "moderator": false
+                          }
+                      ],
+                      "user_summary":
+                      {
+                          "likes_given": 0,
+                          "likes_received": 0,
+                          "topics_entered": 0,
+                          "posts_read_count": 0,
+                          "days_visited": 0,
+                          "topic_count": 0,
+                          "post_count": 0,
+                          "time_read": 0,
+                          "recent_time_read": 0,
+                          "can_see_summary_stats": false,
+                          "solved_count": 0,
+                          "topic_ids":
+                          [
+                              0
+                          ],
+                          "replies":
+                          [
+                              {
+                                  "post_number": 0,
+                                  "like_count": 0,
+                                  "created_at": "1970-01-01T00:00:00.000Z",
+                                  "topic_id": 0
+                              }
+                          ],
+                          "links":
+                          [
+                              {
+                                  "url": "",
+                                  "title": "",
+                                  "clicks": 0,
+                                  "post_number": 0,
+                                  "topic_id": 0
+                              }
+                          ],
+                          "most_liked_by_users":
+                          [
+                              {
+                                  "id": 0,
+                                  "username": "",
+                                  "name": "",
+                                  "count": 0,
+                                  "avatar_template": "",
+                                  "admin": false,
+                                  "moderator": false,
+                                  "trust_level": 0,
+                                  "flair_name": "",
+                                  "flair_url": "",
+                                  "flair_bg_color": "",
+                                  "flair_color": "",
+                                  "primary_group_name": ""
+                              }
+                          ],
+                          "most_liked_users":
+                          [
+                              {
+                                  "id": 0,
+                                  "username": "",
+                                  "name": "",
+                                  "count": 0,
+                                  "avatar_template": "",
+                                  "admin": false,
+                                  "moderator": false,
+                                  "trust_level": 0,
+                                  "flair_name": "",
+                                  "flair_url": "",
+                                  "flair_bg_color": "",
+                                  "flair_color": "",
+                                  "primary_group_name": ""
+                              }
+                          ],
+                          "most_replied_to_users":
+                          [
+                              {
+                                  "id": 0,
+                                  "username": "",
+                                  "name": "",
+                                  "count": 0,
+                                  "avatar_template": "",
+                                  "admin": false,
+                                  "moderator": false,
+                                  "trust_level": 0,
+                                  "flair_name": "",
+                                  "flair_url": "",
+                                  "flair_bg_color": "",
+                                  "flair_color": "",
+                                  "primary_group_name": ""
+                              }
+                          ],
+                          "badges":
+                          [
+                              {
+                                  "id": 0,
+                                  "granted_at": "1970-01-01T00:00:00.000Z",
+                                  "created_at": "1970-01-01T00:00:00.000Z",
+                                  "count": 0,
+                                  "badge_id": 0,
+                                  "user_id": 0,
+                                  "granted_by_id": 0
+                              }
+                          ],
+                          "top_categories":
+                          [
+                              {
+                                  "topic_count": 0,
+                                  "post_count": 0,
+                                  "id": 0,
+                                  "name": "",
+                                  "color": "",
+                                  "text_color": "",
+                                  "slug": "",
+                                  "read_restricted": false,
+                                  "parent_category_id": 0
+                              }
+                          ]
+                      }
+                  },
+                  "user_badges":
+                  {
+                      "user_badges":
+                      [
+                          {
+                              "id": 0,
+                              "granted_at": "1970-01-01T00:00:00.000Z",
+                              "created_at": "1970-01-01T00:00:00.000Z",
+                              "count": 0,
+                              "post_id": 0,
+                              "post_number": 0,
+                              "badge_id": 0,
+                              "user_id": 0,
+                              "granted_by_id": 0,
+                              "topic_id": 0
+                          }
+                      ],
+                      "badges":
+                      [
+                          {
+                              "id": 0,
+                              "name": "",
+                              "description": "",
+                              "grant_count": 0,
+                              "allow_title": false,
+                              "multiple_grant": false,
+                              "icon": "",
+                              "image_url": "",
+                              "listable": false,
+                              "enabled": false,
+                              "badge_grouping_id": 0,
+                              "system": false,
+                              "slug": "",
+                              "manually_grantable": false,
+                              "badge_type_id": 0
+                          }
+                      ],
+                      "badge_types":
+                      [
+                          {
+                              "id": 0,
+                              "name": "",
+                              "sort_order": 0
+                          }
+                      ],
+                      "users":
+                      [
+                          {
+                              "id": 0,
+                              "username": "",
+                              "name": "",
+                              "avatar_template": "",
+                              "flair_name": "",
+                              "admin": false,
+                              "moderator": false,
+                              "trust_level": 0
+                          }
+                      ],
+                      "topics":
+                      [
+                          {
+                              "id": 0,
+                              "title": "",
+                              "fancy_title": "",
+                              "slug": "",
+                              "posts_count": 0
+                          }
+                      ],
+                      "user":
+                      {
+                          "id": 0,
+                          "username": "",
+                          "name": "",
+                          "avatar_template": "",
+                          "last_posted_at": "1970-01-01T00:00:00.000Z",
+                          "last_seen_at": "1970-01-01T00:00:00.000Z",
+                          "created_at": "1970-01-01T00:00:00.000Z",
+                          "ignored": false,
+                          "muted": false,
+                          "can_ignore_user": false,
+                          "can_mute_user": false,
+                          "can_send_private_messages": false,
+                          "can_send_private_message_to_user": false,
+                          "trust_level": 0,
+                          "moderator": false,
+                          "admin": false,
+                          "title": "",
+                          "badge_count": 0,
+                          "custom_fields": "",
+                          "time_read": 0,
+                          "recent_time_read": 0,
+                          "primary_group_id": 0,
+                          "primary_group_name": "",
+                          "flair_group_id": 0,
+                          "flair_name": "",
+                          "flair_url": "",
+                          "flair_bg_color": "",
+                          "flair_color": "",
+                          "featured_topic": "",
+                          "can_edit": false,
+                          "can_edit_username": false,
+                          "can_edit_email": false,
+                          "can_edit_name": false,
+                          "uploaded_avatar_id": 0,
+                          "pending_count": 0,
+                          "profile_view_count": 0,
+                          "can_upload_profile_header": false,
+                          "can_upload_user_card_background": false,
+                          "user_notification_schedule":
+                          {
+                              "enabled": false,
+                              "day_0_start_time": 480,
+                              "day_0_end_time": 1020,
+                              "day_1_start_time": 480,
+                              "day_1_end_time": 1020,
+                              "day_2_start_time": 480,
+                              "day_2_end_time": 1020,
+                              "day_3_start_time": 480,
+                              "day_3_end_time": 1020,
+                              "day_4_start_time": 480,
+                              "day_4_end_time": 1020,
+                              "day_5_start_time": 480,
+                              "day_5_end_time": 1020,
+                              "day_6_start_time": 480,
+                              "day_6_end_time": 1020
+                          },
+                          "accepted_answers": 0,
+                          "featured_user_badge_ids":
+                          [
+                              0
+                          ],
+                          "invited_by": "",
+                          "groups": ""
+                      }
+                  }
+              }
+          }
+      }
+  ],
+  "need_init_discourse_clickhouse":
+  [
+      {
+          "cluster_name": "replicated",
+          "database_name": "default",
+          "distributed_key": "search_key__updated_at",
+          "order_by":
+          [
+              "search_key__owner",
+              "search_key__repo",
+              "search_key__origin"
+          ],
+          "parse_data":
+          {
+              "ck_data_insert_at": 0,
+              "raw_data":
+              {
+                  "id": 0,
+                  "name": "",
+                  "color": "",
+                  "text_color": "",
+                  "slug": "",
+                  "topic_count": 0,
+                  "post_count": 0,
+                  "position": 0,
+                  "description": "",
+                  "description_text": "",
+                  "description_excerpt": "",
+                  "topic_url": "",
+                  "read_restricted": false,
+                  "permission": "",
+                  "notification_level": 0,
+                  "topic_template": "",
+                  "has_children": false,
+                  "sort_order": "",
+                  "sort_ascending": "",
+                  "show_subcategory_list": false,
+                  "num_featured_topics": 0,
+                  "default_view": "",
+                  "subcategory_list_style": "",
+                  "default_top_period": "",
+                  "default_list_filter": "",
+                  "minimum_required_tags": 0,
+                  "navigate_to_first_post_after_read": false,
+                  "topics_day": 0,
+                  "topics_week": 0,
+                  "topics_month": 0,
+                  "topics_year": 0,
+                  "topics_all_time": 0,
+                  "subcategory_ids":
+                  [
+                      0,
+                      0
+                  ],
+                  "uploaded_logo": "",
+                  "uploaded_background": ""
+              },
+              "search_key":
+              {
+                  "owner": "",
+                  "repo": "",
+                  "origin": "",
+                  "updated_at": 0,
+                  "if_sync": 0
+              }
+          },
+          "partition_by": "search_key__owner",
+          "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/discourse_category','{replica}')",
+          "table_name": "discourse_category"
+      },
+      {
+          "cluster_name": "replicated",
+          "database_name": "default",
+          "distributed_key": "search_key__updated_at",
+          "order_by":
+          [
+              "search_key__owner",
+              "search_key__repo",
+              "search_key__category_id",
+              "search_key__category_name"
+          ],
+          "parse_data":
+          {
+              "ck_data_insert_at": 0,
+              "search_key":
+              {
+                  "owner": "",
+                  "repo": "",
+                  "category_id": 0,
+                  "category_name": "",
+                  "updated_at": 0,
+                  "if_sync": 0
+              },
+              "raw_data":
+              {
+                  "id": 0,
+                  "title": "",
+                  "fancy_title": "",
+                  "slug": "",
+                  "posts_count": 0,
+                  "reply_count": 0,
+                  "highest_post_number": 0,
+                  "image_url": "",
+                  "created_at": "1970-01-01T00:00:00.000Z",
+                  "last_posted_at": "1970-01-01T00:00:00.000Z",
+                  "bumped": false,
+                  "bumped_at": "1970-01-01T00:00:00.000Z",
+                  "archetype": "",
+                  "unseen": false,
+                  "pinned": false,
+                  "unpinned": "",
+                  "excerpt": "",
+                  "visible": false,
+                  "closed": false,
+                  "archived": false,
+                  "bookmarked": "",
+                  "liked": "",
+                  "tags_descriptions":
+                  {},
+                  "views": 0,
+                  "like_count": 0,
+                  "has_summary": false,
+                  "last_poster_username": "",
+                  "category_id": 0,
+                  "pinned_globally": false,
+                  "featured_link": "",
+                  "has_accepted_answer": false,
+                  "posters":
+                  [
+                      {
+                          "extras": "",
+                          "description": "",
+                          "user_id": 0,
+                          "primary_group_id": "",
+                          "flair_group_id": ""
+                      }
+                  ]
+              }
+          },
+          "partition_by": "search_key__owner",
+          "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/discourse_topic_list','{replica}')",
+          "table_name": "discourse_topic_list"
+      },
+      {
+          "cluster_name": "replicated",
+          "database_name": "default",
+          "distributed_key": "search_key__updated_at",
+          "order_by":
+          [
+              "search_key__owner",
+              "search_key__repo",
+              "search_key__origin"
+          ],
+          "parse_data":
+          {
+              "ck_data_insert_at": 0,
+              "search_key":
+              {
+                  "owner": "",
+                  "repo": "",
+                  "origin": "",
+                  "updated_at": 0,
+                  "if_sync": 0
+              },
+              "raw_data":
+              {
+                  "id": 0,
+                  "name": "",
+                  "username": "",
+                  "avatar_template": "",
+                  "created_at": "1970-01-01T00:00:00.000Z",
+                  "cooked": "",
+                  "post_number": 0,
+                  "post_type": 0,
+                  "updated_at": "1970-01-01T00:00:00.000Z",
+                  "reply_count": 0,
+                  "reply_to_post_number": 0,
+                  "quote_count": 0,
+                  "incoming_link_count": 0,
+                  "reads": 0,
+                  "readers_count": 0,
+                  "score": 0.0,
+                  "yours": false,
+                  "topic_id": 0,
+                  "topic_slug": "",
+                  "display_username": "",
+                  "primary_group_name": "",
+                  "flair_name": "",
+                  "flair_url": "",
+                  "flair_bg_color": "",
+                  "flair_color": "",
+                  "version": 0,
+                  "can_edit": false,
+                  "can_delete": false,
+                  "can_recover": false,
+                  "can_wiki": false,
+                  "read": false,
+                  "user_title": "",
+                  "bookmarked": false,
+                  "actions_summary":
+                  [
+                      {
+                          "id": 0,
+                          "count": 0,
+                          "hidden": false,
+                          "can_act": false
+                      }
+                  ],
+                  "link_counts":
+                  [
+                      {
+                          "url": "",
+                          "internal": false,
+                          "reflection": false,
+                          "clicks": 0
+                      }
+                  ],
+                  "moderator": false,
+                  "admin": false,
+                  "staff": false,
+                  "user_id": 0,
+                  "hidden": false,
+                  "trust_level": 0,
+                  "deleted_at": "1970-01-01T00:00:00.000Z",
+                  "user_deleted": false,
+                  "edit_reason": "",
+                  "can_view_edit_history": false,
+                  "wiki": false,
+                  "can_accept_answer": false,
+                  "can_unaccept_answer": false,
+                  "accepted_answer": false
+              }
+          },
+          "partition_by": "search_key__owner",
+          "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/discourse_topic_content_posts','{replica}')",
+          "table_name": "discourse_topic_content_posts"
+      },
+      {
+          "cluster_name": "replicated",
+          "database_name": "default",
+          "distributed_key": "search_key__updated_at",
+          "order_by":
+          [
+              "search_key__owner",
+              "search_key__repo",
+              "search_key__origin"
+          ],
+          "parse_data":
+          {
+              "ck_data_insert_at": 0,
+              "search_key":
+              {
+                  "owner": "",
+                  "repo": "",
+                  "origin": "",
+                  "updated_at": 0,
+                  "if_sync": 0
+              },
+              "raw_data":
+              {
+                  "post_stream":
+                  {
+                      "stream":
+                      [
+                          0
+                      ]
+                  },
+                  "timeline_lookup":
+                  [
+                      [
+                          0,
+                          0
+                      ]
+                  ],
+                  "suggested_topics": "",
+                  "tags_descriptions": "",
+                  "id": 0,
+                  "title": "",
+                  "fancy_title": "",
+                  "posts_count": 0,
+                  "created_at": "1970-01-01T00:00:00.000Z",
+                  "views": 0,
+                  "reply_count": 0,
+                  "like_count": 0,
+                  "last_posted_at": "1970-01-01T00:00:00.000Z",
+                  "visible": false,
+                  "closed": false,
+                  "archived": false,
+                  "has_summary": false,
+                  "archetype": "",
+                  "slug": "",
+                  "category_id": 0,
+                  "word_count": 0,
+                  "deleted_at": "1970-01-01T00:00:00.000Z",
+                  "user_id": 0,
+                  "featured_link": "",
+                  "pinned_globally": false,
+                  "pinned_at": "1970-01-01T00:00:00.000Z",
+                  "pinned_until": "",
+                  "image_url": "",
+                  "slow_mode_seconds": 0,
+                  "draft": "",
+                  "draft_key": "",
+                  "draft_sequence": "",
+                  "unpinned": "",
+                  "pinned": false,
+                  "current_post_number": 0,
+                  "highest_post_number": 0,
+                  "deleted_by": null,
+                  "actions_summary":
+                  [
+                      {
+                          "id": 0,
+                          "count": 0,
+                          "hidden": false,
+                          "can_act": false
+                      }
+                  ],
+                  "chunk_size": 0,
+                  "bookmarked": false,
+                  "bookmarks": "",
+                  "topic_timer": "",
+                  "message_bus_last_id": 0,
+                  "participant_count": 0,
+                  "show_read_indicator": false,
+                  "thumbnails":
+                  [
+                      {
+                          "max_width": 0,
+                          "max_height": 0,
+                          "width": 0,
+                          "height": 0,
+                          "url": ""
+                      }
+                  ],
+                  "slow_mode_enabled_until": "",
+                  "details":
+                  {
+                      "can_edit": false,
+                      "notification_level": 0,
+                      "participants":
+                      [
+                          {
+                              "id": 0,
+                              "username": "",
+                              "name": "",
+                              "avatar_template": "",
+                              "post_count": 0,
+                              "primary_group_name": "",
+                              "flair_name": "",
+                              "flair_url": "",
+                              "flair_color": "",
+                              "flair_bg_color": "",
+                              "trust_level": 0
+                          }
+                      ],
+                      "created_by":
+                      {
+                          "id": 0,
+                          "username": "",
+                          "name": "",
+                          "avatar_template": ""
+                      },
+                      "last_poster":
+                      {
+                          "id": 0,
+                          "username": "",
+                          "name": "",
+                          "avatar_template": ""
+                      }
+                  }
+              }
+          },
+          "partition_by": "search_key__owner",
+          "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/discourse_topic_content_info','{replica}')",
+          "table_name": "discourse_topic_content_info"
+      },
+      {
+          "cluster_name": "replicated",
+          "database_name": "default",
+          "distributed_key": "search_key__updated_at",
+          "order_by":
+          [
+              "search_key__owner",
+              "search_key__repo",
+              "search_key__origin"
+          ],
+          "parse_data":
+          {
+              "ck_data_insert_at": 0,
+              "search_key":
+              {
+                  "owner": "",
+                  "repo": "",
+                  "origin": "",
+                  "updated_at": 0,
+                  "if_sync": 0
+              },
+              "raw_data":
+              {
+                  "user_summary":
+                  {
+                      "topics":
+                      [
+                          {
+                              "id": 0,
+                              "title": "",
+                              "fancy_title": "",
+                              "slug": "",
+                              "posts_count": 0,
+                              "category_id": 0,
+                              "like_count": 0,
+                              "created_at": "1970-01-01T00:00:00.000Z",
+                              "has_accepted_answer": false
+                          }
+                      ],
+                      "badges":
+                      [
+                          {
+                              "id": 0,
+                              "name": "",
+                              "description": "",
+                              "grant_count": 0,
+                              "allow_title": false,
+                              "multiple_grant": false,
+                              "icon": "",
+                              "image_url": "",
+                              "listable": false,
+                              "enabled": false,
+                              "badge_grouping_id": 0,
+                              "system": false,
+                              "slug": "",
+                              "manually_grantable": false,
+                              "badge_type_id": 0
+                          }
+                      ],
+                      "badge_types":
+                      [
+                          {
+                              "id": 0,
+                              "name": "",
+                              "sort_order": 0
+                          }
+                      ],
+                      "users":
+                      [
+                          {
+                              "id": 0,
+                              "username": "",
+                              "name": "",
+                              "avatar_template": "",
+                              "flair_name": "",
+                              "trust_level": 0,
+                              "admin": false,
+                              "moderator": false
+                          }
+                      ],
+                      "user_summary":
+                      {
+                          "likes_given": 0,
+                          "likes_received": 0,
+                          "topics_entered": 0,
+                          "posts_read_count": 0,
+                          "days_visited": 0,
+                          "topic_count": 0,
+                          "post_count": 0,
+                          "time_read": 0,
+                          "recent_time_read": 0,
+                          "can_see_summary_stats": false,
+                          "solved_count": 0,
+                          "topic_ids":
+                          [
+                              0
+                          ],
+                          "replies":
+                          [
+                              {
+                                  "post_number": 0,
+                                  "like_count": 0,
+                                  "created_at": "1970-01-01T00:00:00.000Z",
+                                  "topic_id": 0
+                              }
+                          ],
+                          "links":
+                          [
+                              {
+                                  "url": "",
+                                  "title": "",
+                                  "clicks": 0,
+                                  "post_number": 0,
+                                  "topic_id": 0
+                              }
+                          ],
+                          "most_liked_by_users":
+                          [
+                              {
+                                  "id": 0,
+                                  "username": "",
+                                  "name": "",
+                                  "count": 0,
+                                  "avatar_template": "",
+                                  "admin": false,
+                                  "moderator": false,
+                                  "trust_level": 0,
+                                  "flair_name": "",
+                                  "flair_url": "",
+                                  "flair_bg_color": "",
+                                  "flair_color": "",
+                                  "primary_group_name": ""
+                              }
+                          ],
+                          "most_liked_users":
+                          [
+                              {
+                                  "id": 0,
+                                  "username": "",
+                                  "name": "",
+                                  "count": 0,
+                                  "avatar_template": "",
+                                  "admin": false,
+                                  "moderator": false,
+                                  "trust_level": 0,
+                                  "flair_name": "",
+                                  "flair_url": "",
+                                  "flair_bg_color": "",
+                                  "flair_color": "",
+                                  "primary_group_name": ""
+                              }
+                          ],
+                          "most_replied_to_users":
+                          [
+                              {
+                                  "id": 0,
+                                  "username": "",
+                                  "name": "",
+                                  "count": 0,
+                                  "avatar_template": "",
+                                  "admin": false,
+                                  "moderator": false,
+                                  "trust_level": 0,
+                                  "flair_name": "",
+                                  "flair_url": "",
+                                  "flair_bg_color": "",
+                                  "flair_color": "",
+                                  "primary_group_name": ""
+                              }
+                          ],
+                          "badges":
+                          [
+                              {
+                                  "id": 0,
+                                  "granted_at": "1970-01-01T00:00:00.000Z",
+                                  "created_at": "1970-01-01T00:00:00.000Z",
+                                  "count": 0,
+                                  "badge_id": 0,
+                                  "user_id": 0,
+                                  "granted_by_id": 0
+                              }
+                          ],
+                          "top_categories":
+                          [
+                              {
+                                  "topic_count": 0,
+                                  "post_count": 0,
+                                  "id": 0,
+                                  "name": "",
+                                  "color": "",
+                                  "text_color": "",
+                                  "slug": "",
+                                  "read_restricted": false,
+                                  "parent_category_id": 0
+                              }
+                          ]
+                      }
+                  },
+                  "user_badges":
+                  {
+                      "user_badges":
+                      [
+                          {
+                              "id": 0,
+                              "granted_at": "1970-01-01T00:00:00.000Z",
+                              "created_at": "1970-01-01T00:00:00.000Z",
+                              "count": 0,
+                              "post_id": 0,
+                              "post_number": 0,
+                              "badge_id": 0,
+                              "user_id": 0,
+                              "granted_by_id": 0,
+                              "topic_id": 0
+                          }
+                      ],
+                      "badges":
+                      [
+                          {
+                              "id": 0,
+                              "name": "",
+                              "description": "",
+                              "grant_count": 0,
+                              "allow_title": false,
+                              "multiple_grant": false,
+                              "icon": "",
+                              "image_url": "",
+                              "listable": false,
+                              "enabled": false,
+                              "badge_grouping_id": 0,
+                              "system": false,
+                              "slug": "",
+                              "manually_grantable": false,
+                              "badge_type_id": 0
+                          }
+                      ],
+                      "badge_types":
+                      [
+                          {
+                              "id": 0,
+                              "name": "",
+                              "sort_order": 0
+                          }
+                      ],
+                      "users":
+                      [
+                          {
+                              "id": 0,
+                              "username": "",
+                              "name": "",
+                              "avatar_template": "",
+                              "flair_name": "",
+                              "admin": false,
+                              "moderator": false,
+                              "trust_level": 0
+                          }
+                      ],
+                      "topics":
+                      [
+                          {
+                              "id": 0,
+                              "title": "",
+                              "fancy_title": "",
+                              "slug": "",
+                              "posts_count": 0
+                          }
+                      ],
+                      "user":
+                      {
+                          "id": 0,
+                          "username": "",
+                          "name": "",
+                          "avatar_template": "",
+                          "last_posted_at": "1970-01-01T00:00:00.000Z",
+                          "last_seen_at": "1970-01-01T00:00:00.000Z",
+                          "created_at": "1970-01-01T00:00:00.000Z",
+                          "ignored": false,
+                          "muted": false,
+                          "can_ignore_user": false,
+                          "can_mute_user": false,
+                          "can_send_private_messages": false,
+                          "can_send_private_message_to_user": false,
+                          "trust_level": 0,
+                          "moderator": false,
+                          "admin": false,
+                          "title": "",
+                          "badge_count": 0,
+                          "custom_fields": "",
+                          "time_read": 0,
+                          "recent_time_read": 0,
+                          "primary_group_id": 0,
+                          "primary_group_name": "",
+                          "flair_group_id": 0,
+                          "flair_name": "",
+                          "flair_url": "",
+                          "flair_bg_color": "",
+                          "flair_color": "",
+                          "featured_topic": "",
+                          "can_edit": false,
+                          "can_edit_username": false,
+                          "can_edit_email": false,
+                          "can_edit_name": false,
+                          "uploaded_avatar_id": 0,
+                          "pending_count": 0,
+                          "profile_view_count": 0,
+                          "can_upload_profile_header": false,
+                          "can_upload_user_card_background": false,
+                          "user_notification_schedule":
+                          {
+                              "enabled": false,
+                              "day_0_start_time": 480,
+                              "day_0_end_time": 1020,
+                              "day_1_start_time": 480,
+                              "day_1_end_time": 1020,
+                              "day_2_start_time": 480,
+                              "day_2_end_time": 1020,
+                              "day_3_start_time": 480,
+                              "day_3_end_time": 1020,
+                              "day_4_start_time": 480,
+                              "day_4_end_time": 1020,
+                              "day_5_start_time": 480,
+                              "day_5_end_time": 1020,
+                              "day_6_start_time": 480,
+                              "day_6_end_time": 1020
+                          },
+                          "accepted_answers": 0,
+                          "featured_user_badge_ids":
+                          [
+                              0
+                          ],
+                          "invited_by": "",
+                          "groups": ""
+                      }
+                  }
+              }
+          },
+          "partition_by": "search_key__owner",
+          "table_engine": "ReplicatedMergeTree('/clickhouse/tables/{shard}/discourse_user_info','{replica}')",
+          "table_name": "discourse_user_info"
+      }
+  ],
+  "need_init_discourse_transfer_to_clickhouse":
+  [
+      {
+          "index": "discourse_category",
+          "repo_list":
+          [
+              {
+                  "owner": "rust-lang",
+                  "repo": "rust"
+              }
+          ]
+      },
+      {
+          "index": "discourse_topic_list",
+          "repo_list":
+          [
+              {
+                  "owner": "rust-lang",
+                  "repo": "rust"
+              }
+          ]
+      },
+      {
+          "index": "discourse_topic_content",
+          "repo_list":
+          [
+              {
+                  "owner": "rust-lang",
+                  "repo": "rust"
+              }
+          ]
+      },
+      {
+          "index": "discourse_user_info",
+          "repo_list":
+          [
+              {
+                  "owner": "rust-lang",
+                  "repo": "rust"
+              }
+          ]
+      }
   ]
 }
