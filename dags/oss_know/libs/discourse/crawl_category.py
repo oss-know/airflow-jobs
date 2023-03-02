@@ -3,7 +3,7 @@ import datetime
 import time
 import shutil
 import os
-from loguru import logger
+from oss_know.libs.util.log import logger
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_DISCOURSE_CATEGORY
 from oss_know.libs.util.base import get_opensearch_client
 from oss_know.libs.util.opensearch_api import OpensearchAPI
@@ -11,6 +11,8 @@ from oss_know.libs.util.opensearch_api import OpensearchAPI
 # crawl
 import json
 import requests
+
+from oss_know.libs.util.discourse import get_api
 
 def delete_old_data(owner, repo, client):
     query = {
@@ -38,17 +40,7 @@ def crawl_discourse_category(base_url, owner, repo, proxy_config, opensearch_con
     url = base_url + "/categories.json"
 
     session = requests.Session()
-    headers = {"charset": "utf-8", "Content-Type": "application/json"}
-    while(True):
-        flag = 1
-        try:
-            r = session.get(url, headers=headers, timeout=10)
-        except Exception:
-            flag = 0
-            pass
-        if flag and r.ok:
-            break
-    js = json.loads(r.text)
+    js = get_api(url, session)
 
     opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
 

@@ -3,7 +3,7 @@ import datetime
 import time
 import shutil
 import os
-from loguru import logger
+from oss_know.libs.util.log import logger
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_DISCOURSE_TOPIC_CONTENT, OPENSEARCH_DISCOURSE_TOPIC_LIST
 from oss_know.libs.util.base import get_opensearch_client
 from oss_know.libs.util.opensearch_api import OpensearchAPI
@@ -13,7 +13,6 @@ import json
 import requests
 import time
 
-from opensearchpy import helpers
 
 # 协程
 import httpx
@@ -23,48 +22,8 @@ import tqdm.asyncio
 import random
 from random import randint
 
-def get_api(url, session):
-    headers = {"charset": "utf-8", "Content-Type": "application/json"}
-    while(True):
-        flag = 1
-        try:
-            r = session.get(url, headers=headers, timeout=10)
-        except Exception:
-            flag = 0
-            pass
-        if flag and r.ok:
-            break
-        time.sleep(randint(5,60))
-    js = json.loads(r.text)
-    return js
-
-
-def get_data_from_opensearch(index, owner, repo, opensearch_conn_datas):
-    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
-    results = helpers.scan(client=opensearch_client,
-                           query={
-                               "query": {
-                                    "bool": {
-                                        "must": [
-                                            {"match": {"search_key.owner": owner}},
-                                            {"match": {"search_key.repo" : repo}}
-                                        ]
-                                    }
-                                },
-                               "sort": [
-                                   {
-                                       "search_key.updated_at": {
-                                           "order": "asc"
-                                       }
-                                   }
-                               ]
-                           },
-                           index=index,
-                           size=5000,
-                           scroll="40m",
-                           request_timeout=120,
-                           preserve_order=True)
-    return results, opensearch_client
+from oss_know.libs.util.discourse import get_api
+from oss_know.libs.util.discourse import get_data_from_opensearch
 
 
 async def make_request(client, url, sem):
@@ -85,7 +44,7 @@ async def make_request(client, url, sem):
                     time.sleep(random.randint(2,3))
                     continue
                 else:
-                    print(f"ERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRROR!!! {url}")
+                    logger.info(f"ERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRROR!!! {url}")
                     return None
 
             js = json.loads(resp.text)
@@ -109,7 +68,7 @@ async def multi_request(tasks):
             res = [await f
                         for f in tqdm.tqdm(asyncio.as_completed(httpx_tasks), total=len(httpx_tasks))]
         except asyncio.TimeoutError:
-            print('Timeout Error!')
+            logger.info('Timeout Error!')
     return res
 
 

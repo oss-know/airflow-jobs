@@ -636,7 +636,7 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
             try:
                 dict_data = parse_data(df, template)
             except Exception as e:
-                print(os_data)
+                logger.info(os_data)
                 raise e
             try:
                 dict_dict = json.loads(json.dumps(dict_data))
@@ -1005,7 +1005,7 @@ def parse_data(df, temp):
                             #     目前解决办法：通过下面的default_dict处理
                             dict_data.get(f'{index}.{key}').append(filter_data)
                         except Exception as e:
-                            print(f'{index}.{key}')
+                            logger.info(f'{index}.{key}')
                             raise e
                     # chenkx :: 若不存在该key，则添加默认值:"0,'',None,{}等"，保证list的完整性
                     for key in default_dict:
