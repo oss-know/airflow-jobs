@@ -985,16 +985,16 @@ def parse_data(df, temp):
         if isinstance(row, list):
             # 数组中是字典
             if row and isinstance(row[0], dict):
-                ## chenkx: 直接使用template模板
                 default_dict = {}
                 for key in dict_data:
                     if key.startswith(f'{index}.'):
+                        # default_dict 保存模板中的默认值，0, None, {} 等
                         default_dict[key] = dict_data[key][0]
                         dict_data[key] = []
                 for data in row:
                     vis = {}
                     for key in data:
-                        # 若不在模板中，则直接跳过
+                        # 若不在模板中，之后授予default value
                         if (f'{index}.{key}' not in dict_data):
                             continue
                         vis[f'{index}.{key}'] = 1
@@ -1002,12 +1002,12 @@ def parse_data(df, temp):
                         try:
                             # BUG 如果一个list包含3个dict，其中只有第二个有某个键值对
                             #     那这就会有问题。
-                            #   目前解决办法：通过下面的default_dict处理
+                            #     目前解决办法：通过下面的default_dict处理
                             dict_data.get(f'{index}.{key}').append(filter_data)
                         except Exception as e:
                             print(f'{index}.{key}')
                             raise e
-                    # chenkx :: 若不存在该key，则添加默认值，保证list的完整性
+                    # chenkx :: 若不存在该key，则添加默认值:"0,'',None,{}等"，保证list的完整性
                     for key in default_dict:
                         if key not in vis:
                             dict_data[key].append(default_dict[key])
