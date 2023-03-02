@@ -3,7 +3,7 @@ import datetime
 import time
 import shutil
 import os
-from loguru import logger
+from oss_know.libs.util.log import logger
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_DISCOURSE_USER_LIST, OPENSEARCH_DISCOURSE_USER_INFO
 from oss_know.libs.util.base import get_opensearch_client
 from oss_know.libs.util.opensearch_api import OpensearchAPI
@@ -13,57 +13,11 @@ import json
 import requests
 import time
 from tqdm import tqdm
-from opensearchpy import helpers
 
 from random import randint
-def get_api(url, session):
 
-    headers = {"charset": "utf-8", "Content-Type": "application/json"}
-    max_try = 20
-    while(True):
-        flag = 1
-        try:
-            r = session.get(url, headers=headers, timeout=10)
-        except Exception:
-            flag = 0
-        if flag and r.ok:
-            break
-        time.sleep(randint(5,60))
-        max_try -= 1
-        if max_try == 0:
-            logger.info(f"ERROR of {url}")
-            return {}
-    js = json.loads(r.text)
-    return js
-
-
-def get_data_from_opensearch(index, owner,repo, opensearch_conn_datas):
-    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
-    results = helpers.scan(client=opensearch_client,
-                           query={
-                               "query": {
-                                    "bool": {
-                                        "must": [
-                                            {"match": {"search_key.owner": owner}},
-                                            {"match": {"search_key.repo" : repo}}
-                                        ]
-                                    }
-                                },
-                               "sort": [
-                                   {
-                                       "search_key.updated_at": {
-                                           "order": "asc"
-                                       }
-                                   }
-                               ]
-                           },
-                           index=index,
-                           size=5000,
-                           scroll="40m",
-                           request_timeout=120,
-                           preserve_order=True)
-    return results, opensearch_client
-
+from oss_know.libs.util.discourse import get_api
+from oss_know.libs.util.discourse import get_data_from_opensearch
 
 def crawl_user_info(base_url, owner, repo, opensearch_conn_datas):
     # 从opensearch中取回 user list

@@ -3,40 +3,12 @@ import datetime
 import time
 import shutil
 import os
-from loguru import logger
+from oss_know.libs.util.log import logger
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_DISCOURSE_TOPIC_CONTENT, OPENSEARCH_DISCOURSE_USER_LIST
 from oss_know.libs.util.base import get_opensearch_client
 from oss_know.libs.util.opensearch_api import OpensearchAPI
 
-from opensearchpy import helpers
-
-def get_data_from_opensearch(index, owner, repo, opensearch_conn_datas):
-    opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
-    results = helpers.scan(client=opensearch_client,
-                           query={
-                               "query": {
-                                    "bool": {
-                                        "must": [
-                                            {"match": {"search_key.owner": owner}},
-                                            {"match": {"search_key.repo" : repo}}
-                                        ]
-                                    }
-                                },
-                               "sort": [
-                                   {
-                                       "search_key.updated_at": {
-                                           "order": "asc"
-                                       }
-                                   }
-                               ]
-                           },
-                           index=index,
-                           size=5000,
-                           scroll="40m",
-                           request_timeout=120,
-                           preserve_order=True)
-    return results, opensearch_client
-
+from oss_know.libs.util.discourse import get_data_from_opensearch
 
 def parse_user_from_topic(base_url, owner, repo, opensearch_conn_datas):
     # 从opensearch中取回 topic content
