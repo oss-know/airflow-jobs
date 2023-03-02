@@ -8,6 +8,7 @@ from airflow.operators.python import PythonOperator
 from oss_know.libs.base_dict.variable_key import CLICKHOUSE_DRIVER_INFO, SYNC_FROM_CLICKHOUSE_DRIVER_INFO, \
     CLICKHOUSE_SYNC_INTERVAL, CLICKHOUSE_SYNC_COMBINATION_TYPE
 from oss_know.libs.clickhouse.sync_clickhouse_data import sync_from_remote_by_repos, combine_remote_owner_repos
+from oss_know.libs.util.base import arrange_owner_repo_into_letter_groups
 from oss_know.libs.util.log import logger
 
 clickhouse_conn_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
@@ -41,14 +42,7 @@ with DAG(dag_id='daily_github_prs_sync_from_clickhouse',  # schedule_interval='*
     # Init 26 sub groups by letter(to make the task DAG static)
     # Split all tasks into 26 groups by their capital letter, all tasks inside a group are executed sequentially
     # To avoid to many parallel tasks and keep the DAG static
-    task_groups_by_capital_letter = {}
-    for letter in ascii_lowercase:
-        task_groups_by_capital_letter[letter] = []
-
-    for owner_repo_pair in all_owner_repos:
-        owner, _ = owner_repo_pair
-        task_groups_by_capital_letter[owner[0].lower()].append(owner_repo_pair)
-
+    task_groups_by_capital_letter = arrange_owner_repo_into_letter_groups(all_owner_repos)
     prev_group = None
     for letter, owner_repos in task_groups_by_capital_letter.items():
         op_sync_github_prs_from_clickhouse_group = PythonOperator(

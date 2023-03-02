@@ -41,13 +41,15 @@ with DAG(dag_id='daily_github_issues_sync_from_clickhouse',  # schedule_interval
     # Init 26 sub groups by letter(to make the task DAG static)
     # Split all tasks into 26 groups by their capital letter, all tasks inside a group are executed sequentially
     # To avoid to many parallel tasks and keep the DAG static
-    task_groups_by_capital_letter = {}
+    task_groups_by_capital_letter = {'other': []}
     for letter in ascii_lowercase:
         task_groups_by_capital_letter[letter] = []
 
     for owner_repo_pair in all_owner_repos:
         owner, _ = owner_repo_pair
-        task_groups_by_capital_letter[owner[0].lower()].append(owner_repo_pair)
+        capital_letter = owner[0].lower()
+        key = capital_letter if capital_letter in task_groups_by_capital_letter else 'other'
+        task_groups_by_capital_letter[key].append(owner_repo_pair)
 
     prev_group = None
     for letter, owner_repos in task_groups_by_capital_letter.items():

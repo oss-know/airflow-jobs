@@ -18,6 +18,7 @@ from oss_know.libs.exceptions import GithubResourceNotFoundError, GithubInternal
 from oss_know.libs.util.clickhouse_driver import CKServer
 from oss_know.libs.util.proxy import GithubTokenProxyAccommodator
 from ..util.log import logger
+from string import ascii_lowercase
 
 
 class HttpGetException(Exception):
@@ -350,3 +351,20 @@ def get_clickhouse_client(clickhouse_server_info):
 
 def now_timestamp():
     return int(datetime.now().timestamp() * 1000)
+
+
+# Receive a list of owner repo object, arrange them into groups by owner's capital letter. If capital
+# letter is not ascii char, group key is 'other'
+
+def arrange_owner_repo_into_letter_groups(owner_repos):
+    groups = {'other': []}
+    for letter in ascii_lowercase:
+        groups[letter] = []
+
+    for owner_repo_pair in owner_repos:
+        owner, _ = owner_repo_pair
+        capital_letter = owner[0].lower()
+        key = capital_letter if capital_letter in groups else 'other'
+        groups[key].append(owner_repo_pair)
+
+    return groups
