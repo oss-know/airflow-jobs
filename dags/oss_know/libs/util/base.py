@@ -361,10 +361,13 @@ def arrange_owner_repo_into_letter_groups(owner_repos):
     for letter in ascii_lowercase:
         groups[letter] = []
 
-    for owner_repo_pair in owner_repos:
-        owner, _ = owner_repo_pair
+    for item in owner_repos:
+        if type(item) == tuple:
+            owner, _ = item
+        elif type(item) == dict:
+            owner = item['owner']
         capital_letter = owner[0].lower()
         key = capital_letter if capital_letter in groups else 'other'
-        groups[key].append(owner_repo_pair)
+        groups[key].append(item)
 
     return groups
