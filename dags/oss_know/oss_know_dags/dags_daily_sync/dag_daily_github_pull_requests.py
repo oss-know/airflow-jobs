@@ -9,7 +9,7 @@ from oss_know.libs.base_dict.variable_key import GITHUB_TOKENS, OPENSEARCH_CONN_
     DAILY_SYNC_GITHUB_PRS_EXCLUDES, CLICKHOUSE_DRIVER_INFO, CK_TABLE_DEFAULT_VAL_TPLT, \
     DAILY_SYNC_GITHUB_PRS_INCLUDES
 from oss_know.libs.github.sync_pull_requests import sync_github_pull_requests
-from oss_know.libs.util.base import get_opensearch_client
+from oss_know.libs.util.base import get_opensearch_client, arrange_owner_repo_into_letter_groups
 from oss_know.libs.util.data_transfer import sync_clickhouse_from_opensearch
 from oss_know.libs.util.opensearch_api import OpensearchAPI
 from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
@@ -46,13 +46,16 @@ with DAG(dag_id='daily_github_pull_requests_sync',  # schedule_interval='*/5 * *
                                                       policy=GithubTokenProxyAccommodator.POLICY_FIXED_MAP)
 
 
-    def do_sync_github_pull_requests_opensearch(owner, repo):
-        sync_github_pull_requests(opensearch_conn_info, owner, repo, proxy_accommodator)
+    def do_sync_github_pull_requests_opensearch_group(owner_repo_group):
+        for item in owner_repo_group:
+            owner = item['owner']
+            repo = item['repo']
+            sync_github_pull_requests(opensearch_conn_info, owner, repo, proxy_accommodator)
         return 'do_sync_github_pull_requests:::end'
 
 
-    def do_sync_github_pull_requests_clickhouse(owner, repo):
-        sync_clickhouse_from_opensearch(owner, repo,
+    def do_sync_github_pull_requests_clickhouse_group(owner_repo_group):
+        sync_clickhouse_from_opensearch(owner_repo_group,
                                         OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS, opensearch_conn_info,
                                         OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS, clickhouse_conn_info,
                                         github_pr_table_template)
@@ -76,24 +79,24 @@ with DAG(dag_id='daily_github_pull_requests_sync',  # schedule_interval='*/5 * *
                 'origin': origin
             })
 
-    for uniq_item in uniq_owner_repos:
-        owner = uniq_item['owner']
-        repo = uniq_item['repo']
-
-        op_sync_github_prs_opensearch = PythonOperator(
-            task_id=f'do_sync_github_pull_requests_opensearch_{owner}_{repo}',
-            python_callable=do_sync_github_pull_requests_opensearch,
+    task_groups_by_capital_letter = arrange_owner_repo_into_letter_groups(uniq_owner_repos)
+    # prev_op = op_init_daily_github_pull_requests_sync
+    for letter, owner_repos in task_groups_by_capital_letter.items():
+        op_sync_github_pr_opensearch = PythonOperator(
+            task_id=f'op_sync_github_pull_requests_opensearch_group_{letter}',
+            python_callable=do_sync_github_pull_requests_opensearch_group,
+            trigger_rule='all_done',
             op_kwargs={
-                "owner": owner,
-                "repo": repo
-            })
-
-        op_sync_github_prs_clickhouse = PythonOperator(
-            task_id=f'do_sync_github_pull_requests_clickhouse_{owner}_{repo}',
-            python_callable=do_sync_github_pull_requests_clickhouse,
+                "owner_repo_group": owner_repos
+            }
+        )
+        op_sync_github_pr_clickhouse = PythonOperator(
+            task_id=f'op_sync_github_pull_requests_clickhouse_group_{letter}',
+            python_callable=do_sync_github_pull_requests_opensearch_group,
+            trigger_rule='all_done',
             op_kwargs={
-                "owner": owner,
-                "repo": repo
-            })
-
-        op_init_daily_github_pull_requests_sync >> op_sync_github_prs_opensearch >> op_sync_github_prs_clickhouse
+                "owner_repo_group": owner_repos
+            }
+        )
+        op_init_daily_github_pull_requests_sync >> op_sync_github_pr_opensearch >> op_sync_github_pr_clickhouse
+        # prev_op = op_sync_github_pr_clickhouse
