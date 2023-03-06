@@ -14,6 +14,16 @@ from oss_know.libs.util.clickhouse_driver import CKServer
 from oss_know.libs.util.log import logger
 
 
+def sync_clickhouse_repos_from_opensearch(owner_repos, index_name, opensearch_conn_info,
+                                          table_name, clickhouse_conn_info, row_template):
+    logger.info(f'Syncing {len(owner_repos)} repos from opensearch to clickhouse')
+    for owner_repo in owner_repos:
+        owner = owner_repo['owner']
+        repo = owner_repo['repo']
+        sync_clickhouse_from_opensearch(owner, repo, index_name, opensearch_conn_info,
+                                        table_name, clickhouse_conn_info, row_template)
+
+
 # Copy the data from opensearch to clickhouse, whose 'updated_at' is greater than the max 'updated_at'
 # in ClickHouse
 def sync_clickhouse_from_opensearch(owner, repo, index_name, opensearch_conn_info,

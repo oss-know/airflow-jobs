@@ -4,12 +4,12 @@ from airflow import DAG
 from airflow.models import Variable
 from airflow.operators.python import PythonOperator
 
+from oss_know.libs.util.data_transfer import sync_clickhouse_repos_from_opensearch
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_GIT_RAW
 from oss_know.libs.base_dict.variable_key import DAILY_SYNC_GITS_EXCLUDES, DAILY_SYNC_GITS_INCLUDES, \
     CK_TABLE_DEFAULT_VAL_TPLT, OPENSEARCH_CONN_DATA, CLICKHOUSE_DRIVER_INFO
 from oss_know.libs.github.sync_gits import sync_gits_opensearch
 from oss_know.libs.util.base import get_opensearch_client, arrange_owner_repo_into_letter_groups
-from oss_know.libs.util.data_transfer import sync_clickhouse_from_opensearch
 from oss_know.libs.util.opensearch_api import OpensearchAPI
 
 opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
@@ -30,8 +30,8 @@ with DAG(dag_id='daily_gits_sync',  # schedule_interval='*/5 * * * *',
                                              python_callable=op_init_daily_gits_sync, )
 
 
-    def do_sync_gits_opensearch_group(owner_repos, proxy_config=None):
-        for item in owner_repos:
+    def do_sync_gits_opensearch_group(owner_repo_group, proxy_config=None):
+        for item in owner_repo_group:
             owner = item['owner']
             repo = item['repo']
             url = item['origin']
@@ -40,12 +40,9 @@ with DAG(dag_id='daily_gits_sync',  # schedule_interval='*/5 * * * *',
         return 'do_sync_gits:::end'
 
 
-    def do_sync_git_clickhouse_group(owner_repos):
-        for owner_repo in owner_repos:
-            owner = owner_repo['owner']
-            repo = owner_repo['repo']
-            sync_clickhouse_from_opensearch(owner, repo, OPENSEARCH_GIT_RAW, opensearch_conn_info,
-                                            OPENSEARCH_GIT_RAW, clickhouse_conn_info, gits_table_template)
+    def do_sync_git_clickhouse_group(owner_repo_group):
+        sync_clickhouse_repos_from_opensearch(owner_repo_group, OPENSEARCH_GIT_RAW, opensearch_conn_info,
+                                              OPENSEARCH_GIT_RAW, clickhouse_conn_info, gits_table_template)
 
 
     opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_info)
@@ -84,7 +81,7 @@ with DAG(dag_id='daily_gits_sync',  # schedule_interval='*/5 * * * *',
             python_callable=do_sync_gits_opensearch_group,
             trigger_rule='all_done',
             op_kwargs={
-                "owner_repos": owner_repos
+                "owner_repo_group": owner_repos
             }
         )
         op_sync_gits_clickhouse_group = PythonOperator(
@@ -92,7 +89,7 @@ with DAG(dag_id='daily_gits_sync',  # schedule_interval='*/5 * * * *',
             python_callable=do_sync_git_clickhouse_group,
             trigger_rule='all_done',
             op_kwargs={
-                "owner_repos": owner_repos
+                "owner_repo_group": owner_repos
             }
         )
         op_init_daily_gits_sync >> op_sync_gits_opensearch_group >> op_sync_gits_clickhouse_group
