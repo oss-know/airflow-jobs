@@ -9,8 +9,8 @@ from oss_know.libs.base_dict.variable_key import GITHUB_TOKENS, OPENSEARCH_CONN_
     DAILY_SYNC_GITHUB_COMMITS_EXCLUDES, CLICKHOUSE_DRIVER_INFO, CK_TABLE_DEFAULT_VAL_TPLT, \
     DAILY_SYNC_GITHUB_COMMITS_INCLUDES
 from oss_know.libs.github.sync_commits import sync_github_commits_opensearch
-from oss_know.libs.util.base import get_opensearch_client
-from oss_know.libs.util.data_transfer import sync_clickhouse_from_opensearch
+from oss_know.libs.util.base import get_opensearch_client, arrange_owner_repo_into_letter_groups
+from oss_know.libs.util.data_transfer import sync_clickhouse_repos_from_opensearch
 from oss_know.libs.util.opensearch_api import OpensearchAPI
 from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
 from oss_know.libs.util.token import TokenManager
@@ -46,16 +46,19 @@ with DAG(dag_id='daily_github_commits_sync',  # schedule_interval='*/5 * * * *',
                                                       policy=GithubTokenProxyAccommodator.POLICY_FIXED_MAP)
 
 
-    def do_sync_github_commits_opensearch(owner, repo):
-        sync_github_commits_opensearch(opensearch_conn_info, owner, repo, proxy_accommodator)
-        return 'do_sync_github_commits:::end'
+    def do_sync_github_commits_opensearch_group(owner_repo_group):
+        for item in owner_repo_group:
+            owner = item['owner']
+            repo = item['repo']
+            sync_github_commits_opensearch(opensearch_conn_info, owner, repo, proxy_accommodator)
+        return 'do_sync_github_commits_opensearch:::end'
 
 
-    def do_sync_github_commits_clickhouse(owner, repo):
-        sync_clickhouse_from_opensearch(owner, repo,
-                                        OPENSEARCH_INDEX_GITHUB_COMMITS, opensearch_conn_info,
-                                        OPENSEARCH_INDEX_GITHUB_COMMITS, clickhouse_conn_info,
-                                        github_commits_table_template)
+    def do_sync_github_commits_clickhouse_group(owner_repo_group):
+        sync_clickhouse_repos_from_opensearch(owner_repo_group,
+                                              OPENSEARCH_INDEX_GITHUB_COMMITS, opensearch_conn_info,
+                                              OPENSEARCH_INDEX_GITHUB_COMMITS, clickhouse_conn_info,
+                                              github_commits_table_template)
 
 
     opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_info)
@@ -76,23 +79,24 @@ with DAG(dag_id='daily_github_commits_sync',  # schedule_interval='*/5 * * * *',
                 'origin': origin
             })
 
-    for uniq_item in uniq_owner_repos:
-        owner = uniq_item['owner']
-        repo = uniq_item['repo']
-
+    task_groups_by_capital_letter = arrange_owner_repo_into_letter_groups(uniq_owner_repos)
+    # prev_op = op_init_daily_github_commits_sync
+    for letter, owner_repos in task_groups_by_capital_letter.items():
         op_sync_github_commits_opensearch = PythonOperator(
-            task_id=f'do_sync_github_commits_opensearch_{owner}_{repo}',
-            python_callable=do_sync_github_commits_opensearch,
+            task_id=f'op_sync_github_commits_opensearch_group_{letter}',
+            python_callable=do_sync_github_commits_opensearch_group,
+            trigger_rule='all_done',
             op_kwargs={
-                "owner": owner,
-                "repo": repo
-            })
+                "owner_repo_group": owner_repos
+            }
+        )
         op_sync_github_commits_clickhouse = PythonOperator(
-            task_id=f'do_sync_github_commits_clickhouse_{owner}_{repo}',
-            python_callable=do_sync_github_commits_clickhouse,
+            task_id=f'op_sync_github_commits_clickhouse_group_{letter}',
+            python_callable=do_sync_github_commits_clickhouse_group,
+            trigger_rule='all_done',
             op_kwargs={
-                "owner": owner,
-                "repo": repo
-            })
-
+                "owner_repo_group": owner_repos
+            }
+        )
         op_init_daily_github_commits_sync >> op_sync_github_commits_opensearch >> op_sync_github_commits_clickhouse
+        # prev_op = op_sync_github_commits_clickhouse_group
