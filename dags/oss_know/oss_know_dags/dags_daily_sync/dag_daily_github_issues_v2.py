@@ -10,13 +10,13 @@ from oss_know.libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TO
     DAILY_SYNC_GITHUB_ISSUES_EXCLUDES, CLICKHOUSE_DRIVER_INFO, CK_TABLE_DEFAULT_VAL_TPLT, \
     DAILY_SYNC_GITHUB_ISSUES_INCLUDES
 from oss_know.libs.github import sync_issues, sync_issues_comments, sync_issues_timelines
-from oss_know.libs.util.base import get_opensearch_client
-from oss_know.libs.util.data_transfer import sync_clickhouse_from_opensearch
+from oss_know.libs.util.base import get_opensearch_client, arrange_owner_repo_into_letter_groups
+from oss_know.libs.util.data_transfer import sync_clickhouse_from_opensearch, sync_clickhouse_repos_from_opensearch
 from oss_know.libs.util.opensearch_api import OpensearchAPI
 from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
 from oss_know.libs.util.token import TokenManager
 
-OP_SYNC_ISSUE_OS_PREFIX = 'op_sync_github_issues_opensearch'
+OP_SYNC_ISSUE_PREFIX = 'op_sync_github_issues'
 
 with DAG(
         dag_id='daily_github_issues_sync_v2',
@@ -56,63 +56,84 @@ with DAG(
         return proxy_accommodator
 
 
-    def do_sync_github_issues_opensearch(owner, repo):
-        proxy_accommodator = get_proxy_accommodator()
-        issues_numbers, pr_numbers = sync_issues.sync_github_issues(opensearch_conn_info=opensearch_conn_info,
-                                                                    owner=owner,
-                                                                    repo=repo,
-                                                                    token_proxy_accommodator=proxy_accommodator)
+    def do_sync_github_issues_opensearch_group(owner_repo_group):
+        # A list of object that contains: owner, repo and the related issue numbers
+        issue_number_infos = []
+        for item in owner_repo_group:
+            owner = item['owner']
+            repo = item['repo']
+            proxy_accommodator = get_proxy_accommodator()
+            issues_numbers, _ = sync_issues.sync_github_issues(
+                owner=owner, repo=repo,
+                opensearch_conn_info=opensearch_conn_info,
+                token_proxy_accommodator=proxy_accommodator)
+            issue_number_infos.append({
+                'owner': owner,
+                'repo': repo,
+                'issues_numbers': issues_numbers,
+            })
+        return issue_number_infos
 
-        return issues_numbers
+
+    def do_sync_github_issues_clickhouse_group(owner_repo_group):
+        for item in owner_repo_group:
+            owner = item['owner']
+            repo = item['repo']
+            sync_clickhouse_from_opensearch(owner, repo,
+                                            OPENSEARCH_INDEX_GITHUB_ISSUES, opensearch_conn_info,
+                                            OPENSEARCH_INDEX_GITHUB_ISSUES, clickhouse_conn_info,
+                                            github_issue_table_template)
 
 
-    def do_sync_github_issues_clickhouse(owner, repo):
-        sync_clickhouse_from_opensearch(owner, repo, OPENSEARCH_INDEX_GITHUB_ISSUES, opensearch_conn_info,
-                                        OPENSEARCH_INDEX_GITHUB_ISSUES, clickhouse_conn_info,
-                                        github_issue_table_template)
-
-
-    def do_sync_github_issues_comments_opensearch(owner, repo, **kwargs):
+    def do_sync_github_issues_comments_opensearch_group(group_letter, **kwargs):
         ti = kwargs['ti']
-        task_ids = f'{OP_SYNC_ISSUE_OS_PREFIX}_{owner}_{repo}'
-        issues_numbers = ti.xcom_pull(task_ids=task_ids)
-
-        proxy_accommodator = get_proxy_accommodator()
-        do_sync_since = sync_issues_comments.sync_github_issues_comments(
-            opensearch_conn_info=opensearch_conn_info,
-            owner=owner,
-            repo=repo,
-            token_proxy_accommodator=proxy_accommodator,
-            issues_numbers=issues_numbers
-        )
-
-
-    def do_sync_github_issues_comments_clickhouse(owner, repo):
-        sync_clickhouse_from_opensearch(owner, repo,
-                                        OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, opensearch_conn_info,
-                                        OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, clickhouse_conn_info,
-                                        issue_comment_table_template)
+        task_ids = f'{OP_SYNC_ISSUE_PREFIX}_opensearch_group_{group_letter}'
+        all_issue_numbers = ti.xcom_pull(task_ids=task_ids)
+        for item in all_issue_numbers:
+            proxy_accommodator = get_proxy_accommodator()
+            owner = item['owner']
+            repo = item['repo']
+            issues_numbers = item['issues_numbers']
+            sync_issues_comments.sync_github_issues_comments(
+                opensearch_conn_info=opensearch_conn_info,
+                owner=owner,
+                repo=repo,
+                token_proxy_accommodator=proxy_accommodator,
+                issues_numbers=issues_numbers
+            )
 
 
-    def do_sync_github_issues_timelines_opensearch(owner, repo, **kwargs):
+    def do_sync_github_issues_comments_clickhouse_group(owner_repo_group):
+        sync_clickhouse_repos_from_opensearch(owner_repo_group,
+                                              OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, opensearch_conn_info,
+                                              OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, clickhouse_conn_info,
+                                              issue_comment_table_template)
+
+
+    def do_sync_github_issues_timelines_opensearch_group(group_letter, **kwargs):
         ti = kwargs['ti']
-        task_ids = f'{OP_SYNC_ISSUE_OS_PREFIX}_{owner}_{repo}'
-        issues_numbers = ti.xcom_pull(task_ids=task_ids)
+        task_ids = f'{OP_SYNC_ISSUE_PREFIX}_opensearch_group_{group_letter}'
+        issue_number_infos = ti.xcom_pull(task_ids=task_ids)
 
-        proxy_accommodator = get_proxy_accommodator()
-        sync_issues_timelines.sync_github_issues_timelines(
-            opensearch_conn_info=opensearch_conn_info,
-            owner=owner,
-            repo=repo,
-            token_proxy_accommodator=proxy_accommodator,
-            issues_numbers=issues_numbers)
+        for item in issue_number_infos:
+            owner = item['owner']
+            repo = item['repo']
+            issues_numbers = item['issues_numbers']
+
+            proxy_accommodator = get_proxy_accommodator()
+            sync_issues_timelines.sync_github_issues_timelines(
+                opensearch_conn_info=opensearch_conn_info,
+                owner=owner,
+                repo=repo,
+                token_proxy_accommodator=proxy_accommodator,
+                issues_numbers=issues_numbers)
 
 
-    def do_sync_github_issues_timeline_clickhouse(owner, repo):
-        sync_clickhouse_from_opensearch(owner, repo,
-                                        OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE, opensearch_conn_info,
-                                        OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE, clickhouse_conn_info,
-                                        issue_timeline_table_template)
+    def do_sync_github_issues_timeline_clickhouse_group(owner_repo_group):
+        sync_clickhouse_repos_from_opensearch(owner_repo_group,
+                                              OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE, opensearch_conn_info,
+                                              OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE, clickhouse_conn_info,
+                                              issue_timeline_table_template)
 
 
     opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_info)
@@ -133,53 +154,53 @@ with DAG(
                 'origin': origin
             })
 
-    for uniq_owner_repo in uniq_owner_repos:
-        owner = uniq_owner_repo['owner']
-        repo = uniq_owner_repo['repo']
-
-        op_sync_github_issues_opensearch = PythonOperator(
-            task_id=f'{OP_SYNC_ISSUE_OS_PREFIX}_{owner}_{repo}',
-            python_callable=do_sync_github_issues_opensearch,
-            op_kwargs=uniq_owner_repo,
+    task_groups_by_capital_letter = arrange_owner_repo_into_letter_groups(uniq_owner_repos)
+    # prev_op = op_init_daily_github_issues_sync
+    for letter, owner_repos in task_groups_by_capital_letter.items():
+        op_sync_github_issues_opensearch_group = PythonOperator(
+            task_id=f'{OP_SYNC_ISSUE_PREFIX}_opensearch_group_{letter}',
+            python_callable=do_sync_github_issues_opensearch_group,
+            op_kwargs={'owner_repo_group': owner_repos},
             provide_context=True,
         )
-        op_sync_github_issues_clickhouse = PythonOperator(
-            task_id=f'op_sync_github_issues_clickhouse_{owner}_{repo}',
-            python_callable=do_sync_github_issues_clickhouse,
-            op_kwargs=uniq_owner_repo,
+        # op_sync_github_issues
+        op_sync_github_issues_clickhouse_group = PythonOperator(
+            task_id=f'{OP_SYNC_ISSUE_PREFIX}_clickhouse_group_{letter}',
+            python_callable=do_sync_github_issues_clickhouse_group,
+            op_kwargs={'owner_repo_group': owner_repos},
             provide_context=True,
         )
 
-        op_sync_github_issues_comments_opensearch = PythonOperator(
-            task_id=f'op_sync_github_issues_comments_opensearch_{owner}_{repo}',
-            python_callable=do_sync_github_issues_comments_opensearch,
-            op_kwargs=uniq_owner_repo,
+        op_sync_github_issues_comments_opensearch_group = PythonOperator(
+            task_id=f'{OP_SYNC_ISSUE_PREFIX}_comments_opensearch_group_{letter}',
+            python_callable=do_sync_github_issues_comments_opensearch_group,
+            op_kwargs={'group_letter': letter},
             # provide_context=True,
         )
-        op_sync_github_issues_comments_clickhouse = PythonOperator(
-            task_id=f'op_sync_github_issues_comments_clickhouse_{owner}_{repo}',
-            python_callable=do_sync_github_issues_comments_clickhouse,
-            op_kwargs=uniq_owner_repo,
-            # provide_context=True,
-        )
-
-        op_sync_github_issues_timelines_opensearch = PythonOperator(
-            task_id=f'op_sync_github_issues_timelines_opensearch_{owner}_{repo}',
-            python_callable=do_sync_github_issues_timelines_opensearch,
-            op_kwargs=uniq_owner_repo,
-            # provide_context=True,
-        )
-        op_sync_github_issues_timelines_clickhouse = PythonOperator(
-            task_id=f'op_sync_github_issues_timelines_clickhouse_{owner}_{repo}',
-            python_callable=do_sync_github_issues_timeline_clickhouse,
-            op_kwargs=uniq_owner_repo,
+        op_sync_github_issues_comments_clickhouse_group = PythonOperator(
+            task_id=f'{OP_SYNC_ISSUE_PREFIX}_comments_clickhouse_group{letter}',
+            python_callable=do_sync_github_issues_comments_clickhouse_group,
+            op_kwargs={'owner_repo_group': owner_repos},
             # provide_context=True,
         )
 
-        op_sync_github_issues_opensearch >> op_sync_github_issues_clickhouse
+        op_sync_github_issues_timelines_opensearch_group = PythonOperator(
+            task_id=f'{OP_SYNC_ISSUE_PREFIX}_timelines_opensearch_group_{letter}',
+            python_callable=do_sync_github_issues_timelines_opensearch_group,
+            op_kwargs={'group_letter': letter},
+            # provide_context=True,
+        )
+        op_sync_github_issues_timelines_clickhouse_group = PythonOperator(
+            task_id=f'{OP_SYNC_ISSUE_PREFIX}_timelines_clickhouse_group_{letter}',
+            python_callable=do_sync_github_issues_timeline_clickhouse_group,
+            op_kwargs={'owner_repo_group': owner_repos},
+            # provide_context=True,
+        )
 
-        op_sync_github_issues_opensearch >> op_sync_github_issues_comments_opensearch
-        op_sync_github_issues_opensearch >> op_sync_github_issues_timelines_opensearch
+        op_sync_github_issues_opensearch_group >> op_sync_github_issues_clickhouse_group
 
-        op_sync_github_issues_comments_opensearch >> op_sync_github_issues_comments_clickhouse
-        op_sync_github_issues_timelines_opensearch >> op_sync_github_issues_timelines_clickhouse
+        op_sync_github_issues_opensearch_group >> op_sync_github_issues_comments_opensearch_group
+        op_sync_github_issues_opensearch_group >> op_sync_github_issues_timelines_opensearch_group
+
+        op_sync_github_issues_comments_opensearch_group >> op_sync_github_issues_comments_clickhouse_group
+        op_sync_github_issues_timelines_opensearch_group >> op_sync_github_issues_timelines_clickhouse_group
