@@ -201,7 +201,9 @@ def opensearch_to_clickhouse(os_client, index_name, query_body, ck_client, table
         os_result = discourse_topic_content_split_post(table_name, index_name, os_result)
 
     bulk_data = []
-    bulk_size = 5000  # TODO bulk_size should be defined outside by config
+
+    bulk_size = 20000  # TODO bulk_size should be defined outside by config
+
     num_inserted = 0
     fields = get_table_structure(table_name=table_name, ck=ck_client)
     ck_data_insert_at = now_timestamp()
