@@ -15,9 +15,10 @@ from oss_know.libs.clickhouse import init_ck_transfer_data
 from oss_know.libs.metrics.init_analysis_data_for_dashboard import get_alter_files_count, \
     get_contributer_by_dir_email_domain, get_dir_contributer_count, get_tz_distribution, \
     get_alter_file_count_by_dir_email_domain, get_dir_n
+from oss_know.libs.util.data_transfer import parse_data_init
+from oss_know.libs.util.github_token import TokenManager
 from oss_know.libs.util.log import logger
 from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
-from oss_know.libs.util.token import TokenManager
 
 # The essential OpenSearch indices and ClickHouse tables name mapping
 # The github_issues_timeline is handled separately
@@ -175,14 +176,15 @@ with DAG(
 
                 template = table_templates.get(ck_table_name)
                 df = pd.json_normalize(template)
-                template = init_ck_transfer_data.parse_data_init(df)
+                template = parse_data_init(df)
 
                 init_ck_transfer_data.transfer_data_by_repo(
                     clickhouse_server_info=clickhouse_server_info,
                     opensearch_index=os_index_name,
                     table_name=ck_table_name,
                     opensearch_conn_datas=opensearch_conn_info,
-                    template=template, search_key=search_key, transfer_type='github_git_init_by_repo')
+                    template=template, owner_repo_or_project_maillist_name=search_key,
+                    transfer_type='github_git_init_by_repo')
 
             pg_cur.execute(update_status_template.substitute(status=2))
             pg_conn.commit()

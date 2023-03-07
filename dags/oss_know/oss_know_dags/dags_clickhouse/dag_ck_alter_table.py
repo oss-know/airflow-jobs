@@ -1,5 +1,6 @@
-import pandas as pd
 from datetime import datetime
+
+import pandas as pd
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 
@@ -22,42 +23,27 @@ with DAG(
         python_callable=init_clickhouse_ddl,
     )
 
-    # "ck_table_infos": [
-    #     {
-    #         "table_name": "table1",
-    #         "table_engine": "MergeTree"
-    #         "partition_by":""
-    #         "order_by":""
-    #         "parse_data":
-    #     }
-    # ]
+    from airflow.models import Variable
+
+
     def do_ck_alter_table(params):
-        from airflow.models import Variable
         from oss_know.libs.clickhouse import ck_alter_table
         table_name = params["table_name"]
         cluster_name = params["cluster_name"]
-        table_engine = params["table_engine"]
-        partition_by = params["partition_by"]
-        order_by = params.get("order_by")
         parse_data = params.get("parse_data")
         database_name = params.get("database_name")
         distributed_key = params.get("distributed_key")
         df = pd.json_normalize(parse_data)
         clickhouse_server_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
-        create_table = ck_alter_table.create_ck_table(df=df,
-                                                       database_name=database_name,
-                                                       distributed_key=distributed_key,
-                                                       cluster_name=cluster_name,
-                                                       table_name=table_name,
-                                                       table_engine=table_engine,
-                                                       partition_by=partition_by,
-                                                       order_by=order_by,
-                                                       clickhouse_server_info=clickhouse_server_info)
+        ck_alter_table.create_ck_table(df=df,
+                                       database_name=database_name,
+                                       distributed_key=distributed_key,
+                                       cluster_name=cluster_name,
+                                       table_name=table_name,
+                                       clickhouse_server_info=clickhouse_server_info)
         return 'do_ck_create_table:::end'
 
 
-    from airflow.models import Variable
-    # NEED_CK_TABLE_INFOS改成NEED_ALTER_CK_TABLE_INFOS
     ck_table_infos = Variable.get(CK_ALTER_TABLE_COLS_DATATYPE_TPLT, deserialize_json=True)
     for table_info in ck_table_infos:
         op_do_ck_create_table = PythonOperator(

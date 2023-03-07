@@ -69,7 +69,7 @@ with DAG(
 
         if_sync, if_new_person = 1, 1
         init_profiles.load_github_profiles(token_proxy_accommodator=proxy_accommodator,
-                                           opensearch_conn_infos=opensearch_conn_infos,
+                                           opensearch_conn_infos=opensearch_conn_info,
                                            github_users_ids=github_users_ids, if_sync=if_sync,
                                            if_new_person=if_new_person)
         return 'End load_github_repo_profile'

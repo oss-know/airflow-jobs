@@ -11,7 +11,6 @@ from oss_know.libs.util.base import init_geolocator
 from oss_know.libs.util.proxy import GithubTokenProxyAccommodator, ProxyServiceProvider, \
     make_accommodator
 
-# v0.0.1
 with DAG(
         dag_id='github_sync_profiles_v1',
         schedule_interval='0 0 * * *',

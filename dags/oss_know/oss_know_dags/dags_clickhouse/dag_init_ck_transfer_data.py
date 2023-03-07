@@ -1,12 +1,13 @@
-import json
+from datetime import datetime
 
 import pandas as pd
-from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+
 # clickhouse_init_sync_v0.0.1
-from oss_know.libs.base_dict.variable_key import CK_CREATE_TABLE_COLS_DATATYPE_TPLT, CLICKHOUSE_DRIVER_INFO, \
+from oss_know.libs.base_dict.variable_key import CLICKHOUSE_DRIVER_INFO, \
     CK_TABLE_MAP_FROM_OS_INDEX, CK_TABLE_DEFAULT_VAL_TPLT
+from oss_know.libs.util.data_transfer import parse_data_init
 
 with DAG(
         dag_id='init_ck_transfer_data',
@@ -43,13 +44,13 @@ with DAG(
                                                                         opensearch_conn_datas=opensearch_conn_datas)
         else:
             table_templates = Variable.get(CK_TABLE_DEFAULT_VAL_TPLT, deserialize_json=True)
-            template=table_templates.get(table_name)
+            template = table_templates.get(table_name)
             # for table_template in table_templates:
             #     if table_template.get("table_name") == table_name:
             #         template = table_template.get("temp")
             #         break
             df = pd.json_normalize(template)
-            template = init_ck_transfer_data.parse_data_init(df)
+            template = parse_data_init(df)
 
             transfer_data = init_ck_transfer_data.transfer_data(clickhouse_server_info=clickhouse_server_info,
                                                                 opensearch_index=opensearch_index,

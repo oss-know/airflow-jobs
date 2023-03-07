@@ -1,12 +1,9 @@
-import datetime
-import re
-import numpy
-from oss_know.libs.util.log import logger
 from oss_know.libs.util.clickhouse_driver import CKServer
+from oss_know.libs.util.data_transfer import np_type_2_py_type, validate_iso8601
+from oss_know.libs.util.log import logger
 
 
-# 这个方法是映射ck中的数据类型
-def clickhouse_type(data_type):
+def py2ck_type(data_type):
     type_init = "String"
     if isinstance(data_type, str):
         if validate_iso8601(data_type):
@@ -28,46 +25,6 @@ def clickhouse_type(data_type):
     return type_init
 
 
-# 数据过滤一下
-def alter_data_type(row):
-    if isinstance(row, numpy.int64):
-        row = int(row)
-    elif isinstance(row, numpy.float64):
-        row = float(row)
-    elif isinstance(row, numpy.bool_):
-        row = int(bool(row))
-    elif row is None:
-        row = "null"
-    elif isinstance(row, bool):
-        row = int(row)
-    return row
-
-
-regex = r'^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\.[0-9]+)?(Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])?$'
-
-match_iso8601 = re.compile(regex).match
-
-
-# 判断是不是iso8601 格式字符串
-def validate_iso8601(str_val):
-    try:
-        if match_iso8601(str_val) is not None:
-            return True
-    except:
-        pass
-    return False
-
-
-# 这里判断字符串是不是标准的日期格式
-def datetime_valid(dt_str):
-    try:
-        # datetime.fromisoformat(dt_str)
-        datetime.datetime.strptime(dt_str, '%Y-%m-%dT%H:%M:%SZ')
-    except:
-        return False
-    return True
-
-
 def create_ck_table(df,
                     distributed_key="rand()",
                     database_name="default",
@@ -80,7 +37,7 @@ def create_ck_table(df,
     if not distributed_key:
         distributed_key = "rand()"
     if not database_name:
-        database_name="default"
+        database_name = "default"
     # 存储最终的字段
     ck_data_type = []
     # 确定每个字段的类型 然后建表
@@ -92,21 +49,21 @@ def create_ck_table(df,
         # 设定一个初始的类型
         data_type_outer = f"`{index}` String"
         # 将数据进行类型的转换，有些类型但是pandas中独有的类型
-        row = alter_data_type(row)
+        row_py_type = np_type_2_py_type(row)
         # 如果row的类型是列表
-        if isinstance(row, list):
+        if isinstance(row_py_type, list):
             # 解析列表中的内容
             # 如果是字典就将 index声明为nested类型的
-            # 拿出数组中的一个，这种方式需要保证包含数据，如果数据不全就会出问题
-            if row:
-                if isinstance(row[0], dict):
-                    # 这个type_list存储所有数组中套字典中字典的类型
+            # 拿出数组中的一个，方式需要保证包含数据，如果数据不全就会出问题
+            if row_py_type:
+                if isinstance(row_py_type[0], dict):
+                    # type_list存储所有数组中套字典中字典的类型
                     type_list = []
-                    for key in row[0]:
-                        # 这里再进行类型转换一次，可能有bool类型和Nonetype
-                        one_of_field = alter_data_type(row[0].get(key))
-                        # 这里映射ck的类型
-                        ck_type = clickhouse_type(data_type=one_of_field)
+                    for key in row_py_type[0]:
+                        # 再进行类型转换一次，可能有bool类型和Nonetype
+                        one_of_field = np_type_2_py_type(row_py_type[0].get(key))
+                        # 映射ck的类型
+                        ck_type = py2ck_type(data_type=one_of_field)
                         # 拼接字段和类型
                         data_type = f"{key} {ck_type}"
                         type_list.append(data_type)
@@ -114,24 +71,17 @@ def create_ck_table(df,
                     one_nested_type = ",".join(type_list)
                     data_type_outer = f"`{index}` Nested({one_nested_type})"
                 else:
-                    # 这种就声明为数组就行了
-                    one_of_field = alter_data_type(row[0])
-                    ck_type = clickhouse_type(one_of_field)
+                    # 声明为数组类型
+                    one_of_field = np_type_2_py_type(row_py_type[0])
+                    ck_type = py2ck_type(one_of_field)
                     data_type_outer = f"`{index}` Array({ck_type})"
-        # # 不是列表判断是否为int类型 可以不用判断是否为字符串类型, 默认是字符串类型
-        # elif isinstance(row, int):
-        #     data_type_outer = f"`{index}` Int64"
-        # elif isinstance(row, str):
-        #     if validate_iso8601(row):
-        #         data_type_outer = f"`{index}` DateTime64(3)"
         else:
-            data_type_outer = f"`{index}` {clickhouse_type(row)}"
-        # 将所有的类型都放入这个存储器列表
+            data_type_outer = f"`{index}` {py2ck_type(row_py_type)}"
+
         ck_data_type.append(data_type_outer)
-        # dict1[index] = row
     result = ",\r\n".join(ck_data_type)
     create_local_table_ddl = f'CREATE TABLE IF NOT EXISTS {database_name}.{table_name}_local on cluster {cluster_name}({result}) Engine={table_engine}'
-    create_distributed_ddl = f'CREATE TABLE IF NOT EXISTS {database_name}.{table_name} on cluster {cluster_name} ({result}) Engine= Distributed({cluster_name},{database_name},{table_name}_local,{distributed_key})'
+    create_distributed_ddl = f'CREATE TABLE IF NOT EXISTS {database_name}.{table_name} on cluster {cluster_name} as {database_name}.{table_name}_local Engine= Distributed({cluster_name},{database_name},{table_name}_local,{distributed_key})'
     if partition_by:
         create_local_table_ddl = f'{create_local_table_ddl} PARTITION BY {partition_by}'
     if order_by:
