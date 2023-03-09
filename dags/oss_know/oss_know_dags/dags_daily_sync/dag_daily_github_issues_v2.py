@@ -59,10 +59,11 @@ with DAG(
     def do_sync_github_issues_opensearch_group(owner_repo_group):
         # A list of object that contains: owner, repo and the related issue numbers
         issue_number_infos = []
+        proxy_accommodator = get_proxy_accommodator()
+
         for item in owner_repo_group:
             owner = item['owner']
             repo = item['repo']
-            proxy_accommodator = get_proxy_accommodator()
             issues_numbers, _ = sync_issues.sync_github_issues(
                 owner=owner, repo=repo,
                 opensearch_conn_info=opensearch_conn_info,
@@ -89,8 +90,9 @@ with DAG(
         ti = kwargs['ti']
         task_ids = f'{OP_SYNC_ISSUE_PREFIX}_opensearch_group_{group_letter}'
         all_issue_numbers = ti.xcom_pull(task_ids=task_ids)
+        proxy_accommodator = get_proxy_accommodator()
+
         for item in all_issue_numbers:
-            proxy_accommodator = get_proxy_accommodator()
             owner = item['owner']
             repo = item['repo']
             issues_numbers = item['issues_numbers']
@@ -114,13 +116,13 @@ with DAG(
         ti = kwargs['ti']
         task_ids = f'{OP_SYNC_ISSUE_PREFIX}_opensearch_group_{group_letter}'
         issue_number_infos = ti.xcom_pull(task_ids=task_ids)
+        proxy_accommodator = get_proxy_accommodator()
 
         for item in issue_number_infos:
             owner = item['owner']
             repo = item['repo']
             issues_numbers = item['issues_numbers']
 
-            proxy_accommodator = get_proxy_accommodator()
             sync_issues_timelines.sync_github_issues_timelines(
                 opensearch_conn_info=opensearch_conn_info,
                 owner=owner,
@@ -155,7 +157,6 @@ with DAG(
             })
 
     task_groups_by_capital_letter = arrange_owner_repo_into_letter_groups(uniq_owner_repos)
-    # prev_op = op_init_daily_github_issues_sync
     for letter, owner_repos in task_groups_by_capital_letter.items():
         op_sync_github_issues_opensearch_group = PythonOperator(
             task_id=f'{OP_SYNC_ISSUE_PREFIX}_opensearch_group_{letter}',
