@@ -22,3 +22,5 @@ loguru>=0.5.3
 psycopg2-binary>=2.9.2
 tenacity>=8.0.1
 geopy>=2.2.0
+
+zulip>=1.2.12
