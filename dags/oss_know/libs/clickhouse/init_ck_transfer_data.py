@@ -112,6 +112,7 @@ def ck_check_point_maillist(opensearch_client, opensearch_index, clickhouse_tabl
     response = opensearch_client.index(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA, body=check_info)
     logger.info(response)
 
+
 def ck_check_point_discourse(opensearch_client, opensearch_index, clickhouse_table, updated_at, repo):
     now_time = datetime.datetime.now()
     check_info = {
@@ -136,6 +137,7 @@ def ck_check_point_discourse(opensearch_client, opensearch_index, clickhouse_tab
     # 插入一条数据
     response = opensearch_client.index(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA, body=check_info)
     logger.info(response)
+
 
 # 转换为基本数据类型
 def alter_data_type(row, template='None'):
@@ -480,7 +482,7 @@ def bulk_except(bulk_data, opensearch_datas, opensearch_index, table_name):
 def keep_idempotent(ck, search_key, clickhouse_server_info, table_name, transfer_type):
     # print(f"{transfer_type}-------------------------------------------------------------")
     # 获取clickhouse集群节点信息
-    get_clusters_sql = f"select host_name from system.clusters" \
+    get_clusters_sql = f"select host_name from system.clusters " \
                        f"where cluster = '{clickhouse_server_info['CLUSTER_NAME']}'"
     # print(get_clusters_sql)
     clusters_info = ck.execute_no_params(get_clusters_sql)
@@ -582,15 +584,16 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
     elif transfer_type == "discourse":
         search_key_owner = search_key['owner']
         search_key_repo = search_key['repo']
-        if_null_sql = f"select count() from {table_name} where search_key__owner='{search_key_owner}' and search_key__repo='{search_key_repo}'"
+        if_null_sql = f"select count() from {table_name} where search_key__owner='{search_key_owner}' and " \
+                      f"search_key__repo='{search_key_repo}'"
         if_null_result = ck.execute_no_params(if_null_sql)
         if not if_null_result:
             keep_idempotent(ck=ck, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
                             table_name=table_name, transfer_type="discourse_init")
         logger.info("discourse------------------------")
         opensearch_datas = get_data_from_opensearch_by_repo(index=opensearch_index,
-                                                             opensearch_conn_datas=opensearch_conn_datas,
-                                                             repo=search_key)
+                                                            opensearch_conn_datas=opensearch_conn_datas,
+                                                            repo=search_key)
 
         # Done chenkx: Split discourse's contents data to two tables (POSTs and CONTENTs)
         if opensearch_index == 'discourse_topic_content':
@@ -611,7 +614,8 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
                     del cur['_source']['raw_data']['post_stream']['posts']
                     # 将suggested_topics的字典内容压平
                     if 'suggested_topics' in cur['_source']['raw_data']:
-                        cur['_source']['raw_data']['suggested_topics'] = json.dumps(cur['_source']['raw_data']['suggested_topics'])
+                        cur['_source']['raw_data']['suggested_topics'] = json.dumps(
+                            cur['_source']['raw_data']['suggested_topics'])
                     else:
                         cur['_source']['raw_data']['suggested_topics'] = None
                     opensearch_datas_part.append(cur)
@@ -651,7 +655,7 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
                     for i, k in enumerate(dict_dict.get(field)):
                         if k != 'null':
                             dict_dict[field][i] = try_parsing_date(k)
-                        else :
+                        else:
                             dict_dict[field][i] = try_parsing_date("1999-03-01T16:47:08.370Z")
                 elif fields.get(field) == 'String':
                     try:
@@ -740,10 +744,10 @@ def transfer_data_by_repo(clickhouse_server_info, opensearch_index, table_name, 
         #     logger.info("opensearch and clickhouse data are consistent")
     elif transfer_type == "discourse":
         ck_check_point_discourse(opensearch_client=opensearch_datas[1],
-                                opensearch_index=opensearch_index,
-                                clickhouse_table=table_name,
-                                updated_at=max_timestamp,
-                                repo=search_key)
+                                 opensearch_index=opensearch_index,
+                                 clickhouse_table=table_name,
+                                 updated_at=max_timestamp,
+                                 repo=search_key)
     ck.close()
 
 
