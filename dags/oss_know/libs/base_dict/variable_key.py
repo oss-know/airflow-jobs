@@ -68,3 +68,6 @@ CLICKHOUSE_SYNC_COMBINATION_TYPE = "clickhouse_sync_combination_type"
 DATA_SYNC_INTERVAL = "data_sync_interval"
 NEED_INIT_DISCOURSE = 'need_init_discourse'
 NEED_INIT_DISCOURSE_CLICKHOUSE = 'need_init_discourse_clickhouse'
+
+ZULIP_API_KEYS = "zulip_api_keys"
+NEED_INIT_ZULIP = "need_init_zulip"
