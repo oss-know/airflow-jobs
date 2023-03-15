@@ -4957,5 +4957,16 @@
               }
           ]
       }
+  ],
+  "zulip_api_keys":{
+    "email": "155891662900@sina.cn",
+    "api_key": "NcgUgU40Ii5jLcPhx64plm0E0NwGxKNz"
+  },
+  "need_init_zulip":[
+    {
+      "owner": "rust-lang",
+      "repo": "rust",
+      "site": "https://rust-lang.zulipchat.com"
+    }
   ]
 }
