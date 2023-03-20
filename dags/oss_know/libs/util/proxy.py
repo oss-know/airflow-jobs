@@ -1,4 +1,5 @@
 import itertools
+from enum import Enum
 from random import shuffle as shuffle_list
 
 import requests
@@ -8,8 +9,11 @@ from oss_know.libs.util.log import logger
 from oss_know.libs.util.token import TokenManager
 
 
-class ProxyService:
+class ProxyServiceProvider(Enum):
+    Kuai = 1  # https://www.kuaidaili.com
 
+
+class ProxyService:
     def __init__(self, api_url):
         self.api_url = api_url
 
@@ -284,3 +288,28 @@ class GithubTokenProxyAccommodator:
         elif self.policy == GithubTokenProxyAccommodator.POLICY_CYCLE_ITERATION:
             # For simple cycle iterations, just re-init all tokens and proxies
             self._accommodate()
+
+
+def make_accommodator(tokens,
+                      proxy_confs, proxy_svp: ProxyServiceProvider = ProxyServiceProvider.Kuai,
+                      policy=GithubTokenProxyAccommodator.POLICY_FIXED_MAP):
+    proxy_api_url = proxy_confs["api_url"]
+    proxy_order_id = proxy_confs["orderid"]
+    proxy_reserved_proxies = proxy_confs["reserved_proxies"]
+    proxies = []
+    for proxy in proxy_reserved_proxies:
+        # TODO Maybe we should leave the protocol to proxy_confs?
+        #  Don't init them here to avoid complexity
+        proxies.append(f"http://{proxy}")
+
+    if proxy_svp == ProxyServiceProvider.Kuai:
+        proxy_service = KuaiProxyService(api_url=proxy_api_url, orderid=proxy_order_id)
+    else:
+        raise Exception(f'Unknown proxy service provider: {proxy_svp}')
+
+    token_manager = TokenManager(tokens=tokens)
+    proxy_manager = ProxyManager(proxies=proxies, proxy_service=proxy_service)
+    proxy_accommodator = GithubTokenProxyAccommodator(token_manager=token_manager,
+                                                      proxy_manager=proxy_manager, shuffle=True,
+                                                      policy=policy)
+    return proxy_accommodator

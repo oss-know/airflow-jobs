@@ -1,4 +1,3 @@
-import time
 from datetime import datetime
 
 from airflow import DAG
@@ -7,10 +6,12 @@ from airflow.models import XCom
 from airflow.operators.python import PythonOperator
 from airflow.utils.db import provide_session
 
-from oss_know.libs.base_dict.variable_key import NEED_INIT_GITHUB_PROFILES_REPOS, LOCATIONGEO_TOKEN, PROXY_CONFS, \
-    NEED_SYNC_GITHUB_PROFILES_REPOS
-from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
-from oss_know.libs.util.token import TokenManager
+from oss_know.libs.base_dict.variable_key import LOCATIONGEO_TOKEN, PROXY_CONFS, \
+    NEED_SYNC_GITHUB_PROFILES_REPOS, OPENSEARCH_CONN_DATA, GITHUB_TOKENS
+from oss_know.libs.github import init_profiles
+from oss_know.libs.util.base import init_geolocator
+from oss_know.libs.util.proxy import GithubTokenProxyAccommodator, ProxyServiceProvider, \
+    make_accommodator
 
 
 @provide_session
@@ -37,40 +38,25 @@ with DAG(
         provide_context=True
     )
 
+    opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
+
+    github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
+    proxy_confs = Variable.get(PROXY_CONFS, deserialize_json=True)
+    proxy_accommodator = make_accommodator(github_tokens, proxy_confs, ProxyServiceProvider.Kuai,
+                                           GithubTokenProxyAccommodator.POLICY_FIXED_MAP)
+
+    geolocator_token = Variable.get(LOCATIONGEO_TOKEN, deserialize_json=False)
+    init_geolocator(geolocator_token)
 
 
     def load_github_repo_id(params, **kwargs):
-        from airflow.models import Variable
-        from oss_know.libs.github import init_profiles
-        opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
         owner = params["owner"]
         repo = params["repo"]
-        init_ids = init_profiles.load_github_ids_by_repo(opensearch_conn_infos, owner, repo)
+        init_ids = init_profiles.load_github_ids_by_repo(opensearch_conn_info, owner, repo)
         kwargs['ti'].xcom_push(key=f'{owner}_{repo}_ids', value=init_ids)
 
 
     def load_github_repo_profiles(params, **kwargs):
-        from airflow.models import Variable
-        from oss_know.libs.util.base import init_geolocator
-
-        geolocator_token = Variable.get(LOCATIONGEO_TOKEN, deserialize_json=False)
-        init_geolocator(geolocator_token)
-
-        github_tokens = Variable.get("github_tokens", deserialize_json=True)
-        opensearch_conn_infos = Variable.get("opensearch_conn_data", deserialize_json=True)
-
-        proxy_confs = Variable.get(PROXY_CONFS, deserialize_json=True)
-        proxies = []
-        for line in proxy_confs['reserved_proxies']:
-            proxies.append(f'http://{line}')
-
-        proxy_service = KuaiProxyService(proxy_confs['api_url'], proxy_confs['orderid'])
-        proxy_manager = ProxyManager(proxies, proxy_service)
-        token_manager = TokenManager(github_tokens)
-
-        proxy_accommodator = GithubTokenProxyAccommodator(token_manager, proxy_manager, shuffle=True,
-                                                          policy=GithubTokenProxyAccommodator.POLICY_FIXED_MAP)
-
         # github_users_ids = []
         github_users_ids = set()
         for param in params:
@@ -80,7 +66,7 @@ with DAG(
             # TODO Not very sure if updating the id set with a smaller list(github ids of a repo) performs better
             # TODO Need more explorations on this
             github_users_ids.update(kwargs['ti'].xcom_pull(key=f'{owner}_{repo}_ids'))
-        from oss_know.libs.github import init_profiles
+
         if_sync, if_new_person = 1, 1
         init_profiles.load_github_profiles(token_proxy_accommodator=proxy_accommodator,
                                            opensearch_conn_infos=opensearch_conn_infos,

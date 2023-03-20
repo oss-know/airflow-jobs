@@ -13,8 +13,7 @@ from oss_know.libs.github import sync_issues, sync_issues_comments, sync_issues_
 from oss_know.libs.util.base import get_opensearch_client, arrange_owner_repo_into_letter_groups
 from oss_know.libs.util.data_transfer import sync_clickhouse_from_opensearch, sync_clickhouse_repos_from_opensearch
 from oss_know.libs.util.opensearch_api import OpensearchAPI
-from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
-from oss_know.libs.util.token import TokenManager
+from oss_know.libs.util.proxy import GithubTokenProxyAccommodator, ProxyServiceProvider, make_accommodator
 
 OP_SYNC_ISSUE_PREFIX = 'op_sync_github_issues'
 
@@ -26,8 +25,6 @@ with DAG(
         tags=['github', 'daily sync'],
 ) as dag:
     opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
-    github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
-    proxy_confs = Variable.get(PROXY_CONFS, deserialize_json=True)
 
     clickhouse_conn_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
     table_templates = Variable.get(CK_TABLE_DEFAULT_VAL_TPLT, deserialize_json=True)
@@ -35,31 +32,15 @@ with DAG(
     issue_comment_table_template = table_templates.get(OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS)
     issue_timeline_table_template = table_templates.get(OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE)
 
-
-    def get_proxy_accommodator():
-
-        proxy_api_url = proxy_confs["api_url"]
-        proxy_order_id = proxy_confs["orderid"]
-        proxy_reserved_proxies = proxy_confs["reserved_proxies"]
-        proxies = []
-        for proxy in proxy_reserved_proxies:
-            proxies.append(f"http://{proxy}")
-        proxy_service = KuaiProxyService(api_url=proxy_api_url,
-                                         orderid=proxy_order_id)
-        token_manager = TokenManager(tokens=github_tokens)
-        proxy_manager = ProxyManager(proxies=proxies,
-                                     proxy_service=proxy_service)
-        proxy_accommodator = GithubTokenProxyAccommodator(token_manager=token_manager,
-                                                          proxy_manager=proxy_manager,
-                                                          shuffle=True,
-                                                          policy=GithubTokenProxyAccommodator.POLICY_FIXED_MAP)
-        return proxy_accommodator
+    github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
+    proxy_confs = Variable.get(PROXY_CONFS, deserialize_json=True)
+    proxy_accommodator = make_accommodator(github_tokens, proxy_confs, ProxyServiceProvider.Kuai,
+                                           GithubTokenProxyAccommodator.POLICY_FIXED_MAP)
 
 
     def do_sync_github_issues_opensearch_group(owner_repo_group):
         # A list of object that contains: owner, repo and the related issue numbers
         issue_number_infos = []
-        proxy_accommodator = get_proxy_accommodator()
 
         for item in owner_repo_group:
             owner = item['owner']
@@ -90,7 +71,6 @@ with DAG(
         ti = kwargs['ti']
         task_ids = f'{OP_SYNC_ISSUE_PREFIX}_opensearch_group_{group_letter}'
         all_issue_numbers = ti.xcom_pull(task_ids=task_ids)
-        proxy_accommodator = get_proxy_accommodator()
 
         for item in all_issue_numbers:
             owner = item['owner']
@@ -116,7 +96,6 @@ with DAG(
         ti = kwargs['ti']
         task_ids = f'{OP_SYNC_ISSUE_PREFIX}_opensearch_group_{group_letter}'
         issue_number_infos = ti.xcom_pull(task_ids=task_ids)
-        proxy_accommodator = get_proxy_accommodator()
 
         for item in issue_number_infos:
             owner = item['owner']
