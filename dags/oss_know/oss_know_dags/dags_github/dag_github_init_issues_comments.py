@@ -2,16 +2,12 @@ from datetime import datetime
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from opensearchpy import OpenSearch
 
-from oss_know.libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TOKENS, PROXY_CONFS
-from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
-from oss_know.libs.util.token import TokenManager
+from oss_know.libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TOKENS, PROXY_CONFS, \
+    NEED_INIT_GITHUB_ISSUES_COMMENTS_REPOS
+from oss_know.libs.util.proxy import GithubTokenProxyAccommodator, make_accommodator, ProxyServiceProvider
 
 # v0.0.1
-
-NEED_INIT_SYNC_GITHUB_ISSUES_COMMENTS_REPOS = "need_init_github_issues_comments_repos"
-
 with DAG(
         dag_id='github_init_issues_comments_v1',
         schedule_interval=None,
@@ -33,24 +29,15 @@ with DAG(
         from airflow.models import Variable
         from oss_know.libs.github import init_issues_comments
 
-        github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
         opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
 
+        github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
         proxy_confs = Variable.get(PROXY_CONFS, deserialize_json=True)
-        proxies = []
-        for line in proxy_confs['reserved_proxies']:
-            proxies.append(f'http://{line}')
-
-        proxy_service = KuaiProxyService(proxy_confs['api_url'], proxy_confs['orderid'])
-        proxy_manager = ProxyManager(proxies, proxy_service)
-        token_manager = TokenManager(github_tokens)
-
-        proxy_accommodator = GithubTokenProxyAccommodator(token_manager, proxy_manager, shuffle=True,
-                                                          policy=GithubTokenProxyAccommodator.POLICY_FIXED_MAP)
+        proxy_accommodator = make_accommodator(github_tokens, proxy_confs, ProxyServiceProvider.Kuai,
+                                               GithubTokenProxyAccommodator.POLICY_FIXED_MAP)
 
         owner = params["owner"]
         repo = params["repo"]
-
         init_issues_comments.init_github_issues_comments(opensearch_conn_info, owner, repo, proxy_accommodator)
 
         return params
@@ -58,10 +45,9 @@ with DAG(
 
     need_do_init_ops = []
 
-
     from airflow.models import Variable
 
-    need_init_github_issues_comments_repos = Variable.get(NEED_INIT_SYNC_GITHUB_ISSUES_COMMENTS_REPOS,
+    need_init_github_issues_comments_repos = Variable.get(NEED_INIT_GITHUB_ISSUES_COMMENTS_REPOS,
                                                           deserialize_json=True)
 
     for need_init_github_issues_comments_repo in need_init_github_issues_comments_repos:
