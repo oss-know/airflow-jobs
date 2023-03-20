@@ -173,11 +173,7 @@ with DAG(
                 os_index_name = os_ck_map['OPENSEARCH_INDEX']
                 ck_table_name = os_ck_map['CK_TABLE_NAME']
 
-                template = None
-                for table_template in table_templates:
-                    if table_template.get("table_name") == ck_table_name:
-                        template = table_template.get("temp")
-                        break
+                template = table_templates.get(ck_table_name)
                 df = pd.json_normalize(template)
                 template = init_ck_transfer_data.parse_data_init(df)
 

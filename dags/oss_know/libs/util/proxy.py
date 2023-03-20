@@ -80,6 +80,8 @@ class _fixed_map_iterToken(_token_proxy_iter):
             self.mapping[token] = proxies[mapped_index]
 
     def next(self):
+        # TODO Is random.choice a better choice(less mem consuming)?
+        # token = random.choice(self.tokens)
         token = next(self.tokens_iter)
         proxy = self.mapping[token]
         return token, proxy
@@ -103,6 +105,7 @@ class _fixed_map_iterToken(_token_proxy_iter):
             self.mapping[new_token] = paired_proxy
 
     def renew_tokens(self, tokens):
+        # self.tokens = tokens # TODO Is this needed?
         self.tokens_iter = itertools.cycle(tokens)
 
     def get_proxy(self, token):
@@ -173,8 +176,10 @@ class GithubTokenProxyAccommodator:
         """
         :param tokens: List of github tokens
         :param proxies: List of proxies dict with form {"scheme":"", "ip": "", "port":123, "user": "", "password": ""}
-        :param policy: Accommodation policy, currently support POLICY_CYCLE_ITERATION and POLICY_FIXED_MAP. In POLICY_CYCLE_ITERATION'
-        policy, both tokens and proxies are iterated in a cycle. In POLICY_FIXED_MAP policy, a token pairs with a fixed proxy,
+        :param policy: Accommodation policy, currently support POLICY_CYCLE_ITERATION and POLICY_FIXED_MAP. In
+        POLICY_CYCLE_ITERATION'
+        policy, both tokens and proxies are iterated in a cycle. In POLICY_FIXED_MAP policy, a token pairs with a
+        fixed proxy,
         all tokens are paired.
         :param shuffle: Whether tokens and proxies should be shuffled before building accommodator.
         This allows some randomity
@@ -228,6 +233,7 @@ class GithubTokenProxyAccommodator:
 
     def report_invalid_token(self, token):
         """The paired proxy of the invalid token is still available, assign it to the new token if possible"""
+        logger.info(f'Report invalid token {token}')
         if token in self.tokens:
             self.tokens.remove(token)
         else:
@@ -251,6 +257,8 @@ class GithubTokenProxyAccommodator:
             self._accommodate()
 
     def report_drain_token(self, token, recover_duration=3600):
+        logger.info(f'Report drain token {token}')
+
         if token in self.tokens:
             self.tokens.remove(token)
         else:

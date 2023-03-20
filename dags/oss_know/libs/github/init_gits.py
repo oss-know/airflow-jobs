@@ -213,7 +213,7 @@ def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_data
 
         now_count = now_count + 1
         all_git_list.append(bulk_data)
-        if now_count % 500 == 0:
+        if now_count % 5000 == 0:
             success, failed = opensearch_api.do_opensearch_bulk(opensearch_client=opensearch_client,
                                                                 bulk_all_data=all_git_list, owner=owner, repo=repo)
             logger.info(f"sync_bulk_git_datas::success:{success},failed:{failed}")

@@ -21,7 +21,7 @@ class SyncGithubIssuesException(Exception):
 
 
 def sync_github_issues(opensearch_conn_info, owner, repo, token_proxy_accommodator):
-    logger.info("start sync_github_issues()")
+    logger.info(f"Start sync github issues of {owner}/{repo}")
     now_time = datetime.datetime.now()
     opensearch_client = OpenSearch(hosts=[{'host': opensearch_conn_info["HOST"], 'port': opensearch_conn_info["PORT"]}],
                                    http_compress=True,
@@ -121,10 +121,17 @@ def sync_github_issues(opensearch_conn_info, owner, repo, token_proxy_accommodat
 
 
 def get_latest_issue_date_str(opensearch_client, owner, repo):
-    last_issue_info = opensearch_client.search(index=OPENSEARCH_INDEX_GITHUB_ISSUES, body={"query": {"bool": {
-        "must": [{"term": {"search_key.owner.keyword": {"value": owner}}},
-                 {"term": {"search_key.repo.keyword": {"value": repo}}}]}}, "size": 1, "_source": "raw_data.created_at",
-        "sort": [{"raw_data.created_at": {"order": "desc"}}]})
+    last_issue_info = opensearch_client.search(index=OPENSEARCH_INDEX_GITHUB_ISSUES, body={
+        "query": {
+            "bool": {
+                "must": [
+                    {"term": {"search_key.owner.keyword": {"value": owner}}},
+                    {"term": {"search_key.repo.keyword": {"value": repo}}}]
+            }
+        },
+        "size": 1, "_source": "raw_data.created_at",
+        "sort": [{"raw_data.created_at": {"order": "desc"}}]
+    })
     if len(last_issue_info["hits"]["hits"]) == 0:
         return None
 
