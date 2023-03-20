@@ -12,8 +12,7 @@ from oss_know.libs.github.sync_issues import sync_github_issues
 from oss_know.libs.util.base import get_opensearch_client, arrange_owner_repo_into_letter_groups
 from oss_know.libs.util.data_transfer import sync_clickhouse_repos_from_opensearch
 from oss_know.libs.util.opensearch_api import OpensearchAPI
-from oss_know.libs.util.proxy import KuaiProxyService, ProxyManager, GithubTokenProxyAccommodator
-from oss_know.libs.util.token import TokenManager
+from oss_know.libs.util.proxy import ProxyServiceProvider, GithubTokenProxyAccommodator, make_accommodator
 
 with DAG(dag_id='daily_github_issues_sync',  # schedule_interval='*/5 * * * *',
          schedule_interval=None, start_date=datetime(2021, 1, 1), catchup=False,
@@ -25,25 +24,15 @@ with DAG(dag_id='daily_github_issues_sync',  # schedule_interval='*/5 * * * *',
     op_init_daily_github_issues_sync = PythonOperator(task_id='op_init_daily_github_issues_sync',
                                                       python_callable=op_init_daily_github_issues_sync)
 
-    github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
-    proxy_confs = Variable.get(PROXY_CONFS, deserialize_json=True)
     opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
-    proxy_api_url = proxy_confs["api_url"]
-    proxy_order_id = proxy_confs["orderid"]
-    proxy_reserved_proxies = proxy_confs["reserved_proxies"]
-    proxies = []
-    for proxy in proxy_reserved_proxies:
-        proxies.append(f"http://{proxy}")
-    proxy_service = KuaiProxyService(api_url=proxy_api_url, orderid=proxy_order_id)
-    token_manager = TokenManager(tokens=github_tokens)
-    proxy_manager = ProxyManager(proxies=proxies, proxy_service=proxy_service)
-    proxy_accommodator = GithubTokenProxyAccommodator(token_manager=token_manager,
-                                                      proxy_manager=proxy_manager, shuffle=True,
-                                                      policy=GithubTokenProxyAccommodator.POLICY_FIXED_MAP)
-
     clickhouse_conn_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
     table_templates = Variable.get(CK_TABLE_DEFAULT_VAL_TPLT, deserialize_json=True)
     github_issue_table_template = table_templates.get(OPENSEARCH_INDEX_GITHUB_ISSUES)
+
+    github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
+    proxy_confs = Variable.get(PROXY_CONFS, deserialize_json=True)
+    proxy_accommodator = make_accommodator(github_tokens, proxy_confs, ProxyServiceProvider.Kuai,
+                                           GithubTokenProxyAccommodator.POLICY_FIXED_MAP)
 
 
     def do_sync_github_issues_opensearch_group(owner_repo_group):
