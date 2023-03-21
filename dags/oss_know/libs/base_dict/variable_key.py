@@ -1,4 +1,5 @@
 GITHUB_TOKENS = "github_tokens"
+GIT_SAVE_LOCAL_PATH = "git_save_local_path"
 OPENSEARCH_CONN_DATA = "opensearch_conn_data"
 
 DAILY_SYNC_GITS_INCLUDES = "gits_sync_includes"
