@@ -5,7 +5,7 @@ from git import Repo
 from loguru import logger
 
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_GIT_RAW
-from oss_know.libs.github.init_gits import init_sync_git_datas
+from oss_know.libs.github.init_gits import init_gits_repo
 from oss_know.libs.util.base import get_opensearch_client
 from oss_know.libs.util.opensearch_api import OpensearchAPI
 
@@ -25,12 +25,12 @@ def sync_gits_opensearch(git_url, owner, repo, proxy_config, opensearch_conn_dat
 
     if not os_repo_commits['hits']['hits']:
         logger.warning(f"{owner}/{repo} does not exist in local storage, init it from scratch")
-        init_sync_git_datas(git_url=git_url,
-                            owner=owner,
-                            repo=repo,
-                            proxy_config=proxy_config,
-                            opensearch_conn_datas=opensearch_conn_datas,
-                            git_save_local_path=git_save_local_path)
+        init_gits_repo(git_url=git_url,
+                       owner=owner,
+                       repo=repo,
+                       proxy_config=proxy_config,
+                       opensearch_conn_datas=opensearch_conn_datas,
+                       git_save_local_path=git_save_local_path)
         return
 
     if os.path.exists(repo_path):
@@ -51,12 +51,12 @@ def sync_gits_opensearch(git_url, owner, repo, proxy_config, opensearch_conn_dat
         # it more likely to find the merge base for next sync
         logger.warning(
             f"head in OpenSearch {head_in_os} may not exist in git commit tree, error: {e}, init repo from scratch")
-        init_sync_git_datas(git_url=git_url,
-                            owner=owner,
-                            repo=repo,
-                            proxy_config=proxy_config,
-                            opensearch_conn_datas=opensearch_conn_datas,
-                            git_save_local_path=git_save_local_path)
+        init_gits_repo(git_url=git_url,
+                       owner=owner,
+                       repo=repo,
+                       proxy_config=proxy_config,
+                       opensearch_conn_datas=opensearch_conn_datas,
+                       git_save_local_path=git_save_local_path)
         return
 
     active_branch_name = git_repo.active_branch.name
@@ -65,12 +65,12 @@ def sync_gits_opensearch(git_url, owner, repo, proxy_config, opensearch_conn_dat
     merge_bases = git_repo.merge_base(head_in_os, head_in_repo)
     if not merge_bases:
         logger.warning(f"No merge base found for {owner}/{repo}, init it from scratch")
-        init_sync_git_datas(git_url=git_url,
-                            owner=owner,
-                            repo=repo,
-                            proxy_config=proxy_config,
-                            opensearch_conn_datas=opensearch_conn_datas,
-                            git_save_local_path=git_save_local_path)
+        init_gits_repo(git_url=git_url,
+                       owner=owner,
+                       repo=repo,
+                       proxy_config=proxy_config,
+                       opensearch_conn_datas=opensearch_conn_datas,
+                       git_save_local_path=git_save_local_path)
         return
 
     # Get the children after MERGE BASE in two code bases:

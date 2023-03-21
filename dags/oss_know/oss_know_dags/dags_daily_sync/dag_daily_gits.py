@@ -7,7 +7,7 @@ from airflow.operators.python import PythonOperator
 from oss_know.libs.util.data_transfer import sync_clickhouse_repos_from_opensearch
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_GIT_RAW
 from oss_know.libs.base_dict.variable_key import DAILY_SYNC_GITS_EXCLUDES, DAILY_SYNC_GITS_INCLUDES, \
-    CK_TABLE_DEFAULT_VAL_TPLT, OPENSEARCH_CONN_DATA, CLICKHOUSE_DRIVER_INFO
+    CK_TABLE_DEFAULT_VAL_TPLT, OPENSEARCH_CONN_DATA, CLICKHOUSE_DRIVER_INFO, GIT_SAVE_LOCAL_PATH
 from oss_know.libs.github.sync_gits import sync_gits_opensearch
 from oss_know.libs.util.base import get_opensearch_client, arrange_owner_repo_into_letter_groups
 from oss_know.libs.util.opensearch_api import OpensearchAPI
@@ -16,8 +16,7 @@ opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
 clickhouse_conn_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
 table_templates = Variable.get(CK_TABLE_DEFAULT_VAL_TPLT, deserialize_json=True)
 gits_table_template = table_templates.get(OPENSEARCH_GIT_RAW)
-# TODO Put "git_save_local_path" in global const, and change it to string instead of dict
-git_save_local_path = Variable.get("git_save_local_path", deserialize_json=True)
+git_save_local_path = Variable.get(GIT_SAVE_LOCAL_PATH, deserialize_json=True)
 
 with DAG(dag_id='daily_gits_sync',  # schedule_interval='*/5 * * * *',
          schedule_interval=None, start_date=datetime(2021, 1, 1), catchup=False,

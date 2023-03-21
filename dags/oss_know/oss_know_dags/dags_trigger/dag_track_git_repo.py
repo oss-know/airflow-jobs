@@ -9,7 +9,7 @@ from airflow.models import Variable
 from airflow.operators.python import PythonOperator
 
 from oss_know.libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TOKENS, PROXY_CONFS, \
-    CLICKHOUSE_DRIVER_INFO, CK_TABLE_DEFAULT_VAL_TPLT, POSTGRES_CONN_INFO
+    CLICKHOUSE_DRIVER_INFO, CK_TABLE_DEFAULT_VAL_TPLT, POSTGRES_CONN_INFO, GIT_SAVE_LOCAL_PATH
 # git_init_sync_v0.0.3
 from oss_know.libs.clickhouse import init_ck_transfer_data
 from oss_know.libs.metrics.init_analysis_data_for_dashboard import get_alter_files_count, \
@@ -62,7 +62,7 @@ with DAG(
         python_callable=init_track_repo,
     )
 
-    git_save_local_path = Variable.get("git_save_local_path", deserialize_json=True)
+    git_save_local_path = Variable.get(GIT_SAVE_LOCAL_PATH, deserialize_json=True)
     github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
     opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
     clickhouse_server_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
@@ -89,7 +89,7 @@ with DAG(
         repo = kwargs['dag_run'].conf.get('repo')
         url = kwargs['dag_run'].conf.get('url')
         gits_args = [url, owner, repo, None, opensearch_conn_info, git_save_local_path]
-        exec_job_and_update_db(init_gits.init_sync_git_datas, callback, 'gits', args=gits_args, **kwargs)
+        exec_job_and_update_db(init_gits.init_gits_repo, callback, 'gits', args=gits_args, **kwargs)
 
 
     def do_init_github_commits(callback, **kwargs):

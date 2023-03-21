@@ -131,7 +131,7 @@ def remove_flag_doc(client, owner, repo, doc_uuid):
             break
 
 
-def init_sync_git_datas(git_url, owner, repo, proxy_config, opensearch_conn_datas, git_save_local_path=None):
+def init_gits_repo(git_url, owner, repo, proxy_config, opensearch_conn_datas, git_save_local_path=None):
     # 克隆版本库
     repo_path = f'{git_save_local_path["PATH"]}/{owner}/{repo}'
     if os.path.exists(repo_path):

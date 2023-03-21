@@ -2,6 +2,7 @@ import time
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from oss_know.libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GIT_SAVE_LOCAL_PATH
 
 # git_init_sync_v0.0.3
 
@@ -33,8 +34,8 @@ with DAG(
         repo = params["repo"]
         url = params["url"]
         proxy_config = params.get("proxy_config")
-        opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
-        git_save_local_path = Variable.get("git_save_local_path", deserialize_json=True)
+        opensearch_conn_datas = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
+        git_save_local_path = Variable.get(GIT_SAVE_LOCAL_PATH, deserialize_json=True)
         sync_git_info = sync_gits.sync_gits_opensearch(git_url=url,
                                                        owner=owner,
                                                        repo=repo,
