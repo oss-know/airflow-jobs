@@ -331,7 +331,7 @@ def transfer_data_by_repo(clickhouse_server_info, table_name, opensearch_index, 
             # keep_idempotent(ck=ck_client, search_key=owner_repo_or_project_maillist_name,
             #                 clickhouse_server_info=clickhouse_server_info,
             #                 table_name=table_name, transfer_type="github_git_init_by_repo")
-            logger.info("可能产生冗余数据")
+            logger.info("The project data already exists")
         else:
             logger.info("No data in CK")
         logger.info("github_git_init_by_repo------------------------")

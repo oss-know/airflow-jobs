@@ -283,7 +283,7 @@ def try_parsing_date(text):
     raise ValueError('no valid date format found')
 
 
-def np_type_2_py_type(row):
+def np_type_2_py_type(row, template='None'):
     if isinstance(row, numpy.int64):
         row = int(row)
     elif isinstance(row, dict):
@@ -291,7 +291,13 @@ def np_type_2_py_type(row):
     elif isinstance(row, numpy.bool_):
         row = int(bool(row))
     elif row is None:
-        row = "null"
+        # ATTN : Sometime a 'int' variable could be None.
+        if isinstance(template, int):
+            row = 0
+        elif isinstance(template, str):
+            row = "null"
+        else:
+            row = "null"
     elif isinstance(row, bool):
         row = int(row)
     elif isinstance(row, numpy.float64):
@@ -336,9 +342,6 @@ def parse_data(df, temp):
             continue
         # 第一步的转化
         row = np_type_2_py_type(row)
-        # # 这里的字符串都转换成在ck中能够使用函数解析json的标准格式
-        # if isinstance(row, str):
-        #     row.replace(": ", ":")
         # 解决嵌套 array
         if isinstance(row, list):
             # 数组中是字典
@@ -370,12 +373,10 @@ def parse_data(df, temp):
                         if key not in vis:
                             dict_data[key].append(default_dict[key])
             else:
-                # 这种是数组类型
                 data_name = f'{index}'
                 if data_name in dict_data:
                     dict_data[data_name] = row
         else:
-            # 这种是非list类型
             data_name = f'{index}'
             if data_name in dict_data:
                 dict_data[data_name] = row
