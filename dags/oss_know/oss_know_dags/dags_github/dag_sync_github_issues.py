@@ -9,7 +9,6 @@ from oss_know.libs.base_dict.variable_key import PROXY_CONFS, GITHUB_TOKENS, \
 from oss_know.libs.github import sync_issues
 from oss_know.libs.github import sync_issues_comments
 from oss_know.libs.github import sync_issues_timelines
-
 # v0.0.1
 from oss_know.libs.util.proxy import GithubTokenProxyAccommodator, make_accommodator, \
     ProxyServiceProvider

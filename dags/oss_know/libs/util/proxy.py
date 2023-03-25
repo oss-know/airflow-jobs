@@ -5,8 +5,8 @@ from random import shuffle as shuffle_list
 import requests
 from requests.exceptions import RequestException
 
+from oss_know.libs.util.github_token import TokenManager
 from oss_know.libs.util.log import logger
-from oss_know.libs.util.token import TokenManager
 
 
 class ProxyServiceProvider(Enum):

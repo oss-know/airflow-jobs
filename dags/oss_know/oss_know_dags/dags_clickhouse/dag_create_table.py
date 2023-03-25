@@ -6,7 +6,9 @@ from oss_know.libs.util.log import logger
 # clickhouse_init_sync_v0.0.1
 from oss_know.libs.base_dict.variable_key import CK_CREATE_TABLE_COLS_DATATYPE_TPLT, CLICKHOUSE_DRIVER_INFO
 from oss_know.libs.util.clickhouse_driver import CKServer
-
+"""
+使用建表sql直接建表
+"""
 with DAG(
         dag_id='create_table_use_ddl',
         schedule_interval=None,
@@ -22,10 +24,8 @@ with DAG(
         task_id='clickhouse_ddl_init',
         python_callable=init_clickhouse_ddl,
     )
-
+    from airflow.models import Variable
     def do_ck_create_table(params):
-        from airflow.models import Variable
-        from oss_know.libs.clickhouse import ck_create_table
         clickhouse_server_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
         local_table = params['local_table']
         distributed_table = params['distributed_table']
@@ -42,7 +42,7 @@ with DAG(
         return 'do_ck_create_table:::end'
 
 
-    from airflow.models import Variable
+
 
     ck_table_infos = Variable.get("ck_create_table_ddl", deserialize_json=True)
     for table_info in ck_table_infos:

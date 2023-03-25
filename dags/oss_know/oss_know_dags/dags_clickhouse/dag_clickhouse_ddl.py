@@ -1,5 +1,6 @@
-import pandas as pd
 from datetime import datetime
+
+import pandas as pd
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 
@@ -22,15 +23,7 @@ with DAG(
         python_callable=init_clickhouse_ddl,
     )
 
-    # "ck_table_infos": [
-    #     {
-    #         "table_name": "table1",
-    #         "table_engine": "MergeTree"
-    #         "partition_by":""
-    #         "order_by":""
-    #         "parse_data":
-    #     }
-    # ]
+
     def do_ck_create_table(params):
         from airflow.models import Variable
         from oss_know.libs.clickhouse import ck_create_table
@@ -44,15 +37,15 @@ with DAG(
         distributed_key = params.get("distributed_key")
         df = pd.json_normalize(parse_data)
         clickhouse_server_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
-        create_table = ck_create_table.create_ck_table(df=df,
-                                                       database_name=database_name,
-                                                       distributed_key=distributed_key,
-                                                       cluster_name=cluster_name,
-                                                       table_name=table_name,
-                                                       table_engine=table_engine,
-                                                       partition_by=partition_by,
-                                                       order_by=order_by,
-                                                       clickhouse_server_info=clickhouse_server_info)
+        ck_create_table.create_ck_table(df=df,
+                                        database_name=database_name,
+                                        distributed_key=distributed_key,
+                                        cluster_name=cluster_name,
+                                        table_name=table_name,
+                                        table_engine=table_engine,
+                                        partition_by=partition_by,
+                                        order_by=order_by,
+                                        clickhouse_server_info=clickhouse_server_info)
         return 'do_ck_create_table:::end'
 
 

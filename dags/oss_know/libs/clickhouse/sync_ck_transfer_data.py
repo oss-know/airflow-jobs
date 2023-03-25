@@ -1,21 +1,24 @@
 import copy
-import json
 import datetime
+import json
 import time
+from json import JSONDecodeError
+
 import pandas as pd
 import psycopg2
-from json import JSONDecodeError
 from airflow import AirflowException
 from clickhouse_driver.errors import ServerException
-from oss_know.libs.util.log import logger
 from opensearchpy import helpers
 from opensearchpy.exceptions import NotFoundError
+
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_CHECK_SYNC_DATA
-from oss_know.libs.clickhouse.init_ck_transfer_data import parse_data, get_table_structure, ck_check_point, \
-    utc_timestamp, ck_check_point_repo, bulk_except, bulk_except_repo, ck_check_point_maillist
+from oss_know.libs.clickhouse.init_ck_transfer_data import ck_check_point, \
+    ck_check_point_repo, bulk_except, bulk_except_repo, ck_check_point_maillist
 from oss_know.libs.util.airflow import get_postgres_conn
 from oss_know.libs.util.base import get_opensearch_client
 from oss_know.libs.util.clickhouse_driver import CKServer
+from oss_know.libs.util.data_transfer import parse_data, get_table_structure, utc_timestamp
+from oss_know.libs.util.log import logger
 
 
 def get_data_from_opensearch(opensearch_index, opensearch_conn_datas, clickhouse_table):

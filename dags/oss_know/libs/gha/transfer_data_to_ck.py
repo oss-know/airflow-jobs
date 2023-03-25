@@ -4,15 +4,16 @@ import gzip
 import json
 import random
 import time
-import pandas as pd
 from json import JSONDecodeError
 
-from oss_know.libs.util.base import now_timestamp
-from oss_know.libs.util.log import logger
+import pandas as pd
 from clickhouse_driver.errors import ServerException
+
 from oss_know.libs.base_dict.variable_key import CK_TABLE_DEFAULT_VAL_TPLT
-from oss_know.libs.clickhouse.init_ck_transfer_data import parse_data_init, get_table_structure, parse_data
+from oss_know.libs.util.base import now_timestamp
 from oss_know.libs.util.clickhouse_driver import CKServer
+from oss_know.libs.util.data_transfer import parse_data, parse_data_init, get_table_structure
+from oss_know.libs.util.log import logger
 
 
 def un_gzip(gz_filename):
@@ -170,15 +171,12 @@ def transfer_data_by_repo(clickhouse_server_info, table_name, tplt,
 
     fields = get_table_structure(table_name=table_name, ck=ck)
     max_timestamp = 0
-    count = 0
     bulk_data = []
     year = 0
     month = 0
     day = 0
     try:
         for os_data in opensearch_datas:
-            # logger.info(os_data)
-            # break
             updated_at = os_data["_source"]["search_key"]["updated_at"]
             if updated_at > max_timestamp:
                 max_timestamp = updated_at
