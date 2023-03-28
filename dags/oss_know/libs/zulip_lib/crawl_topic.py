@@ -39,6 +39,10 @@ def crawl_zulip_topic(owner, repo, email, api_key, site, opensearch_conn_info):
 
     stream_data = get_data_from_opensearch(OPENSEARCH_ZULIP_STREAM, owner, repo, opensearch_conn_info)
     opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_info)
+    index_exist = opensearch_client.indices.exists(index=OPENSEARCH_ZULIP_TOPIC)
+    if not index_exist:
+        response = opensearch_client.indices.create(index=OPENSEARCH_ZULIP_TOPIC)
+        logger.info(f"Initial OPENSEARCH_ZULIP_MESSAGE.")
     opensearch_api = OpensearchAPI()
 
     new_topic = 0
@@ -56,7 +60,7 @@ def crawl_zulip_topic(owner, repo, email, api_key, site, opensearch_conn_info):
         bulk_data = []
 
         for item in result:
-            if item["topic_name"] in topic_exist:
+            if item["topic_name"] in topic_exist or item["topic_name"] == "(deleted)":
                 continue
             bulk_data.append({
                 "_index": OPENSEARCH_ZULIP_TOPIC,
