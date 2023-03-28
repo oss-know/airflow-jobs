@@ -1,5 +1,4 @@
 from oss_know.libs.util.log import logger
-import logging
 # crawl
 import oss_know.libs.util.zulip_base as zulip_base
 import time
@@ -80,6 +79,8 @@ def get_topic_data_from_opensearch(index, owner, repo, stream_id, opensearch_con
 
 def get_latest_message_data_from_opensearch(index, owner, repo, stream_name, topic_name, opensearch_conn_info):
     opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_info)
+    # mapping = opensearch_client.indices.get_mapping(index=index)
+
     results = helpers.scan(client=opensearch_client,
                            query={
                                "query": {
