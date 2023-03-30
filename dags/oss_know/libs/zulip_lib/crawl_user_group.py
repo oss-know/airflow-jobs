@@ -13,6 +13,10 @@ def crawl_zulip_user_group(owner, repo, email, api_key, site, opensearch_conn_in
     opensearch_data = get_data_from_opensearch(OPENSEARCH_ZULIP_USER_GROUP, owner, repo, opensearch_conn_info)
     opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_info)
     opensearch_api = OpensearchAPI()
+    index_exist = opensearch_client.indices.exists(index=OPENSEARCH_ZULIP_USER_GROUP)
+    if not index_exist:
+        response = opensearch_client.indices.create(index=OPENSEARCH_ZULIP_USER_GROUP)
+        logger.info(f"Initial OPENSEARCH_ZULIP_USER_GROUP.")
 
     group_exist = dict()
     for item in opensearch_data:

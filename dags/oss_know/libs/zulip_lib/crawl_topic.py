@@ -42,7 +42,7 @@ def crawl_zulip_topic(owner, repo, email, api_key, site, opensearch_conn_info):
     index_exist = opensearch_client.indices.exists(index=OPENSEARCH_ZULIP_TOPIC)
     if not index_exist:
         response = opensearch_client.indices.create(index=OPENSEARCH_ZULIP_TOPIC)
-        logger.info(f"Initial OPENSEARCH_ZULIP_MESSAGE.")
+        logger.info(f"Initial OPENSEARCH_ZULIP_TOPIC.")
     opensearch_api = OpensearchAPI()
 
     new_topic = 0
@@ -55,12 +55,13 @@ def crawl_zulip_topic(owner, repo, email, api_key, site, opensearch_conn_info):
         opensearch_data = get_topic_data_from_opensearch(OPENSEARCH_ZULIP_TOPIC, owner, repo, stream_id, opensearch_conn_info)
         topic_exist = dict()
         for item in opensearch_data:
-            topic_exist[item["_source"]["raw_data"]["topic_name"]] = True
+            topic_exist[stream_name + "::" + item["_source"]["raw_data"]["topic_name"]] = True
+        # logger.info(f"{len(topic_exist)} topics existed.")
 
         bulk_data = []
 
         for item in result:
-            if item["topic_name"] in topic_exist or item["topic_name"] == "(deleted)":
+            if stream_name + "::" + item["topic_name"] in topic_exist:
                 continue
             bulk_data.append({
                 "_index": OPENSEARCH_ZULIP_TOPIC,
@@ -82,7 +83,8 @@ def crawl_zulip_topic(owner, repo, email, api_key, site, opensearch_conn_info):
                                                             owner=owner,
                                                             repo=repo)
 
-        logger.info(f"sync_bulk_zulip_data::stream:{stream_name}::success:{success},failure:{failure}")
+        if success != 0:
+            logger.info(f"sync_bulk_zulip_data::stream:{stream_name}::success:{success},failure:{failure}")
         bulk_data.clear()
     logger.info(f"count:{new_topic}::{owner}/{repo}")
     return

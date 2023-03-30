@@ -14,6 +14,10 @@ def crawl_zulip_member(owner, repo, email, api_key, site, opensearch_conn_info):
 
     opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_info)
     opensearch_api = OpensearchAPI()
+    index_exist = opensearch_client.indices.exists(index=OPENSEARCH_ZULIP_MEMBER)
+    if not index_exist:
+        response = opensearch_client.indices.create(index=OPENSEARCH_ZULIP_MEMBER)
+        logger.info(f"Initial OPENSEARCH_ZULIP_MEMBER.")
 
     member_exist = dict()
     for item in opensearch_data:

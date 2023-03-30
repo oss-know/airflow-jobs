@@ -51,7 +51,7 @@ def get_messages(client, stream_name, topic_name, latest_anchor):
         found_newest = result["found_newest"]
         results.extend(result["messages"])
         time.sleep(1)
-    logger.info(f"total_count of {stream_name}::{topic_name}:{len(results)}")
+    # logger.info(f"total_count of {stream_name}::{topic_name}:{len(results)}")
     return results
 
 
@@ -59,6 +59,7 @@ def crawl_zulip_message(owner, repo, email, api_key, site, opensearch_conn_info)
     client = zulip.Client(email=email, api_key=api_key, site=site)
 
     topic_data = get_data_from_opensearch(OPENSEARCH_ZULIP_TOPIC, owner, repo, opensearch_conn_info)
+    topic_data = list(topic_data)
     opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_info)
     index_exist = opensearch_client.indices.exists(index=OPENSEARCH_ZULIP_MESSAGE)
     if not index_exist:
@@ -70,6 +71,7 @@ def crawl_zulip_message(owner, repo, email, api_key, site, opensearch_conn_info)
     for topic in topic_data:
         stream_name = topic["_source"]["raw_data"]["stream_name"]
         topic_name = topic["_source"]["raw_data"]["topic_name"]
+        # logger.info(f"Current narrow is {stream_name}::{topic_name}")
         
         latest_anchor = "oldest"
         if index_exist:
@@ -79,7 +81,8 @@ def crawl_zulip_message(owner, repo, email, api_key, site, opensearch_conn_info)
                 latest_anchor = item["_source"]["raw_data"]["id"]
                 # logger.info(f"anchor of {topic_name} is {latest_anchor}")
                 break
-            
+        if latest_anchor == topic["_source"]["raw_data"]["max_id"]:
+            continue
 
         result = get_messages(client, stream_name, topic_name, latest_anchor)
 
@@ -112,7 +115,5 @@ def crawl_zulip_message(owner, repo, email, api_key, site, opensearch_conn_info)
         if success != 0:
             logger.info(f"sync_bulk_zulip_data::{stream_name}::{topic_name}::success:{success},failure:{failure}")
         bulk_data.clear()
-        # if new_message != 0 and new_message > 10:
-        #     break
     logger.info(f"count:{new_message}::{owner}/{repo}")
     return
