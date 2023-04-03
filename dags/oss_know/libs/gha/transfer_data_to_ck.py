@@ -133,7 +133,7 @@ def parse_json_data_hour(clickhouse_server_info, file_name, bulk_data_map, count
                                                              "gh_archive_day": gh_archive_day,
                                                              "gh_archive_hour": gh_archive_hour,
                                                              "event_type": event_type,
-                                                             "id": result['id']
+                                                             "id": int(result['id'])
                                                              },
                                               "raw_data": result
                                               }
