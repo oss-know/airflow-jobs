@@ -1,17 +1,18 @@
 import random
-import requests
 import time
 
+import requests
 from opensearchpy import OpenSearch
 from opensearchpy import helpers as OpenSearchHelpers
+
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, \
     OPENSEARCH_INDEX_GITHUB_ISSUES
+from oss_know.libs.base_dict.options import GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX
 from oss_know.libs.exceptions import GithubResourceNotFoundError
 from oss_know.libs.util.base import concurrent_threads
 from oss_know.libs.util.github_api import GithubAPI, GithubException
-from oss_know.libs.util.opensearch_api import OpensearchAPI
 from oss_know.libs.util.log import logger
-from oss_know.libs.base_dict.options import GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX
+from oss_know.libs.util.opensearch_api import OpensearchAPI
 
 
 def init_github_issues_comments(opensearch_conn_info, owner, repo, token_proxy_accommodator, since=None):
@@ -85,7 +86,8 @@ def init_github_issues_comments(opensearch_conn_info, owner, repo, token_proxy_a
         number = issue_item["_source"]["raw_data"]["number"]
 
         # 创建并发任务
-        ct = concurrent_threads(do_get_github_comments, args=(opensearch_client, token_proxy_accommodator, owner, repo, number))
+        ct = concurrent_threads(do_get_github_comments,
+                                args=(opensearch_client, token_proxy_accommodator, owner, repo, number))
         get_comment_tasks.append(ct)
         ct.start()
         # 执行并发任务并获取结果
@@ -99,7 +101,6 @@ def init_github_issues_comments(opensearch_conn_info, owner, repo, token_proxy_a
                 get_comment_results.append(tt.getResult())
         if len(get_comment_fails_results) != 0:
             raise GithubException('github请求失败！', get_comment_fails_results)
-
 
 
 # 在concurrent_threads中执行并发具体的业务方法
@@ -119,7 +120,8 @@ def do_get_github_comments(opensearch_client, token_proxy_accommodator, owner, r
             one_page_github_issues_comments = req.json()
 
         except GithubResourceNotFoundError as e:
-            logger.error(f"fail init github timeline, {owner}/{repo}, issues_number:{number}, now_page:{page}, Target timeline info does not exist: {e}, end")
+            logger.error(
+                f"fail init github timeline, {owner}/{repo}, issues_number:{number}, now_page:{page}, Target timeline info does not exist: {e}, end")
             # return 403, e
 
         logger.debug(f"one_page_github_issues_comments:{one_page_github_issues_comments}")

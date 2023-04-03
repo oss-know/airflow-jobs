@@ -263,6 +263,40 @@ class OpensearchAPI:
         logger.info(
             f"now page:{len(bulk_all_github_issues_comments)} sync github issues comments success:{success} & failed:{failed}")
 
+    def bulk_github_issues_comments_reaction(self,
+                                             opensearch_client,
+                                             issues_comments_reactions,
+                                             owner,
+                                             repo,
+                                             number,
+                                             comment_id):
+        bulk_all_github_issues_comments_reactions = []
+
+        for val in issues_comments_reactions:
+            template = {
+                "_index": "github_issues_comments_reactions",
+                "_source": {
+                    "search_key": {
+                        "owner": owner,
+                        "repo": repo,
+                        "number": number,
+                        "comment_id": comment_id,
+                        'updated_at': int(datetime.datetime.now().timestamp() * 1000)
+
+                    },
+                    "raw_data": None
+                }
+            }
+            commit_comment_reaction_item = copy.deepcopy(template)
+            commit_comment_reaction_item["_source"]["raw_data"] = val
+            bulk_all_github_issues_comments_reactions.append(commit_comment_reaction_item)
+            # logger.info(f"add init sync github issues comments number:{number}")
+
+        success, failed = self.do_opensearch_bulk(opensearch_client, bulk_all_github_issues_comments_reactions, owner,
+                                                  repo)
+        logger.info(
+            f"now page:{len(bulk_all_github_issues_comments_reactions)} sync github issues comments success:{success} & failed:{failed}")
+
     # 建立 owner/repo github issues 更新基准
     def set_sync_github_issues_check(self, opensearch_client, owner, repo, now_time):
         check_update_info = {

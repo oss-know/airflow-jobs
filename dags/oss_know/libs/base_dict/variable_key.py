@@ -16,7 +16,7 @@ DAILY_SYNC_GITHUB_ISSUES_TIMELINE_INCLUDES = "github_issues_timeline_sync_includ
 DAILY_SYNC_GITHUB_ISSUES_TIMELINE_EXCLUDES = "github_issues_timeline_sync_excludes"
 
 POSTGRES_CONN_INFO = "postgres_conn_info"
-
+NEED_INIT_GITHUB_ISSUES_COMMENT_REACTION_REPOS = "need_init_github_issues_comments_reactions"
 NEED_INIT_GITHUB_COMMITS_REPOS = "need_init_github_commits_repos"
 NEED_INIT_GITHUB_ISSUES_REPOS = "need_init_github_issues_repos"
 NEED_INIT_GITHUB_PULL_REQUESTS_REPOS = "need_init_github_pull_requests_repos"
