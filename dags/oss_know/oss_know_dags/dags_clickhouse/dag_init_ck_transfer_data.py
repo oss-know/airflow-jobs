@@ -45,13 +45,6 @@ with DAG(
         else:
             table_templates = Variable.get(CK_TABLE_DEFAULT_VAL_TPLT, deserialize_json=True)
             template = table_templates.get(table_name)
-            # for table_template in table_templates:
-            #     if table_template.get("table_name") == table_name:
-            #         template = table_template.get("temp")
-            #         break
-            df = pd.json_normalize(template)
-            template = parse_data_init(df)
-
             transfer_data = init_ck_transfer_data.transfer_data(clickhouse_server_info=clickhouse_server_info,
                                                                 opensearch_index=opensearch_index,
                                                                 table_name=table_name,
@@ -65,7 +58,8 @@ with DAG(
     os_index_ck_tb_infos = Variable.get(CK_TABLE_MAP_FROM_OS_INDEX, deserialize_json=True)
     for os_index_ck_tb_info in os_index_ck_tb_infos:
         op_do_ck_transfer_data = PythonOperator(
-            task_id=f'do_ck_transfer_os_index_{os_index_ck_tb_info["OPENSEARCH_INDEX"]}_ck_tb_{os_index_ck_tb_info["CK_TABLE_NAME"]}',
+            task_id=f'do_ck_transfer_os_index_{os_index_ck_tb_info["OPENSEARCH_INDEX"]}_ck_tb_'
+                    f'{os_index_ck_tb_info["CK_TABLE_NAME"]}',
             python_callable=do_ck_transfer_data,
             op_kwargs={'params': os_index_ck_tb_info},
         )

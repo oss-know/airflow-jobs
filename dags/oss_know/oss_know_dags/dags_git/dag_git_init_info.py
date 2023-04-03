@@ -26,7 +26,7 @@ with DAG(
                        proxy_config=None,
                        opensearch_conn_datas=opensearch_conn_info,
                        git_save_local_path=git_save_local_path)
-        return 'do_sync_git_info:::end'
+        return 'do_init_gits:::end'
 
 
     git_info_list = Variable.get(NEED_INIT_GITS, deserialize_json=True)
@@ -34,7 +34,7 @@ with DAG(
         owner = git_info["owner"]
         repo = git_info["repo"]
         url = git_info["url"]
-        op_do_init_sync_git_info = PythonOperator(
+        op_init_gits_repo = PythonOperator(
             task_id=f'do_init_gits_{owner}_{repo}',
             python_callable=do_init_gits_repo,
             op_kwargs={

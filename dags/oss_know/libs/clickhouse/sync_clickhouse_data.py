@@ -125,9 +125,9 @@ def sync_from_remote_by_repo(local_ck_conn_info, remote_ck_conn_info, table_name
     limit 1
     """
 
-    cols = local_ck_client.execute_no_params(local_latest_updated_at_sql)
+    rows = local_ck_client.execute_no_params(local_latest_updated_at_sql)
 
-    local_latest_updated_at = 0 if not cols else cols[0][0]
+    local_latest_updated_at = 0 if not rows else rows[0][0]
 
     table_col_names_sql = f"""
     select distinct name

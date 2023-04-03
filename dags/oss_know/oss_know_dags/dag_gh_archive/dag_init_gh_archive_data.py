@@ -4,6 +4,7 @@ import time
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 
+from oss_know.libs.base_dict.variable_key import OPENSEARCH_CONN_DATA
 from oss_know.libs.gh_archive.parse_data import parse_json_data
 
 with DAG(
@@ -45,7 +46,7 @@ with DAG(
     def do_sync_gh_archive_data(year, month, day):
         from airflow.models import Variable
         from oss_know.libs.github import init_gits
-        opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
+        opensearch_conn_datas = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
         print(year)
         print(month)
         print(day)
@@ -76,8 +77,8 @@ with DAG(
         for month in range(2, 3):
             day_count = calendar.monthrange(year, month)[1]
             if month < 10:
-                month = '0'+str(month)
-            for i in range(1, day_count+1):
+                month = '0' + str(month)
+            for i in range(1, day_count + 1):
                 if i < 10:
                     i = '0' + str(i)
                 op_do_init_sync_gh_archive_data = PythonOperator(
@@ -87,5 +88,3 @@ with DAG(
                 )
 
                 op_init_sync_gh_archive_data >> op_do_init_sync_gh_archive_data
-
-
