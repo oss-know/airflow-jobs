@@ -3,7 +3,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 
 # git_init_sync_v0.0.3
-from oss_know.libs.base_dict.variable_key import NEED_INIT_GITS
+from oss_know.libs.base_dict.variable_key import NEED_INIT_GITS, OPENSEARCH_CONN_DATA, GIT_SAVE_LOCAL_PATH, PROXY_CONFS
 
 with DAG(
         dag_id='git_init_v1',
@@ -28,15 +28,15 @@ with DAG(
         owner = params["owner"]
         repo = params["repo"]
         url = params["url"]
-        proxy_config = params.get("proxy_config")
-        opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
-        git_save_local_path = Variable.get("git_save_local_path", deserialize_json=True)
-        init_sync_git_info = init_gits.init_sync_git_datas(git_url=url,
-                                                           owner=owner,
-                                                           repo=repo,
-                                                           proxy_config=proxy_config,
-                                                           opensearch_conn_datas=opensearch_conn_datas,
-                                                           git_save_local_path=git_save_local_path)
+        proxy_config = params.get("proxy_config")  # proxy_config in airflow Variable might be None
+        opensearch_conn_datas = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
+        git_save_local_path = Variable.get(GIT_SAVE_LOCAL_PATH, deserialize_json=True)
+        init_gits.init_gits_repo(git_url=url,
+                                 owner=owner,
+                                 repo=repo,
+                                 proxy_config=proxy_config,
+                                 opensearch_conn_datas=opensearch_conn_datas,
+                                 git_save_local_path=git_save_local_path)
         return 'do_sync_git_info:::end'
 
 

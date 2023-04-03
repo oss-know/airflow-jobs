@@ -1,14 +1,15 @@
 from datetime import datetime
-from airflow import DAG
-from airflow.operators.python import PythonOperator
 
+from airflow import DAG
+from airflow.models import XCom
+from airflow.operators.python import PythonOperator
+from airflow.utils.db import provide_session
 # git_init_sync_v0.0.3
 from opensearchpy import helpers
-from airflow.models import XCom
-from oss_know.libs.base_dict.variable_key import NEED_INIT_GITS, SYNC_PROFILES_TASK_NUM
 from oss_know.libs.obs.obs_api import list_objs, get_obs_client, download_from_obs, excute_script
+
+from oss_know.libs.base_dict.variable_key import OPENSEARCH_CONN_DATA
 from oss_know.libs.util.base import get_opensearch_client
-from airflow.utils.db import provide_session
 
 
 @provide_session
@@ -50,7 +51,7 @@ with DAG(
                                     proxy_username=1,
                                     proxy_password=1)
         objs = list_objs(bucketname=bucketname, obs_client=obs_client, prefix=prefix)
-        opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
+        opensearch_conn_datas = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
         opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
         results = helpers.scan(client=opensearch_client,
                                query={
@@ -95,7 +96,7 @@ with DAG(
                                     proxy_username=None,
                                     proxy_password=None)
         bucketname = 'oss-know-bj'
-        opensearch_conn_datas = Variable.get("opensearch_conn_data", deserialize_json=True)
+        opensearch_conn_datas = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
         opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
         for obj in objs_need_to_download:
             download_from_obs(obs_client=obs_client, bucketname=bucketname, objectname=obj,
@@ -152,8 +153,6 @@ with DAG(
         for obj in need_insert_objs:
             excute_script(obj_name=obj, opensearch_client=opensearch_client)
 
-
-    from airflow.models import Variable
 
     op_do_list_obs_data = PythonOperator(
         task_id=f'do_list_obs_data',
