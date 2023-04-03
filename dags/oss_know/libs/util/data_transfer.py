@@ -7,6 +7,7 @@ from json import JSONDecodeError
 
 import numpy
 import pandas as pd
+from dateutil.parser import parse
 from opensearchpy import helpers
 
 from oss_know.libs.base_dict.clickhouse import GITHUB_ISSUES_TIMELINE_TEMPLATE, CLICKHOUSE_RAW_DATA
@@ -260,6 +261,35 @@ def os_doc_to_ck_row(os_doc, table_template, fields):
     return row
 
 
+# The essential keys to pill off from issue timeline's raw_data
+TIMELINE_RAW_DATA_ESSENTIAL_KEYS = [
+    'id',
+    'node_id',
+    'actor_id',
+    'actor_login',
+    'source_issue_number',
+    'url',
+    'commit_id',
+    'commit_url',
+    'created_at',
+]
+
+
+def attach_timeline_raw_data_keys(data_to_insert, timeline_raw_dict):
+    for key in TIMELINE_RAW_DATA_ESSENTIAL_KEYS:
+        # The key might exist and hold a None value, then get return None
+        # Notice that default_val only takes effect when key doesn't exist
+
+        default_val = ''
+        if key == 'created_at':
+            default_val = '1970-1-1'
+            data_to_insert[key] = parse(timeline_raw_dict.get(key, default_val) or default_val)
+        else:
+            if key == 'id' or key == 'source_issue_number' or key == 'actor_id':
+                default_val = 0
+            data_to_insert[key] = timeline_raw_dict.get(key, default_val) or default_val
+
+
 def timeline_doc_to_ck_row(timeline_doc, ck_data_insert_at):
     row = copy.deepcopy(GITHUB_ISSUES_TIMELINE_TEMPLATE)
     row['search_key__owner'] = timeline_doc["_source"]["search_key"]['owner']
@@ -271,6 +301,8 @@ def timeline_doc_to_ck_row(timeline_doc, ck_data_insert_at):
     raw_data = timeline_doc["_source"]["raw_data"]
     standard_data = json.dumps(raw_data, separators=(',', ':'), ensure_ascii=False)
     row['timeline_raw'] = standard_data
+    attach_timeline_raw_data_keys(row, raw_data)
+
     return row
 
 
@@ -305,7 +337,8 @@ def np_type_2_py_type(row, template='None'):
     return row
 
 
-regex = r'^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\.[0-9]+)?(Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])?$'
+regex = r'^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([' \
+        r'0-5][0-9])(\.[0-9]+)?(Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])?$'
 
 match_iso8601 = re.compile(regex).match
 

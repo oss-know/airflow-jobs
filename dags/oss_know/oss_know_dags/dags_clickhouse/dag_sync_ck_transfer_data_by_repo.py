@@ -35,7 +35,7 @@ with DAG(
         opensearch_conn_datas = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
         clickhouse_server_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
         template = {}
-
+        # TODO Restructure the code if needed, or delete it if it's no longer used
         if table_name.startswith("github_issues_timeline"):
             transfer_data = sync_ck_transfer_data.sync_transfer_data_spacial_by_repo(
                 clickhouse_server_info=clickhouse_server_info,
@@ -75,7 +75,9 @@ with DAG(
     for os_index_ck_tb_info in os_index_ck_tb_infos:
         for owner_repo in owner_repo_list:
             op_do_sync_ck_transfer_data_by_repo = PythonOperator(
-                task_id=f'do_ck_transfer_os_index_{os_index_ck_tb_info["OPENSEARCH_INDEX"]}_ck_tb_{os_index_ck_tb_info["CK_TABLE_NAME"]}_owner_{owner_repo.get("owner")}_repo_{owner_repo.get("repo")}',
+                task_id=f'do_ck_transfer_os_index_{os_index_ck_tb_info["OPENSEARCH_INDEX"]}_ck_tb_'
+                        f'{os_index_ck_tb_info["CK_TABLE_NAME"]}_owner_{owner_repo.get("owner"
+            )}_repo_{owner_repo.get("repo")}',
                 python_callable=do_sync_ck_transfer_data_by_repo,
                 op_kwargs={'params': os_index_ck_tb_info, 'owner_repo': owner_repo},
             )

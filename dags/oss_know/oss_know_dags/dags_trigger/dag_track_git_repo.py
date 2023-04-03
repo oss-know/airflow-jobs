@@ -162,7 +162,7 @@ with DAG(
             pg_conn.commit()
 
             # Handle timeline separately
-            init_ck_transfer_data.transfer_data_special_by_repo(
+            init_ck_transfer_data.transfer_issue_timeline_by_repo(
                 clickhouse_server_info=clickhouse_server_info,
                 opensearch_index='github_issues_timeline',
                 table_name='github_issues_timeline',
@@ -175,9 +175,6 @@ with DAG(
                 ck_table_name = os_ck_map['CK_TABLE_NAME']
 
                 template = table_templates.get(ck_table_name)
-                df = pd.json_normalize(template)
-                template = parse_data_init(df)
-
                 init_ck_transfer_data.transfer_data_by_repo(
                     clickhouse_server_info=clickhouse_server_info,
                     opensearch_index=os_index_name,

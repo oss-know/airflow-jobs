@@ -11,7 +11,8 @@ from oss_know.libs.base_dict.clickhouse import GITHUB_ISSUES_TIMELINE_TEMPLATE
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_CHECK_SYNC_DATA
 from oss_know.libs.util.base import get_opensearch_client, now_timestamp
 from oss_know.libs.util.clickhouse_driver import CKServer
-from oss_know.libs.util.data_transfer import parse_data, opensearch_to_clickhouse, keep_idempotent, get_table_structure, \
+from oss_know.libs.util.data_transfer import parse_data, opensearch_to_clickhouse, keep_idempotent, \
+    get_table_structure, \
     get_data_from_opensearch, get_opensearch_query_body
 from oss_know.libs.util.log import logger
 
@@ -118,36 +119,9 @@ def ck_check_point_discourse(opensearch_client, opensearch_index, clickhouse_tab
     logger.info(response)
 
 
-# <<<<<<< HEAD
-#
-# # 转换为基本数据类型
-# def alter_data_type(row, template='None'):
-#     if isinstance(row, numpy.int64):
-#         row = int(row)
-#     elif isinstance(row, dict):
-#         row = str(row).replace(": ", ":")
-#     elif isinstance(row, numpy.bool_):
-#         row = int(bool(row))
-#     elif row is None:
-#         # ATTN : Sometime a 'int' variable could be None.
-#         if isinstance(template, int):
-#             row = 0
-#         elif isinstance(template, str):
-#             row = "null"
-#         else:
-#             row = "null"
-#     elif isinstance(row, bool):
-#         row = int(row)
-#     elif isinstance(row, numpy.float64):
-#         row = float(row)
-#     return row
-#
-# =======
-# >>>>>>> 77e62f2 (重构导入clickhouse部分)
-
 # 特殊情况 by repo
-def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, table_name, opensearch_conn_datas,
-                                  search_key):
+def transfer_issue_timeline_by_repo(clickhouse_server_info, opensearch_index, table_name, opensearch_conn_datas,
+                                    search_key):
     opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_datas)
     github_issues_timeline_template = copy.deepcopy(GITHUB_ISSUES_TIMELINE_TEMPLATE)
     github_issues_timeline_template["ck_data_insert_at"] = now_timestamp()
@@ -162,12 +136,12 @@ def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, tabl
     # 判断项目是否在ck中存在
     if_null_sql = f"select count() from {table_name} where search_key__owner='{owner}' and search_key__repo='{repo}'"
     if_null_result = ck_client.execute_no_params(if_null_sql)
-    if if_null_result[0][0] != 0:
-        keep_idempotent(ck=ck_client, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
-                        table_name=table_name, transfer_type="github_git_init_by_repo")
-    else:
-        logger.info("No data in CK")
-    logger.info("github_git_init_by_repo------------------------")
+    # TODO Test the mergexxxxx new Engine, keep_idempotent is not necessary.
+    # if if_null_result[0][0] != 0:
+    #     keep_idempotent(ck=ck_client, search_key=search_key, clickhouse_server_info=clickhouse_server_info,
+    #                     table_name=table_name, transfer_type="github_git_init_by_repo")
+    # else:
+    #     logger.info("No data in CK")
     query_body = {
         "query": {
             "bool": {
@@ -175,14 +149,14 @@ def transfer_data_special_by_repo(clickhouse_server_info, opensearch_index, tabl
                     {
                         "term": {
                             "search_key.owner.keyword": {
-                                "value": repo.get('owner')
+                                "value": owner
                             }
                         }
                     },
                     {
                         "term": {
                             "search_key.repo.keyword": {
-                                "value": repo.get('repo')
+                                "value": repo
                             }
                         }
                     }

@@ -5,7 +5,7 @@ from airflow.operators.python import PythonOperator
 
 # clickhouse_init_sync_v0.0.1
 from oss_know.libs.base_dict.variable_key import CLICKHOUSE_DRIVER_INFO, \
-    CK_TABLE_DEFAULT_VAL_TPLT
+    CK_TABLE_DEFAULT_VAL_TPLT, NEED_INIT_TRANSFER_TO_CLICKHOUSE
 
 with DAG(
         dag_id='init_ck_transfer_data_by_repo',
@@ -14,7 +14,7 @@ with DAG(
         catchup=False,
         tags=['clickhouse'],
 ) as dag:
-    def init_clickhouse_transfer_data(ds, **kwargs):
+    def init_clickhouse_transfer_data():
         return 'Start init_clickhouse_transfer_data_by_repo'
 
 
@@ -34,7 +34,7 @@ with DAG(
         clickhouse_server_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
 
         if table_name.startswith("github_issues_timeline"):
-            init_ck_transfer_data.transfer_data_special_by_repo(
+            init_ck_transfer_data.transfer_issue_timeline_by_repo(
                 clickhouse_server_info=clickhouse_server_info,
                 opensearch_index=opensearch_index,
                 table_name=table_name,
@@ -64,25 +64,37 @@ with DAG(
         return 'do_ck_transfer_data_by_repo:::end'
 
 
-    need_init_transfer_to_clickhouse = Variable.get("need_init_transfer_to_clickhouse", deserialize_json=True)
+    need_init_transfer_to_clickhouse = Variable.get(NEED_INIT_TRANSFER_TO_CLICKHOUSE, deserialize_json=True)
 
     for index_and_repo in need_init_transfer_to_clickhouse:
+        os_index = index_and_repo["index"]
+
         if index_and_repo["index"].startswith('maillist'):
+            project_name = owner_repo_or_project_maillist_name.get("project_name")
+            mail_list_name = owner_repo_or_project_maillist_name.get("mail_list_name")
+
             for owner_repo_or_project_maillist_name in index_and_repo["repo_list"]:
                 op_do_ck_transfer_data_by_repo = PythonOperator(
-                    task_id=f'do_ck_transfer_os_index_{index_and_repo["index"]}_project_name_{owner_repo_or_project_maillist_name.get("project_name")}_mail_list_name_{owner_repo_or_project_maillist_name.get("mail_list_name")}',
+                    task_id=f'do_ck_transfer_os_index_{os_index}_project_name_'
+                            f'{project_name}_mail_list_name_{mail_list_name}',
                     python_callable=do_ck_transfer_data_by_repo,
-                    op_kwargs={'params': index_and_repo,
-                               'owner_repo_or_project_maillist_name': owner_repo_or_project_maillist_name},
+                    op_kwargs={
+                        'params': index_and_repo,
+                        'owner_repo_or_project_maillist_name': owner_repo_or_project_maillist_name
+                    },
                 )
                 op_init_clickhouse_transfer_data_by_repo >> op_do_ck_transfer_data_by_repo
         else:
             for owner_repo_or_project_maillist_name in index_and_repo["repo_list"]:
+                owner = owner_repo_or_project_maillist_name.get("owner")
+                repo = owner_repo_or_project_maillist_name.get("repo")
                 op_do_ck_transfer_data_by_repo = PythonOperator(
-                    task_id=f'do_ck_transfer_os_index_{index_and_repo["index"]}_owner_{owner_repo_or_project_maillist_name.get("owner")}_repo_{owner_repo_or_project_maillist_name.get("repo")}',
+                    task_id=f'do_ck_transfer_os_index_{os_index}_owner_{owner}_repo_{repo}',
                     python_callable=do_ck_transfer_data_by_repo,
-                    op_kwargs={'params': index_and_repo,
-                               'owner_repo_or_project_maillist_name': owner_repo_or_project_maillist_name},
+                    op_kwargs={
+                        'params': index_and_repo,
+                        'owner_repo_or_project_maillist_name': owner_repo_or_project_maillist_name
+                    },
                 )
 
-                op_init_clickhouse_transfer_data_by_repo >> op_do_ck_transfer_data_by_repo
+            op_init_clickhouse_transfer_data_by_repo >> op_do_ck_transfer_data_by_repo
