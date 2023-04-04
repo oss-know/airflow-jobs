@@ -1,17 +1,18 @@
 import random
-import requests
 import time
 
+import requests
 from opensearchpy import OpenSearch
-from opensearchpy import helpers as OpenSearchHelpers
+from opensearchpy import helpers as opensearch_helpers
+
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, \
     OPENSEARCH_INDEX_GITHUB_ISSUES
+from oss_know.libs.base_dict.options import GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX
 from oss_know.libs.exceptions import GithubResourceNotFoundError
 from oss_know.libs.util.base import concurrent_threads
 from oss_know.libs.util.github_api import GithubAPI, GithubException
-from oss_know.libs.util.opensearch_api import OpensearchAPI
 from oss_know.libs.util.log import logger
-from oss_know.libs.base_dict.options import GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX
+from oss_know.libs.util.opensearch_api import OpensearchAPI
 
 
 def init_github_issues_comments(opensearch_conn_info, owner, repo, token_proxy_accommodator, since=None):
@@ -27,26 +28,32 @@ def init_github_issues_comments(opensearch_conn_info, owner, repo, token_proxy_a
     )
 
     # 根据指定的owner/repo,获取现在所有的issues，并根据所有issues遍历相关的comments
-    issues_results = OpenSearchHelpers.scan(opensearch_client,
-                                            index=OPENSEARCH_INDEX_GITHUB_ISSUES,
-                                            query={
-                                                "query": {
-                                                    "bool": {"must": [
-                                                        {"term": {
-                                                            "search_key.owner.keyword": {
-                                                                "value": owner
-                                                            }
-                                                        }},
-                                                        {"term": {
-                                                            "search_key.repo.keyword": {
-                                                                "value": repo
-                                                            }
-                                                        }}
-                                                    ]}
-                                                }
-                                            },
-                                            request_timeout=120,
-                                            )
+    issues_results = opensearch_helpers.scan(opensearch_client,
+                                             index=OPENSEARCH_INDEX_GITHUB_ISSUES,
+                                             query={
+                                                 "query": {
+                                                     "bool": {
+                                                         "must": [
+                                                             {
+                                                                 "term": {
+                                                                     "search_key.owner.keyword": {
+                                                                         "value": owner
+                                                                     }
+                                                                 }
+                                                             },
+                                                             {
+                                                                 "term": {
+                                                                     "search_key.repo.keyword": {
+                                                                         "value": repo
+                                                                     }
+                                                                 }
+                                                             }
+                                                         ]
+                                                     }
+                                                 }
+                                             },
+                                             request_timeout=120,
+                                             )
     need_init_comments_all_issues = []
     for issues_item in issues_results:
         need_init_comments_all_issues.append(issues_item)
@@ -57,18 +64,24 @@ def init_github_issues_comments(opensearch_conn_info, owner, repo, token_proxy_a
     del_result = opensearch_client.delete_by_query(index=OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS,
                                                    body={
                                                        "query": {
-                                                           "bool": {"must": [
-                                                               {"term": {
-                                                                   "search_key.owner.keyword": {
-                                                                       "value": owner
+                                                           "bool": {
+                                                               "must": [
+                                                                   {
+                                                                       "term": {
+                                                                           "search_key.owner.keyword": {
+                                                                               "value": owner
+                                                                           }
+                                                                       }
+                                                                   },
+                                                                   {
+                                                                       "term": {
+                                                                           "search_key.repo.keyword": {
+                                                                               "value": repo
+                                                                           }
+                                                                       }
                                                                    }
-                                                               }},
-                                                               {"term": {
-                                                                   "search_key.repo.keyword": {
-                                                                       "value": repo
-                                                                   }
-                                                               }}
-                                                           ]}
+                                                               ]
+                                                           }
                                                        },
                                                    },
                                                    request_timeout=120,
@@ -85,7 +98,8 @@ def init_github_issues_comments(opensearch_conn_info, owner, repo, token_proxy_a
         number = issue_item["_source"]["raw_data"]["number"]
 
         # 创建并发任务
-        ct = concurrent_threads(do_get_github_comments, args=(opensearch_client, token_proxy_accommodator, owner, repo, number))
+        ct = concurrent_threads(do_get_github_comments,
+                                args=(opensearch_client, token_proxy_accommodator, owner, repo, number))
         get_comment_tasks.append(ct)
         ct.start()
         # 执行并发任务并获取结果
@@ -101,7 +115,9 @@ def init_github_issues_comments(opensearch_conn_info, owner, repo, token_proxy_a
             raise GithubException('github请求失败！', get_comment_fails_results)
 
 
-
+# TODO Recheck the basic helper to confirm:
+#  1. Are the 2 return values necessary?
+#  2. Some branches does not return any value.
 # 在concurrent_threads中执行并发具体的业务方法
 def do_get_github_comments(opensearch_client, token_proxy_accommodator, owner, repo, number):
     req_session = requests.Session()
@@ -110,7 +126,7 @@ def do_get_github_comments(opensearch_client, token_proxy_accommodator, owner, r
 
     for page in range(1, 10000):
         time.sleep(random.uniform(GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX))
-
+        one_page_github_issues_comments = None
         try:
             req = github_api.get_github_issues_comments(http_session=req_session,
                                                         token_proxy_accommodator=token_proxy_accommodator,
@@ -119,7 +135,9 @@ def do_get_github_comments(opensearch_client, token_proxy_accommodator, owner, r
             one_page_github_issues_comments = req.json()
 
         except GithubResourceNotFoundError as e:
-            logger.error(f"fail init github timeline, {owner}/{repo}, issues_number:{number}, now_page:{page}, Target timeline info does not exist: {e}, end")
+            logger.error(
+                f"Failed to init github timeline for {owner}/{repo}, issues_number:{number}, now_page:{page}, "
+                f"Target timeline info does not exist: {e}")
             # return 403, e
 
         logger.debug(f"one_page_github_issues_comments:{one_page_github_issues_comments}")

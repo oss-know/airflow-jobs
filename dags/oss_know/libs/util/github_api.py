@@ -99,6 +99,21 @@ class GithubAPI:
             logger.warning(f'Failed to get issue comments {url}, the Github Internal Server Error: {gise}')
         return res
 
+    def get_github_issues_comments_reactions(self, http_session, token_proxy_accommodator, owner, repo,
+                                             comment_id, page):
+        url = f"https://api.github.com/repos/{owner}/{repo}/issues/comments/{comment_id}/reactions"
+        headers = copy.deepcopy(self.github_headers)
+        params = {'per_page': 100, 'page': page}
+
+        res = EmptyObjectResponse()
+        try:
+            res = do_get_github_result(http_session, url, headers, params, token_proxy_accommodator)
+        except GithubResourceNotFoundError as e:
+            logger.warning(f'Failed to get issue comments reaction {url}, the resource does not exist: {e}')
+        except GithubInternalServerError as gise:
+            logger.warning(f'Failed to get issue comments reaction {url}, the Github Internal Server Error: {gise}')
+        return res
+
     def get_github_pull_requests(self, http_session, token_proxy_accommodator, owner, repo, page):
         url = "https://api.github.com/repos/{owner}/{repo}/pulls".format(
             owner=owner, repo=repo)

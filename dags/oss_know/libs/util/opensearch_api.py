@@ -18,7 +18,8 @@ from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COM
     OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE, OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, \
     OPENSEARCH_INDEX_CHECK_SYNC_DATA, OPENSEARCH_INDEX_GITHUB_PROFILE, OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS
 from oss_know.libs.util.airflow import get_postgres_conn
-from oss_know.libs.util.base import infer_country_company_geo_insert_into_profile, inferrers, concurrent_threads
+from oss_know.libs.util.base import infer_country_company_geo_insert_into_profile, inferrers, concurrent_threads, \
+    now_timestamp
 from oss_know.libs.util.github_api import GithubAPI, GithubException
 from oss_know.libs.util.log import logger
 
@@ -64,7 +65,8 @@ class OpensearchAPI:
         if len(bulk_all_github_commits) > 0:
             success, failed = self.do_opensearch_bulk(opensearch_client, bulk_all_github_commits, owner, repo)
             logger.info(
-                f"current github commits page insert count：{len(bulk_all_github_commits)},success:{success},failed:{failed}")
+                f"current github commits page insert count：{len(bulk_all_github_commits)},success:{success},"
+                f"failed:{failed}")
             return success, failed
         else:
             return 0, 0
@@ -112,7 +114,7 @@ class OpensearchAPI:
                 "_source": {
                     "search_key": {
                         "owner": owner, "repo": repo,
-                        'updated_at': int(datetime.datetime.now().timestamp() * 1000),
+                        'updated_at': now_timestamp(),
                         'if_sync': if_sync
                     },
                     "raw_data": None
@@ -261,7 +263,43 @@ class OpensearchAPI:
 
         success, failed = self.do_opensearch_bulk(opensearch_client, bulk_all_github_issues_comments, owner, repo)
         logger.info(
-            f"now page:{len(bulk_all_github_issues_comments)} sync github issues comments success:{success} & failed:{failed}")
+            f"now page:{len(bulk_all_github_issues_comments)} sync github issues comments success:{success} & "
+            f"failed:{failed}")
+
+    def bulk_github_issues_comments_reaction(self,
+                                             opensearch_client,
+                                             issues_comments_reactions,
+                                             owner,
+                                             repo,
+                                             number,
+                                             comment_id):
+        bulk_all_github_issues_comments_reactions = []
+
+        for val in issues_comments_reactions:
+            template = {
+                "_index": "github_issues_comments_reactions",
+                "_source": {
+                    "search_key": {
+                        "owner": owner,
+                        "repo": repo,
+                        "number": number,
+                        "comment_id": comment_id,
+                        'updated_at': int(datetime.datetime.now().timestamp() * 1000)
+
+                    },
+                    "raw_data": None
+                }
+            }
+            commit_comment_reaction_item = copy.deepcopy(template)
+            commit_comment_reaction_item["_source"]["raw_data"] = val
+            bulk_all_github_issues_comments_reactions.append(commit_comment_reaction_item)
+            # logger.info(f"add init sync github issues comments number:{number}")
+
+        success, failed = self.do_opensearch_bulk(opensearch_client, bulk_all_github_issues_comments_reactions, owner,
+                                                  repo)
+        logger.info(
+            f"now page:{len(bulk_all_github_issues_comments_reactions)} sync github issues comments success:{success} "
+            f"& failed:{failed}")
 
     # 建立 owner/repo github issues 更新基准
     def set_sync_github_issues_check(self, opensearch_client, owner, repo, now_time):
@@ -474,7 +512,8 @@ class OpensearchAPI:
         # Add batching, instead of inserting all docs at once.
         success, failed = self.do_opensearch_bulk(opensearch_client, bulk_all_github_pull_requests, owner, repo)
         logger.info(
-            f"now page:{len(bulk_all_github_pull_requests)} sync github pull_requests success:{success} & failed:{failed}")
+            f"now page:{len(bulk_all_github_pull_requests)} sync github pull_requests success:{success} & failed:"
+            f"{failed}")
 
         return success, failed
 
