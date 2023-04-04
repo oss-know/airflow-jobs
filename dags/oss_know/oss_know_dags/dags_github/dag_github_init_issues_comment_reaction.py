@@ -1,10 +1,12 @@
 from datetime import datetime
 
 from airflow import DAG
+from airflow.models import Variable
 from airflow.operators.python import PythonOperator
 
-from oss_know.libs.base_dict.variable_key import NEED_INIT_GITHUB_ISSUES_COMMENT_REACTION_REPOS, GITHUB_TOKENS, \
-    OPENSEARCH_CONN_DATA, PROXY_CONFS
+from oss_know.libs.base_dict.variable_key import NEED_INIT_GITHUB_ISSUES_COMMENT_REACTION_REPOS, \
+    GITHUB_TOKENS, OPENSEARCH_CONN_DATA, PROXY_CONFS
+from oss_know.libs.github import init_issues_comment_reaction
 from oss_know.libs.util.proxy import GithubTokenProxyAccommodator, ProxyServiceProvider, \
     make_accommodator
 
@@ -16,7 +18,7 @@ with DAG(
         catchup=False,
         tags=['github'],
 ) as dag:
-    def scheduler_init_github_issues_comment_reaction(ds, **kwargs):
+    def scheduler_init_github_issues_comment_reaction():
         return 'End:github_init_issues_comment_reaction'
 
 
@@ -27,9 +29,6 @@ with DAG(
 
 
     def do_init_github_issues_comment_reaction(params):
-        from airflow.models import Variable
-        from oss_know.libs.github import init_issues_comment_reaction
-
         opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
 
         github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
@@ -49,8 +48,6 @@ with DAG(
 
 
     need_do_init_ops = []
-
-    from airflow.models import Variable
 
     need_init_github_issues_comment_reaction_repos = Variable.get(NEED_INIT_GITHUB_ISSUES_COMMENT_REACTION_REPOS,
                                                                   deserialize_json=True)

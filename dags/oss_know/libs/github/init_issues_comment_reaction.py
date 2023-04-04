@@ -3,7 +3,7 @@ import time
 
 import requests
 from opensearchpy import OpenSearch
-from opensearchpy import helpers as OpenSearchHelpers
+from opensearchpy import helpers as opensearch_helpers
 
 from oss_know.libs.base_dict.options import GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX
 from oss_know.libs.exceptions import GithubResourceNotFoundError
@@ -26,45 +26,44 @@ def init_github_issues_comment_reaction(opensearch_conn_info, owner, repo, token
     )
 
     # 根据指定的owner/repo,获取现在所有的issues，并根据所有issues遍历相关的comments
-    issues_comment_id = OpenSearchHelpers.scan(opensearch_client,
-                                               index="github_issues_comments",
-                                               query={
-                                                   "query": {
-                                                       "bool": {
-                                                           "must": [
-                                                               {
-                                                                   "term": {
-                                                                       "search_key.owner.keyword": {
-                                                                           "value": owner
-                                                                       }
-                                                                   }
-                                                               },
-                                                               {
-                                                                   "term": {
-                                                                       "search_key.repo.keyword": {
-                                                                           "value": repo
-                                                                       }
-                                                                   }
-                                                               }
-                                                           ],
-                                                           "must_not": [
-                                                               {
-                                                                   "term": {
-                                                                       "raw_data.reactions.total_count": {
-                                                                           "value": 0
-                                                                       }
-                                                                   }
-                                                               }
-                                                           ]
-                                                       }
-                                                   },
-                                                   "_source": ["search_key.owner", "search_key.repo",
-                                                               "search_key.number",
-                                                               "raw_data.id"]
-                                               },
-                                               request_timeout=120,
-                                               size=5000,
-                                               )
+    issues_comment_id = opensearch_helpers.scan(opensearch_client,
+                                                index="github_issues_comments",
+                                                query={
+                                                    "query": {
+                                                        "bool": {
+                                                            "must": [
+                                                                {
+                                                                    "term": {
+                                                                        "search_key.owner.keyword": {
+                                                                            "value": owner
+                                                                        }
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "term": {
+                                                                        "search_key.repo.keyword": {
+                                                                            "value": repo
+                                                                        }
+                                                                    }
+                                                                }
+                                                            ],
+                                                            "must_not": [
+                                                                {
+                                                                    "term": {
+                                                                        "raw_data.reactions.total_count": {
+                                                                            "value": 0
+                                                                        }
+                                                                    }
+                                                                }
+                                                            ]
+                                                        }
+                                                    },
+                                                    "_source": ["search_key.owner", "search_key.repo",
+                                                                "search_key.number", "raw_data.id"]
+                                                },
+                                                request_timeout=120,
+                                                size=5000,
+                                                )
     need_init_comments_reactions_all_issues = []
     for comment_item in issues_comment_id:
         need_init_comments_reactions_all_issues.append(comment_item)
@@ -75,18 +74,24 @@ def init_github_issues_comment_reaction(opensearch_conn_info, owner, repo, token
     del_result = opensearch_client.delete_by_query(index="github_issues_comments_reactions",
                                                    body={
                                                        "query": {
-                                                           "bool": {"must": [
-                                                               {"term": {
-                                                                   "search_key.owner.keyword": {
-                                                                       "value": owner
+                                                           "bool": {
+                                                               "must": [
+                                                                   {
+                                                                       "term": {
+                                                                           "search_key.owner.keyword": {
+                                                                               "value": owner
+                                                                           }
+                                                                       }
+                                                                   },
+                                                                   {
+                                                                       "term": {
+                                                                           "search_key.repo.keyword": {
+                                                                               "value": repo
+                                                                           }
+                                                                       }
                                                                    }
-                                                               }},
-                                                               {"term": {
-                                                                   "search_key.repo.keyword": {
-                                                                       "value": repo
-                                                                   }
-                                                               }}
-                                                           ]}
+                                                               ]
+                                                           }
                                                        },
                                                    },
                                                    request_timeout=120,
@@ -141,7 +146,8 @@ def do_get_github_comments_reaction(opensearch_client, token_proxy_accommodator,
 
         except GithubResourceNotFoundError as e:
             logger.error(
-                f"fail init github timeline, {owner}/{repo}, issues_number:{number}, now_page:{page}, Target timeline info does not exist: {e}, end")
+                f"fail init github timeline, {owner}/{repo}, issues_number:{number}, now_page:{page}, Target timeline "
+                f"info does not exist: {e}, end")
             # return 403, e
 
         logger.debug(f"one_page_github_issues_comments:{one_page_github_issues_comments_reaction}")
@@ -149,8 +155,10 @@ def do_get_github_comments_reaction(opensearch_client, token_proxy_accommodator,
         if (one_page_github_issues_comments_reaction is not None) and len(
                 one_page_github_issues_comments_reaction) == 0:
             logger.info(
-                f"success init github comments reaction, {owner}/{repo}, issues_number:{number},comment id:{comment_id}, page_count:{page}, end")
-            return 200, f"success init github comments reaction, {owner}/{repo}, issues_number:{number},comment id:{comment_id}, page_count:{page}, end"
+                f"success init github comments reaction, {owner}/{repo}, issues_number:{number},comment id:"
+                f"{comment_id}, page_count:{page}, end")
+            return 200, f"success init github comments reaction, {owner}/{repo}, issues_number:{number},comment id:" \
+                        f"{comment_id}, page_count:{page}, end"
 
             # logger.info(f"init sync github issues end to break:{owner}/{repo}/#{number} page_index:{page}")
             # break
