@@ -28,7 +28,7 @@ with DAG(
         tags=['github'],
         on_success_callback=cleanup_xcom
 ) as dag:
-    def start_load_github_profile(ds, **kwargs):
+    def start_load_github_profile():
         return 'End start_load_github_profile'
 
 
@@ -49,15 +49,12 @@ with DAG(
                                            GithubTokenProxyAccommodator.POLICY_FIXED_MAP)
 
 
-    def load_github_repo_id(params, **kwargs):
-        owner = params["owner"]
-        repo = params["repo"]
+    def load_github_repo_id(owner, repo, **kwargs):
         init_ids = init_profiles.load_github_ids_by_repo(opensearch_conn_info, owner, repo)
         kwargs['ti'].xcom_push(key=f'{owner}_{repo}_ids', value=init_ids)
 
 
     def load_github_repo_profiles(params, **kwargs):
-
         # github_users_ids = []
         github_users_ids = set()
         for param in params:
@@ -70,7 +67,7 @@ with DAG(
         from oss_know.libs.github import init_profiles
         if_sync, if_new_person = 0, 1
         init_profiles.load_github_profiles(token_proxy_accommodator=proxy_accommodator,
-                                           opensearch_conn_infos=opensearch_conn_info,
+                                           opensearch_conn_info=opensearch_conn_info,
                                            github_users_ids=github_users_ids,
                                            if_sync=if_sync,
                                            if_new_person=if_new_person)
@@ -92,7 +89,10 @@ with DAG(
         op_load_github_repo_id = PythonOperator(
             task_id=f'op_load_github_repo_id_{owner}_{repo}',
             python_callable=load_github_repo_id,
-            op_kwargs={'params': now_need_sync_github_profile_repos},
+            op_kwargs={
+                'owner': owner,
+                'repo': repo,
+            },
             provide_context=True
         )
         op_start_load_github_profile >> op_load_github_repo_id >> op_load_github_repo_profiles
