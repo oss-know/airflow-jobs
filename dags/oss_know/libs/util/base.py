@@ -250,12 +250,9 @@ def infer_country_from_location(github_location):
     :param  github_location: location from a GitHub profile
     :return country_name  : the english name of a country
     """
-    try:
-        geo_res = do_geocode(github_location, language='en')
-        if geo_res:
-            return geo_res.address.split(',')[-1].strip()
-    except GeocoderQueryError as e:
-        logger.error(f'Failed to infer country from location: {github_location}, error: {e}')
+    geo_res = do_geocode(github_location, language='en')
+    if geo_res:
+        return geo_res.address.split(',')[-1].strip()
     return None
 
 
@@ -269,7 +266,11 @@ def infer_country_from_location(github_location):
                retry_if_exception_type(requests.exceptions.ProxyError) |
                retry_if_exception_type(requests.exceptions.SSLError)))
 def do_geocode(location, language='en'):
-    return _global_geolocator.geocode(location, language=language)
+    try:
+        return _global_geolocator.geocode(location, language=language)
+    except GeocoderQueryError as e:
+        logger.error(f'Failed to infer location {location}: {e}')
+        return None
 
 
 def infer_geo_info_from_location(github_location):
@@ -277,10 +278,7 @@ def infer_geo_info_from_location(github_location):
     :param  github_location: the location given by github
     :return GoogleGeoInfo  : the information of GoogleGeo inferred by location
     """
-    try:
-        geo_res = do_geocode(github_location, language='en')
-    except GeocoderQueryError as e:
-        logger.error(f'Failed to infer geo info from location {github_location}: {e}')
+    geo_res = do_geocode(github_location, language='en')
     if geo_res and geo_res.raw and ("address_components" in geo_res.raw) and geo_res.raw["address_components"]:
         address_components = geo_res.raw["address_components"]
         geo_info_from_location = {}
