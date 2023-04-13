@@ -67,7 +67,6 @@ class GithubAPI:
                     'final_company_inferred_from_company': '',
                     'company_inferred_from_email_domain_company': '', 'inferred_from_location': ''}
         else:
-            logger.info(f"Get GitHub {user_id}'s latest profile from GitHUb.")
             return latest_github_profile
 
     def get_github_issues_timeline(self, http_session, token_proxy_accommodator, owner, repo, number, page):

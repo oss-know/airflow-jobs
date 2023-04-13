@@ -141,7 +141,6 @@ class OpensearchAPI:
             task_futures = []
             num_finished = 0
             for index, github_id in enumerate(github_ids):
-                logger.info(f'github_profile_user:{github_id}')
                 time.sleep(round(random.uniform(0.01, 0.1), 2))
                 task_futures.append(
                     executor.submit(self.do_init_github_profile, github_id, opensearch_client,
@@ -189,7 +188,7 @@ class OpensearchAPI:
             opensearch_client.index(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
                                     body={
                                         "search_key": {
-                                            'updated_at': now_timestamp,
+                                            'updated_at': now_timestamp(),
                                             'if_sync': if_sync,
                                             'if_new_person': if_new_person
                                         },

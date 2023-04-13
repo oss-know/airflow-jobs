@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 import redis
 import requests
 import urllib3
-from geopy.exc import GeocoderServiceError, GeocoderTimedOut
+from geopy.exc import GeocoderServiceError, GeocoderTimedOut, GeocoderQueryError
 from geopy.geocoders import GoogleV3
 from multidict import CIMultiDict
 from opensearchpy import OpenSearch
@@ -250,9 +250,12 @@ def infer_country_from_location(github_location):
     :param  github_location: location from a GitHub profile
     :return country_name  : the english name of a country
     """
-    geo_res = do_geocode(github_location, language='en')
-    if geo_res:
-        return geo_res.address.split(',')[-1].strip()
+    try:
+        geo_res = do_geocode(github_location, language='en')
+        if geo_res:
+            return geo_res.address.split(',')[-1].strip()
+    except GeocoderQueryError as e:
+        logger.error(f'Failed to infer country from location: {github_location}, error: {e}')
     return None
 
 
@@ -274,7 +277,10 @@ def infer_geo_info_from_location(github_location):
     :param  github_location: the location given by github
     :return GoogleGeoInfo  : the information of GoogleGeo inferred by location
     """
-    geo_res = do_geocode(github_location, language='en')
+    try:
+        geo_res = do_geocode(github_location, language='en')
+    except GeocoderQueryError as e:
+        logger.error(f'Failed to infer geo info from location {github_location}: {e}')
     if geo_res and geo_res.raw and ("address_components" in geo_res.raw) and geo_res.raw["address_components"]:
         address_components = geo_res.raw["address_components"]
         geo_info_from_location = {}
