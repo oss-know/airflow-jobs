@@ -539,7 +539,8 @@ class OpensearchAPI:
     def do_opensearch_bulk(self, opensearch_client, bulk_all_data, owner, repo):
         logger.debug(f"owner:{owner},repo:{repo}::do_opensearch_bulk")
 
-        success, failed = opensearch_helpers.bulk(client=opensearch_client, actions=bulk_all_data)
+        success, failed = opensearch_helpers.bulk(client=opensearch_client, actions=bulk_all_data,
+                                                  ignore_status=[200])
         # 强制抛出异常
         # raise OpenSearchException("do_opensearch_bulk Error")
         return success, failed
