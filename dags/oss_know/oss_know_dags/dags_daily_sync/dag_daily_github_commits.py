@@ -7,7 +7,7 @@ from airflow.operators.python import PythonOperator
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COMMITS
 from oss_know.libs.base_dict.variable_key import GITHUB_TOKENS, OPENSEARCH_CONN_DATA, PROXY_CONFS, \
     DAILY_SYNC_GITHUB_COMMITS_EXCLUDES, CLICKHOUSE_DRIVER_INFO, CK_TABLE_DEFAULT_VAL_TPLT, \
-    DAILY_SYNC_GITHUB_COMMITS_INCLUDES
+    DAILY_SYNC_GITHUB_COMMITS_INCLUDES, DAILY_SYNC_INTERVAL, DAILY_GITHUB_COMMITS_SYNC_INTERVAL
 from oss_know.libs.github.sync_commits import sync_github_commits_opensearch
 from oss_know.libs.util.base import get_opensearch_client, arrange_owner_repo_into_letter_groups
 from oss_know.libs.util.data_transfer import sync_clickhouse_repos_from_opensearch
@@ -18,8 +18,12 @@ clickhouse_conn_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=Tru
 table_templates = Variable.get(CK_TABLE_DEFAULT_VAL_TPLT, deserialize_json=True)
 github_commits_table_template = table_templates.get(OPENSEARCH_INDEX_GITHUB_COMMITS)
 
+sync_interval = Variable.get(DAILY_GITHUB_COMMITS_SYNC_INTERVAL, default_var=None)
+if not sync_interval:
+    sync_interval = Variable.get(DAILY_SYNC_INTERVAL, default_var=None)
+
 with DAG(dag_id='daily_github_commits_sync',  # schedule_interval='*/5 * * * *',
-         schedule_interval=None, start_date=datetime(2021, 1, 1), catchup=False,
+         schedule_interval=sync_interval, start_date=datetime(2021, 1, 1), catchup=False,
          tags=['github', 'daily sync']) as dag:
     def op_init_daily_github_commits_sync():
         return 'Start init_daily_github_commits_sync'
