@@ -125,7 +125,12 @@
     "DATABASE": "default",
     "CLUSTER_NAME": "replicated"
   },
-  "clickhouse_sync_interval": "0 */2 * * *",
+  "daily_sync_interval": "0 2 * * 0",
+  "daily_gits_sync_interval": "0 2 * * 1",
+  "daily_github_commits_sync_interval": "0 2 * * 2",
+  "daily_github_prs_sync_interval": "0 2 * * 3",
+  "daily_github_issues_sync_interval": "0 2 * * 4",
+  "clickhouse_sync_interval": "0 18 * * *",
   "clickhouse_sync_combination_type": "union",
   "redis_client_data": {
     "HOST": "192.168.8.120",
