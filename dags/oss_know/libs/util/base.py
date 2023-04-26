@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 import redis
 import requests
 import urllib3
-from geopy.exc import GeocoderServiceError, GeocoderTimedOut
+from geopy.exc import GeocoderServiceError, GeocoderTimedOut, GeocoderQueryError
 from geopy.geocoders import GoogleV3
 from multidict import CIMultiDict
 from opensearchpy import OpenSearch
@@ -266,7 +266,11 @@ def infer_country_from_location(github_location):
                retry_if_exception_type(requests.exceptions.ProxyError) |
                retry_if_exception_type(requests.exceptions.SSLError)))
 def do_geocode(location, language='en'):
-    return _global_geolocator.geocode(location, language=language)
+    try:
+        return _global_geolocator.geocode(location, language=language)
+    except GeocoderQueryError as e:
+        logger.error(f'Failed to infer location {location}: {e}')
+        return None
 
 
 def infer_geo_info_from_location(github_location):

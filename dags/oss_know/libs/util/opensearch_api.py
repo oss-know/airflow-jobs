@@ -3,6 +3,7 @@ import datetime
 import json
 import random
 import uuid
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Tuple
 
 import dateutil
@@ -18,9 +19,8 @@ from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COM
     OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE, OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, \
     OPENSEARCH_INDEX_CHECK_SYNC_DATA, OPENSEARCH_INDEX_GITHUB_PROFILE, OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS
 from oss_know.libs.util.airflow import get_postgres_conn
-from oss_know.libs.util.base import infer_country_company_geo_insert_into_profile, inferrers, concurrent_threads, \
-    now_timestamp
-from oss_know.libs.util.github_api import GithubAPI, GithubException
+from oss_know.libs.util.base import infer_country_company_geo_insert_into_profile, inferrers, now_timestamp
+from oss_know.libs.util.github_api import GithubAPI
 from oss_know.libs.util.log import logger
 
 
@@ -137,39 +137,26 @@ class OpensearchAPI:
         batch_size = 100
         num_github_ids = len(github_ids)
 
-        get_comment_tasks = list()
-        get_comment_results = list()
-        get_comment_fails_results = list()
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            task_futures = []
+            num_finished = 0
+            for index, github_id in enumerate(github_ids):
+                time.sleep(round(random.uniform(0.01, 0.1), 2))
+                task_futures.append(
+                    executor.submit(self.do_init_github_profile, github_id, opensearch_client,
+                                    token_proxy_accommodator, if_sync, if_new_person))
 
-        for index, github_id in enumerate(github_ids):
-            logger.info(f'github_profile_user:{github_id}')
-            time.sleep(round(random.uniform(0.01, 0.1), 2))
+            for future in as_completed(task_futures):
+                future.result()
+                num_finished += 1
 
-            # 创建并发任务
-            ct = concurrent_threads(self.do_init_github_profile_thread,
-                                    args=(batch_size, github_id, index, num_github_ids, opensearch_client,
-                                          token_proxy_accommodator, if_sync, if_new_person))
-            get_comment_tasks.append(ct)
-            ct.start()
-            ct.join()
-            # 执行并发任务并获取结果
-            if index % 50 == 0:
-                for tt in get_comment_tasks:
-                    if tt.getResult()[0] != 200:
-                        logger.info(f"get_timeline_fails_results:{tt},{tt.args}")
-                        get_comment_fails_results.append(tt.getResult())
-
-                    get_comment_results.append(tt.getResult())
-            if len(get_comment_fails_results) != 0:
-                raise GithubException('github请求失败！', get_comment_fails_results)
-
-            # self.do_init_github_profile_thread(batch_size, github_id, index, num_github_ids, opensearch_client,
-            #                                    token_proxy_accommodator)
-        logger.info(f'{num_github_ids} github profiles finished')
+                if num_finished % batch_size == 0:
+                    logger.info(f'{num_finished} / {num_github_ids} profiles initialized')
+        logger.info(f'{num_finished} github profiles finished')
         return "Put GitHub user profile into opensearch if it is not in opensearch"
 
-    def do_init_github_profile_thread(self, batch_size, github_id, index, num_github_ids, opensearch_client,
-                                      token_proxy_accommodator, if_sync, if_new_person):
+    def do_init_github_profile(self, github_id, opensearch_client,
+                               token_proxy_accommodator, if_sync, if_new_person):
         has_user_profile = opensearch_client.search(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
                                                     body={
                                                         "query": {
@@ -201,7 +188,7 @@ class OpensearchAPI:
             opensearch_client.index(index=OPENSEARCH_INDEX_GITHUB_PROFILE,
                                     body={
                                         "search_key": {
-                                            'updated_at': int(datetime.datetime.now().timestamp() * 1000),
+                                            'updated_at': now_timestamp(),
                                             'if_sync': if_sync,
                                             'if_new_person': if_new_person
                                         },
@@ -211,10 +198,6 @@ class OpensearchAPI:
             logger.info(f"Put the github {github_id}'s profile into opensearch.")
         else:
             logger.info(f"{github_id}'s profile has already existed.")
-        if index % batch_size == 0:
-            logger.info(f'{index}/{num_github_ids} finished')
-
-        return 200, f"success init github profile, github_id:{github_id}, end"
 
     def bulk_github_issues_timeline(self, opensearch_client, issues_timelines, owner, repo, number, if_sync):
         bulk_all_datas = []

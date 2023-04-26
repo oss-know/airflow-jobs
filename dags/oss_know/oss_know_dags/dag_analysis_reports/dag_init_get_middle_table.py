@@ -2,17 +2,18 @@
 import random
 import time
 from datetime import datetime
+
 from airflow import DAG
+from airflow.models import Variable
 from airflow.operators.python import PythonOperator
 
 from oss_know.libs.analysis_report.email_tz_region_map import get_email_tz_region_map
 from oss_know.libs.analysis_report.github_id_email_map import get_github_id_email_map
 from oss_know.libs.analysis_report.github_id_tz_region_map import get_github_id_tz_region_map
 from oss_know.libs.analysis_report.timeline_approved_reviewed import get_github_id_approved_reviewed
-from oss_know.libs.util.log import logger
 # git_init_sync_v0.0.3
-from oss_know.libs.analysis_report.init_get_dir2_contribute_data_v1 import get_dir2_contribute_data
 from oss_know.libs.base_dict.variable_key import CLICKHOUSE_DRIVER_INFO
+from oss_know.libs.util.log import logger
 
 with DAG(
         dag_id='dag_init_get_middle_table',
@@ -32,7 +33,6 @@ with DAG(
 
 
     def do_get_email_tz_region_map():
-        from airflow.models import Variable
         clickhouse_server_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
         wait_time = random.randint(1, 60)
         logger.info(f"等待{wait_time} s ...")
@@ -42,7 +42,6 @@ with DAG(
 
 
     def do_get_github_id_tz_region_map():
-        from airflow.models import Variable
         wait_time = random.randint(1, 60)
         logger.info(f"等待{wait_time} s ...")
         time.sleep(wait_time)
@@ -51,15 +50,14 @@ with DAG(
 
 
     def do_get_github_id_approved_reviewed():
-        from airflow.models import Variable
         wait_time = random.randint(1, 60)
         logger.info(f"等待{wait_time} s ...")
         time.sleep(wait_time)
         clickhouse_server_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
         get_github_id_approved_reviewed(clickhouse_server_info)
 
+
     def do_get_github_id_email_map():
-        from airflow.models import Variable
         wait_time = random.randint(1, 60)
         logger.info(f"等待{wait_time} s ...")
         time.sleep(wait_time)
