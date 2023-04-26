@@ -1,4 +1,3 @@
-import os
 import sys
 
 from loguru import logger
@@ -7,8 +6,7 @@ SELECTED_ENV = 'AIRFLOW'
 confs = {
     'AIRFLOW': {
         # Airflow log util has already add the time
-        'format':
-        '[{level}]\t{name}:{function}:{line}\t{message}',
+        'format': '[{level}]\t{name}:{function}:{line}\t{message}',
         'sinks': [
             {
                 'output': sys.stdout,

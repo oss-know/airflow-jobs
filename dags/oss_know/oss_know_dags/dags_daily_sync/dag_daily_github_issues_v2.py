@@ -8,7 +8,7 @@ from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISS
     OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE
 from oss_know.libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TOKENS, PROXY_CONFS, \
     DAILY_SYNC_GITHUB_ISSUES_EXCLUDES, CLICKHOUSE_DRIVER_INFO, CK_TABLE_DEFAULT_VAL_TPLT, \
-    DAILY_SYNC_GITHUB_ISSUES_INCLUDES
+    DAILY_SYNC_GITHUB_ISSUES_INCLUDES, DAILY_SYNC_INTERVAL, DAILY_GITHUB_ISSUES_SYNC_INTERVAL
 from oss_know.libs.github import sync_issues, sync_issues_comments, sync_issues_timelines
 from oss_know.libs.util.base import get_opensearch_client, arrange_owner_repo_into_letter_groups
 from oss_know.libs.util.data_transfer import sync_clickhouse_from_opensearch, sync_clickhouse_repos_from_opensearch
@@ -31,6 +31,10 @@ with DAG(
     github_issue_table_template = table_templates.get(OPENSEARCH_INDEX_GITHUB_ISSUES)
     issue_comment_table_template = table_templates.get(OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS)
     issue_timeline_table_template = table_templates.get(OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE)
+
+    sync_interval = Variable.get(DAILY_GITHUB_ISSUES_SYNC_INTERVAL, default_var=None)
+    if not sync_interval:
+        sync_interval = Variable.get(DAILY_SYNC_INTERVAL, default_var=None)
 
     github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
     proxy_confs = Variable.get(PROXY_CONFS, deserialize_json=True)

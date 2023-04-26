@@ -7,7 +7,8 @@ from airflow.operators.python import PythonOperator
 from oss_know.libs.util.data_transfer import sync_clickhouse_repos_from_opensearch
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_GIT_RAW
 from oss_know.libs.base_dict.variable_key import DAILY_SYNC_GITS_EXCLUDES, DAILY_SYNC_GITS_INCLUDES, \
-    CK_TABLE_DEFAULT_VAL_TPLT, OPENSEARCH_CONN_DATA, CLICKHOUSE_DRIVER_INFO, GIT_SAVE_LOCAL_PATH
+    CK_TABLE_DEFAULT_VAL_TPLT, OPENSEARCH_CONN_DATA, CLICKHOUSE_DRIVER_INFO, GIT_SAVE_LOCAL_PATH, \
+    DAILY_GITS_SYNC_INTERVAL, DAILY_SYNC_INTERVAL
 from oss_know.libs.github.sync_gits import sync_gits_opensearch
 from oss_know.libs.util.base import get_opensearch_client, arrange_owner_repo_into_letter_groups
 from oss_know.libs.util.opensearch_api import OpensearchAPI
@@ -18,8 +19,12 @@ table_templates = Variable.get(CK_TABLE_DEFAULT_VAL_TPLT, deserialize_json=True)
 gits_table_template = table_templates.get(OPENSEARCH_GIT_RAW)
 git_save_local_path = Variable.get(GIT_SAVE_LOCAL_PATH, deserialize_json=True)
 
+sync_interval = Variable.get(DAILY_GITS_SYNC_INTERVAL, default_var=None)
+if not sync_interval:
+    sync_interval = Variable.get(DAILY_SYNC_INTERVAL, default_var=None)
+
 with DAG(dag_id='daily_gits_sync',  # schedule_interval='*/5 * * * *',
-         schedule_interval=None, start_date=datetime(2021, 1, 1), catchup=False,
+         schedule_interval=sync_interval, start_date=datetime(2021, 1, 1), catchup=False,
          tags=['github', 'daily sync'], ) as dag:
     def op_init_daily_gits_sync():
         return 'Start init_daily_gits_sync'

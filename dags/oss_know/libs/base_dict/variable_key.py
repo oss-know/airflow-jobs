@@ -68,7 +68,12 @@ CLICKHOUSE_SYNC_COMBINATION_TYPE = "clickhouse_sync_combination_type"
 
 # Interval to sync gits, github related data for all owner/repos
 # in opensearch and then transfer the sync-ed part to clickhouse
-DATA_SYNC_INTERVAL = "data_sync_interval"
+DAILY_SYNC_INTERVAL = "daily_sync_interval"
+DAILY_GITS_SYNC_INTERVAL = "daily_gits_sync_interval"
+DAILY_GITHUB_COMMITS_SYNC_INTERVAL = "daily_github_commits_sync_interval"
+DAILY_GITHUB_PRS_SYNC_INTERVAL = "daily_github_prs_sync_interval"
+DAILY_GITHUB_ISSUES_SYNC_INTERVAL = "daily_github_issues_sync_interval"
+
 NEED_INIT_DISCOURSE = 'need_init_discourse'
 NEED_INIT_DISCOURSE_CLICKHOUSE = 'need_init_discourse_clickhouse'
 
