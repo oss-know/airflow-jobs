@@ -1,25 +1,26 @@
 from datetime import datetime
-import time
+
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from opensearchpy import OpenSearch, helpers
 
 from oss_know.libs.base_dict.variable_key import ZULIP_API_KEYS, NEED_INIT_ZULIP, OPENSEARCH_CONN_DATA
 
 with DAG(
-    dag_id = 'zulip_crawl_user_group',
-    schedule_interval=None,
-    start_date=datetime(2023, 3, 1),
-    catchup=False,
-    tags=['zulip']
+        dag_id='zulip_crawl_user_group',
+        schedule_interval=None,
+        start_date=datetime(2023, 3, 1),
+        catchup=False,
+        tags=['zulip']
 ) as dag:
-    def init_zulip_user_group(ds, **kwargs):
+    def init_zulip_user_group():
         return 'Start init_zulip_crawl_user_group'
-    
+
+
     op_init_zulip_crawl_user_group = PythonOperator(
         task_id='init_zulip_crawl_user_group',
         python_callable=init_zulip_user_group
     )
+
 
     def do_zulip_crawl_user_group(params):
         from airflow.models import Variable
@@ -31,13 +32,14 @@ with DAG(
         api_key = Variable.get(ZULIP_API_KEYS, deserialize_json=True)
 
         crawl_user_group.crawl_zulip_user_group(owner=owner,
-                                                 repo=repo,
-                                                 email=api_key["email"],
-                                                 api_key=api_key["api_key"],
-                                                 site=site,
-                                                 opensearch_conn_info=opensearch_conn_info)
+                                                repo=repo,
+                                                email=api_key["email"],
+                                                api_key=api_key["api_key"],
+                                                site=site,
+                                                opensearch_conn_info=opensearch_conn_info)
 
         return 'do_zulip_crawl_user_group:::end'
+
 
     from airflow.models import Variable
 

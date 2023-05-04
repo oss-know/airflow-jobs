@@ -1,11 +1,10 @@
-import time
 import datetime
-from random import randint
+
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_ZULIP_STREAM
 from oss_know.libs.util.base import get_opensearch_client
 from oss_know.libs.util.log import logger
-from oss_know.libs.util.zulip_base import get_data_from_opensearch, get_data_from_zulip
-from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_ZULIP_STREAM
 from oss_know.libs.util.opensearch_api import OpensearchAPI
+from oss_know.libs.util.zulip_base import get_data_from_opensearch, get_data_from_zulip
 
 
 def crawl_zulip_stream(owner, repo, email, api_key, site, opensearch_conn_info):
@@ -29,7 +28,7 @@ def crawl_zulip_stream(owner, repo, email, api_key, site, opensearch_conn_info):
             continue
         bulk_data.append({
             "_index": OPENSEARCH_ZULIP_STREAM,
-            "_source":{
+            "_source": {
                 "search_key": {
                     "owner": owner,
                     "repo": repo,
@@ -42,11 +41,11 @@ def crawl_zulip_stream(owner, repo, email, api_key, site, opensearch_conn_info):
         new_stream += 1
 
     success, failure = opensearch_api.do_opensearch_bulk(opensearch_client=opensearch_client,
-                                                        bulk_all_data=bulk_data,
-                                                        owner=owner,
-                                                        repo=repo)
+                                                         bulk_all_data=bulk_data,
+                                                         owner=owner,
+                                                         repo=repo)
 
-    logger.info(f"sync_bulk_zulip_data::success:{success},failure:{failure}")
+    logger.info(f"sync_bulk_zulip_data::success:{success}, failure:{failure}")
     logger.info(f"count:{new_stream}::{owner}/{repo}")
     bulk_data.clear()
     return

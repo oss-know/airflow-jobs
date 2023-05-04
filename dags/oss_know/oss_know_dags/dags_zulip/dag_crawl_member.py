@@ -1,25 +1,26 @@
 from datetime import datetime
-import time
+
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from opensearchpy import OpenSearch, helpers
 
 from oss_know.libs.base_dict.variable_key import ZULIP_API_KEYS, NEED_INIT_ZULIP, OPENSEARCH_CONN_DATA
 
 with DAG(
-    dag_id = 'zulip_crawl_member',
-    schedule_interval=None,
-    start_date=datetime(2023, 3, 1),
-    catchup=False,
-    tags=['zulip']
+        dag_id='zulip_crawl_member',
+        schedule_interval=None,
+        start_date=datetime(2023, 3, 1),
+        catchup=False,
+        tags=['zulip']
 ) as dag:
-    def init_zulip_crawl_member(ds, **kwargs):
+    def init_zulip_crawl_member():
         return 'Start init_zulip_crawl_member'
-    
+
+
     op_init_zulip_crawl_member = PythonOperator(
         task_id='init_zulip_crawl_member',
         python_callable=init_zulip_crawl_member
     )
+
 
     def do_zulip_crawl_member(params):
         from airflow.models import Variable
@@ -38,6 +39,7 @@ with DAG(
                                         opensearch_conn_info=opensearch_conn_info)
 
         return 'do_zulip_crawl_member:::end'
+
 
     from airflow.models import Variable
 
