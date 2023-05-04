@@ -14,7 +14,9 @@ class GithubException(Exception):
 
 class GithubAPI:
     github_headers = {'Connection': 'keep-alive', 'Accept-Encoding': 'gzip, deflate, br', 'Accept': '*/*',
-                      'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36', }
+                      'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                                    'Chrome/96.0.4664.110 Safari/537.36',
+                      }
 
     def get_github_commits(self, http_session, token_proxy_accommodator, owner, repo, page, since, until):
         url = f"https://api.github.com/repos/{owner}/{repo}/commits"
@@ -52,20 +54,19 @@ class GithubAPI:
             logger.warning(f'Failed to get profile {url}, the Github Internal Server Error: {gise}')
         except (TypeError, GithubResourceNotFoundError) as e:
             logger.error(f"Failed to get github profile: {e}, return an empty one")
-            return {'login': '', 'id': user_id, 'node_id': '', 'avatar_url': '', 'gravatar_id': '', 'url': '',
-                    'html_url': '',
-                    'followers_url': '', 'following_url': '', 'gists_url': '', 'starred_url': '',
-                    'subscriptions_url': '',
-                    'organizations_url': '', 'repos_url': '', 'events_url': '', 'received_events_url': '', 'type': '',
-                    'site_admin': False, 'name': '', 'company': '', 'blog': '', 'location': '', 'email': '',
-                    'hireable': False,
-                    'bio': '', 'twitter_username': '', 'public_repos': 0, 'public_gists': 0, 'followers': 0,
-                    'following': 0,
-                    'created_at': '1970-01-01T00:00:00Z', 'updated_at': '1970-01-01T00:00:00Z',
-                    'country_inferred_from_email_cctld': '', 'country_inferred_from_email_domain_company': '',
-                    'country_inferred_from_location': '', 'country_inferred_from_company': '',
-                    'final_company_inferred_from_company': '',
-                    'company_inferred_from_email_domain_company': '', 'inferred_from_location': ''}
+            return {
+                'login': '', 'id': user_id, 'node_id': '', 'avatar_url': '', 'gravatar_id': '',
+                'url': '', 'html_url': '', 'followers_url': '', 'following_url': '', 'gists_url': '',
+                'starred_url': '', 'subscriptions_url': '', 'organizations_url': '', 'repos_url': '',
+                'events_url': '', 'received_events_url': '', 'type': '', 'site_admin': False, 'name': '',
+                'company': '', 'blog': '', 'location': '', 'email': '', 'hireable': False, 'bio': '',
+                'twitter_username': '', 'public_repos': 0, 'public_gists': 0, 'followers': 0, 'following': 0,
+                'created_at': '1970-01-01T00:00:00Z', 'updated_at': '1970-01-01T00:00:00Z',
+                'country_inferred_from_email_cctld': '', 'country_inferred_from_email_domain_company': '',
+                'country_inferred_from_location': '', 'country_inferred_from_company': '',
+                'final_company_inferred_from_company': '',
+                'company_inferred_from_email_domain_company': '', 'inferred_from_location': ''
+            }
         else:
             return latest_github_profile
 
@@ -118,6 +119,8 @@ class GithubAPI:
             owner=owner, repo=repo)
         headers = copy.deepcopy(self.github_headers)
         params = {'state': 'all', 'per_page': 100, 'page': page, 'sort': 'updated', 'direction': 'desc'}
+
+        res = EmptyObjectResponse()
         try:
             res = do_get_github_result(http_session, url, headers, params, token_proxy_accommodator)
         except GithubResourceNotFoundError as e:
