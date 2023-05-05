@@ -6,8 +6,11 @@ from airflow.models import XCom
 from airflow.operators.python import PythonOperator
 from airflow.utils.db import provide_session
 
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_PROFILE
 from oss_know.libs.base_dict.variable_key import GITHUB_TOKENS, LOCATIONGEO_TOKEN, \
-    PROXY_CONFS, OPENSEARCH_CONN_DATA, NEED_INIT_GITHUB_PROFILES_REPOS
+    PROXY_CONFS, OPENSEARCH_CONN_DATA, NEED_INIT_GITHUB_PROFILES_REPOS, CK_TABLE_DEFAULT_VAL_TPLT, \
+    CLICKHOUSE_DRIVER_INFO
+from oss_know.libs.clickhouse.sync_clickhouse_data import sync_github_profiles_to_ck
 from oss_know.libs.github import init_profiles
 from oss_know.libs.util.base import init_geolocator
 from oss_know.libs.util.proxy import GithubTokenProxyAccommodator, make_accommodator, \
@@ -42,6 +45,7 @@ with DAG(
     init_geolocator(geolocator_token)
 
     opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
+    clickhouse_conn_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
 
     github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
     proxy_confs = Variable.get(PROXY_CONFS, deserialize_json=True)
@@ -74,12 +78,24 @@ with DAG(
         return 'End load_github_repo_profile'
 
 
+    def transfer_profile_to_clickhouse():
+        table_templates = Variable.get(CK_TABLE_DEFAULT_VAL_TPLT, deserialize_json=True)
+        github_profile_template = table_templates.get(OPENSEARCH_INDEX_GITHUB_PROFILE)
+        sync_github_profiles_to_ck(opensearch_conn_info, clickhouse_conn_info, github_profile_template)
+
+
     need_sync_github_profile_repos = Variable.get(NEED_INIT_GITHUB_PROFILES_REPOS, deserialize_json=True)
 
     op_load_github_repo_profiles = PythonOperator(
         task_id='op_load_github_repo_profiles',
         python_callable=load_github_repo_profiles,
         op_kwargs={'params': need_sync_github_profile_repos},
+        provide_context=True
+    )
+
+    op_transfer_profile_to_clickhouse = PythonOperator(
+        task_id='op_transfer_profile_to_clickhouse',
+        python_callable=transfer_profile_to_clickhouse,
         provide_context=True
     )
 
@@ -95,4 +111,5 @@ with DAG(
             },
             provide_context=True
         )
-        op_start_load_github_profile >> op_load_github_repo_id >> op_load_github_repo_profiles
+        op_start_load_github_profile >> op_load_github_repo_id >> \
+        op_load_github_repo_profiles >> op_transfer_profile_to_clickhouse
