@@ -1,8 +1,12 @@
 import json
+from datetime import datetime
 
 import clickhouse_driver
 
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_PROFILE
+from oss_know.libs.util.base import get_opensearch_client
 from oss_know.libs.util.clickhouse_driver import CKServer
+from oss_know.libs.util.data_transfer import opensearch_to_clickhouse
 from oss_know.libs.util.log import logger
 
 # TODO: Make the fail over timeout configurable
@@ -164,3 +168,40 @@ def sync_from_remote_by_repo(local_ck_conn_info, remote_ck_conn_info, table_name
     result = local_ck_client.execute_no_params(new_insert_count_sql)
     new_insert_count = 0 if not result else result[0][0]
     logger.info(f"Synced {new_insert_count} rows for {owner}/{repo}(updated_at > {local_latest_updated_at})")
+
+
+def sync_github_profiles_to_ck(os_conn_info, ck_conn_info, github_profile_table_template):
+    # Sync OpenSearch github_profile docs, whose search_key.updated_at is greater than the latest
+    # search_key__updated_at in ClickHouse, to ClickHouse
+    latest_updated_at_sql = 'select max(search_key__updated_at) from github_profile'
+    ck_client = CKServer(host=ck_conn_info.get("HOST"),
+                         port=ck_conn_info.get("PORT"),
+                         user=ck_conn_info.get("USER"),
+                         password=ck_conn_info.get("PASSWD"),
+                         database=ck_conn_info.get("DATABASE"),
+                         settings={
+                             "max_execution_time": 1000000,
+                         },
+                         kwargs={
+                             "connect_timeout": 200,
+                             "send_receive_timeout": 6000,
+                             "sync_request_timeout": 100,
+                         })
+    result = ck_client.execute_no_params(latest_updated_at_sql)
+    latest_updated_at = result[0][0]
+
+    os_client = get_opensearch_client(opensearch_conn_info=os_conn_info)
+    query = {
+        "query": {
+            "range": {
+                "search_key.updated_at": {
+                    "gt": latest_updated_at,
+                }
+            }
+        }
+    }
+    latest_updated_at_datetime = datetime.fromtimestamp(latest_updated_at / 1000)
+    logger.info(f'Sync os docs whose search_key.updated_at > {latest_updated_at} '
+                f'({latest_updated_at_datetime}) to clickhouse')
+    opensearch_to_clickhouse(os_client, OPENSEARCH_INDEX_GITHUB_PROFILE, query, ck_client,
+                             github_profile_table_template, OPENSEARCH_INDEX_GITHUB_PROFILE)
