@@ -130,18 +130,8 @@ def sync_from_remote_by_repo(local_ck_conn_info, remote_ck_conn_info, table_name
     """
 
     rows = local_ck_client.execute_no_params(local_latest_updated_at_sql)
-
     local_latest_updated_at = 0 if not rows else rows[0][0]
-
-    table_col_names_sql = f"""
-    select distinct name
-    from system.columns
-    where database = '{local_db}'
-      and table = '{table_name}'
-    """
-    cols = local_ck_client.execute_no_params(table_col_names_sql)
-    cols_str = ",".join([f'`{col[0]}`' for col in cols])
-
+    cols_str = get_table_cols_str(local_ck_client, local_db, table_name)
     insert_sql = f"""
     insert into table {local_db}.{table_name}
     select {cols_str}
@@ -205,3 +195,85 @@ def sync_github_profiles_to_ck(os_conn_info, ck_conn_info, github_profile_table_
                 f'({latest_updated_at_datetime}) to clickhouse')
     opensearch_to_clickhouse(os_client, OPENSEARCH_INDEX_GITHUB_PROFILE, query, ck_client,
                              github_profile_table_template, OPENSEARCH_INDEX_GITHUB_PROFILE)
+
+
+# TODO There are common logic in function sync_github_profiles_from_remote_ck and sync_from_remote_by_repos
+#  Consider extract the common part and define a new abstract function, which:
+#  Sync remote clickhouse data into the local, by specifying db name, table name and query condition
+def sync_github_profiles_from_remote_ck(local_ck_conn_info, remote_ck_conn_info):
+    # Sync github profile from a remote clickhouse service to the local clickhouse service, where the
+    # remote data's search_key__updated_at is greater than max local search_key__updated_at
+    local_ck_client = CKServer(host=local_ck_conn_info.get("HOST"),
+                               port=local_ck_conn_info.get("PORT"),
+                               user=local_ck_conn_info.get("USER"),
+                               password=local_ck_conn_info.get("PASSWD"),
+                               database=local_ck_conn_info.get("DATABASE"),
+                               settings={
+                                   "max_execution_time": 1000000,
+                               },
+                               kwargs={
+                                   "connect_timeout": 200,
+                                   "send_receive_timeout": 6000,
+                                   "sync_request_timeout": 100,
+                                   # "connect_timeout_with_failover_ms": 20000,
+                               })
+    local_db = local_ck_conn_info.get("DATABASE")
+
+    remote_host = remote_ck_conn_info.get('HOST')
+    remote_port = remote_ck_conn_info.get('PORT')
+    remote_user = remote_ck_conn_info.get('USER')
+    remote_password = remote_ck_conn_info.get('PASSWD')
+    remote_db = remote_ck_conn_info.get('DATABASE')
+
+    local_latest_updated_at_sql = \
+        f'select max(search_key__updated_at) from {local_db}.{OPENSEARCH_INDEX_GITHUB_PROFILE}'
+
+    result = local_ck_client.execute_no_params(local_latest_updated_at_sql)[0]
+    local_latest_updated_at = result[0] if result else 0
+
+    cols_str = get_table_cols_str(local_ck_client, local_db, OPENSEARCH_INDEX_GITHUB_PROFILE)
+    insert_sql = f'''
+    insert into table {local_db}.{OPENSEARCH_INDEX_GITHUB_PROFILE}
+    select {cols_str}
+    from remote(
+            '{remote_host}:{remote_port}',
+            '{remote_db}.{OPENSEARCH_INDEX_GITHUB_PROFILE}',
+            '{remote_user}',
+            '{remote_password}'
+        )
+       where search_key__updated_at > {local_latest_updated_at}
+    '''
+
+    print(insert_sql)
+
+    logger.info(f"Syncing github_profile (updated_at > {local_latest_updated_at})")
+    local_ck_client.execute_no_params(insert_sql)
+
+    # Log for the inserted data
+    new_insert_count_sql = f"""
+        select count() from {local_db}.{OPENSEARCH_INDEX_GITHUB_PROFILE}
+        where search_key__updated_at > {local_latest_updated_at}
+        """
+    result = local_ck_client.execute_no_params(new_insert_count_sql)
+    new_insert_count = 0 if not result else result[0][0]
+    logger.info(f"Synced {new_insert_count} github_profile rows (updated_at > {local_latest_updated_at})")
+
+
+def get_table_cols(ck_client, db_name, table_name):
+    # Get db_name.db_table's columns from table system.columns
+    table_col_names_sql = f"""
+            select distinct name
+            from system.columns
+            where database = '{db_name}'
+              and table = '{table_name}'
+            """
+    cols = ck_client.execute_no_params(table_col_names_sql)
+
+    return cols
+
+
+def get_table_cols_str(ck_client, db_name, table_name, splitter=','):
+    # Quote table columns by ` to avoid SQL error
+    # Return the string with the column names joined by splitter
+    cols = get_table_cols(ck_client, db_name, table_name)
+    return splitter.join([f'`{col[0]}`' for col in cols])
