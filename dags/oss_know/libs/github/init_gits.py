@@ -207,7 +207,7 @@ def init_gits_repo(git_url, owner, repo, proxy_config, opensearch_conn_datas, gi
         bulk_data["_source"]["raw_data"]["files"] = files_list
         bulk_data["_source"]["raw_data"]["total"] = commit_stats.total
         if_merged = False
-        if len(bulk_data["_source"]["raw_data"]["parents"]) == 2:
+        if len(bulk_data["_source"]["raw_data"]["parents"]) > 1:
             if_merged = True
         bulk_data["_source"]["raw_data"]["if_merged"] = if_merged
 
