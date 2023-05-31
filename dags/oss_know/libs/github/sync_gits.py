@@ -175,7 +175,7 @@ def create_commit_doc(owner, repo, git_repo, sha, check_point_timestamp):
     commit_doc["_source"]["raw_data"]["committed_timestamp"] = commit.committed_date
     commit_doc["_source"]["raw_data"]["files"] = files_list
     commit_doc["_source"]["raw_data"]["total"] = commit.stats.total
-    commit_doc["_source"]["raw_data"]["if_merged"] = len(commit_doc["_source"]["raw_data"]["parents"]) > 0
+    commit_doc["_source"]["raw_data"]["if_merged"] = len(commit_doc["_source"]["raw_data"]["parents"]) > 1
     return commit_doc
 
 
