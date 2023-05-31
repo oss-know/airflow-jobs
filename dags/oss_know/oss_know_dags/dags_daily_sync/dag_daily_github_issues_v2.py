@@ -17,9 +17,13 @@ from oss_know.libs.util.proxy import GithubTokenProxyAccommodator, ProxyServiceP
 
 OP_SYNC_ISSUE_PREFIX = 'op_sync_github_issues'
 
+sync_interval = Variable.get(DAILY_GITHUB_ISSUES_SYNC_INTERVAL, default_var=None)
+if not sync_interval:
+    sync_interval = Variable.get(DAILY_SYNC_INTERVAL, default_var=None)
+
 with DAG(
         dag_id='daily_github_issues_sync_v2',
-        schedule_interval=None,
+        schedule_interval=sync_interval,
         start_date=datetime(2000, 1, 1),
         catchup=False,
         tags=['github', 'daily sync'],
@@ -31,10 +35,6 @@ with DAG(
     github_issue_table_template = table_templates.get(OPENSEARCH_INDEX_GITHUB_ISSUES)
     issue_comment_table_template = table_templates.get(OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS)
     issue_timeline_table_template = table_templates.get(OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE)
-
-    sync_interval = Variable.get(DAILY_GITHUB_ISSUES_SYNC_INTERVAL, default_var=None)
-    if not sync_interval:
-        sync_interval = Variable.get(DAILY_SYNC_INTERVAL, default_var=None)
 
     github_tokens = Variable.get(GITHUB_TOKENS, deserialize_json=True)
     proxy_confs = Variable.get(PROXY_CONFS, deserialize_json=True)
