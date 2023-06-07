@@ -17,7 +17,8 @@ from tenacity import *
 
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COMMITS, OPENSEARCH_INDEX_GITHUB_ISSUES, \
     OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE, OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, \
-    OPENSEARCH_INDEX_CHECK_SYNC_DATA, OPENSEARCH_INDEX_GITHUB_PROFILE, OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS
+    OPENSEARCH_INDEX_CHECK_SYNC_DATA, OPENSEARCH_INDEX_GITHUB_PROFILE, OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS, \
+    OPENSEARCH_GIT_RAW
 from oss_know.libs.util.airflow import get_postgres_conn
 from oss_know.libs.util.base import infer_country_company_geo_insert_into_profile, inferrers, now_timestamp
 from oss_know.libs.util.github_api import GithubAPI
@@ -31,6 +32,10 @@ class OpenSearchAPIException(Exception):
         self.status = status
 
 
+# TODO Is OpenSearchAPI class a good choice to provide the collection of opensearch utils?
+#  When the OpenSearchAPI is instantiated somewhere and only part of the utils are need, the unused
+#  methods are just wasted. So maybe it's better to put the methods into helper functions in this
+#  module and let the caller code decide exactly which one(s) to import and call.
 class OpensearchAPI:
     def bulk_github_commits(self, opensearch_client, github_commits, owner, repo, if_sync) -> Tuple[int, int]:
         bulk_all_github_commits = []
@@ -564,7 +569,7 @@ class OpensearchAPI:
             }
         }
 
-        if index == 'gits':
+        if index == OPENSEARCH_GIT_RAW:
             aggregation_body['aggs']['uniq_owners']['aggs']['uniq_repos']['aggs'] = {
                 "uniq_origin": {
                     "terms": {
@@ -586,7 +591,7 @@ class OpensearchAPI:
                     'owner': owner_name,
                     'repo': repo_name
                 }
-                if index == 'gits':
+                if index == OPENSEARCH_GIT_RAW:
                     uniq_item['origin'] = uniq_repo['uniq_origin']['buckets'][0]['key']
 
                 # The conditions here:
@@ -607,3 +612,45 @@ class OpensearchAPI:
             res = opensearch_client.search(index=index, body=search_body)
             if res['hits']['total']['value'] == 0:
                 break
+
+    # Get the latest update_timestamp from check_sync_data
+    def get_checkpoint(self, opensearch_client, index_type, owner, repo):
+        query_body = {
+            "size": 1,
+            "query": {
+                "bool": {
+                    "must": [
+                        {
+                            "term": {
+                                "search_key.type.keyword": {
+                                    "value": index_type
+                                }
+                            }
+                        },
+                        {
+                            "term": {
+                                "search_key.owner.keyword": {
+                                    "value": owner
+                                }
+                            }
+                        },
+                        {
+                            "term": {
+                                "search_key.repo.keyword": {
+                                    "value": repo
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "sort": [
+                {
+                    "search_key.update_timestamp": {
+                        "order": "desc"
+                    }
+                }
+            ]
+        }
+
+        return opensearch_client.search(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA, body=query_body)
