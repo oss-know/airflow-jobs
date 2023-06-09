@@ -32,10 +32,10 @@ def sync_github_issues(opensearch_conn_info, owner, repo, token_proxy_accommodat
     since = None
     issue_checkpoint = opensearch_api.get_checkpoint(opensearch_client,
                                                      OPENSEARCH_INDEX_GITHUB_ISSUES, owner, repo)
-    if len(issue_checkpoint["hits"]["hits"]) == 0:
+    if not issue_checkpoint["hits"]["hits"]:
         last_issue_date_str = get_latest_issue_date_str(opensearch_client, owner, repo)
         if not last_issue_date_str:
-            raise SyncGithubIssuesException("没有得到上次github issues 同步的时间")
+            raise SyncGithubIssuesException(f"没有得到上次github issues {owner}/{repo} 同步的时间")
         else:
             since = datetime.datetime.strptime(last_issue_date_str, '%Y-%m-%dT%H:%M:%SZ').strftime('%Y-%m-%dT00:00:00Z')
     else:
@@ -92,7 +92,7 @@ def get_latest_issue_date_str(opensearch_client, owner, repo):
         "size": 1, "_source": "raw_data.created_at",
         "sort": [{"raw_data.created_at": {"order": "desc"}}]
     })
-    if len(last_issue_info["hits"]["hits"]) == 0:
+    if not last_issue_info["hits"]["hits"]:
         return None
 
     return last_issue_info['hits']['hits'][0]['_source']['raw_data']['created_at']

@@ -40,12 +40,12 @@ def sync_github_pull_requests(opensearch_conn_info,
     since = None
     pr_checkpoint = opensearch_api.get_checkpoint(opensearch_client,
                                                   OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS, owner, repo)
-    if len(pr_checkpoint["hits"]["hits"]) == 0:
+    if not pr_checkpoint["hits"]["hits"]:
         # Try to get the latest PR date(created_at field) from existing github_pull_requests index
         # And make it the latest checkpoint
         latest_pr_date = get_latest_pr_date_str(opensearch_client, owner, repo)
         if not latest_pr_date:
-            raise SyncGithubPullRequestsException("没有得到上次github pull_requests 同步的时间")
+            raise SyncGithubPullRequestsException(f"没有得到上次github pull_requests {owner}/{repo} 同步的时间")
         since = datetime.datetime.strptime(latest_pr_date, '%Y-%m-%dT%H:%M:%SZ').strftime('%Y-%m-%dT00:00:00Z')
     else:
         github_pull_requests_check = pr_checkpoint["hits"]["hits"][0]["_source"]["github"]["prs"]
@@ -133,7 +133,7 @@ def get_latest_pr_date_str(opensearch_client, owner, repo):
                                                   ]
                                               }
                                               )
-    if len(latest_pr_info["hits"]["hits"]) == 0:
+    if not latest_pr_info["hits"]["hits"]:
         return None
 
     return latest_pr_info["hits"]["hits"][0]["_source"]["raw_data"]["created_at"]

@@ -38,13 +38,13 @@ def sync_github_commits_opensearch(opensearch_conn_info,
     since = None
     commit_checkpoint = opensearch_api.get_checkpoint(opensearch_client,
                                                       OPENSEARCH_INDEX_GITHUB_COMMITS, owner, repo)
-    if len(commit_checkpoint["hits"]["hits"]) == 0:
+    if not commit_checkpoint["hits"]["hits"]:
         # raise SyncGithubCommitException("没有得到上次github commits 同步的时间")
         # Try to get the latest commit date(committed_date field) from existing github_commits index
         # And make it the latest checkpoint
         latest_commit_date_str = get_latest_commit_date_str(opensearch_client, owner, repo)
         if not latest_commit_date_str:
-            raise SyncGithubCommitException("没有得到上次github commits 同步的时间")
+            raise SyncGithubCommitException(f"没有得到上次github commits {owner}/{repo} 同步的时间")
         since = datetime.datetime.strptime(latest_commit_date_str, '%Y-%m-%dT%H:%M:%SZ').strftime('%Y-%m-%dT00:00:00Z')
     else:
         github_commits_check = commit_checkpoint["hits"]["hits"][0]["_source"]["github"]["commits"]
@@ -116,7 +116,7 @@ def get_latest_commit_date_str(opensearch_client, owner, repo):
                                                       ]
                                                   }
                                                   )
-    if len(latest_commit_info["hits"]["hits"]) == 0:
+    if not latest_commit_info["hits"]["hits"]:
         return None
 
     return latest_commit_info["hits"]["hits"][0]["_source"]["raw_data"]["commit"]["committer"]["date"]
