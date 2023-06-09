@@ -32,70 +32,31 @@ def sync_github_commits_opensearch(opensearch_conn_info,
         ssl_assert_hostname=False,
         ssl_show_warn=False
     )
+    opensearch_api = OpensearchAPI()
 
     # 取得上次更新github commit 的时间节点
-
-    has_commit_check = opensearch_client.search(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA,
-                                                body={
-                                                    "size": 1,
-                                                    "track_total_hits": True,
-                                                    "query": {
-                                                        "bool": {
-                                                            "must": [
-                                                                {
-                                                                    "term": {
-                                                                        "search_key.type.keyword": {
-                                                                            "value": "github_commits"
-                                                                        }
-                                                                    }
-                                                                },
-                                                                {
-                                                                    "term": {
-                                                                        "search_key.owner.keyword": {
-                                                                            "value": owner
-                                                                        }
-                                                                    }
-                                                                },
-                                                                {
-                                                                    "term": {
-                                                                        "search_key.repo.keyword": {
-                                                                            "value": repo
-                                                                        }
-                                                                    }
-                                                                }
-                                                            ]
-                                                        }
-                                                    },
-                                                    "sort": [
-                                                        {
-                                                            "search_key.update_timestamp": {
-                                                                "order": "desc"
-                                                            }
-                                                        }
-                                                    ]
-                                                }
-                                                )
     since = None
-    if len(has_commit_check["hits"]["hits"]) == 0:
+    commit_checkpoint = opensearch_api.get_checkpoint(opensearch_client,
+                                                      OPENSEARCH_INDEX_GITHUB_COMMITS, owner, repo)
+    if not commit_checkpoint["hits"]["hits"]:
         # raise SyncGithubCommitException("没有得到上次github commits 同步的时间")
         # Try to get the latest commit date(committed_date field) from existing github_commits index
         # And make it the latest checkpoint
         latest_commit_date_str = get_latest_commit_date_str(opensearch_client, owner, repo)
         if not latest_commit_date_str:
-            raise SyncGithubCommitException("没有得到上次github commits 同步的时间")
+            raise SyncGithubCommitException(f"没有得到上次github commits {owner}/{repo} 同步的时间")
         since = datetime.datetime.strptime(latest_commit_date_str, '%Y-%m-%dT%H:%M:%SZ').strftime('%Y-%m-%dT00:00:00Z')
     else:
-        github_commits_check = has_commit_check["hits"]["hits"][0]["_source"]["github"]["commits"]
+        github_commits_check = commit_checkpoint["hits"]["hits"][0]["_source"]["github"]["commits"]
         since = datetime.datetime.fromtimestamp(github_commits_check["sync_until_timestamp"]).strftime(
             '%Y-%m-%dT00:00:00Z')
 
     # 生成本次同步的时间范围：同步到今天的 00:00:00
     until = datetime.datetime.now().strftime('%Y-%m-%dT00:00:00Z')
-    logger.info(f'sync github commits since：{since}，sync until：{until}')
+    logger.info(f'Sync github commits {owner}/{repo} since：{since}，sync until：{until}')
 
     session = requests.Session()
     github_api = GithubAPI()
-    opensearch_api = OpensearchAPI()
     for page in range(1, 999999):
         time.sleep(random.uniform(GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX))
         req = github_api.get_github_commits(http_session=session,
@@ -155,7 +116,7 @@ def get_latest_commit_date_str(opensearch_client, owner, repo):
                                                       ]
                                                   }
                                                   )
-    if len(latest_commit_info["hits"]["hits"]) == 0:
+    if not latest_commit_info["hits"]["hits"]:
         return None
 
     return latest_commit_info["hits"]["hits"][0]["_source"]["raw_data"]["commit"]["committer"]["date"]

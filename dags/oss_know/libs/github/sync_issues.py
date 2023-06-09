@@ -27,66 +27,26 @@ def sync_github_issues(opensearch_conn_info, owner, repo, token_proxy_accommodat
                                    http_compress=True,
                                    http_auth=(opensearch_conn_info["USER"], opensearch_conn_info["PASSWD"]),
                                    use_ssl=True, verify_certs=False, ssl_assert_hostname=False, ssl_show_warn=False)
+    opensearch_api = OpensearchAPI()
 
-    has_issues_check = opensearch_client.search(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA,
-                                                body={
-                                                    "size": 1,
-                                                    "track_total_hits": True,
-                                                    "query": {
-                                                        "bool": {
-                                                            "must": [
-                                                                {
-                                                                    "term": {
-                                                                        "search_key.type.keyword": {
-                                                                            "value": "github_issues"
-                                                                        }
-                                                                    }
-                                                                },
-                                                                {
-                                                                    "term": {
-                                                                        "search_key.owner.keyword": {
-                                                                            "value": owner
-                                                                        }
-                                                                    }
-                                                                },
-                                                                {
-                                                                    "term": {
-                                                                        "search_key.repo.keyword": {
-                                                                            "value": repo
-                                                                        }
-                                                                    }
-                                                                }
-                                                            ]
-                                                        }
-                                                    },
-                                                    "sort": [
-                                                        {
-                                                            "search_key.update_timestamp": {
-                                                                "order": "desc"
-                                                            }
-                                                        }
-                                                    ]
-                                                }
-                                                )
     since = None
-    if len(has_issues_check["hits"]["hits"]) == 0:
+    issue_checkpoint = opensearch_api.get_checkpoint(opensearch_client,
+                                                     OPENSEARCH_INDEX_GITHUB_ISSUES, owner, repo)
+    if not issue_checkpoint["hits"]["hits"]:
         last_issue_date_str = get_latest_issue_date_str(opensearch_client, owner, repo)
         if not last_issue_date_str:
-            raise SyncGithubIssuesException("没有得到上次github issues 同步的时间")
+            raise SyncGithubIssuesException(f"没有得到上次github issues {owner}/{repo} 同步的时间")
         else:
             since = datetime.datetime.strptime(last_issue_date_str, '%Y-%m-%dT%H:%M:%SZ').strftime('%Y-%m-%dT00:00:00Z')
     else:
-        github_issues_check = has_issues_check["hits"]["hits"][0]["_source"]["github"]["issues"]
+        github_issues_check = issue_checkpoint["hits"]["hits"][0]["_source"]["github"]["issues"]
         since = datetime.datetime.fromtimestamp(github_issues_check["sync_timestamp"]).strftime('%Y-%m-%dT00:00:00Z')
-
-    logger.info(f'sync github issues since：{since}')
+    logger.info(f'Sync github issues {owner}/{repo} since：{since}')
 
     issues_numbers = []
     pr_numbers = []
     session = requests.Session()
-    opensearch_api = OpensearchAPI()
     github_api = GithubAPI()
-
     for page in range(1, 100000):
         # Token sleep
         time.sleep(random.uniform(GITHUB_SLEEP_TIME_MIN, GITHUB_SLEEP_TIME_MAX))
@@ -132,7 +92,7 @@ def get_latest_issue_date_str(opensearch_client, owner, repo):
         "size": 1, "_source": "raw_data.created_at",
         "sort": [{"raw_data.created_at": {"order": "desc"}}]
     })
-    if len(last_issue_info["hits"]["hits"]) == 0:
+    if not last_issue_info["hits"]["hits"]:
         return None
 
     return last_issue_info['hits']['hits'][0]['_source']['raw_data']['created_at']
