@@ -10,7 +10,7 @@ from oss_know.libs.base_dict.variable_key import GITHUB_TOKENS, OPENSEARCH_CONN_
     DAILY_SYNC_GITHUB_PRS_INCLUDES, DAILY_SYNC_INTERVAL, DAILY_GITHUB_PRS_SYNC_INTERVAL
 from oss_know.libs.github.sync_pull_requests import sync_github_pull_requests
 from oss_know.libs.util.base import get_opensearch_client, arrange_owner_repo_into_letter_groups
-from oss_know.libs.util.data_transfer import sync_clickhouse_from_opensearch
+from oss_know.libs.util.data_transfer import sync_clickhouse_repos_from_opensearch
 from oss_know.libs.util.opensearch_api import OpensearchAPI
 from oss_know.libs.util.proxy import GithubTokenProxyAccommodator, ProxyServiceProvider, make_accommodator
 
@@ -49,10 +49,10 @@ with DAG(dag_id='daily_github_pull_requests_sync',  # schedule_interval='*/5 * *
 
 
     def do_sync_github_pull_requests_clickhouse_group(owner_repo_group):
-        sync_clickhouse_from_opensearch(owner_repo_group,
-                                        OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS, opensearch_conn_info,
-                                        OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS, clickhouse_conn_info,
-                                        github_pr_table_template)
+        sync_clickhouse_repos_from_opensearch(owner_repo_group,
+                                              OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS, opensearch_conn_info,
+                                              OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS, clickhouse_conn_info,
+                                              github_pr_table_template)
 
 
     opensearch_client = get_opensearch_client(opensearch_conn_info=opensearch_conn_info)
@@ -86,7 +86,7 @@ with DAG(dag_id='daily_github_pull_requests_sync',  # schedule_interval='*/5 * *
         )
         op_sync_github_pr_clickhouse = PythonOperator(
             task_id=f'op_sync_github_pull_requests_clickhouse_group_{letter}',
-            python_callable=do_sync_github_pull_requests_opensearch_group,
+            python_callable=do_sync_github_pull_requests_clickhouse_group,
             trigger_rule='all_done',
             op_kwargs={
                 "owner_repo_group": owner_repos
