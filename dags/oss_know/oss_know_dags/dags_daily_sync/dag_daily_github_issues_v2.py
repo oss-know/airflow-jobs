@@ -11,7 +11,7 @@ from oss_know.libs.base_dict.variable_key import OPENSEARCH_CONN_DATA, GITHUB_TO
     DAILY_SYNC_GITHUB_ISSUES_INCLUDES, DAILY_SYNC_INTERVAL, DAILY_GITHUB_ISSUES_SYNC_INTERVAL
 from oss_know.libs.github import sync_issues, sync_issues_comments, sync_issues_timelines
 from oss_know.libs.util.base import get_opensearch_client, arrange_owner_repo_into_letter_groups
-from oss_know.libs.util.data_transfer import sync_clickhouse_from_opensearch, sync_clickhouse_repos_from_opensearch
+from oss_know.libs.util.data_transfer import sync_clickhouse_repos_from_opensearch
 from oss_know.libs.util.opensearch_api import OpensearchAPI
 from oss_know.libs.util.proxy import GithubTokenProxyAccommodator, ProxyServiceProvider, make_accommodator
 
@@ -62,13 +62,10 @@ with DAG(
 
 
     def do_sync_github_issues_clickhouse_group(owner_repo_group):
-        for item in owner_repo_group:
-            owner = item['owner']
-            repo = item['repo']
-            sync_clickhouse_from_opensearch(owner, repo,
-                                            OPENSEARCH_INDEX_GITHUB_ISSUES, opensearch_conn_info,
-                                            OPENSEARCH_INDEX_GITHUB_ISSUES, clickhouse_conn_info,
-                                            github_issue_table_template)
+        sync_clickhouse_repos_from_opensearch(owner_repo_group,
+                                              OPENSEARCH_INDEX_GITHUB_ISSUES, opensearch_conn_info,
+                                              OPENSEARCH_INDEX_GITHUB_ISSUES, clickhouse_conn_info,
+                                              github_issue_table_template)
 
 
     def do_sync_github_issues_comments_opensearch_group(group_letter, **kwargs):
