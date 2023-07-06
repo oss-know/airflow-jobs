@@ -43,6 +43,8 @@ CK_CREATE_TABLE_COLS_DATATYPE_TPLT = "ck_create_table_cols_datatype_tplt"
 CK_ALTER_TABLE_COLS_DATATYPE_TPLT = "ck_alter_table_cols_datatype_tplt"
 CK_TABLE_DEFAULT_VAL_TPLT = "ck_table_default_val_tplt"
 
+MYSQL_CONN_INFO = "mysql_conn_info"
+
 REDIS_CLIENT_DATA = "redis_client_data"
 
 LOCATIONGEO_TOKEN = "LocationGeo_token"
@@ -74,6 +76,11 @@ DAILY_GITS_SYNC_INTERVAL = "daily_gits_sync_interval"
 DAILY_GITHUB_COMMITS_SYNC_INTERVAL = "daily_github_commits_sync_interval"
 DAILY_GITHUB_PRS_SYNC_INTERVAL = "daily_github_prs_sync_interval"
 DAILY_GITHUB_ISSUES_SYNC_INTERVAL = "daily_github_issues_sync_interval"
+
+ROUTINELY_UPDATE_METRICS_INTERVAL = "routinely_update_metrics_interval"
+ROUTINELY_UPDATE_XXX_METRICS_INTERVAL = "routinely_update_xxx_metrics_interval"
+
+ROUTINELY_UPDATE_XXX_METRICS_INCLUDES = "routinely_update_xxx_metrics_includes"
 
 NEED_INIT_DISCOURSE = 'need_init_discourse'
 NEED_INIT_DISCOURSE_CLICKHOUSE = 'need_init_discourse_clickhouse'
