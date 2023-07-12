@@ -1,6 +1,5 @@
 import time
 from datetime import datetime
-from oss_know.libs.util.log import logger
 from airflow import DAG
 from airflow.models import Variable
 from airflow.operators.python import PythonOperator
@@ -8,9 +7,7 @@ from airflow.operators.python import PythonOperator
 # statistics_metrics_init_sync_v0.0.1
 from oss_know.libs.base_dict.variable_key import CLICKHOUSE_DRIVER_INFO
 
-from oss_know.libs.metrics.init_metrics_day_timeline import get_metries_day_timeline_by_repo
-from oss_know.libs.metrics.init_statistics_metrics import statistics_metrics, statistics_activities
-from oss_know.libs.util.clickhouse_driver import CKServer
+
 
 with DAG(
         dag_id='dag_analysis_for_dashboard_by_repo',
@@ -106,44 +103,40 @@ with DAG(
             python_callable=do_get_dir_label,
             op_kwargs={'params': repo_list},
         )
-        op_do_analysis = PythonOperator(
+        op_do_get_alter_files_count = PythonOperator(
             task_id=f'do_analysis_owner_{owner}_repo_{repo}',
             python_callable=do_get_alter_files_count,
             op_kwargs={'params': repo_list}
 
         )
-        op_do_analysis2 = PythonOperator(
+        op_do_get_dir_contributer_count = PythonOperator(
             task_id=f'do_analysis2_owner_{owner}_repo_{repo}',
             python_callable=do_get_dir_contributer_count,
             op_kwargs={'params': repo_list}
 
         )
-        op_do_analysis3 = PythonOperator(
+        op_do_get_alter_file_count_by_dir_email_domain = PythonOperator(
             task_id=f'do_analysis3_owner_{owner}_repo_{repo}',
             python_callable=do_get_alter_file_count_by_dir_email_domain,
             op_kwargs={'params': repo_list}
 
         )
 
-        op_do_analysis4 = PythonOperator(
+        op_do_get_contributer_by_dir_email_domain = PythonOperator(
             task_id=f'do_analysis4_owner_{owner}_repo_{repo}',
             python_callable=do_get_contributer_by_dir_email_domain,
             op_kwargs={'params': repo_list}
 
         )
 
-        op_do_analysis5 = PythonOperator(
+        op_do_get_tz_distribution = PythonOperator(
             task_id=f'do_analysis5_owner_{owner}_repo_{repo}',
             python_callable=do_get_tz_distribution,
             op_kwargs={'params': repo_list}
         )
-        op_init_analysis_for_dashboard >> op_do_analysis_for_dashboard >> op_do_analysis
-        op_init_analysis_for_dashboard >> op_do_analysis_for_dashboard >> op_do_analysis2
-        op_init_analysis_for_dashboard >> op_do_analysis_for_dashboard >> op_do_analysis3
-        op_init_analysis_for_dashboard >> op_do_analysis_for_dashboard >> op_do_analysis4
-        op_init_analysis_for_dashboard >> op_do_analysis_for_dashboard >> op_do_analysis5
-        # op_init_analysis_for_dashboard  >> op_do_analysis
-        # op_init_analysis_for_dashboard  >> op_do_analysis2
-        # op_init_analysis_for_dashboard  >> op_do_analysis3
-        # op_init_analysis_for_dashboard  >> op_do_analysis4
-        # op_init_analysis_for_dashboard  >> op_do_analysis5
+        op_init_analysis_for_dashboard >> op_do_analysis_for_dashboard >> op_do_get_alter_files_count
+        op_init_analysis_for_dashboard >> op_do_analysis_for_dashboard >> op_do_get_dir_contributer_count
+        op_init_analysis_for_dashboard >> op_do_analysis_for_dashboard >> op_do_get_alter_file_count_by_dir_email_domain
+        op_init_analysis_for_dashboard >> op_do_analysis_for_dashboard >> op_do_get_contributer_by_dir_email_domain
+        op_init_analysis_for_dashboard >> op_do_analysis_for_dashboard >> op_do_get_tz_distribution
+

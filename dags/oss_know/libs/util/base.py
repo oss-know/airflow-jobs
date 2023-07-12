@@ -383,3 +383,5 @@ def unify_gits_origin(origin):
     if str(origin).endswith('.git'):
         return origin[:-4]
     return origin
+
+
