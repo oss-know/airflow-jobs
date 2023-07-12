@@ -69,14 +69,13 @@ def get_modified_lines(owner, repo, path, opensearch_client):
                     old_path = '/' + old_path
                 if new_path:
                     new_path = '/' + new_path
-                if old_path == new_path and new_path:
+                if old_path == new_path:
                     file_name = new_path
-                elif not old_path:
-                    file_name = new_path
-                elif not new_path:
-                    file_name = old_path
-                elif not new_path and not old_path and new_path != old_path:
-                    file_name = new_path
+                else:
+                    if not old_path:
+                        file_name = new_path
+                    else:
+                        file_name = old_path
 
                 raw["compare_with_parents"].append(
                     {"old_path": old_path,
@@ -130,6 +129,3 @@ def init_gits_repo_modify_file(git_url, owner, repo, proxy_config, opensearch_co
 
     # 获取每个commit中每个文件的修改情况 只取前2000条，不足取全量
     get_modified_lines(owner=owner, repo=repo, path=repo_path, opensearch_client=opensearch_client)
-
-
-    return
