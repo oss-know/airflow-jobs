@@ -8,7 +8,6 @@ from airflow.operators.python import PythonOperator
 # statistics_metrics_init_sync_v0.0.1
 from oss_know.libs.base_dict.variable_key import CLICKHOUSE_DRIVER_INFO
 
-from oss_know.libs.metrics.init_statistics_metrics import statistics_metrics, statistics_activities
 from oss_know.libs.util.clickhouse_driver import CKServer
 
 with DAG(
@@ -72,7 +71,6 @@ with DAG(
 
 
     results = Variable.get("calculate_metrics_by_day_repos", deserialize_json=True)
-    # [()]fdsaXMODIFIERS=@im=fcitxfdsa
     for repo_list in results:
         owner = repo_list['owner']
         repo = repo_list['repo']

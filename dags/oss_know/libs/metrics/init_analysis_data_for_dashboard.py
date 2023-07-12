@@ -6,12 +6,11 @@ from oss_know.libs.util.clickhouse_driver import CKServer
 
 
 def get_dir_n(owner, repo, ck_con):
-    ck1 = CKServer(host=ck_con['HOST'], port=ck_con['PORT'], user=ck_con['USER'], password=ck_con['PASSWD'],
-                   database=ck_con['DATABASE'])
-    ck2 = CKServer(host=ck_con['HOST'], port=ck_con['PORT'], user=ck_con['USER'], password=ck_con['PASSWD'],
+
+    ck_client = CKServer(host=ck_con['HOST'], port=ck_con['PORT'], user=ck_con['USER'], password=ck_con['PASSWD'],
                    database=ck_con['DATABASE'])
 
-    results = ck1.execute_no_params(f"""
+    results = ck_client.execute_no_params(f"""
     SELECT search_key__owner,
        search_key__repo,
         author_tz,
@@ -37,58 +36,62 @@ def get_dir_n(owner, repo, ck_con):
     bulk_data = []
     count = 0
     dir_set = set()
+    """
+    full_dir_dict:目录的完整结构 /a/b/c
+    level_n_dir_dict：完整结构下每层目录结构 /a /a/b
+    """
     for result in results:
         dir_list = result[-2]
         dir_1 = dir_list[0] + '/'
         dir_set.add(dir_1)
-        dict1 = {}
-        dict1['ck_data_insert_at'] = now_timestamp()
-        dict1['search_key__owner'] = result[0]
-        dict1['search_key__repo'] = result[1]
-        dict1['author_tz'] = result[2]
-        dict1['committer_tz'] = result[3]
-        dict1['author_name'] = result[4]
-        dict1['author_email'] = result[5]
-        dict1['authored_date'] = result[6]
-        dict1['committer_name'] = result[7]
-        dict1['committer_email'] = result[8]
-        dict1['committed_date'] = result[9]
-        dict1['dir_list'] = result[10]
-        dict1['array_slice'] = result[11]
-        dict1['dir_level_n'] = result[12]
-        dict1['in_dir'] = dir_1
-        bulk_data.append(dict1)
+        full_dir_dict = {}
+        full_dir_dict['ck_data_insert_at'] = now_timestamp()
+        full_dir_dict['search_key__owner'] = result[0]
+        full_dir_dict['search_key__repo'] = result[1]
+        full_dir_dict['author_tz'] = result[2]
+        full_dir_dict['committer_tz'] = result[3]
+        full_dir_dict['author_name'] = result[4]
+        full_dir_dict['author_email'] = result[5]
+        full_dir_dict['authored_date'] = result[6]
+        full_dir_dict['committer_name'] = result[7]
+        full_dir_dict['committer_email'] = result[8]
+        full_dir_dict['committed_date'] = result[9]
+        full_dir_dict['dir_list'] = result[10]
+        full_dir_dict['array_slice'] = result[11]
+        full_dir_dict['dir_level_n'] = result[12]
+        full_dir_dict['in_dir'] = dir_1
+        bulk_data.append(full_dir_dict)
         count += 1
         for i in range(1, len(dir_list)):
             dir_1 = dir_1 + dir_list[i] + '/'
             dir_set.add(dir_1)
-            dict2 = {}
-            dict2['ck_data_insert_at'] = now_timestamp()
-            dict2['search_key__owner'] = result[0]
-            dict2['search_key__repo'] = result[1]
-            dict2['author_tz'] = result[2]
-            dict2['committer_tz'] = result[3]
-            dict2['author_name'] = result[4]
-            dict2['author_email'] = result[5]
-            dict2['authored_date'] = result[6]
-            dict2['committer_name'] = result[7]
-            dict2['committer_email'] = result[8]
-            dict2['committed_date'] = result[9]
-            dict2['dir_list'] = result[10]
-            dict2['array_slice'] = result[11]
-            dict2['dir_level_n'] = result[12]
-            dict2['in_dir'] = dir_1
-            bulk_data.append(dict2)
+            level_n_dir_dict = {}
+            level_n_dir_dict['ck_data_insert_at'] = now_timestamp()
+            level_n_dir_dict['search_key__owner'] = result[0]
+            level_n_dir_dict['search_key__repo'] = result[1]
+            level_n_dir_dict['author_tz'] = result[2]
+            level_n_dir_dict['committer_tz'] = result[3]
+            level_n_dir_dict['author_name'] = result[4]
+            level_n_dir_dict['author_email'] = result[5]
+            level_n_dir_dict['authored_date'] = result[6]
+            level_n_dir_dict['committer_name'] = result[7]
+            level_n_dir_dict['committer_email'] = result[8]
+            level_n_dir_dict['committed_date'] = result[9]
+            level_n_dir_dict['dir_list'] = result[10]
+            level_n_dir_dict['array_slice'] = result[11]
+            level_n_dir_dict['dir_level_n'] = result[12]
+            level_n_dir_dict['in_dir'] = dir_1
+            bulk_data.append(level_n_dir_dict)
             count += 1
 
         if len(bulk_data) > 50000:
             insert_sql = 'insert into table gits_dir_label values'
-            response = ck2.execute(insert_sql, bulk_data)
+            response = ck_client.execute(insert_sql, bulk_data)
             print(F"INSERT INSERT TABLE *** {response}")
             bulk_data.clear()
     if bulk_data:
         insert_sql = 'insert into table gits_dir_label values'
-        response = ck2.execute(insert_sql, bulk_data)
+        response = ck_client.execute(insert_sql, bulk_data)
         print(F"INSERT INSERT TABLE *** {response}")
     all_dir = list(dir_set)
     bulk_dir_list = []
@@ -101,9 +104,8 @@ def get_dir_n(owner, repo, ck_con):
         bulk_dir_list.append(dir_dict)
     if bulk_dir_list:
         insert_sql = 'insert into table gits_dir values'
-        ck2.execute(insert_sql, bulk_dir_list)
-    ck1.close()
-    ck2.close()
+        ck_client.execute(insert_sql, bulk_dir_list)
+    ck_client.close()
 
 
 def get_alter_files_count(ck_con, owner='', repo=''):

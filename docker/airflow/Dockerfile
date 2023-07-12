@@ -11,7 +11,7 @@ USER airflow
 RUN /usr/local/bin/python -m pip install --upgrade pip
 RUN pip install --no-cache-dir  'grimoire-elk>=0.99.0'
 RUN pip install --no-cache-dir git+https://github.com/oss-know/grimoirelab-perceval@development
-RUN pip install --no-cache-dir  'pandas>=1.4.0' 'scikit-learn>=1.0.2' 'numpy>=1.21'
+RUN pip install --no-cache-dir  'pandas>=1.4.0' 'scikit-learn>=1.0.2' 'numpy>=1.21' 'pydriller==2.5'
 RUN pip install --no-cache-dir  'loguru>=0.5.3' \
                                 'opensearch-py>=2.0.0' \
                                 'PyGithub>=1.54.1' \

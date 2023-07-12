@@ -1,16 +1,11 @@
-import time
 from datetime import datetime
-from oss_know.libs.util.log import logger
+
 from airflow import DAG
 from airflow.models import Variable
 from airflow.operators.python import PythonOperator
 
 # statistics_metrics_init_sync_v0.0.1
 from oss_know.libs.base_dict.variable_key import CLICKHOUSE_DRIVER_INFO
-
-from oss_know.libs.metrics.init_metrics_day_timeline import get_metries_day_timeline_by_repo
-from oss_know.libs.metrics.init_statistics_metrics import statistics_metrics, statistics_activities
-from oss_know.libs.util.clickhouse_driver import CKServer
 
 with DAG(
         dag_id='dag_analysis_for_dashboard',
@@ -38,11 +33,11 @@ with DAG(
 
         clickhouse_conn = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
 
-        get_dir_n(owner=owner, repo=repo,ck_con=clickhouse_conn)
+        get_dir_n(owner=owner, repo=repo, ck_con=clickhouse_conn)
         return "end::do_analysis_for_dashboard"
 
 
-    def do_analysis(params):
+    def do_get_alter_files_count(params):
         from oss_know.libs.metrics.init_analysis_data_for_dashboard import get_alter_files_count
         from airflow.models import Variable
 
@@ -51,10 +46,7 @@ with DAG(
         return "end::do_analysis_for_dashboard"
 
 
-
-
-
-    def do_analysis2(params):
+    def do_get_dir_contributer_count(params):
         from oss_know.libs.metrics.init_analysis_data_for_dashboard import get_dir_contributer_count
         from airflow.models import Variable
 
@@ -63,10 +55,7 @@ with DAG(
         return "end::do_analysis_for_dashboard"
 
 
-
-
-
-    def do_analysis3(params):
+    def do_get_alter_file_count_by_dir_email_domain(params):
         from oss_know.libs.metrics.init_analysis_data_for_dashboard import get_alter_file_count_by_dir_email_domain
         from airflow.models import Variable
 
@@ -75,10 +64,7 @@ with DAG(
         return "end::do_analysis_for_dashboard"
 
 
-
-
-
-    def do_analysis4(params):
+    def do_get_contributer_by_dir_email_domain(params):
         from oss_know.libs.metrics.init_analysis_data_for_dashboard import get_contributer_by_dir_email_domain
         from airflow.models import Variable
 
@@ -87,9 +73,7 @@ with DAG(
         return "end::do_analysis_for_dashboard"
 
 
-
-
-    def do_analysis5(params):
+    def do_get_tz_distribution(params):
         from oss_know.libs.metrics.init_analysis_data_for_dashboard import get_tz_distribution
         from airflow.models import Variable
 
@@ -98,32 +82,31 @@ with DAG(
         return "end::do_analysis_for_dashboard"
 
 
-
-    op_do_analysis = PythonOperator(
-        task_id=f'do_analysis',
-        python_callable=do_analysis
-
-    )
-    op_do_analysis2 = PythonOperator(
-        task_id=f'do_analysis2',
-        python_callable=do_analysis2
+    op_do_get_alter_files_count = PythonOperator(
+        task_id=f'do_get_alter_files_count',
+        python_callable=do_get_alter_files_count
 
     )
-    op_do_analysis3 = PythonOperator(
-        task_id=f'do_analysis3',
-        python_callable=do_analysis3
+    op_do_get_dir_contributer_count = PythonOperator(
+        task_id=f'do_get_dir_contributer_count',
+        python_callable=do_get_dir_contributer_count
 
     )
-
-    op_do_analysis4 = PythonOperator(
-        task_id=f'do_analysis4',
-        python_callable=do_analysis4
+    op_do_get_alter_file_count_by_dir_email_domain = PythonOperator(
+        task_id=f'do_get_alter_file_count_by_dir_email_domain',
+        python_callable=do_get_alter_file_count_by_dir_email_domain
 
     )
 
-    op_do_analysis5 = PythonOperator(
-        task_id=f'do_analysis5',
-        python_callable=do_analysis5
+    op_do_get_contributer_by_dir_email_domain = PythonOperator(
+        task_id=f'do_get_contributer_by_dir_email_domain',
+        python_callable=do_get_contributer_by_dir_email_domain
+
+    )
+
+    op_do_get_tz_distribution = PythonOperator(
+        task_id=f'do_get_tz_distribution',
+        python_callable=do_get_tz_distribution
 
     )
 
@@ -138,7 +121,7 @@ with DAG(
             op_kwargs={'params': repo_list},
         )
         op_init_analysis_for_dashboard >> op_do_analysis_for_dashboard
-        # op_init_analysis_for_dashboard >> op_do_analysis_for_dashboard >> op_do_analysis
-        # op_init_analysis_for_dashboard >> op_do_analysis_for_dashboard >> op_do_analysis2
-        # op_init_analysis_for_dashboard >> op_do_analysis_for_dashboard >> op_do_analysis3
-        # op_init_analysis_for_dashboard >> op_do_analysis_for_dashboard >> op_do_analysis4
+        op_do_analysis_for_dashboard >> op_do_get_alter_files_count
+        op_do_analysis_for_dashboard >> op_do_get_dir_contributer_count
+        op_do_analysis_for_dashboard >> op_do_get_alter_file_count_by_dir_email_domain
+        op_do_analysis_for_dashboard >> op_do_get_contributer_by_dir_email_domain

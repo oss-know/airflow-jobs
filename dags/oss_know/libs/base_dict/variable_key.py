@@ -32,6 +32,7 @@ DURATION_OF_SYNC_GITHUB_PROFILES = "duration_of_sync_github_profiles"
 SYNC_PROFILES_TASK_NUM = "sync_profiles_task_num"
 
 NEED_INIT_GITS = "need_init_gits"
+NEED_INIT_GITS_MODIFY_FILES = "need_init_gits_modify_files"
 GITS_PROXY_CONFIG = "gits_proxy_config"
 
 CLICKHOUSE_DRIVER_INFO = "clickhouse_conn_data"

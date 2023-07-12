@@ -43,7 +43,7 @@ def sync_git_check_update_info(opensearch_client, owner, repo, head_commit):
     logger.info(response)
 
 
-def delete_old_data(owner, repo, client, sync=True):
+def delete_old_data(owner, repo, client,index, sync=True):
     query_body = {
         "query": {
             "bool": {
@@ -61,7 +61,7 @@ def delete_old_data(owner, repo, client, sync=True):
             }
         }
     }
-    response = client.delete_by_query(index=OPENSEARCH_GIT_RAW, body=query_body)
+    response = client.delete_by_query(index=index, body=query_body)
     logger.info(f"Deleting old data of {owner}/{repo}, response: {response}")
 
     # Make sure all the docs are deleted with a dummy polling
@@ -69,7 +69,7 @@ def delete_old_data(owner, repo, client, sync=True):
     if sync:
         for i in range(20):
             sleep(0.5)
-            res = client.search(index=OPENSEARCH_GIT_RAW, body=query_body)
+            res = client.search(index=index, body=query_body)
             if res['hits']['total']['value'] == 0:
                 break
 
@@ -147,7 +147,7 @@ def init_gits_repo(git_url, owner, repo, proxy_config, opensearch_conn_datas, gi
     # Since the daily-sync DAGs read uniq (owner, repo) pairs from OpenSearch with aggs. The data deletion
     # might make the daily-sync lose some being-deleted (owner, repo) pairs without place holder.
     flag_doc_uuid = insert_flag_doc(opensearch_client, owner, repo)
-    delete_old_data(owner=owner, repo=repo, client=opensearch_client)
+    delete_old_data(owner=owner, repo=repo,index=OPENSEARCH_GIT_RAW, client=opensearch_client)
     remove_flag_doc(opensearch_client, owner, repo, flag_doc_uuid)
     bulk_data_tp = {
         "_index": OPENSEARCH_GIT_RAW,
