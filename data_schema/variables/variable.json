@@ -148,6 +148,13 @@
 	"password": "airflow",
 	"database": "airflow"
 },
+"mysql_conn_info": {
+    "HOST": "localhost",
+    "PORT": 3306,
+    "USER": "root",
+    "PASSWORD": "root_password",
+    "DATABASE": "your_database"
+},
   "ck_table_map_from_os_index": [
     {
       "OPENSEARCH_INDEX": "gits",
