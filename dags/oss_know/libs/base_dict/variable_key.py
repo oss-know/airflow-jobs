@@ -44,7 +44,7 @@ CK_ALTER_TABLE_COLS_DATATYPE_TPLT = "ck_alter_table_cols_datatype_tplt"
 CK_TABLE_DEFAULT_VAL_TPLT = "ck_table_default_val_tplt"
 
 MYSQL_CONN_INFO = "mysql_conn_info"
-
+MYSQL_CREATE_TABLE_DDL = 'mysql_create_table_ddl'
 REDIS_CLIENT_DATA = "redis_client_data"
 
 LOCATIONGEO_TOKEN = "LocationGeo_token"

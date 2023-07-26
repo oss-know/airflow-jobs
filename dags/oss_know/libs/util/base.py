@@ -364,7 +364,7 @@ def arrange_owner_repo_into_letter_groups(owner_repos):
     groups = {'other': []}
     for letter in ascii_lowercase:
         groups[letter] = []
-
+    owner = ''
     for item in owner_repos:
         if type(item) == tuple:
             owner, _ = item

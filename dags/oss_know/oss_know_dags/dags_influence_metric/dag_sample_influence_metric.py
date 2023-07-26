@@ -5,26 +5,31 @@ from airflow.models import Variable
 from airflow.operators.python import PythonOperator
 
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_GIT_RAW
-from oss_know.libs.base_dict.variable_key import CLICKHOUSE_DRIVER_INFO, DAILY_SYNC_INTERVAL, \
-    ROUTINELY_UPDATE_SAMPLE_INFLUENCE_METRICS_INTERVAL, MYSQL_CONN_INFO, \
-    ROUTINELY_UPDATE_SAMPLE_INFLUENCE_METRICS_INTERVAL
-from oss_know.libs.metrics.influence_metrics import calculate_sample_influence_metrics, save_sample_influence_metrics, \
-    SampleInfluenceMetricRoutineCalculation, MetricGroupRoutineCalculation
-from oss_know.libs.util.base import arrange_owner_repo_into_letter_groups
 from oss_know.libs.util.clickhouse import get_uniq_owner_repos
+from oss_know.libs.util.log import logger
+from oss_know.libs.base_dict.variable_key import CLICKHOUSE_DRIVER_INFO, DAILY_SYNC_INTERVAL, \
+    MYSQL_CONN_INFO, ROUTINELY_UPDATE_SAMPLE_INFLUENCE_METRICS_INTERVAL
+from oss_know.libs.metrics.influence_metrics import calculate_sample_influence_metrics, save_sample_influence_metrics, \
+    SampleInfluenceMetricRoutineCalculation, MetricGroupRoutineCalculation, DeveloperRoleMetricRoutineCalculation, \
+    ContributedRepoFirstYearMetricRoutineCalculation, BasicContributorGraphMetricRoutineCalculation, \
+    AverageRepairOfPeersMetricRoutineCalculation
+from oss_know.libs.util.base import arrange_owner_repo_into_letter_groups
 
-sync_interval = Variable.get(ROUTINELY_UPDATE_SAMPLE_INFLUENCE_METRICS_INTERVAL, default_var=None)
-if not sync_interval:
-    sync_interval = Variable.get(DAILY_SYNC_INTERVAL, default_var=None)
+# sync_interval = Variable.get(ROUTINELY_UPDATE_SAMPLE_INFLUENCE_METRICS_INTERVAL, default_var=None)
+# if not sync_interval:
+#     sync_interval = Variable.get(DAILY_SYNC_INTERVAL, default_var=None)
 
 mysql_conn_info = Variable.get(MYSQL_CONN_INFO, deserialize_json=True)
 
 with DAG(dag_id='routinely_calculate_sample_influence_metrics',  # schedule_interval='*/5 * * * *',
-         schedule_interval=sync_interval, start_date=datetime(2021, 1, 1), catchup=False,
+         schedule_interval=None,
+         start_date=datetime(2021, 1, 1), catchup=False,
          tags=['metrics'], ) as dag:
-    uniq_owner_repos = Variable.get(ROUTINELY_UPDATE_SAMPLE_INFLUENCE_METRICS_INTERVAL, deserialize_json=True,
-                                    default_var=None)
+    uniq_owner_repos = Variable.get(ROUTINELY_UPDATE_SAMPLE_INFLUENCE_METRICS_INTERVAL, deserialize_json=True)
+    clickhouse_conn_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
+
     if not uniq_owner_repos:
+        # 如果没有在variable中指定需要计算metrics的项目则从库中获取全量的去重后的owner_repo 计算
         clickhouse_conn_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
         uniq_owner_repos = get_uniq_owner_repos(clickhouse_conn_info, OPENSEARCH_GIT_RAW)
 
@@ -47,10 +52,39 @@ with DAG(dag_id='routinely_calculate_sample_influence_metrics',  # schedule_inte
 
 
     def do_calculate_sample_influence_metrics_by_routine_class(owner_repo_group):
-        calc = MetricGroupRoutineCalculation(SampleInfluenceMetricRoutineCalculation,
-                                             clickhouse_conn_info, mysql_conn_info,
-                                             owner_repo_group, 'sample_influence_metrics')
-        calc.routine()
+        if not owner_repo_group:
+            print("owner_repo组为空")
+            return
+        class_map = {
+            "SampleInfluenceMetricRoutineCalculation": {
+                "class": SampleInfluenceMetricRoutineCalculation,
+                "table_name": "total_fix_intensity"
+            },
+            "DeveloperRoleMetricRoutineCalculation": {
+                "class": DeveloperRoleMetricRoutineCalculation,
+                "table_name": "developer_roles_metrics"
+            },
+            "BasicContributorGraphMetricRoutineCalculation": {
+                "class": BasicContributorGraphMetricRoutineCalculation,
+                "table_name": "contribution_graph_data"
+            },
+            "ContributedRepoFirstYearMetricRoutineCalculation": {
+                "class": ContributedRepoFirstYearMetricRoutineCalculation,
+                "table_name": "contributed_repos_role"
+            }
+            ,
+            "AverageRepairOfPeersMetricRoutineCalculation": {
+                "class": AverageRepairOfPeersMetricRoutineCalculation,
+                "table_name": "peers_average_fix_intensity_role"
+            }
+        }
+        for class_ in class_map:
+            class_name = class_map.get(class_).get("class")
+            table_name = class_map.get(class_).get("table_name")
+            calc = MetricGroupRoutineCalculation(class_name,
+                                                 clickhouse_conn_info, mysql_conn_info,
+                                                 owner_repo_group, table_name)
+            calc.routine()
 
 
     # TODO Currently the DAG makes 27 parallel task groups(serial execution inside each group)
