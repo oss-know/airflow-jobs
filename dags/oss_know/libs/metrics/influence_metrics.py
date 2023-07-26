@@ -52,7 +52,6 @@ class MetricRoutineCalculation:
         logger.info(f'save metrics with {len(self.batch)} records, to {self.table_name}')
         self.batch = []
 
-    # ???
     def routine(self, force_update=True):
         if force_update:
             logger.info(f'{self.owner}/{self.repo}: force update, remove the metrics calculated for previous period')
@@ -117,12 +116,12 @@ class TotalFixIndensityMetricRoutineCalculation(MetricRoutineCalculation):
         for result in results:
             response.append((result[0], result[1]))
 
-        logger.info('calculating Sample Influence Metrics')
+        logger.info('calculating  Influence Metrics')
         return response
         # super().calculate_metrics()
 
     def save_metrics(self):
-        logger.info('saving Sample Influence Metrics')
+        logger.info('saving  Influence Metrics')
         total_fix_intensity_insert_query = '''
             INSERT INTO total_fix_intensity (author_email, total_fix_intensity)
             VALUES (%s, %s)'''
@@ -195,12 +194,12 @@ class DeveloperRoleMetricRoutineCalculation(MetricRoutineCalculation):
         for result in results:
             response.append((result[0], result[1], result[2], result[3]))
 
-        logger.info('calculating Sample Influence Metrics')
+        logger.info('calculating  Influence Metrics')
         return response
         # super().calculate_metrics()
 
     def save_metrics(self):
-        logger.info('saving Sample Influence Metrics')
+        logger.info('saving  Influence Metrics')
         insert_query = '''
             INSERT INTO developer_roles_metrics (author_email,total_fix_commit_count,maximum_fix_commit_count,repo_count)
             VALUES (%s, %s,%s, %s)'''
@@ -218,14 +217,14 @@ class ContributedRepoFirstYearMetricRoutineCalculation(MetricRoutineCalculation)
           from (select search_key__owner, search_key__repo, author_email, authored_date, b.*
                 from (select *
                       from gits
-                      where search_key__owner = 'rust-lang'
+                      where search_key__owner = '{self.owner}'
                         and length(parents) == 1
                         and author_email != '') as a global ASOF
                          INNER JOIN (select author_email,
                                             min(authored_date)          as start_at,
                                             subtractYears(start_at, -1) as end_at
                                      from gits
-                                     where search_key__owner = 'rust-lang'
+                                     where search_key__owner = '{self.owner}'
                                        and length(parents) == 1
                                        and author_email != ''
                                      group by author_email) as b
@@ -239,12 +238,12 @@ class ContributedRepoFirstYearMetricRoutineCalculation(MetricRoutineCalculation)
         for result in results:
             response.append(result)
 
-        logger.info('calculating Sample Influence Metrics')
+        logger.info('calculating  Influence Metrics')
         return response
         # super().calculate_metrics()
 
     def save_metrics(self):
-        logger.info('saving Sample Influence Metrics')
+        logger.info('saving  Influence Metrics')
         insert_query = '''
             INSERT INTO contributed_repos_role (author_email,repo_count)
             VALUES (%s, %s)'''
@@ -308,12 +307,12 @@ order by total_contribute_count desc
         for result in results:
             response.append(result)
 
-        logger.info('calculating Sample Influence Metrics')
+        logger.info('calculating  Influence Metrics')
         return response
         # super().calculate_metrics()
 
     def save_metrics(self):
-        logger.info('saving Sample Influence Metrics')
+        logger.info('saving  Influence Metrics')
         insert_query = '''
             INSERT INTO contribution_graph_data (cntrb_login,repo_name,pr_count, issue_count,commit_count,total_contributions)
             VALUES (%s, %s, %s, %s, %s, %s)'''
@@ -343,10 +342,7 @@ from (select *
                    b.end_at
             from (select *
                   from gits
-                  where search_key__owner = 'rust-lang'
-                    and search_key__repo != 'llvm-project'
-                    and search_key__repo != 'llvm'
-                    and search_key__repo != 'rust-gha'
+                  where search_key__owner = '{self.owner}'
                     and length(parents) == 1
                     and author_email != '') as a global
                      JOIN (select author_email,
@@ -359,7 +355,7 @@ from (select *
                            from (select search_key__owner, search_key__repo, author_email, authored_date, b.*
                                  from (select *
                                        from gits
-                                       where search_key__owner = 'rust-lang'
+                                       where search_key__owner = '{self.owner}'
                                          and search_key__repo != 'llvm-project'
                                          and search_key__repo != 'llvm'
                                          and search_key__repo != 'rust-gha'
@@ -369,7 +365,7 @@ from (select *
                                                              min(authored_date)          as start_at,
                                                              subtractYears(start_at, -1) as end_at
                                                       from gits
-                                                      where search_key__owner = 'rust-lang'
+                                                      where search_key__owner = '{self.owner}'
                                                         and search_key__repo != 'llvm-project'
                                                         and search_key__repo != 'llvm'
                                                         and search_key__repo != 'rust-gha'
@@ -397,11 +393,11 @@ group by search_key__owner, search_key__repo, dep_author_email, start_at)
         for result in results:
             response.append(result)
 
-        logger.info('calculating Sample Influence Metrics')
+        logger.info('calculating Influence Metrics')
         return response
 
     def save_metrics(self):
-        logger.info('saving Sample Influence Metrics')
+        logger.info('saving  Influence Metrics')
         insert_query = '''
             INSERT INTO peers_average_fix_intensity_role (repo,author_email,average_fix_intensity)
             VALUES (%s, %s, %s)'''
@@ -422,7 +418,6 @@ class MetricGroupRoutineCalculation:
         self.calc_class = metric_calc_class
 
     def routine(self, force_update=False):
-        # 不是并发是串行
         for item in self.owner_repos:
             owner = item['owner']
             repo = item['repo']

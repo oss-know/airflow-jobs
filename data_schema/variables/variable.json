@@ -5002,5 +5002,11 @@
       "table_name": "total_fix_intensity",
       "ddl": " CREATE TABLE IF NOT EXISTS total_fix_intensity (\nid INT PRIMARY KEY AUTO_INCREMENT,\nauthor_email VARCHAR(100),\ntotal_fix_intensity FLOAT)"
     }
+  ],
+  "routinely_update_influence_metrics_interval": [
+    {
+      "owner": "",
+      "repo": ""
+    }
   ]
 }

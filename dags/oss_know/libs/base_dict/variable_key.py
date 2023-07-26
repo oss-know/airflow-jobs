@@ -78,7 +78,7 @@ DAILY_GITHUB_PRS_SYNC_INTERVAL = "daily_github_prs_sync_interval"
 DAILY_GITHUB_ISSUES_SYNC_INTERVAL = "daily_github_issues_sync_interval"
 
 ROUTINELY_UPDATE_METRICS_INTERVAL = "routinely_update_metrics_interval"
-ROUTINELY_UPDATE_SAMPLE_INFLUENCE_METRICS_INTERVAL = "routinely_update_sample_influence_metrics_interval"
+ROUTINELY_UPDATE_INFLUENCE_METRICS_INTERVAL = "routinely_update_influence_metrics_interval"
 
 ROUTINELY_UPDATE_SAMPLE_INFLUENCE_METRICS_INCLUDES = "routinely_update_sample_influence_metrics_includes"
 
