@@ -10,7 +10,7 @@ from oss_know.libs.util.log import logger
 from oss_know.libs.base_dict.variable_key import CLICKHOUSE_DRIVER_INFO, DAILY_SYNC_INTERVAL, \
     MYSQL_CONN_INFO, ROUTINELY_UPDATE_SAMPLE_INFLUENCE_METRICS_INTERVAL
 from oss_know.libs.metrics.influence_metrics import calculate_sample_influence_metrics, save_sample_influence_metrics, \
-    SampleInfluenceMetricRoutineCalculation, MetricGroupRoutineCalculation, DeveloperRoleMetricRoutineCalculation, \
+    TotalFixIndensityMetricRoutineCalculation, MetricGroupRoutineCalculation, DeveloperRoleMetricRoutineCalculation, \
     ContributedRepoFirstYearMetricRoutineCalculation, BasicContributorGraphMetricRoutineCalculation, \
     AverageRepairOfPeersMetricRoutineCalculation
 from oss_know.libs.util.base import arrange_owner_repo_into_letter_groups
@@ -53,34 +53,19 @@ with DAG(dag_id='routinely_calculate_sample_influence_metrics',  # schedule_inte
 
     def do_calculate_sample_influence_metrics_by_routine_class(owner_repo_group):
         if not owner_repo_group:
-            print("owner_repo组为空")
+            logger.info("owner_repo组为空")
             return
-        class_map = {
-            "SampleInfluenceMetricRoutineCalculation": {
-                "class": SampleInfluenceMetricRoutineCalculation,
-                "table_name": "total_fix_intensity"
-            },
-            "DeveloperRoleMetricRoutineCalculation": {
-                "class": DeveloperRoleMetricRoutineCalculation,
-                "table_name": "developer_roles_metrics"
-            },
-            "BasicContributorGraphMetricRoutineCalculation": {
-                "class": BasicContributorGraphMetricRoutineCalculation,
-                "table_name": "contribution_graph_data"
-            },
-            "ContributedRepoFirstYearMetricRoutineCalculation": {
-                "class": ContributedRepoFirstYearMetricRoutineCalculation,
-                "table_name": "contributed_repos_role"
-            }
-            ,
-            "AverageRepairOfPeersMetricRoutineCalculation": {
-                "class": AverageRepairOfPeersMetricRoutineCalculation,
-                "table_name": "peers_average_fix_intensity_role"
-            }
-        }
-        for class_ in class_map:
-            class_name = class_map.get(class_).get("class")
-            table_name = class_map.get(class_).get("table_name")
+        class_table_names = [
+            (TotalFixIndensityMetricRoutineCalculation, "total_fix_intensity"),
+            (DeveloperRoleMetricRoutineCalculation,"developer_roles_metrics"),
+            (BasicContributorGraphMetricRoutineCalculation,"contribution_graph_data"),
+            (ContributedRepoFirstYearMetricRoutineCalculation,"contributed_repos_role"),
+            (AverageRepairOfPeersMetricRoutineCalculation, "peers_average_fix_intensity_role")
+        ]
+
+        for class_tbname in class_table_names:
+            class_name = class_tbname[0]
+            table_name = class_tbname[1]
             calc = MetricGroupRoutineCalculation(class_name,
                                                  clickhouse_conn_info, mysql_conn_info,
                                                  owner_repo_group, table_name)

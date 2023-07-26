@@ -90,7 +90,7 @@ class MetricRoutineCalculation:
         cursor.close()
 
 
-class SampleInfluenceMetricRoutineCalculation(MetricRoutineCalculation):
+class TotalFixIndensityMetricRoutineCalculation(MetricRoutineCalculation):
     def calculate_metrics(self):
         # owner 必须是一个拥有很多个项目的社区
         sql_ = f"""
