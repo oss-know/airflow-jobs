@@ -26,4 +26,6 @@ RUN pip install --no-cache-dir  'loguru>=0.5.3' \
 RUN pip install --no-cache-dir 'apache-airflow[password]==2.2.3'
 RUN pip install --no-cache-dir 'multidict==5.2.0'
 
+RUN pip install 'mysql-connector-python==8.0.33'
+
 RUN pip install markupsafe==2.0.1

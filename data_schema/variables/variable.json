@@ -148,6 +148,13 @@
 	"password": "airflow",
 	"database": "airflow"
 },
+"mysql_conn_info": {
+    "HOST": "localhost",
+    "PORT": 3306,
+    "USER": "root",
+    "PASSWORD": "root_password",
+    "DATABASE": "your_database"
+},
   "ck_table_map_from_os_index": [
     {
       "OPENSEARCH_INDEX": "gits",
@@ -4972,6 +4979,34 @@
       "owner": "rust-lang",
       "repo": "rust",
       "site": "https://rust-lang.zulipchat.com"
+    }
+  ],
+  "mysql_create_table_ddl": [
+    {
+      "table_name": "peers_average_fix_intensity_role",
+      "ddl": "CREATE TABLE IF NOT EXISTS peers_average_fix_intensity_role (\nid INT PRIMARY KEY AUTO_INCREMENT,\nrepo VARCHAR(100),\nauthor_email VARCHAR(100),\naverage_fix_intensity FLOAT)"
+    },
+    {
+      "table_name": "contributed_repos_role",
+      "ddl": "CREATE TABLE IF NOT EXISTS contributed_repos_role (\nid INT PRIMARY KEY AUTO_INCREMENT,\nauthor_email VARCHAR(100),\nrepo_count INT)"
+    },
+    {
+      "table_name": "contribution_graph_data",
+      "ddl": "CREATE TABLE IF NOT EXISTS contribution_graph_data(\nid INT PRIMARY KEY AUTO_INCREMENT,\ncntrb_login VARCHAR(100),\nrepo_name VARCHAR(100),\npr_count INT,\nissue_count INT,\ncommit_count INT ,\ntotal_contributions INT)"
+    },
+    {
+      "table_name": "developer_roles_metrics",
+      "ddl": "CREATE TABLE IF NOT EXISTS developer_roles_metrics(\nid INT PRIMARY KEY AUTO_INCREMENT,\nauthor_email VARCHAR(100),\ntotal_fix_commit_count INT,\nmaximum_fix_commit_count INT,\nrepo_count INT)"
+    },
+    {
+      "table_name": "total_fix_intensity",
+      "ddl": " CREATE TABLE IF NOT EXISTS total_fix_intensity (\nid INT PRIMARY KEY AUTO_INCREMENT,\nauthor_email VARCHAR(100),\ntotal_fix_intensity FLOAT)"
+    }
+  ],
+  "routinely_update_influence_metrics_interval": [
+    {
+      "owner": "",
+      "repo": ""
     }
   ]
 }
