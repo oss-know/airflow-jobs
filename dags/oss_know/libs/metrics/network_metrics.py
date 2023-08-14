@@ -2,7 +2,7 @@ import datetime
 import json
 from collections import defaultdict
 from statistics import mean
-
+from oss_know.libs.util.log import logger
 import networkx
 import networkx as nx
 
@@ -13,77 +13,41 @@ def extract_graph_from_ck(ck_client, owner, repo):
     properties_dict = defaultdict(dict)
     u2u_types = ['commented', 'mentioned', 'assigned', 'unassigned']
     user_set = set()
-<<<<<<< HEAD
-    sql_time = datetime.timedelta()
-=======
->>>>>>> e58d3ee (Add network metrics calculation to the routine)
     curtime = datetime.datetime.now()
     sql = f"select search_key__number as number, search_key__event as event_type, timeline_raw  as raw from github_issues_timeline where " \
             f"search_key__number global in (select number from github_pull_requests where search_key__owner = '{owner}' and search_key__repo = '{repo}') and " \
     f"search_key__owner = '{owner}' and search_key__repo = '{repo}';"
     timeline_results, user_list = [], []
     timeline_results = ck_client.execute_no_params(sql)
-    print(f'execution complete in {datetime.datetime.now() - curtime}')
-<<<<<<< HEAD
-=======
+    logger.info(f'execution complete in {datetime.datetime.now() - curtime}')
     sql1 = f"select user__id as id, user__login as login, search_key__number as number, created_at from github_issues_comments where search_key__owner = '{owner}' and search_key__repo = '{repo}';"
     mentioners = defaultdict(str)
     issue_comments = ck_client.execute_no_params(sql1)
     for comment in issue_comments:
         mentioners[f'{comment[2]}_{comment[3]}'] = (comment[0], comment[1])
-    print(list(mentioners.keys())[0])
->>>>>>> e58d3ee (Add network metrics calculation to the routine)
     count = 0
     sql_pr = f"select user__id as id, number  from github_pull_requests where search_key__owner = '{owner}' and search_key__repo = '{repo}';"
     pr_list = ck_client.execute_no_params(sql_pr)
     pr2author = dict()
     for [uid, number] in pr_list:
         pr2author[number] = uid
-
+    if not timeline_results:
+        return []
     for result in timeline_results:
         if result[1] not in u2u_types:
             continue
-        if count % 500 == 0:
-<<<<<<< HEAD
-            print(f'{count} records finished in {datetime.datetime.now() - curtime}, sql execution {sql_time}')
-=======
-            print(f'{count} records finished in {datetime.datetime.now() - curtime}')
->>>>>>> e58d3ee (Add network metrics calculation to the routine)
+        if count % 5000 == 0:
+            logger.info(f'{count} records finished in {datetime.datetime.now() - curtime}')
             curtime = datetime.datetime.now()
         count += 1
 
         pr_num, event_type, timeline = result[0], result[1], json.loads(result[2])
-<<<<<<< HEAD
-        created_at = timeline['created_at']
-        dt_str = created_at[:4] + created_at[5:7] + created_at[8:10]
-        # if event_type == 'mentioned':
-        #     mentionee = timeline['actor']['id']
-        #     sql1 = f"select user__id as id, user__login as login from github_issues_comments where search_key__number = {pr_num} and created_at = parseDateTimeBestEffort('{created_at}') and  search_key__owner = '{owner}' and search_key__repo = '{repo}';"
-        #     df1 = ck_client.execute(sql1)
-        #     if not df1:
-        #         continue
-        #     mentioner = df1[0]
-        #     mlogin = df1[1]
-        #     if properties_dict[mentioner].get(mentionee) is None:
-        #         properties_dict[mentioner][mentionee] = dict()
-        #         properties_dict[mentioner][mentionee]['dt'] = list()
-        #         properties_dict[mentioner][mentionee]['weight'] = 0
-        #         properties_dict[mentioner][mentionee]['owner'] = owner
-        #         properties_dict[mentioner][mentionee]['repo'] = repo
-        #     if mentioner not in user_set:
-        #         user_set.add(mentioner)
-        #         user_list.append(['u' + str(mentioner), mlogin, mentioner])
-        #         # user_df.append(['u' + str(mentioner), mlogin, mentioner])
-        #     properties_dict[mentioner][mentionee]['dt'].append(dt_str)
-        #     properties_dict[mentioner][mentionee]['weight'] += 1
-=======
         created_at = timeline['created_at'].replace('T', ' ').replace('Z', '')
         dt_str = created_at[:4] + created_at[5:7] + created_at[8:10]
         if event_type == 'mentioned':
             if not timeline['actor']:
                 continue
             mentionee = timeline['actor']['id']
-            print(created_at)
             if not mentioners.get(f'{pr_num}_{created_at}'):
                 continue
             mentioner, mlogin = mentioners[f'{pr_num}_{created_at}']
@@ -96,7 +60,6 @@ def extract_graph_from_ck(ck_client, owner, repo):
                 user_list.append(['u' + str(mentioner), mlogin, mentioner])
             properties_dict[mentioner][mentionee]['dt'].append(dt_str)
             properties_dict[mentioner][mentionee]['weight'] += 1
->>>>>>> e58d3ee (Add network metrics calculation to the routine)
         if event_type == 'commented':
             if not pr2author.get(pr_num):
                 continue
@@ -106,11 +69,6 @@ def extract_graph_from_ck(ck_client, owner, repo):
             if properties_dict[commenter].get(author) is None:
                 properties_dict[commenter][author] = dict()
                 properties_dict[commenter][author]['dt'] = list()
-<<<<<<< HEAD
-                properties_dict[commenter][author]['repo'] = owner
-                properties_dict[commenter][author]['owner'] = repo
-=======
->>>>>>> e58d3ee (Add network metrics calculation to the routine)
                 properties_dict[commenter][author]['weight'] = 0
             if commenter not in user_set:
                 user_set.add(commenter)
@@ -126,11 +84,6 @@ def extract_graph_from_ck(ck_client, owner, repo):
             if properties_dict[assigner].get(assignee) is None:
                 properties_dict[assigner][assignee] = dict()
                 properties_dict[assigner][assignee]['dt'] = list()
-<<<<<<< HEAD
-                properties_dict[assigner][assignee]['owner'] = owner
-                properties_dict[assigner][assignee]['repo'] = repo
-=======
->>>>>>> e58d3ee (Add network metrics calculation to the routine)
                 properties_dict[assigner][assignee]['weight'] = 0
             if assignee not in user_set:
                 user_set.add(assignee)
@@ -144,10 +97,6 @@ def extract_graph_from_ck(ck_client, owner, repo):
             for j in range(len(p_dict['dt'])):
                 relations_list.append(
                     ['u' + str(a), 'u' + str(b), j, p_dict['dt'][j]])
-<<<<<<< HEAD
-
-=======
->>>>>>> e58d3ee (Add network metrics calculation to the routine)
     return relations_list
 
 
@@ -235,23 +184,19 @@ def extract_metrics(edge_list, owner, repo):
 
 class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
     def calculate_metrics(self):
-        print(f'calculating by {self.owner}, {self.repo}')
+        logger.info(f'calculating by {self.owner}, {self.repo}')
         edge_list = extract_graph_from_ck(self.clickhouse_client, self.owner, self.repo)
         calculated_metrics = extract_metrics(edge_list, self.owner, self.repo)
         return calculated_metrics
 
     def save_metrics(self):
-        print(f'save metrics with {len(self.batch)} records, to {self.table_name}')
+        logger.info(f'save metrics with {len(self.batch)} records, to {self.table_name}')
         cursor = self.mysql_conn.cursor()
         insert_query = "INSERT INTO network_metrics (repo, month, num_nodes, num_edges, num_collaborations, in_degree_centrality, out_degree_centrality, triangles, transitivity," \
                        "clustering, reciprocity, density, components_number, avg_degree) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
         cursor.executemany(insert_query, self.batch)
-<<<<<<< HEAD
-
-=======
->>>>>>> e58d3ee (Add network metrics calculation to the routine)
         self.mysql_conn.commit()
-        print("Data inserted successfully!")
+        logger.info("Data inserted successfully!")
         cursor.close()
 
     def routine_calculate_metrics_once(self):
