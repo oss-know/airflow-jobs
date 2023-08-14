@@ -5001,6 +5001,10 @@
     {
       "table_name": "total_fix_intensity",
       "ddl": " CREATE TABLE IF NOT EXISTS total_fix_intensity (\nid INT PRIMARY KEY AUTO_INCREMENT,\nauthor_email VARCHAR(100),\ntotal_fix_intensity FLOAT)"
+    },
+     {
+      "table_name": "network_metrics",
+      "ddl": " CREATE TABLE IF NOT EXISTS network_metrics (id int primary key auto_increment, repo varchar(255) not null, month varchar(255), num_nodes int, num_edges int, num_collaborations int, in_degree_centrality float, out_degree_centrality float, triangles int, transitivity float, clustering float, reciprocity float, density float, components_number int, avg_degree float)"
     }
   ],
   "routinely_update_influence_metrics_interval": [
