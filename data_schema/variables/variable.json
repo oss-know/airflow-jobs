@@ -5005,6 +5005,10 @@
     {
       "table_name": "repo_code_metric",
       "ddl": "CREATE TABLE IF NOT EXISTS repo_code_metrics (id int PRIMARY KEY AUTO_INCREMENT,owner varchar(255) NOT NULL,repo varchar(255) NOT NULL,created_at DateTime,sha varchar(255),nloc int,average_nloc float,average_cyclomatic_complexity float,average_token_count float)"
+    },
+    {
+      "table_name": "network_metrics",
+      "ddl": " CREATE TABLE IF NOT EXISTS network_metrics (id int primary key auto_increment, repo varchar(255) not null, month varchar(255), num_nodes int, num_edges int, num_collaborations int, in_degree_centrality float, out_degree_centrality float, triangles int, transitivity float, clustering float, reciprocity float, density float, components_number int, avg_degree float)"
     }
   ],
   "routinely_update_influence_metrics_interval": [
