@@ -5001,6 +5001,10 @@
     {
       "table_name": "total_fix_intensity",
       "ddl": " CREATE TABLE IF NOT EXISTS total_fix_intensity (\nid INT PRIMARY KEY AUTO_INCREMENT,\nauthor_email VARCHAR(100),\ntotal_fix_intensity FLOAT)"
+    },
+    {
+      "table_name": "repo_code_metric",
+      "ddl": "CREATE TABLE IF NOT EXISTS repo_code_metrics (id int PRIMARY KEY AUTO_INCREMENT,owner varchar(255) NOT NULL,repo varchar(255) NOT NULL,created_at DateTime,sha varchar(255),nloc int,average_nloc float,average_cyclomatic_complexity float,average_token_count float)"
     }
   ],
   "routinely_update_influence_metrics_interval": [
