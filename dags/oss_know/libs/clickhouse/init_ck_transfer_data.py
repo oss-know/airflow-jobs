@@ -348,7 +348,7 @@ def transfer_data_by_repo(clickhouse_server_info, table_name, opensearch_index, 
 # def parse_data(df, temp):
 #     # 这个是最终插入ck的数据字典
 #     dict_data = copy.deepcopy(temp)
-#     for index, row in df.iloc[0].iteritems():
+#     for index, row in df.iloc[0].items():
 #         # 去除以raw_data开头的字段
 #         if index.startswith("raw"):
 #             index = index[9:]
