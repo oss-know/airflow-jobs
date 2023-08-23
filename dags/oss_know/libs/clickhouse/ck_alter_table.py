@@ -15,7 +15,7 @@ def create_ck_table(df,
     all_fields = {}
     ck_data_type = []
     # 确定每个字段的类型 然后建表
-    for index, row in df.iloc[0].iteritems():
+    for index, row in df.iloc[0].items():
         # 去除包含raw_data的前缀
         if index.startswith('raw_data'):
             index = index[9:]
@@ -68,7 +68,10 @@ def create_ck_table(df,
         else:
             field_delete.append(key)
     for key in all_fields:
-        sql = f'ALTER TABLE {database_name}.{table_name}_local ON CLUSTER {cluster_name} ADD COLUMN {key} {all_fields.get(key)};'
+        sql = f'''
+        ALTER TABLE {database_name}.{table_name}_local ON CLUSTER {cluster_name}
+        ADD COLUMN {key} {all_fields.get(key)};
+        '''
         ck.execute_no_params(sql)
         logger.info(f'执行的sql语句: {sql}')
 
@@ -77,13 +80,19 @@ def create_ck_table(df,
         ck.execute_no_params(sql)
         logger.info(f'执行的sql语句: {sql}')
     for key in field_change:
-        sql = f'ALTER TABLE {database_name}.{table_name}_local ON CLUSTER {cluster_name} MODIFY COLUMN IF EXISTS {key} {field_change.get(key)}'
+        sql = f'''
+        ALTER TABLE {database_name}.{table_name}_local ON CLUSTER {cluster_name} MODIFY COLUMN IF EXISTS
+        {key} {field_change.get(key)}
+        '''
         ck.execute_no_params(sql)
         logger.info(f'执行的sql语句: {sql}')
 
     sql = f'DROP TABLE {database_name}.{table_name} ON CLUSTER {cluster_name}'
     ck.execute_no_params(sql)
-    sql = f'CREATE TABLE {database_name}.{table_name} ON CLUSTER {cluster_name} AS {database_name}.{table_name}_local Engine= Distributed({cluster_name},{database_name},{table_name}_local,{distributed_key});'
+    sql = f'''
+    CREATE TABLE {database_name}.{table_name} ON CLUSTER {cluster_name} AS {database_name}.{table_name}_local
+    Engine= Distributed({cluster_name},{database_name},{table_name}_local,{distributed_key});
+    '''
     ck.execute_no_params(sql)
     ck.close()
 

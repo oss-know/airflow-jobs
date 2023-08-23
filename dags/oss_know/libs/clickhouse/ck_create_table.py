@@ -41,7 +41,7 @@ def create_ck_table(df,
     # 存储最终的字段
     ck_data_type = []
     # 确定每个字段的类型 然后建表
-    for index, row in df.iloc[0].iteritems():
+    for index, row in df.iloc[0].items():
         # 去除包含raw_data的前缀
         if index.startswith('raw_data'):
             index = index[9:]
@@ -80,8 +80,15 @@ def create_ck_table(df,
 
         ck_data_type.append(data_type_outer)
     result = ",\r\n".join(ck_data_type)
-    create_local_table_ddl = f'CREATE TABLE IF NOT EXISTS {database_name}.{table_name}_local on cluster {cluster_name}({result}) Engine={table_engine}'
-    create_distributed_ddl = f'CREATE TABLE IF NOT EXISTS {database_name}.{table_name} on cluster {cluster_name} as {database_name}.{table_name}_local Engine= Distributed({cluster_name},{database_name},{table_name}_local,{distributed_key})'
+    create_local_table_ddl = f'''
+    CREATE TABLE IF NOT EXISTS {database_name}.{table_name}_local
+    on cluster {cluster_name}({result}) Engine={table_engine}
+    '''
+    create_distributed_ddl = f'''
+    CREATE TABLE IF NOT EXISTS {database_name}.{table_name}
+    on cluster {cluster_name} as {database_name}.{table_name}_local
+    Engine= Distributed({cluster_name},{database_name},{table_name}_local,{distributed_key})
+    '''
     if partition_by:
         create_local_table_ddl = f'{create_local_table_ddl} PARTITION BY {partition_by}'
     if order_by:
