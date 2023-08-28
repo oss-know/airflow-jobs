@@ -6,29 +6,31 @@ from oss_know.libs.util.log import logger
 from oss_know.libs.metrics.influence_metrics import MetricRoutineCalculation
 
 class PrivilegeEventsMetricRoutineCalculation(MetricRoutineCalculation):
-    def calculate_metrics(self):
-        privileged_events_list = ["added_to_project", "converted_note_to_issue",
-                                  "deployed", "deployment_environment_changed",
-                                  "locked", "merged", "moved_columns_in_project",
-                                  "pinned", "removed_from_project",
-                                  "review_dismissed", "transferred",
-                                  "unlocked", "unpinned", "user_blocked"]
+    privileged_events_list = ["added_to_project", "converted_note_to_issue",
+                              "deployed", "deployment_environment_changed",
+                              "locked", "merged", "moved_columns_in_project",
+                              "pinned", "removed_from_project",
+                              "review_dismissed", "transferred",
+                              "unlocked", "unpinned", "user_blocked"]
 
-        privilege_sql_ = f"SELECT * FROM github_issues_timeline WHERE search_key__repo = '{self.repo}'"
+    def calculate_metrics(self):
+        event_type_index_map = {}
+        for (index, event) in enumerate(self.privileged_events_list):
+            event_type_index_map[event] = index
+
+        privilege_sql_ = f"SELECT search_key__event, timeline_raw FROM github_issues_timeline WHERE search_key__owner = '{self.owner}' AND search_key__repo = '{self.repo}'"
         privilege_results = self.clickhouse_client.execute_no_params(privilege_sql_)
         response = []
 
         privilege_map = {}
-        for event in privilege_results:
-            event_type = event[3]
-            if event_type in privileged_events_list:
-                timeline_raw = event[6]
+        for (event_type, timeline_raw) in privilege_results:
+            if event_type in self.privileged_events_list:
                 raw_data = json.loads(timeline_raw)
                 dev = raw_data['actor']
                 dev_name = dev['login']
                 if dev_name not in privilege_map:
                     privilege_map[dev_name] = [0] * 14
-                index = privileged_events_list.index(event)
+                index = event_type_index_map[event_type]
                 privilege_map[dev_name][index] = 1
 
         dev_event = []
@@ -56,14 +58,11 @@ class PrivilegeEventsMetricRoutineCalculation(MetricRoutineCalculation):
 
 class CountMetricRoutineCalculation(MetricRoutineCalculation):
     def calculate_metrics(self):
-        gits_sql_ = f"SELECT * FROM gits WHERE search_key__repo = '{self.repo}'"
+        gits_sql_ = f"SELECT author_name, total__lines FROM gits WHERE search_key__owner = '{self.owner}' AND search_key__repo = '{self.repo}'"
         gits_results = self.clickhouse_client.execute_no_params(gits_sql_)
         loc_map = {}
         commit_map = {}
-        file_map = {}
-        for git in gits_results:
-            author_name = git[10]
-            total_lines = git[24]
+        for (author_name, total_lines) in gits_results:
             if author_name not in loc_map.keys():
                 commit_map[author_name] = 1
                 loc_map[author_name] = total_lines
@@ -88,17 +87,14 @@ class CountMetricRoutineCalculation(MetricRoutineCalculation):
 
 class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
     def calculate_metrics(self):
-        gits_sql_ = f"SELECT * FROM gits WHERE search_key__repo = '{self.repo}'"
+        gits_sql_ = f"SELECT author_name, authored_date, files.file_name FROM gits WHERE search_key__owner = '{self.owner}' AND search_key__repo = '{self.repo}'"
         gits_results = self.clickhouse_client.execute_no_params(gits_sql_)
         file_map = {}
-        for git in gits_results:
-            author_name = git[10]
-            authored_date = git[14]
+        for (author_name, authored_date, file_array) in gits_results:
             year = authored_date.year
             month = authored_date.month
             day = authored_date.day
             day_num = year * 365 + month * 12 + day
-            file_array = git[21]
             for file in file_array:
                 if file not in file_map.keys():
                     file_map[file] = [author_name, day_num]
@@ -121,7 +117,10 @@ class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
             degree = social_network.degree(dev)
             response.append((dev, degree, eigenvector[dev]))
 
-        logger.info('calculating  Network Metrics')
+        node_num = social_network.number_of_nodes()
+        edge_num = social_network.number_of_edges()
+
+        logger.info(f'calculating  Network Metrics of {self.owner}/{self.repo}, the graph has {node_num} nodes and {edge_num} edges')
         return response
 
     def save_metrics(self):
