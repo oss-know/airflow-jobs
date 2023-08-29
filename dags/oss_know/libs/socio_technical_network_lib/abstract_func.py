@@ -2,7 +2,7 @@
 import sys
 import subprocess
 from xml.etree import ElementTree as ET
-import json
+from tqdm import tqdm
 from oss_know.libs.util.log import logger
 from oss_know.libs.socio_technical_network_lib.interact_with_opensearch import put_intermediate_data_to_opensearch
 
@@ -145,12 +145,15 @@ def get_func_info_py(repo, compounddefs):
 
 def abstract_func(owner, repo, opensearch_conn_info):
     # Use doxygen to parse GitHub repo files into xml format
+    file_path = "/opt/workspace/DoxygenInput/" + repo
+    # environment_varible = "INPUT_PATH=" + file_path
+    environment_varible = {"INPUT_PATH": file_path}
     command = "doxygen"
     arg = "oss_know/libs/socio_technical_network_lib/doxygen.cfg"
     # arg = "./doxygen.cfg"
 
     # suc = os.system(command)
-    result = subprocess.run([command, arg], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    result = subprocess.run([command, arg], env=environment_varible, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
     if not result.returncode:
         # file_dir = "/opt/workspace/DoxygenResult/RepoXml/"
@@ -161,7 +164,8 @@ def abstract_func(owner, repo, opensearch_conn_info):
         # funcs_to_lines = {repo: {}}
         # lines_to_funcs = {repo: {}}
         lines_to_funcs = []
-        for sub_filename in sub_filenames:
+        pbar_sub_filenames = tqdm(sub_filenames)
+        for sub_filename in pbar_sub_filenames:
             tree = ET.parse(file_pre + sub_filename + file_post)
             root = tree.getroot()
             compounddefs = root.findall("compounddef")
@@ -172,6 +176,7 @@ def abstract_func(owner, repo, opensearch_conn_info):
             # funcs_to_lines[repo].update(func_key)
             # lines_to_funcs[repo].update(lines_key)
             lines_to_funcs.extend(lines_dict)
+            pbar_sub_filenames.set_description("Processing %s" % sub_filename)
 
         put_intermediate_data_to_opensearch(owner, repo, opensearch_conn_info, lines_to_funcs)
         return lines_to_funcs
