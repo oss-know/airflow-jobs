@@ -74,11 +74,12 @@ class RepoCodeMetricRoutineCalculation(MetricRoutineCalculation):
         logger.info("Data inserted successfully!")
         cursor.close()
 
+    metrics_keys = ["owner", "repo", "created_at", "sha", "nloc", "average_nloc", "average_cyclomatic_complexity", "average_token_count"]
+
     def routine_calculate_metrics_once(self):
         metrics = self.calculate_metrics()
-        metrics_keys = ["owner", "repo", "created_at", "sha", "nloc", "average_nloc", "average_cyclomatic_complexity", "average_token_count"]
         metrics_values = []
-        for key in metrics_keys:
+        for key in RepoCodeMetricRoutineCalculation.metrics_keys:
             metrics_values.append(metrics[key])
         self.batch = [metrics_values]
         self.save_metrics()
