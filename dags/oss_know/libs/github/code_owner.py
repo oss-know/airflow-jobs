@@ -2,10 +2,11 @@ import json
 import re
 from concurrent.futures import ThreadPoolExecutor
 from os import path, makedirs
-from oss_know.libs.util.log import logger
+
 import git
 
 from oss_know.libs.util.clickhouse_driver import CKServer
+from oss_know.libs.util.log import logger
 
 
 class CodeOwnerWatcher:
