@@ -28,29 +28,29 @@ with DAG(dag_id='routinely_calculate_developer_metrics',  # schedule_interval='*
         uniq_owner_repos = get_uniq_owner_repos(clickhouse_conn_info, OPENSEARCH_GIT_RAW)
 
 
-    def do_calculate_developer_metrics_by_routine_class(owner_repo_group, table_name, class_name):
+    def do_calculate_developer_metrics_by_routine_class(owner_repo_group, table_name, routine_class):
         if not owner_repo_group:
             logger.info("owner_repo组为空")
             return
-        calc = MetricGroupRoutineCalculation(class_name,
+        calc = MetricGroupRoutineCalculation(routine_class,
                                              clickhouse_conn_info, mysql_conn_info,
                                              owner_repo_group, table_name)
         calc.routine()
 
 
     class_table_names = [
-        (PrivilegeEventsMetricRoutineCalculation, "PrivilegeEventsMetricRoutineCalculation", "privilege_events"),
-        (CountMetricRoutineCalculation, "CountMetricRoutineCalculation", "count_metrics"),
-        (NetworkMetricRoutineCalculation, "NetworkMetricRoutineCalculation", "network_metrics"),
+        (PrivilegeEventsMetricRoutineCalculation, "privilege_events"),
+        (CountMetricRoutineCalculation, "count_metrics"),
+        (NetworkMetricRoutineCalculation, "network_metrics"),
     ]
-    for (class_, class_name, table_name) in class_table_names:
+    for (class_, table_name) in class_table_names:
         op_calculate_developer_metrics = PythonOperator(
-            task_id=f'op_do_{class_name}',
+            task_id=f'op_do_{class_.__name__}',
             python_callable=do_calculate_developer_metrics_by_routine_class,
             trigger_rule='all_done',
             op_kwargs={
                 "owner_repo_group": uniq_owner_repos,
                 "table_name": table_name,
-                "class_name": class_
+                "routine_class": class_
             }
         )
