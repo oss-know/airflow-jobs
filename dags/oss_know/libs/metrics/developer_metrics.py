@@ -1,9 +1,10 @@
 import json
 
 import networkx as nx
-from oss_know.libs.util.log import logger
 
 from oss_know.libs.metrics.influence_metrics import MetricRoutineCalculation
+from oss_know.libs.util.log import logger
+
 
 class PrivilegeEventsMetricRoutineCalculation(MetricRoutineCalculation):
     privileged_events_list = ["added_to_project", "converted_note_to_issue",
@@ -18,7 +19,15 @@ class PrivilegeEventsMetricRoutineCalculation(MetricRoutineCalculation):
         for (index, event) in enumerate(self.privileged_events_list):
             event_type_index_map[event] = index
 
-        privilege_sql_ = f"SELECT search_key__event, timeline_raw FROM github_issues_timeline WHERE search_key__owner = '{self.owner}' AND search_key__repo = '{self.repo}'"
+        privilege_sql_ = f"""
+        WITH {PrivilegeEventsMetricRoutineCalculation.privileged_events_list} as privileged_events
+        SELECT search_key__event, timeline_raw FROM github_issues_timeline 
+        WHERE search_key__owner = '{self.owner}' AND search_key__repo = '{self.repo}'
+        and has(privileged_events, search_key__event)
+        """
+
+        # TODO Even with constraints on search_key__event, an iterator is essential when data expands
+        #  to a large scale.
         privilege_results = self.clickhouse_client.execute_no_params(privilege_sql_)
         response = []
 
@@ -40,11 +49,12 @@ class PrivilegeEventsMetricRoutineCalculation(MetricRoutineCalculation):
                 dev_event.append(event)
             response.append(tuple(dev_event))
 
-        logger.info('calculating  Privilege Events Metrics')
+        logger.info(f'{len(response)} Privilege Events Metrics calculated on {self.owner}/{self.repo}')
         return response
 
     def save_metrics(self):
-        logger.info('saving  Privilege Events Metrics')
+        logger.info(f'Saving Privilege Events Metrics of {self.owner}/{self.repo}')
+        # TODO The string literal can be stored as static class property
         privilege_events_insert_query = '''
             INSERT INTO privilege_events(actor_login, added_to_project, converted_note_to_issue,
                                   deployed, deployment_environment_changed,
@@ -58,7 +68,10 @@ class PrivilegeEventsMetricRoutineCalculation(MetricRoutineCalculation):
 
 class CountMetricRoutineCalculation(MetricRoutineCalculation):
     def calculate_metrics(self):
-        gits_sql_ = f"SELECT author_name, total__lines FROM gits WHERE search_key__owner = '{self.owner}' AND search_key__repo = '{self.repo}'"
+        gits_sql_ = f"""
+        SELECT author_name, total__lines FROM gits
+        WHERE search_key__owner = '{self.owner}' AND search_key__repo = '{self.repo}'
+        """
         gits_results = self.clickhouse_client.execute_no_params(gits_sql_)
         loc_map = {}
         commit_map = {}
@@ -87,7 +100,11 @@ class CountMetricRoutineCalculation(MetricRoutineCalculation):
 
 class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
     def calculate_metrics(self):
-        gits_sql_ = f"SELECT author_name, authored_date, files.file_name FROM gits WHERE search_key__owner = '{self.owner}' AND search_key__repo = '{self.repo}'"
+        gits_sql_ = f"""
+        SELECT author_name, authored_date, files.file_name FROM gits
+        WHERE search_key__owner = '{self.owner}' AND search_key__repo = '{self.repo}'
+        """
+
         gits_results = self.clickhouse_client.execute_no_params(gits_sql_)
         file_map = {}
         for (author_name, authored_date, file_array) in gits_results:
@@ -119,8 +136,10 @@ class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
 
         node_num = social_network.number_of_nodes()
         edge_num = social_network.number_of_edges()
-
-        logger.info(f'calculating  Network Metrics of {self.owner}/{self.repo}, the graph has {node_num} nodes and {edge_num} edges')
+        log = f'Network Metrics of {self.owner}/{self.repo} calculated, {node_num} nodes and ' \
+              f'{edge_num} edges in the graph'
+        logger.info(log)
+        
         return response
 
     def save_metrics(self):
