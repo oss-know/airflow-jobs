@@ -94,6 +94,8 @@ class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
         WHERE search_key__owner = '{self.owner}' AND search_key__repo = '{self.repo}'
         """
 
+        # TODO A full query would be super large, check if there is an iterator mode for ck query
+        #  Or for routinely calculation, set a time point and only calculate since that point.
         gits_results = self.clickhouse_client.execute_no_params(gits_sql_)
         file_map = {}
         for (author_name, authored_date, file_array) in gits_results:
@@ -102,8 +104,8 @@ class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
             day = authored_date.day
             day_num = year * 365 + month * 12 + day
             for file in file_array:
-                if file not in file_map.keys():
-                    file_map[file] = [author_name, day_num]
+                if file not in file_map:
+                    file_map[file] = [[author_name, day_num]]
                 else:
                     file_map[file].append([author_name, day_num])
 
