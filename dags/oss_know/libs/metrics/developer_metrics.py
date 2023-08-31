@@ -66,34 +66,25 @@ class PrivilegeEventsMetricRoutineCalculation(MetricRoutineCalculation):
 
 class CountMetricRoutineCalculation(MetricRoutineCalculation):
     def calculate_metrics(self):
+        # TODO Add and handle author_email
         gits_sql_ = f"""
-        SELECT author_name, total__lines FROM gits
-        WHERE search_key__owner = '{self.owner}' AND search_key__repo = '{self.repo}'
+        SELECT author_name, count() AS commit_count, sum(total__lines) AS total_lines
+        FROM gits
+        WHERE search_key__owner = '{self.owner}'
+          AND search_key__repo = '{self.repo}'
+        GROUP BY author_name
         """
         gits_results = self.clickhouse_client.execute_no_params(gits_sql_)
-        loc_map = {}
-        commit_map = {}
-        for (author_name, total_lines) in gits_results:
-            if author_name not in loc_map.keys():
-                commit_map[author_name] = 1
-                loc_map[author_name] = total_lines
-            else:
-                commit_map[author_name] = commit_map[author_name] + 1
-                loc_map[author_name] = loc_map[author_name] + total_lines
 
-        response = []
-        for author, commit_num in commit_map.items():
-            response.append((author, commit_num, loc_map(author)))
-
-        logger.info('calculating  Count Metrics')
-        return response
+        logger.info(f'Calculating Count Metrics of {self.owner}/{self.repo}')
+        return gits_results
 
     def save_metrics(self):
-        logger.info('saving  Count Metrics')
         count_metrics_insert_query = '''
             INSERT INTO count_metrics(author_name, commit_num, line_of_code)
-            VALUES (%s, %d, %d)'''
+            VALUES (%s, %s, %s)'''
         self.batch_insertion(insert_query=count_metrics_insert_query, batch=self.batch)
+        logger.info(f'{len(self.batch)} Count Metrics saved for {self.owner}/{self.repo}')
 
 
 class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
