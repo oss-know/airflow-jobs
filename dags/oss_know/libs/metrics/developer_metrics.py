@@ -42,12 +42,10 @@ class PrivilegeEventsMetricRoutineCalculation(MetricRoutineCalculation):
                 index = event_type_index_map[event_type]
                 privilege_map[dev_name][index] = 1
 
-        dev_event = []
         for dev, events in privilege_map.items():
-            dev_event.append(dev)
-            for event in events:
-                dev_event.append(event)
-            response.append(tuple(dev_event))
+            row = [dev]
+            row.extend(events)
+            response.append(row)
 
         logger.info(f'{len(response)} Privilege Events Metrics calculated on {self.owner}/{self.repo}')
         return response
@@ -62,7 +60,7 @@ class PrivilegeEventsMetricRoutineCalculation(MetricRoutineCalculation):
                                   pinned, removed_from_project,
                                   review_dismissed, transferred,
                                   unlocked, unpinned, user_blocked)
-            VALUES (%s, %d, %d, %d, %d, %d, %d, %d, %d,%d, %d, %d, %d, %d, %d)'''
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s)'''
         self.batch_insertion(insert_query=privilege_events_insert_query, batch=self.batch)
 
 
@@ -139,7 +137,7 @@ class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
         log = f'Network Metrics of {self.owner}/{self.repo} calculated, {node_num} nodes and ' \
               f'{edge_num} edges in the graph'
         logger.info(log)
-        
+
         return response
 
     def save_metrics(self):
