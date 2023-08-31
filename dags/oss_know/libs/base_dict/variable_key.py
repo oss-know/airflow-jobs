@@ -87,3 +87,5 @@ NEED_INIT_DISCOURSE_CLICKHOUSE = 'need_init_discourse_clickhouse'
 
 ZULIP_API_KEYS = "zulip_api_keys"
 NEED_INIT_ZULIP = "need_init_zulip"
+
+REPO_CLONE_DIR = "."
