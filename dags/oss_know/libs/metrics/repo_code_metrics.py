@@ -8,21 +8,21 @@ import lizard
 from lizard import OutputScheme
 
 from oss_know.libs.metrics.influence_metrics import MetricRoutineCalculation
-
+from oss_know.libs.base_dict.variable_key import REPO_CLONE_DIR
 import os
 import shutil
 import git # GitPython
 
-def clone_one_depth(owner, repo, dir, update=True):
+def clone_(owner, repo, dir):
     url = f"https://github.com/{owner}/{repo}.git"
 
-    if os.path.exists(os.path.join(dir, '.git')):
-        if update:
-            shutil.rmtree(dir)
-            os.rmdir(dir)
-        return
     try:
-        git.Repo.clone_from(url, dir, depth=1)
+        if os.path.exists(os.path.join(dir, '.git')):
+            repo = git.Repo(dir)
+            o = repo.remotes.origin
+            o.pull()
+        else:
+            git.Repo.clone_from(url, dir)
     except git.exc.GitError as e:
         print(f'ERROR! {url} : {str(e)}')
         return 
@@ -59,8 +59,8 @@ def extract_metrics(owner, repo_name, repo_dir):
 class RepoCodeMetricRoutineCalculation(MetricRoutineCalculation):
     def calculate_metrics(self):
         logger.info(f'calculating by {self.owner}, {self.repo}')
-        dir = f"./{self.owner}/{self.repo}"
-        clone_one_depth(self.owner, self.repo, dir, True)
+        dir = f"{REPO_CLONE_DIR}/{self.owner}/{self.repo}"
+        clone_(self.owner, self.repo, dir, True)
         calculated_metrics = extract_metrics(self.owner, self.repo, dir)
         remove_repos(dir)
         return calculated_metrics
