@@ -6,7 +6,7 @@ from tqdm import tqdm
 from oss_know.libs.util.log import logger
 from oss_know.libs.socio_technical_network_lib.interact_with_opensearch import put_intermediate_data_to_opensearch
 
-file_dir = "/opt/workspace/DoxygenResult/RepoXml/"
+file_dir = "/opt/workspace/DoxygenResult/RepoXml/" # change this path to your path which store the result from doxygen
 file_pre = file_dir + "xml/"
 file_post = ".xml"
 OPENSEARCH_DOXYGEN_RESULT = "doxygen_result"
@@ -145,20 +145,16 @@ def get_func_info_py(repo, compounddefs):
 
 def abstract_func(owner, repo, opensearch_conn_info):
     # Use doxygen to parse GitHub repo files into xml format
-    file_path = "/opt/workspace/DoxygenInput/" + repo
+    file_path = "/opt/workspace/DoxygenInput/" + repo # change this path to your path which store the repo
     # environment_varible = "INPUT_PATH=" + file_path
     environment_varible = {"INPUT_PATH": file_path}
     command = "doxygen"
     arg = "oss_know/libs/socio_technical_network_lib/doxygen.cfg"
     # arg = "./doxygen.cfg"
 
-    # suc = os.system(command)
     result = subprocess.run([command, arg], env=environment_varible, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
     if not result.returncode:
-        # file_dir = "/opt/workspace/DoxygenResult/RepoXml/"
-        # file_pre = file_dir + "xml/"
-        # file_post = ".xml"
         sub_filenames = get_subfilename(file_pre + "index.xml")
 
         # funcs_to_lines = {repo: {}}
@@ -180,11 +176,6 @@ def abstract_func(owner, repo, opensearch_conn_info):
 
         put_intermediate_data_to_opensearch(owner, repo, opensearch_conn_info, lines_to_funcs)
         return lines_to_funcs
-        # with open(f"TimeSeries/data/{repo}_functions.json", 'w') as f:
-        #     json.dump(funcs_to_lines, f, indent=4)
-        #
-        # with open(f"TimeSeries/data/{repo}_lines_functions.json", 'w') as f:
-        #     json.dump(lines_to_funcs, f, indent=4)
     else:
         logger.info(f"Fail to parse repo{repo} using Doxygen")
         logger.debug(result.stderr)

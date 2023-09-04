@@ -45,18 +45,19 @@ def predict(owner, repo, opensearch_conn_info):
     random.seed(2023)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model.trainer.model.to(device)
-    model.trainer.model.load_state_dict(torch.load("oss_know/libs/socio_technical_network_lib/out/model_weights.pth"))
+    model.trainer.model.load_state_dict(torch.load("oss_know/libs/socio_technical_network_lib/out/model_weights.pth", map_location=torch.device(device)))
 
     suc, fail = 0, 0
     model.trainer.model.eval()
     with torch.no_grad():
-        for X in graph_feature:
+        for X in graph_feature:  # predict probability of success for each windows
+            X = torch.tensor([X])
             pred = model.trainer.model(X)
-            if pred.argmax(1) == 1:
+            if pred.argmax(1) == 1:  # current window is likely to be succeed
                 suc += 1
-            else:
+            else: # current window is likely to be fail
                 fail += 1
-    if suc > fail:
+    if suc > fail: # If successful windows are more than failed windows, the project is likely to be succeed, vice versa
         logger.info(f"Project::{repo} would be succeed in the future.")
         return
     else:
@@ -64,8 +65,8 @@ def predict(owner, repo, opensearch_conn_info):
         return
 
 
-owner = "pytorch"
-repo = "pytorch"
+owner = "allenai"
+repo = "allennlp"
 opensearch_conn_info = {"HOST": "123.57.177.158",
                         "PASSWD": "admin",
                         "PORT": "6792",
