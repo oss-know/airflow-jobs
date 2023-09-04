@@ -88,35 +88,64 @@ class CountMetricRoutineCalculation(MetricRoutineCalculation):
 
 
 class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
-    def calculate_metrics(self):
-        gits_sql_ = f"""
-        SELECT author_name, authored_date, files.file_name FROM gits
-        WHERE search_key__owner = '{self.owner}' AND search_key__repo = '{self.repo}'
-        """
+    def files_first_chars(self):
+        first_chars_sql = f'''
+        SELECT DISTINCT substring(file__name, 1, 1) AS first_char
+        FROM (
+                 SELECT `files.file_name` AS file__name
+                 FROM gits
+                          ARRAY JOIN `files.file_name`
+                 WHERE search_key__owner = '{self.owner}'
+                   AND search_key__repo = '{self.repo}'
+                 GROUP BY file__name)
+        WHERE first_char != '';
+        '''
+        result = self.clickhouse_client.execute_no_params(first_chars_sql)
+        return [tup[0] for tup in result]
 
-        # TODO A full query would be super large, check if there is an iterator mode for ck query
-        #  Or for routinely calculation, set a time point and only calculate since that point.
-        gits_results = self.clickhouse_client.execute_no_params(gits_sql_)
-        file_map = {}
-        for (author_name, authored_date, file_array) in gits_results:
-            year = authored_date.year
-            month = authored_date.month
-            day = authored_date.day
-            day_num = year * 365 + month * 12 + day
-            for file in file_array:
-                if file not in file_map:
-                    file_map[file] = [[author_name, day_num]]
-                else:
-                    file_map[file].append([author_name, day_num])
+    def developer_relation_sql(self, group_char, day_threshold=180):
+        return f'''
+        WITH '{self.owner}' AS owner, '{self.repo}' AS repo, '{group_char}' AS first_char
+        SELECT a_author_name, b_author_name
+        FROM (SELECT a.author_name   AS a_author_name,
+                     a.authored_date AS a_authored_date,
+                     b.author_name   AS b_author_name,
+                     b.authored_date AS b_author_date,
+                     file_name
+              FROM (SELECT author_name, authored_date, `files.file_name` AS file_name
+                    FROM gits
+                             ARRAY JOIN `files.file_name`
+                    WHERE search_key__owner = owner
+                      AND search_key__repo = repo
+                      AND length(parents) == 1
+                      AND file_name != ''
+                      AND substring(file_name, 1, 1) = first_char
+                    ORDER BY file_name, authored_date) AS a GLOBAL
+                       JOIN (SELECT author_name, authored_date, `files.file_name` AS file_name
+                             FROM gits
+                                      ARRAY JOIN `files.file_name`
+                             WHERE search_key__owner = owner
+                               AND search_key__repo = repo
+                               AND length(parents) == 1
+                               AND file_name != ''
+                               AND substring(file_name, 1, 1) = first_char
+                             ORDER BY file_name, authored_date) AS b ON a.file_name = b.file_name)
+        WHERE a_author_name != b_author_name
+          AND abs(toYYYYMMDD(a_authored_date) - toYYYYMMDD(b_author_date)) <= {day_threshold}
+        GROUP BY a_author_name, b_author_name
+        '''
+
+    def calculate_metrics(self):
+
+        first_chars = self.files_first_chars()
 
         social_network = nx.Graph()
-        commits = list(file_map.values())
-        for i in range(len(commits) - 1):
-            for j in range(i + 1, len(commits), 1):
-                dev1 = commits[i][0]
-                dev2 = commits[j][0]
-                if dev1 != dev2 and abs(commits[i][1] - commits[j][1]) <= 180:
-                    social_network.add_edge(dev1, dev2)
+        for first_char in first_chars:
+            developer_relations_sql = self.developer_relation_sql(first_char)
+            developer_pairs = self.clickhouse_client.execute_no_params(developer_relations_sql)
+            logger.info(f'{len(developer_pairs)} pairs on group {first_char}, {self.owner}/{self.repo}')
+            for (dev1, dev2) in developer_pairs:
+                social_network.add_edge(dev1, dev2)
 
         eigenvector = nx.eigenvector_centrality(social_network)
         response = []
@@ -137,5 +166,5 @@ class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
         logger.info('saving  Network Metrics')
         network_metrics_insert_query = '''
             INSERT INTO network_metrics(author_name, degree_centrality, eigenvector_centrality)
-            VALUES (%s, %d, %f)'''
+            VALUES (%s, %s, %s)'''
         self.batch_insertion(insert_query=network_metrics_insert_query, batch=self.batch)
