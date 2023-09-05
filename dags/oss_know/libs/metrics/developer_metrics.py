@@ -152,7 +152,7 @@ class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
         dev_nodes = list(social_network.nodes())
         for dev in dev_nodes:
             degree = social_network.degree(dev)
-            response.append((dev, degree, eigenvector[dev]))
+            response.append((self.owner, self.repo, dev, degree, eigenvector[dev]))
 
         node_num = social_network.number_of_nodes()
         edge_num = social_network.number_of_edges()
@@ -165,6 +165,8 @@ class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
     def save_metrics(self):
         logger.info('saving  Network Metrics')
         network_metrics_insert_query = '''
-            INSERT INTO network_metrics(author_name, degree_centrality, eigenvector_centrality)
-            VALUES (%s, %s, %s)'''
+            INSERT INTO developer_role_network_metrics
+            (search_key__owner, search_key__repo,
+            author_name, degree_centrality, eigenvector_centrality)
+            VALUES (%s, %s, %s, %s, %s)'''
         self.batch_insertion(insert_query=network_metrics_insert_query, batch=self.batch)
