@@ -6,13 +6,14 @@ from airflow.models import XCom
 from airflow.operators.python import PythonOperator
 from airflow.utils.db import provide_session
 
-from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_PROFILE
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_PROFILE, OPENSEARCH_GIT_RAW
 from oss_know.libs.base_dict.variable_key import GITHUB_TOKENS, LOCATIONGEO_TOKEN, \
     PROXY_CONFS, OPENSEARCH_CONN_DATA, NEED_INIT_GITHUB_PROFILES_REPOS, CK_TABLE_DEFAULT_VAL_TPLT, \
     CLICKHOUSE_DRIVER_INFO
 from oss_know.libs.clickhouse.sync_clickhouse_data import sync_github_profiles_to_ck
 from oss_know.libs.github import init_profiles
 from oss_know.libs.util.base import init_geolocator
+from oss_know.libs.util.clickhouse import get_uniq_owner_repos
 from oss_know.libs.util.proxy import GithubTokenProxyAccommodator, make_accommodator, \
     ProxyServiceProvider
 
@@ -84,7 +85,11 @@ with DAG(
         sync_github_profiles_to_ck(opensearch_conn_info, clickhouse_conn_info, github_profile_template)
 
 
-    need_sync_github_profile_repos = Variable.get(NEED_INIT_GITHUB_PROFILES_REPOS, deserialize_json=True)
+    need_sync_github_profile_repos = Variable.get(NEED_INIT_GITHUB_PROFILES_REPOS,
+                                                  deserialize_json=True, default_var=None)
+
+    if not need_sync_github_profile_repos:
+        need_sync_github_profile_repos = get_uniq_owner_repos(clickhouse_conn_info, OPENSEARCH_GIT_RAW)
 
     op_load_github_repo_profiles = PythonOperator(
         task_id='op_load_github_repo_profiles',
