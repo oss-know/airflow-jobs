@@ -12,7 +12,7 @@ from oss_know.libs.base_dict.variable_key import GITHUB_TOKENS, LOCATIONGEO_TOKE
     CLICKHOUSE_DRIVER_INFO
 from oss_know.libs.clickhouse.sync_clickhouse_data import sync_github_profiles_to_ck
 from oss_know.libs.github import init_profiles
-from oss_know.libs.util.base import init_geolocator
+from oss_know.libs.util.base import init_geolocator, arrange_owner_repo_into_letter_groups
 from oss_know.libs.util.clickhouse import get_uniq_owner_repos
 from oss_know.libs.util.proxy import GithubTokenProxyAccommodator, make_accommodator, \
     ProxyServiceProvider
@@ -32,16 +32,6 @@ with DAG(
         tags=['github'],
         on_success_callback=cleanup_xcom
 ) as dag:
-    def start_load_github_profile():
-        return 'End start_load_github_profile'
-
-
-    op_start_load_github_profile = PythonOperator(
-        task_id='load_github_profile_info',
-        python_callable=start_load_github_profile,
-        provide_context=True
-    )
-
     geolocator_token = Variable.get(LOCATIONGEO_TOKEN, deserialize_json=False)
     init_geolocator(geolocator_token)
 
@@ -54,9 +44,13 @@ with DAG(
                                            GithubTokenProxyAccommodator.POLICY_FIXED_MAP)
 
 
-    def load_github_repo_id(owner, repo, **kwargs):
-        init_ids = init_profiles.load_github_ids_by_repo(opensearch_conn_info, owner, repo)
-        kwargs['ti'].xcom_push(key=f'{owner}_{repo}_ids', value=init_ids)
+    def load_github_repo_id(owner_repos, **kwargs):
+        for item in owner_repos:
+            owner = item['owner']
+            repo = item['repo']
+
+            init_ids = init_profiles.load_github_ids_by_repo(opensearch_conn_info, owner, repo)
+            kwargs['ti'].xcom_push(key=f'{owner}_{repo}_ids', value=init_ids)
 
 
     def load_github_repo_profiles(params, **kwargs):
@@ -66,10 +60,9 @@ with DAG(
             owner = param["owner"]
             repo = param["repo"]
             # github_users_ids += kwargs['ti'].xcom_pull(key=f'{owner}_{repo}_ids')
-            # TODO Not very sure if updating the id set with a smaller list(github ids of a repo) performs better
-            # TODO Need more explorations on this
+            # TODO Not very sure if updating the id set with a smaller list(github ids of a repo)
+            #  performs better. Need more explorations on this
             github_users_ids.update(kwargs['ti'].xcom_pull(key=f'{owner}_{repo}_ids'))
-        from oss_know.libs.github import init_profiles
         if_sync, if_new_person = 0, 1
         init_profiles.load_github_profiles(token_proxy_accommodator=proxy_accommodator,
                                            opensearch_conn_info=opensearch_conn_info,
@@ -85,16 +78,18 @@ with DAG(
         sync_github_profiles_to_ck(opensearch_conn_info, clickhouse_conn_info, github_profile_template)
 
 
-    need_sync_github_profile_repos = Variable.get(NEED_INIT_GITHUB_PROFILES_REPOS,
-                                                  deserialize_json=True, default_var=None)
+    github_profile_repos = Variable.get(NEED_INIT_GITHUB_PROFILES_REPOS,
+                                        deserialize_json=True, default_var=None)
 
-    if not need_sync_github_profile_repos:
-        need_sync_github_profile_repos = get_uniq_owner_repos(clickhouse_conn_info, OPENSEARCH_GIT_RAW)
+    if not github_profile_repos:
+        github_profile_repos = get_uniq_owner_repos(clickhouse_conn_info, OPENSEARCH_GIT_RAW)
+
+    github_profile_repos_groups = arrange_owner_repo_into_letter_groups(github_profile_repos)
 
     op_load_github_repo_profiles = PythonOperator(
         task_id='op_load_github_repo_profiles',
         python_callable=load_github_repo_profiles,
-        op_kwargs={'params': need_sync_github_profile_repos},
+        op_kwargs={'params': github_profile_repos},
         provide_context=True
     )
 
@@ -104,17 +99,15 @@ with DAG(
         provide_context=True
     )
 
-    for now_need_sync_github_profile_repos in need_sync_github_profile_repos:
-        owner = now_need_sync_github_profile_repos['owner']
-        repo = now_need_sync_github_profile_repos['repo']
+    for letter, repo_group in github_profile_repos_groups.items():
         op_load_github_repo_id = PythonOperator(
-            task_id=f'op_load_github_repo_id_{owner}_{repo}',
+            task_id=f'op_load_github_repo_id_group_{letter}',
             python_callable=load_github_repo_id,
             op_kwargs={
-                'owner': owner,
-                'repo': repo,
+                'owner_repos': repo_group,
             },
             provide_context=True
         )
-        op_start_load_github_profile >> op_load_github_repo_id >> \
-        op_load_github_repo_profiles >> op_transfer_profile_to_clickhouse
+        op_load_github_repo_id >> op_load_github_repo_profiles
+
+    op_load_github_repo_profiles >> op_transfer_profile_to_clickhouse
