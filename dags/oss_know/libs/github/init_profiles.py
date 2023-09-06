@@ -10,8 +10,7 @@ from oss_know.libs.util.opensearch_api import OpensearchAPI
 def load_github_ids_by_repo(opensearch_conn_infos, owner, repo):
     """Get GitHub users' ids from GitHub assigned owner and repo."""
     opensearch_client = get_opensearch_client(opensearch_conn_infos)
-    init_profile_ids = load_ids_from_issues_timeline(opensearch_client, owner,
-                                                     repo)
+    init_profile_ids = load_ids_from_issues_timeline(opensearch_client, owner, repo)
     init_profile_ids += load_ids_from_commits(opensearch_client, owner, repo)
     return init_profile_ids
 
@@ -66,9 +65,9 @@ def load_ids_from_issues_timeline(opensearch_client, owner, repo):
                     try:
                         all_issues_timeline_users.add(issue_timeline_raw_data[key]["id"])
                     except KeyError as e:
-                        logger.info(f"The key not exists in {issue_timeline_raw_data[key]}:{e}")
+                        logger.info(f"The key {key} not exists in issue_timeline_raw_data: {e}")
                     except TypeError as e:
-                        logger.info(f"The value is null in {issue_timeline_raw_data[key]}:{e}")
+                        logger.info(f"The value of key {key} is None in issue_timeline_raw_data: {e}")
     logger.info(f'{len(all_issues_timeline_users)} profiles found from {owner}/{repo} issues timeline')
     return list(all_issues_timeline_users)
 
