@@ -365,7 +365,7 @@ def datetime_valid(dt_str):
 def parse_data(df, temp):
     # 这个是最终插入ck的数据字典
     dict_data = copy.deepcopy(temp)
-    for index, row in df.iloc[0].iteritems():
+    for index, row in df.iloc[0].items():
         # 去除以raw_data开头的字段
         if index.startswith(CLICKHOUSE_RAW_DATA):
             index = index[9:]
@@ -419,7 +419,7 @@ def parse_data(df, temp):
 
 def parse_data_init(df):
     dict_data = {}
-    for index, row in df.iloc[0].iteritems():
+    for index, row in df.iloc[0].items():
         # 去除以raw_data开头的字段
         if index.startswith(CLICKHOUSE_RAW_DATA):
             index = index[9:]
@@ -460,8 +460,11 @@ def if_data_eq_github(count, ck, table_name, owner, repo):
 
 
 def if_data_eq_maillist(count, ck, table_name, project_name, mail_list_name):
-    sql = f"select count() from {table_name} where search_key__project_name='{project_name}'" \
-          f"and search_key__mail_list_name='{mail_list_name}'"
+    sql = f'''
+    select count() from {table_name}
+    where search_key__project_name='{project_name}'
+    and search_key__mail_list_name='{mail_list_name}'
+    '''
     # logger.info(sql)
     result = ck.execute_no_params(sql)
     # logger.info(result)
@@ -472,8 +475,10 @@ def if_data_eq_maillist(count, ck, table_name, project_name, mail_list_name):
 # 保证插入数据的幂等性
 def keep_idempotent(ck, search_key, clickhouse_server_info, table_name, transfer_type):
     # 获取clickhouse集群节点信息
-    get_clusters_sql = f"select host_name from system.clusters" \
-                       f" where cluster = '{clickhouse_server_info['CLUSTER_NAME']}'"
+    get_clusters_sql = f'''
+    select host_name from system.clusters
+    where cluster = '{clickhouse_server_info['CLUSTER_NAME']}'
+    '''
 
     clusters_info = ck.execute_no_params(get_clusters_sql)
     delect_data_sql = ''
@@ -485,21 +490,36 @@ def keep_idempotent(ck, search_key, clickhouse_server_info, table_name, transfer
     if transfer_type == 'github_git_init_by_repo' or transfer_type == 'github_issues_timeline_by_repo':
         owner = search_key.get('owner')
         repo = search_key.get('repo')
-        delect_data_sql = f"ALTER TABLE {table_name}_local ON CLUSTER {clickhouse_server_info['CLUSTER_NAME']} " \
-                          f"DELETE WHERE {now}={now} and search_key__owner = '{owner}' and search_key__repo = '{repo}'"
-        check_if_done_sql = f"select is_done from system.mutations m WHERE `table` = '{table_name}_local'" \
-                            f"and command = 'DELETE WHERE ({now} = {now}) AND (search_key__owner = \\'{owner}\\')" \
-                            f"AND (search_key__repo = \\'{repo}\\')'"
+
+        delect_data_sql = f'''
+        ALTER TABLE {table_name}_local ON CLUSTER {clickhouse_server_info['CLUSTER_NAME']}
+        DELETE WHERE {now}={now} and search_key__owner = '{owner}' and search_key__repo = '{repo}'
+        '''
+
+        check_if_done_sql = f'''
+        SELECT is_done from system.mutations m
+        WHERE `table` = '{table_name}_local'
+        AND command = 'DELETE WHERE ({now} = {now})
+        AND (search_key__owner = \\'{owner}\\')
+        AND (search_key__repo = \\'{repo}\\')'
+        '''
     elif transfer_type == 'maillist_init':
         project_name = search_key.get('project_name')
         mail_list_name = search_key.get('mail_list_name')
-        delect_data_sql = f"ALTER TABLE {table_name}_local ON CLUSTER {clickhouse_server_info['CLUSTER_NAME']}" \
-                          f"DELETE WHERE {now} = {now} and search_key__project_name = '{project_name}'" \
-                          f"and search_key__mail_list_name = '{mail_list_name}'"
-        check_if_done_sql = f"select is_done from system.mutations m WHERE `table` = '{table_name}_local' " \
-                            f"AND command = 'DELETE WHERE ({now} = {now}) " \
-                            f"AND (search_key__project_name = \\'{project_name}\\') " \
-                            f"AND (search_key__mail_list_name = \\'{mail_list_name}\\')'"
+
+        delect_data_sql = f'''
+        ALTER TABLE {table_name}_local ON CLUSTER {clickhouse_server_info['CLUSTER_NAME']}
+        DELETE WHERE {now} = {now} and search_key__project_name = '{project_name}'
+        and search_key__mail_list_name = '{mail_list_name}'
+        '''
+        # TODO This might not work!!! Since the clause on command is a super long string, the auto
+        #  wrap might break the original meaning of SQL
+        check_if_done_sql = f'''select is_done from system.mutations m
+        WHERE `table` = '{table_name}_local'
+        AND command = 'DELETE WHERE ({now} = {now})
+        AND (search_key__project_name = \\'{project_name}\\')
+        AND (search_key__mail_list_name = \\'{mail_list_name}\\')'
+        '''
     ck.execute_no_params(delect_data_sql)
     logger.info("将同owner和repo的老数据进行删除")
     time.sleep(1)
