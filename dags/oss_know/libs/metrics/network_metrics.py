@@ -2,11 +2,12 @@ import datetime
 import json
 from collections import defaultdict
 from statistics import mean
-from oss_know.libs.util.log import logger
+
 import networkx
 import networkx as nx
 
 from oss_know.libs.metrics.influence_metrics import MetricRoutineCalculation
+from oss_know.libs.util.log import logger
 
 
 def extract_graph_from_ck(ck_client, owner, repo):
@@ -14,19 +15,38 @@ def extract_graph_from_ck(ck_client, owner, repo):
     u2u_types = ['commented', 'mentioned', 'assigned', 'unassigned']
     user_set = set()
     curtime = datetime.datetime.now()
-    sql = f"select search_key__number as number, search_key__event as event_type, timeline_raw  as raw from github_issues_timeline where " \
-            f"search_key__number global in (select number from github_pull_requests where search_key__owner = '{owner}' and search_key__repo = '{repo}') and " \
-    f"search_key__owner = '{owner}' and search_key__repo = '{repo}';"
+    sql = f'''
+    SELECT search_key__number AS number, search_key__event AS event_type, timeline_raw AS raw
+    FROM github_issues_timeline
+    WHERE search_key__number GLOBAL IN (SELECT number
+                                        FROM github_pull_requests
+                                        WHERE search_key__owner = '{owner}'
+                                          AND search_key__repo = '{repo}')
+      AND search_key__owner = '{owner}'
+      AND search_key__repo = '{repo}'
+    '''
     timeline_results, user_list = [], []
     timeline_results = ck_client.execute_no_params(sql)
     logger.info(f'execution complete in {datetime.datetime.now() - curtime}')
-    sql1 = f"select user__id as id, user__login as login, search_key__number as number, created_at from github_issues_comments where search_key__owner = '{owner}' and search_key__repo = '{repo}';"
+
+    sql1 = f'''
+    SELECT user__id AS id, user__login AS login, search_key__number AS number, created_at
+    FROM github_issues_comments
+    WHERE search_key__owner = '{owner}'
+      AND search_key__repo = '{repo}'
+    '''
     mentioners = defaultdict(str)
     issue_comments = ck_client.execute_no_params(sql1)
-    for comment in issue_comments:
-        mentioners[f'{comment[2]}_{comment[3]}'] = (comment[0], comment[1])
+    for (user_id, user_login, issue_no, created_at) in issue_comments:
+        mentioners[f'{issue_no}_{created_at}'] = (user_id, user_login)
+
     count = 0
-    sql_pr = f"select user__id as id, number  from github_pull_requests where search_key__owner = '{owner}' and search_key__repo = '{repo}';"
+    sql_pr = f'''
+    SELECT user__id AS id, number
+    FROM github_pull_requests
+    WHERE search_key__owner = '{owner}'
+      AND search_key__repo = '{repo}'
+    '''
     pr_list = ck_client.execute_no_params(sql_pr)
     pr2author = dict()
     for [uid, number] in pr_list:
@@ -152,7 +172,7 @@ def extract_metrics(edge_list, owner, repo):
             month_edge_count[month],
             max(nx.out_degree_centrality(g).values()),
             max(nx.in_degree_centrality(g).values()),
-            sum(nx.triangles(nx.Graph(g)).values())/3,
+            sum(nx.triangles(nx.Graph(g)).values()) / 3,
             nx.transitivity(g),
             mean(nx.clustering(g, weight='weight').values()),
             nx.reciprocity(g),
@@ -183,6 +203,15 @@ def extract_metrics(edge_list, owner, repo):
 
 
 class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
+    metric_insert_sql = f'''
+    INSERT INTO network_metrics (
+    repo, month, num_nodes, num_edges, num_collaborations,
+    in_degree_centrality, out_degree_centrality, triangles, transitivity,
+    clustering, reciprocity, density, components_number, avg_degree
+    )
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    '''
+
     def calculate_metrics(self):
         logger.info(f'calculating by {self.owner}, {self.repo}')
         edge_list = extract_graph_from_ck(self.clickhouse_client, self.owner, self.repo)
@@ -192,11 +221,9 @@ class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
     def save_metrics(self):
         logger.info(f'save metrics with {len(self.batch)} records, to {self.table_name}')
         cursor = self.mysql_conn.cursor()
-        insert_query = "INSERT INTO network_metrics (repo, month, num_nodes, num_edges, num_collaborations, in_degree_centrality, out_degree_centrality, triangles, transitivity," \
-                       "clustering, reciprocity, density, components_number, avg_degree) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
-        cursor.executemany(insert_query, self.batch)
+        cursor.executemany(NetworkMetricRoutineCalculation.metric_insert_sql, self.batch)
         self.mysql_conn.commit()
-        logger.info("Data inserted successfully!")
+        logger.info(f"Network metrics of {self.owner}/{self.repo} inserted successfully!")
         cursor.close()
 
     def routine_calculate_metrics_once(self):
@@ -205,5 +232,3 @@ class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
         self.save_metrics()
         self.clickhouse_client.close()
         self.mysql_conn.close()
-
-
