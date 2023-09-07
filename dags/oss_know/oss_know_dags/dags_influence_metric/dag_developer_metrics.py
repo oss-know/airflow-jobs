@@ -54,3 +54,4 @@ with DAG(dag_id='routinely_calculate_developer_metrics',  # schedule_interval='*
                 "routine_class": class_
             }
         )
+

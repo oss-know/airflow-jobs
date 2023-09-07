@@ -5,7 +5,6 @@ import networkx as nx
 from oss_know.libs.metrics.influence_metrics import MetricRoutineCalculation
 from oss_know.libs.util.log import logger
 
-
 class PrivilegeEventsMetricRoutineCalculation(MetricRoutineCalculation):
     privileged_events_list = ["added_to_project", "converted_note_to_issue",
                               "deployed", "deployment_environment_changed",
@@ -28,6 +27,7 @@ class PrivilegeEventsMetricRoutineCalculation(MetricRoutineCalculation):
 
         # TODO Even with constraints on search_key__event, an iterator is essential when data expands
         #  to a large scale.
+
         privilege_results = self.clickhouse_client.execute_no_params(privilege_sql_)
         response = []
 
@@ -61,6 +61,7 @@ class PrivilegeEventsMetricRoutineCalculation(MetricRoutineCalculation):
                                   review_dismissed, transferred,
                                   unlocked, unpinned, user_blocked)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s)'''
+
         self.batch_insertion(insert_query=privilege_events_insert_query, batch=self.batch)
 
 
@@ -159,7 +160,6 @@ class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
         log = f'Network Metrics of {self.owner}/{self.repo} calculated, {node_num} nodes and ' \
               f'{edge_num} edges in the graph'
         logger.info(log)
-
         return response
 
     def save_metrics(self):
