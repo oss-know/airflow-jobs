@@ -6,21 +6,19 @@ from airflow.operators.python import PythonOperator
 
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_GIT_RAW
 from oss_know.libs.base_dict.variable_key import CLICKHOUSE_DRIVER_INFO, MYSQL_CONN_INFO, \
-    ROUTINELY_UPDATE_INFLUENCE_METRICS_INCLUDES
-from oss_know.libs.metrics.influence_metrics import calculate_sample_influence_metrics, save_sample_influence_metrics, \
-    TotalFixIndensityMetricRoutineCalculation, MetricGroupRoutineCalculation, DeveloperRoleMetricRoutineCalculation, \
-    ContributedRepoFirstYearMetricRoutineCalculation, BasicContributorGraphMetricRoutineCalculation, \
-    AverageRepairOfPeersMetricRoutineCalculation
+    ROUTINELY_UPDATE_INFLUENCE_METRICS_INCLUDES, ROUTINELY_UPDATE_INFLUENCE_METRICS_INTERVAL
+from oss_know.libs.metrics.influence_metrics import calculate_sample_influence_metrics, \
+    save_sample_influence_metrics, TotalFixIndensityMetricRoutineCalculation, \
+    MetricGroupRoutineCalculation, DeveloperRoleMetricRoutineCalculation, \
+    ContributedRepoFirstYearMetricRoutineCalculation, \
+    BasicContributorGraphMetricRoutineCalculation, AverageRepairOfPeersMetricRoutineCalculation
 from oss_know.libs.util.clickhouse import get_uniq_owner_repos
 from oss_know.libs.util.log import logger
 
-# sync_interval = Variable.get(ROUTINELY_UPDATE_SAMPLE_INFLUENCE_METRICS_INTERVAL, default_var=None)
-# if not sync_interval:
-#     sync_interval = Variable.get(DAILY_SYNC_INTERVAL, default_var=None)
-
+sync_interval = Variable.get(ROUTINELY_UPDATE_INFLUENCE_METRICS_INTERVAL, default_var=None)
 mysql_conn_info = Variable.get(MYSQL_CONN_INFO, deserialize_json=True)
 
-with DAG(dag_id='routinely_calculate_influence_metrics',  # schedule_interval='*/5 * * * *',
+with DAG(dag_id='routinely_calculate_contribution_metrics',  # schedule_interval='*/5 * * * *',
          schedule_interval=None,
          start_date=datetime(2021, 1, 1), catchup=False,
          tags=['metrics'], ) as dag:

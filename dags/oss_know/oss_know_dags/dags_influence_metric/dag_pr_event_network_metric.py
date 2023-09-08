@@ -19,7 +19,7 @@ if not sync_interval:
 clickhouse_conn_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
 mysql_conn_info = Variable.get(MYSQL_CONN_INFO, deserialize_json=True)
 
-with DAG(dag_id='routinely_calculate_network_metrics',  # schedule_interval='*/5 * * * *',
+with DAG(dag_id='routinely_calculate_pr_event_network_metrics',  # schedule_interval='*/5 * * * *',
          schedule_interval=sync_interval, start_date=datetime(2021, 1, 1), catchup=False,
          tags=['metrics'], ) as dag:
     uniq_owner_repos = Variable.get(ROUTINELY_UPDATE_INFLUENCE_METRICS_INCLUDES, deserialize_json=True,

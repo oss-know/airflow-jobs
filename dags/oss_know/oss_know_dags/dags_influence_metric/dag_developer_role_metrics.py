@@ -14,7 +14,7 @@ from oss_know.libs.util.clickhouse import get_uniq_owner_repos
 routine_interval = Variable.get(ROUTINELY_UPDATE_INFLUENCE_METRICS_INTERVAL, default_var=None)
 mysql_conn_info = Variable.get(MYSQL_CONN_INFO, deserialize_json=True)
 
-with DAG(dag_id='routinely_calculate_developer_metrics',  # schedule_interval='*/5 * * * *',
+with DAG(dag_id='routinely_calculate_developer_role_metrics',  # schedule_interval='*/5 * * * *',
          schedule_interval=routine_interval,
          start_date=datetime(2021, 1, 1), catchup=False,
          tags=['metrics'], ) as dag:
