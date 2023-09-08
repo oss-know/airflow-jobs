@@ -1,12 +1,9 @@
 from datetime import datetime
 
-import pandas as pd
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 
-# clickhouse_init_sync_v0.0.1
-from oss_know.libs.base_dict.variable_key import CK_CREATE_TABLE_COLS_DATATYPE_TPLT, CLICKHOUSE_DRIVER_INFO, \
-    MYSQL_CONN_INFO,MYSQL_CREATE_TABLE_DDL
+from oss_know.libs.base_dict.variable_key import MYSQL_CONN_INFO, MYSQL_CREATE_TABLE_DDL
 from oss_know.libs.util.mysql_connector import get_mysql_conn
 
 with DAG(
@@ -16,13 +13,12 @@ with DAG(
         catchup=False,
         tags=['mysql'],
 ) as dag:
-
     def do_create_mysql_table(ddl):
         from airflow.models import Variable
         mysql_connect_info = Variable.get(MYSQL_CONN_INFO, deserialize_json=True)
         mysql_connector = get_mysql_conn(mysql_connect_info)
-        curror = mysql_connector.cursor()
-        curror.execute(ddl)
+        cursor = mysql_connector.cursor()
+        cursor.execute(ddl)
         return 'do_ck_create_table:::end'
 
 
@@ -35,5 +31,3 @@ with DAG(
             python_callable=do_create_mysql_table,
             op_kwargs={'ddl': table_info["ddl"]},
         )
-
-    op_do_create_mysql_table
