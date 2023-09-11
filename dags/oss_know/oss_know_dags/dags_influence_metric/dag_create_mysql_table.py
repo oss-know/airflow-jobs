@@ -1,10 +1,13 @@
 from datetime import datetime
 
 from airflow import DAG
+from airflow.models import Variable
 from airflow.operators.python import PythonOperator
 
 from oss_know.libs.base_dict.variable_key import MYSQL_CONN_INFO, MYSQL_CREATE_TABLE_DDL
 from oss_know.libs.util.mysql_connector import get_mysql_conn
+
+mysql_connect_info = Variable.get(MYSQL_CONN_INFO, deserialize_json=True)
 
 with DAG(
         dag_id='ck_create_mysql_table',
@@ -14,8 +17,6 @@ with DAG(
         tags=['mysql'],
 ) as dag:
     def do_create_mysql_table(ddl):
-        from airflow.models import Variable
-        mysql_connect_info = Variable.get(MYSQL_CONN_INFO, deserialize_json=True)
         mysql_connector = get_mysql_conn(mysql_connect_info)
         cursor = mysql_connector.cursor()
         cursor.execute(ddl)
