@@ -40,8 +40,8 @@ with DAG(dag_id='routinely_calculate_developer_role_metrics',  # schedule_interv
 
     class_table_names = [
         (PrivilegeEventsMetricRoutineCalculation, "privilege_events"),
-        (CountMetricRoutineCalculation, "count_metrics"),
-        (NetworkMetricRoutineCalculation, "network_metrics"),
+        (CountMetricRoutineCalculation, "developer_contrib_count_metrics"),
+        (NetworkMetricRoutineCalculation, "developer_role_network_metrics"),
     ]
     for (class_, table_name) in class_table_names:
         op_calculate_developer_metrics = PythonOperator(
