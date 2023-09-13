@@ -16,6 +16,7 @@ sync_interval = Variable.get(ROUTINELY_UPDATE_INFLUENCE_METRICS_INTERVAL, defaul
 if not sync_interval:
     sync_interval = Variable.get(DAILY_SYNC_INTERVAL, default_var=None)
 
+clickhouse_conn_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
 mysql_conn_info = Variable.get(MYSQL_CONN_INFO, deserialize_json=True)
 
 with DAG(dag_id='routinely_calculate_repo_code_metrics',  # schedule_interval='*/5 * * * *',
@@ -24,7 +25,6 @@ with DAG(dag_id='routinely_calculate_repo_code_metrics',  # schedule_interval='*
     uniq_owner_repos = Variable.get(ROUTINELY_UPDATE_INFLUENCE_METRICS_INCLUDES,
                                     deserialize_json=True, default_var=None)
     if not uniq_owner_repos:
-        clickhouse_conn_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
         uniq_owner_repos = get_uniq_owner_repos(clickhouse_conn_info, OPENSEARCH_GIT_RAW)
 
     task_groups_by_capital_letter = arrange_owner_repo_into_letter_groups(uniq_owner_repos)

@@ -15,10 +15,12 @@ def clone_(owner, repo, dir):
 
     try:
         if os.path.exists(dir):
-            repo = git.Repo(dir)
-            o = repo.remotes.origin
+            git_repo = git.Repo(dir)
+            o = git_repo.remotes.origin
+            logger.info(f'Code base{owner}/{repo} already exists, pull from remote')
             o.pull()
         else:
+            logger.info(f'Code base{owner}/{repo} does not exists, clone from remote')
             git.Repo.clone_from(url, dir)
     except git.exc.GitError as e:
         logger.error(f'Failed to fetch code {url}, error: {str(e)}')
