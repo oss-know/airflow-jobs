@@ -28,5 +28,6 @@ RUN pip install --no-cache-dir 'multidict==5.2.0'
 RUN pip install --no-cache-dir 'networkx~=3.1'
 
 RUN pip install 'mysql-connector-python~=8.1.0'
+RUN pip install 'lizard~=1.17.10'
 
 RUN pip install markupsafe==2.0.1
