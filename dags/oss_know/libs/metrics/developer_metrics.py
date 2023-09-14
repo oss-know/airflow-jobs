@@ -15,6 +15,7 @@ class PrivilegeEventsMetricRoutineCalculation(MetricRoutineCalculation):
                               "unlocked", "unpinned", "user_blocked"]
 
     def calculate_metrics(self):
+        logger.info(f'Calculating {self.owner}/{self.repo} privileged event metrics')
         event_type_index_map = {}
         for (index, event) in enumerate(self.privileged_events_list):
             event_type_index_map[event] = index
@@ -80,9 +81,10 @@ class CountMetricRoutineCalculation(MetricRoutineCalculation):
         return gits_results
 
     def save_metrics(self):
-        count_metrics_insert_query = '''
-            INSERT INTO count_metrics(author_name, commit_num, line_of_code)
-            VALUES (%s, %s, %s)'''
+        count_metrics_insert_query = f'''
+            INSERT INTO {self.table_name}
+            (search_key__owner, search_key__repo, author_name, commit_num, line_of_code)
+            VALUES ("{self.owner}", "{self.repo}", %s, %s, %s)'''
         self.batch_insertion(insert_query=count_metrics_insert_query, batch=self.batch)
         logger.info(f'{len(self.batch)} Count Metrics saved for {self.owner}/{self.repo}')
 
@@ -151,7 +153,7 @@ class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
             logger.warning(f'No developer pair edges found for {self.owner}/{self.repo}, skip')
             return []
 
-        eigenvector = nx.eigenvector_centrality(social_network)
+        eigenvector = nx.eigenvector_centrality(social_network, max_iter=300)
         response = []
         dev_nodes = list(social_network.nodes())
         for dev in dev_nodes:
