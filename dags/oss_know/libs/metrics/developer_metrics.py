@@ -35,7 +35,11 @@ class PrivilegeEventsMetricRoutineCalculation(MetricRoutineCalculation):
         privilege_map = {}
         for (event_type, timeline_raw) in privilege_results:
             if event_type in self.privileged_events_list:
-                raw_data = json.loads(timeline_raw)
+                try:
+                    raw_data = json.loads(timeline_raw)
+                except json.decoder.JSONDecodeError as e:
+                    logger.error(f'Failed to parse timeline_raw {timeline_raw}, skip')
+                    continue
                 dev = raw_data['actor']
                 dev_name = dev['login']
                 if dev_name not in privilege_map:
@@ -54,8 +58,8 @@ class PrivilegeEventsMetricRoutineCalculation(MetricRoutineCalculation):
     def save_metrics(self):
         logger.info(f'Saving Privilege Events Metrics of {self.owner}/{self.repo}')
         # TODO The string literal can be stored as static class property
-        privilege_events_insert_query = '''
-            INSERT INTO privilege_events(actor_login, added_to_project, converted_note_to_issue,
+        privilege_events_insert_query = f'''
+            INSERT INTO {self.table_name} (actor_login, added_to_project, converted_note_to_issue,
                                   deployed, deployment_environment_changed,
                                   locked, merged, moved_columns_in_project,
                                   pinned, removed_from_project,
@@ -69,7 +73,10 @@ class CountMetricRoutineCalculation(MetricRoutineCalculation):
     def calculate_metrics(self):
         # TODO Add and handle author_email
         gits_sql_ = f"""
-        SELECT author_name, count() AS commit_count, sum(total__lines) AS total_lines
+        SELECT
+        substring(author_name, 1, 256) as author_name,
+        count() AS commit_count,
+        sum(total__lines) AS total_lines
         FROM gits
         WHERE search_key__owner = '{self.owner}'
           AND search_key__repo = '{self.repo}'
@@ -85,6 +92,7 @@ class CountMetricRoutineCalculation(MetricRoutineCalculation):
             INSERT INTO {self.table_name}
             (search_key__owner, search_key__repo, author_name, commit_num, line_of_code)
             VALUES ("{self.owner}", "{self.repo}", %s, %s, %s)'''
+
         self.batch_insertion(insert_query=count_metrics_insert_query, batch=self.batch)
         logger.info(f'{len(self.batch)} Count Metrics saved for {self.owner}/{self.repo}')
 
@@ -170,8 +178,8 @@ class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
 
     def save_metrics(self):
         logger.info('saving  Network Metrics')
-        network_metrics_insert_query = '''
-            INSERT INTO developer_role_network_metrics
+        network_metrics_insert_query = f'''
+            INSERT INTO {self.table_name}
             (search_key__owner, search_key__repo,
             author_name, degree_centrality, eigenvector_centrality)
             VALUES (%s, %s, %s, %s, %s)'''
