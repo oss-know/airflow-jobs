@@ -136,7 +136,7 @@ class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
         '''
 
     def calculate_metrics(self):
-
+        logger.info(f'Calculate {self.owner}/{self.repo} developer network metrics')
         first_chars = self.files_first_chars()
 
         social_network = nx.Graph()
@@ -146,6 +146,10 @@ class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
             logger.info(f'{len(developer_pairs)} pairs on group {first_char}, {self.owner}/{self.repo}')
             for (dev1, dev2) in developer_pairs:
                 social_network.add_edge(dev1, dev2)
+
+        if nx.is_empty(social_network):
+            logger.warning(f'No developer pair edges found for {self.owner}/{self.repo}, skip')
+            return []
 
         eigenvector = nx.eigenvector_centrality(social_network)
         response = []
