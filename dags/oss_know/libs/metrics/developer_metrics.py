@@ -34,18 +34,23 @@ class PrivilegeEventsMetricRoutineCalculation(MetricRoutineCalculation):
 
         privilege_map = {}
         for (event_type, timeline_raw) in privilege_results:
-            if event_type in self.privileged_events_list:
-                try:
-                    raw_data = json.loads(timeline_raw)
-                except json.decoder.JSONDecodeError as e:
-                    logger.error(f'Failed to parse timeline_raw {timeline_raw}, skip')
-                    continue
+            try:
+                raw_data = json.loads(timeline_raw)
+            except json.decoder.JSONDecodeError as e:
+                logger.error(f'Failed to parse timeline_raw {timeline_raw}, skip')
+                continue
+
+            try:
                 dev = raw_data['actor']
                 dev_name = dev['login']
-                if dev_name not in privilege_map:
-                    privilege_map[dev_name] = [0] * 14
-                index = event_type_index_map[event_type]
-                privilege_map[dev_name][index] = 1
+            except (KeyError, TypeError) as e:
+                logger.error(f'Failed to fetch actor login from {raw_data}: {e}, skip')
+                continue
+
+            if dev_name not in privilege_map:
+                privilege_map[dev_name] = [0] * 14
+            index = event_type_index_map[event_type]
+            privilege_map[dev_name][index] = 1
 
         for dev, events in privilege_map.items():
             row = [dev]
@@ -117,31 +122,30 @@ class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
         return f'''
         WITH '{self.owner}' AS owner, '{self.repo}' AS repo, '{group_char}' AS first_char
         SELECT a_author_name, b_author_name
-        FROM (SELECT a.author_name   AS a_author_name,
-                     a.authored_date AS a_authored_date,
-                     b.author_name   AS b_author_name,
-                     b.authored_date AS b_author_date,
-                     file_name
-              FROM (SELECT author_name, authored_date, `files.file_name` AS file_name
+        FROM (SELECT a.author_name AS a_author_name,
+                     a.day         AS a_day,
+                     b.author_name AS b_author_name,
+                     b.day         AS b_day
+              FROM (SELECT author_name, toYYYYMMDD(authored_date) AS day, `files.file_name` AS file_name
                     FROM gits
                              ARRAY JOIN `files.file_name`
                     WHERE search_key__owner = owner
                       AND search_key__repo = repo
                       AND length(parents) == 1
-                      AND file_name != ''
                       AND substring(file_name, 1, 1) = first_char
-                    ORDER BY file_name, authored_date) AS a GLOBAL
-                       JOIN (SELECT author_name, authored_date, `files.file_name` AS file_name
+                    GROUP BY author_name, day, file_name
+                    ORDER BY file_name, day) AS a GLOBAL
+                       JOIN (SELECT author_name, toYYYYMMDD(authored_date) AS day, `files.file_name` AS file_name
                              FROM gits
                                       ARRAY JOIN `files.file_name`
                              WHERE search_key__owner = owner
                                AND search_key__repo = repo
                                AND length(parents) == 1
-                               AND file_name != ''
                                AND substring(file_name, 1, 1) = first_char
-                             ORDER BY file_name, authored_date) AS b ON a.file_name = b.file_name)
+                             GROUP BY author_name, day, file_name
+                             ORDER BY file_name, day) AS b ON a.file_name = b.file_name)
         WHERE a_author_name != b_author_name
-          AND abs(toYYYYMMDD(a_authored_date) - toYYYYMMDD(b_author_date)) <= {day_threshold}
+          AND abs(a_day - b_day) <= {day_threshold}
         GROUP BY a_author_name, b_author_name
         '''
 
