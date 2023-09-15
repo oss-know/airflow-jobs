@@ -79,7 +79,7 @@ class CountMetricRoutineCalculation(MetricRoutineCalculation):
         # TODO Add and handle author_email
         gits_sql_ = f"""
         SELECT
-        substring(author_name, 1, 256) as author_name,
+        toValidUTF8(substring(author_name, 1, 256)) as author_name,
         count() AS commit_count,
         sum(total__lines) AS total_lines
         FROM gits
