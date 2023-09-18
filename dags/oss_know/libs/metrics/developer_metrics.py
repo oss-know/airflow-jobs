@@ -165,7 +165,7 @@ class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
             logger.warning(f'No developer pair edges found for {self.owner}/{self.repo}, skip')
             return []
 
-        eigenvector = nx.eigenvector_centrality(social_network, max_iter=300)
+        eigenvector = nx.eigenvector_centrality(social_network, max_iter=1000)
         response = []
         dev_nodes = list(social_network.nodes())
         for dev in dev_nodes:
