@@ -37,6 +37,7 @@ with DAG(dag_id='routinely_calculate_pr_event_network_metrics',  # schedule_inte
         calc.routine()
 
 
+    prev_operator = None
     for letter, owner_repos in task_groups_by_capital_letter.items():
         op_calculate_network_metrics = PythonOperator(
             task_id=f'op_calculate_network_metrics_{letter}',
@@ -46,3 +47,7 @@ with DAG(dag_id='routinely_calculate_pr_event_network_metrics',  # schedule_inte
                 "owner_repo_group": owner_repos
             }
         )
+
+        if prev_operator:
+            prev_operator >> op_calculate_network_metrics
+        prev_operator = op_calculate_network_metrics
