@@ -4,6 +4,7 @@ import shutil
 
 import git  # GitPython
 import lizard
+import timeout_decorator
 
 from oss_know.libs.base_dict.variable_key import REPO_CLONE_DIR
 from oss_know.libs.metrics.influence_metrics import MetricRoutineCalculation
@@ -15,10 +16,12 @@ def clone_(owner, repo, dir):
 
     try:
         if os.path.exists(dir):
-            repo = git.Repo(dir)
-            o = repo.remotes.origin
+            git_repo = git.Repo(dir)
+            o = git_repo.remotes.origin
+            logger.info(f'Code base{owner}/{repo} already exists, pull from remote')
             o.pull()
         else:
+            logger.info(f'Code base{owner}/{repo} does not exists, clone from remote')
             git.Repo.clone_from(url, dir)
     except git.exc.GitError as e:
         logger.error(f'Failed to fetch code {url}, error: {str(e)}')
@@ -44,7 +47,65 @@ def extract_metrics(owner, repo_name, repo_dir):
     metric['nloc'] = res.as_fileinfo().nloc
     metric['average_nloc'] = res.as_fileinfo().average_nloc
     metric['average_cyclomatic_complexity'] = res.as_fileinfo().average_cyclomatic_complexity
+
     metric['average_token_count'] = res.as_fileinfo().average_token_count
+
+    return metric
+
+
+@timeout_decorator.timeout(5)
+def _analysis_single_file(file_path):
+    result = lizard.analyze_files([file_path])
+
+    nloc, num_funcs, func_nloc, token_count, cc = 0, 0, 0, 0, 0
+
+    for r in result:
+        nloc += r.nloc
+        num_funcs += len(r.function_list)
+        func_nloc += sum(f.nloc for f in r.function_list)
+        token_count += sum(f.token_count for f in r.function_list)
+        cc += sum(f.cyclomatic_complexity for f in r.function_list)
+
+    return nloc, num_funcs, func_nloc, token_count, cc
+
+
+def extract_metrics_safe(owner, repo_name, repo_dir):
+    metric = {'owner': owner, 'repo': repo_name, 'created_at': datetime.datetime.now()}
+
+    repo = git.Repo(repo_dir)
+    sha = repo.head.commit.hexsha
+    metric['sha'] = sha
+
+    # TODO If the source files count is SUPER large(which should not happen usually), then we
+    #  should go through the iterator and track the files count
+    source_files = list(lizard.get_all_source_files([repo_dir], [], None))
+
+    num_files = len(source_files)
+    logger.info(f'{owner}/{repo_name}: {num_files} files to analyze')
+
+    failed_files = []
+    nloc, num_funcs = 0, 0
+    # these 3 metrics are calculated by functions average
+    func_nloc, token_count, cc = 0, 0, 0
+
+    for file_path in source_files:
+        try:
+            _nloc, _num_funcs, _func_nloc, _token_count, _cc = _analysis_single_file(file_path)
+            nloc += _nloc
+            num_funcs += _num_funcs
+            func_nloc += _func_nloc
+            token_count += _token_count
+            cc += _cc
+        except timeout_decorator.timeout_decorator.TimeoutError:
+            logger.error(f'analysis timeout: {file_path}, skip')
+            failed_files.append(file_path)
+
+    metric['nloc'] = nloc
+    metric['average_nloc'] = func_nloc / num_funcs if num_funcs else 0
+    metric['average_cyclomatic_complexity'] = cc / num_funcs if num_funcs else 0
+    metric['average_token_count'] = token_count / num_funcs if num_funcs else 0
+
+    logger.info(f'{owner}/{repo_name} code repo metric: {metric}')
 
     return metric
 
@@ -56,7 +117,7 @@ class RepoCodeMetricRoutineCalculation(MetricRoutineCalculation):
         dir = f"{REPO_CLONE_DIR}/{self.owner}/{self.repo}"
         clone_(self.owner, self.repo, dir)
 
-        calculated_metrics = extract_metrics(self.owner, self.repo, dir) if os.path.exists(dir) else None
+        calculated_metrics = extract_metrics_safe(self.owner, self.repo, dir) if os.path.exists(dir) else None
         # remove_repos(dir)
         return calculated_metrics
 

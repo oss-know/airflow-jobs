@@ -15,6 +15,7 @@ class PrivilegeEventsMetricRoutineCalculation(MetricRoutineCalculation):
                               "unlocked", "unpinned", "user_blocked"]
 
     def calculate_metrics(self):
+        logger.info(f'Calculating {self.owner}/{self.repo} privileged event metrics')
         event_type_index_map = {}
         for (index, event) in enumerate(self.privileged_events_list):
             event_type_index_map[event] = index
@@ -33,14 +34,23 @@ class PrivilegeEventsMetricRoutineCalculation(MetricRoutineCalculation):
 
         privilege_map = {}
         for (event_type, timeline_raw) in privilege_results:
-            if event_type in self.privileged_events_list:
+            try:
                 raw_data = json.loads(timeline_raw)
+            except json.decoder.JSONDecodeError as e:
+                logger.error(f'Failed to parse timeline_raw {timeline_raw}, skip')
+                continue
+
+            try:
                 dev = raw_data['actor']
                 dev_name = dev['login']
-                if dev_name not in privilege_map:
-                    privilege_map[dev_name] = [0] * 14
-                index = event_type_index_map[event_type]
-                privilege_map[dev_name][index] = 1
+            except (KeyError, TypeError) as e:
+                logger.error(f'Failed to fetch actor login from {raw_data}: {e}, skip')
+                continue
+
+            if dev_name not in privilege_map:
+                privilege_map[dev_name] = [0] * 14
+            index = event_type_index_map[event_type]
+            privilege_map[dev_name][index] = 1
 
         for dev, events in privilege_map.items():
             row = [dev]
@@ -53,8 +63,8 @@ class PrivilegeEventsMetricRoutineCalculation(MetricRoutineCalculation):
     def save_metrics(self):
         logger.info(f'Saving Privilege Events Metrics of {self.owner}/{self.repo}')
         # TODO The string literal can be stored as static class property
-        privilege_events_insert_query = '''
-            INSERT INTO privilege_events(actor_login, added_to_project, converted_note_to_issue,
+        privilege_events_insert_query = f'''
+            INSERT INTO {self.table_name} (actor_login, added_to_project, converted_note_to_issue,
                                   deployed, deployment_environment_changed,
                                   locked, merged, moved_columns_in_project,
                                   pinned, removed_from_project,
@@ -68,7 +78,10 @@ class CountMetricRoutineCalculation(MetricRoutineCalculation):
     def calculate_metrics(self):
         # TODO Add and handle author_email
         gits_sql_ = f"""
-        SELECT author_name, count() AS commit_count, sum(total__lines) AS total_lines
+        SELECT
+        toValidUTF8(substring(author_name, 1, 256)) as author_name,
+        count() AS commit_count,
+        sum(total__lines) AS total_lines
         FROM gits
         WHERE search_key__owner = '{self.owner}'
           AND search_key__repo = '{self.repo}'
@@ -80,9 +93,11 @@ class CountMetricRoutineCalculation(MetricRoutineCalculation):
         return gits_results
 
     def save_metrics(self):
-        count_metrics_insert_query = '''
-            INSERT INTO count_metrics(author_name, commit_num, line_of_code)
-            VALUES (%s, %s, %s)'''
+        count_metrics_insert_query = f'''
+            INSERT INTO {self.table_name}
+            (search_key__owner, search_key__repo, author_name, commit_num, line_of_code)
+            VALUES ("{self.owner}", "{self.repo}", %s, %s, %s)'''
+
         self.batch_insertion(insert_query=count_metrics_insert_query, batch=self.batch)
         logger.info(f'{len(self.batch)} Count Metrics saved for {self.owner}/{self.repo}')
 
@@ -107,36 +122,35 @@ class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
         return f'''
         WITH '{self.owner}' AS owner, '{self.repo}' AS repo, '{group_char}' AS first_char
         SELECT a_author_name, b_author_name
-        FROM (SELECT a.author_name   AS a_author_name,
-                     a.authored_date AS a_authored_date,
-                     b.author_name   AS b_author_name,
-                     b.authored_date AS b_author_date,
-                     file_name
-              FROM (SELECT author_name, authored_date, `files.file_name` AS file_name
+        FROM (SELECT a.author_name AS a_author_name,
+                     a.day         AS a_day,
+                     b.author_name AS b_author_name,
+                     b.day         AS b_day
+              FROM (SELECT author_name, toYYYYMMDD(authored_date) AS day, `files.file_name` AS file_name
                     FROM gits
                              ARRAY JOIN `files.file_name`
                     WHERE search_key__owner = owner
                       AND search_key__repo = repo
                       AND length(parents) == 1
-                      AND file_name != ''
                       AND substring(file_name, 1, 1) = first_char
-                    ORDER BY file_name, authored_date) AS a GLOBAL
-                       JOIN (SELECT author_name, authored_date, `files.file_name` AS file_name
+                    GROUP BY author_name, day, file_name
+                    ORDER BY file_name, day) AS a GLOBAL
+                       JOIN (SELECT author_name, toYYYYMMDD(authored_date) AS day, `files.file_name` AS file_name
                              FROM gits
                                       ARRAY JOIN `files.file_name`
                              WHERE search_key__owner = owner
                                AND search_key__repo = repo
                                AND length(parents) == 1
-                               AND file_name != ''
                                AND substring(file_name, 1, 1) = first_char
-                             ORDER BY file_name, authored_date) AS b ON a.file_name = b.file_name)
+                             GROUP BY author_name, day, file_name
+                             ORDER BY file_name, day) AS b ON a.file_name = b.file_name)
         WHERE a_author_name != b_author_name
-          AND abs(toYYYYMMDD(a_authored_date) - toYYYYMMDD(b_author_date)) <= {day_threshold}
+          AND abs(a_day - b_day) <= {day_threshold}
         GROUP BY a_author_name, b_author_name
         '''
 
     def calculate_metrics(self):
-
+        logger.info(f'Calculate {self.owner}/{self.repo} developer network metrics')
         first_chars = self.files_first_chars()
 
         social_network = nx.Graph()
@@ -147,7 +161,11 @@ class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
             for (dev1, dev2) in developer_pairs:
                 social_network.add_edge(dev1, dev2)
 
-        eigenvector = nx.eigenvector_centrality(social_network)
+        if nx.is_empty(social_network):
+            logger.warning(f'No developer pair edges found for {self.owner}/{self.repo}, skip')
+            return []
+
+        eigenvector = nx.eigenvector_centrality(social_network, max_iter=1000)
         response = []
         dev_nodes = list(social_network.nodes())
         for dev in dev_nodes:
@@ -164,8 +182,8 @@ class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
 
     def save_metrics(self):
         logger.info('saving  Network Metrics')
-        network_metrics_insert_query = '''
-            INSERT INTO developer_role_network_metrics
+        network_metrics_insert_query = f'''
+            INSERT INTO {self.table_name}
             (search_key__owner, search_key__repo,
             author_name, degree_centrality, eigenvector_centrality)
             VALUES (%s, %s, %s, %s, %s)'''

@@ -43,6 +43,8 @@ with DAG(dag_id='routinely_calculate_developer_role_metrics',  # schedule_interv
         (CountMetricRoutineCalculation, "developer_contrib_count_metrics"),
         (NetworkMetricRoutineCalculation, "developer_role_network_metrics"),
     ]
+
+    prev_operator = None
     for (class_, table_name) in class_table_names:
         op_calculate_developer_metrics = PythonOperator(
             task_id=f'op_do_{class_.__name__}',
@@ -54,3 +56,7 @@ with DAG(dag_id='routinely_calculate_developer_role_metrics',  # schedule_interv
                 "routine_class": class_
             }
         )
+
+        if prev_operator:
+            prev_operator >> op_calculate_developer_metrics
+        prev_operator = op_calculate_developer_metrics

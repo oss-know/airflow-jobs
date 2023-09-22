@@ -215,6 +215,10 @@ class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
     def calculate_metrics(self):
         logger.info(f'calculating by {self.owner}, {self.repo}')
         edge_list = extract_graph_from_ck(self.clickhouse_client, self.owner, self.repo)
+        if not edge_list:
+            logger.warning(f'No edges found from {self.owner}/{self.repo} PR events, skip')
+            return []
+
         calculated_metrics = extract_metrics(edge_list, self.owner, self.repo)
         return calculated_metrics
 

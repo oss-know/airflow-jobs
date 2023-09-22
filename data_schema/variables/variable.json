@@ -5021,11 +5021,11 @@
     },
     {
       "table_name": "developer_contrib_count_metrics",
-      "ddl": "CREATE TABLE IF NOT EXISTS developer_contrib_count_metrics\n(\n   search_key__owner varchar(256),\n   search_key__repo varchar(256),\n   author_name   varchar(64),\n   author_email  varchar(128),\n   commit_num   int,\n   line_of_code   int\n)"
+      "ddl": "CREATE TABLE IF NOT EXISTS developer_contrib_count_metrics\n(\n   search_key__owner varchar(256),\n   search_key__repo varchar(256),\n   author_name   varchar(256),\n   author_email  varchar(128),\n   commit_num   int,\n   line_of_code   int\n)"
     },
     {
       "table_name": "developer_role_network_metrics",
-      "ddl": "CREATE TABLE IF NOT EXISTS developer_role_network_metrics\n(\n   search_key__owner  varchar(256),\n   search_key__repo  varchar(256),\n   author_name   varchar(64),\n   author_email  varchar(128),\n   degree_centrality   int,\n   eigenvector_centrality double\n)"
+      "ddl": "CREATE TABLE IF NOT EXISTS developer_role_network_metrics\n(\n   search_key__owner  varchar(256),\n   search_key__repo  varchar(256),\n   author_name   varchar(256),\n   author_email  varchar(128),\n   degree_centrality   int,\n   eigenvector_centrality double\n)"
     }
   ],
   "routinely_update_influence_metrics_interval": [
