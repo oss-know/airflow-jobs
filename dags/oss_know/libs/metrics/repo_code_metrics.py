@@ -99,6 +99,9 @@ def extract_metrics_safe(owner, repo_name, repo_dir):
         except timeout_decorator.timeout_decorator.TimeoutError:
             logger.error(f'analysis timeout: {file_path}, skip')
             failed_files.append(file_path)
+        except TypeError as e:
+            logger.error(f'Failed to analyze file {file_path}: {e}, skip')
+            failed_files.append(file_path)
 
     metric['nloc'] = nloc
     metric['average_nloc'] = func_nloc / num_funcs if num_funcs else 0
