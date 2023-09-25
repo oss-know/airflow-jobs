@@ -54,7 +54,7 @@ def extract_metrics(owner, repo_name, repo_dir):
     return metric
 
 
-@timeout_decorator.timeout(5)
+# @timeout_decorator.timeout(5)
 def _analysis_single_file(file_path):
     result = lizard.analyze_files([file_path])
 
@@ -96,13 +96,13 @@ def extract_metrics_safe(owner, repo_name, repo_dir):
 
         for future in as_completed(futures):
             try:
-                _nloc, _num_funcs, _func_nloc, _token_count, _cc = future.result()
+                _nloc, _num_funcs, _func_nloc, _token_count, _cc = future.result(timeout=5)
                 nloc += _nloc
                 num_funcs += _num_funcs
                 func_nloc += _func_nloc
                 token_count += _token_count
                 cc += _cc
-            except timeout_decorator.timeout_decorator.TimeoutError:
+            except TimeoutError:
                 logger.error(f'analysis timeout: {file_path}, skip')
                 failed_files.append(file_path)
             except TypeError as e:
