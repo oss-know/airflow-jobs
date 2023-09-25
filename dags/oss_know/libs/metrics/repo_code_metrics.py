@@ -1,6 +1,7 @@
 import datetime
 import os
 import shutil
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import git  # GitPython
 import lizard
@@ -88,20 +89,25 @@ def extract_metrics_safe(owner, repo_name, repo_dir):
     # these 3 metrics are calculated by functions average
     func_nloc, token_count, cc = 0, 0, 0
 
-    for file_path in source_files:
-        try:
-            _nloc, _num_funcs, _func_nloc, _token_count, _cc = _analysis_single_file(file_path)
-            nloc += _nloc
-            num_funcs += _num_funcs
-            func_nloc += _func_nloc
-            token_count += _token_count
-            cc += _cc
-        except timeout_decorator.timeout_decorator.TimeoutError:
-            logger.error(f'analysis timeout: {file_path}, skip')
-            failed_files.append(file_path)
-        except TypeError as e:
-            logger.error(f'Failed to analyze file {file_path}: {e}, skip')
-            failed_files.append(file_path)
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = []
+        for file_path in source_files:
+            futures.append(executor.submit(_analysis_single_file, file_path))
+
+        for future in as_completed(futures):
+            try:
+                _nloc, _num_funcs, _func_nloc, _token_count, _cc = future.result()
+                nloc += _nloc
+                num_funcs += _num_funcs
+                func_nloc += _func_nloc
+                token_count += _token_count
+                cc += _cc
+            except timeout_decorator.timeout_decorator.TimeoutError:
+                logger.error(f'analysis timeout: {file_path}, skip')
+                failed_files.append(file_path)
+            except TypeError as e:
+                logger.error(f'Failed to analyze file {file_path}: {e}, skip')
+                failed_files.append(file_path)
 
     metric['nloc'] = nloc
     metric['average_nloc'] = func_nloc / num_funcs if num_funcs else 0
