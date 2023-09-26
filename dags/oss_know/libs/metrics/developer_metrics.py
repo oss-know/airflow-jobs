@@ -1,6 +1,7 @@
 import json
 
 import networkx as nx
+from networkx.exception import PowerIterationFailedConvergence
 from clickhouse_driver.errors import ServerException as ClickHouseServerException
 from oss_know.libs.metrics.influence_metrics import MetricRoutineCalculation
 from oss_know.libs.util.log import logger
@@ -173,12 +174,18 @@ class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
             logger.warning(f'No developer pair edges found for {self.owner}/{self.repo}, skip')
             return []
 
-        eigenvector = nx.eigenvector_centrality(social_network, max_iter=1000)
+        try:
+            eigenvector = nx.eigenvector_centrality(social_network, max_iter=3000)
+        except PowerIterationFailedConvergence:
+            logger.error(f'Failed to calculate eigenvector_centrality even with 3000 iterations'
+                         f' for {self.owner}/{self.repo}')
+            eigenvector = {}
+
         response = []
         dev_nodes = list(social_network.nodes())
         for dev in dev_nodes:
             degree = social_network.degree(dev)
-            response.append((self.owner, self.repo, dev, degree, eigenvector[dev]))
+            response.append((self.owner, self.repo, dev, degree, eigenvector.get(dev) or 0))
 
         node_num = social_network.number_of_nodes()
         edge_num = social_network.number_of_edges()
