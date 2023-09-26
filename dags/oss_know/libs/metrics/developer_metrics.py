@@ -1,7 +1,7 @@
 import json
 
 import networkx as nx
-
+from clickhouse_driver.errors import ServerException as ClickHouseServerException
 from oss_know.libs.metrics.influence_metrics import MetricRoutineCalculation
 from oss_know.libs.util.log import logger
 
@@ -156,7 +156,15 @@ class NetworkMetricRoutineCalculation(MetricRoutineCalculation):
         social_network = nx.Graph()
         for first_char in first_chars:
             developer_relations_sql = self.developer_relation_sql(first_char)
-            developer_pairs = self.clickhouse_client.execute_no_params(developer_relations_sql)
+            try:
+                developer_pairs = self.clickhouse_client.execute_no_params(developer_relations_sql)
+            except ClickHouseServerException as e:
+                logger.error(
+                    f'Failed to calculate developer pairs for {self.owner}/{self.repo},'
+                    f' group {first_char}: {e}'
+                )
+                developer_pairs = []
+
             logger.info(f'{len(developer_pairs)} pairs on group {first_char}, {self.owner}/{self.repo}')
             for (dev1, dev2) in developer_pairs:
                 social_network.add_edge(dev1, dev2)
