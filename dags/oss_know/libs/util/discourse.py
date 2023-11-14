@@ -36,8 +36,8 @@ def get_data_from_opensearch(index, owner, repo, opensearch_conn_datas):
                                "query": {
                                     "bool": {
                                         "must": [
-                                            {"match": {"search_key.owner": owner}},
-                                            {"match": {"search_key.repo" : repo}}
+                                            {"match": {"search_key.owner.keyword": owner}},
+                                            {"match": {"search_key.repo.keyword" : repo}}
                                         ]
                                     }
                                 },

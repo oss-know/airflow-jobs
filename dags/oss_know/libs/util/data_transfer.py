@@ -46,12 +46,12 @@ def sync_clickhouse_from_opensearch(owner, repo, index_name, opensearch_conn_inf
                 "must": [
                     {
                         "match": {
-                            "search_key.owner": owner
+                            "search_key.owner.keyword": owner
                         }
                     },
                     {
                         "match": {
-                            "search_key.repo": repo
+                            "search_key.repo.keyword": repo
                         }
                     }
                 ]
