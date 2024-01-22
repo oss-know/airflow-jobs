@@ -15,6 +15,11 @@ DAILY_SYNC_GITHUB_ISSUES_COMMENTS_EXCLUDES = "github_issues_comments_sync_exclud
 DAILY_SYNC_GITHUB_ISSUES_TIMELINE_INCLUDES = "github_issues_timeline_sync_includes"
 DAILY_SYNC_GITHUB_ISSUES_TIMELINE_EXCLUDES = "github_issues_timeline_sync_excludes"
 
+DAILY_SYNC_CLICKHOUSE_GITS_INCLUDES = "daily_sync_clickhouse_gits_includes"
+DAILY_SYNC_CLICKHOUSE_GITHUB_COMMITS_INCLUDES = "daily_sync_clickhouse_github_commits_includes"
+DAILY_SYNC_CLICKHOUSE_GITHUB_PRS_INCLUDES = "daily_sync_clickhouse_github_prs_includes"
+DAILY_SYNC_CLICKHOUSE_GITHUB_ISSUES_INCLUDES = "daily_sync_clickhouse_github_issues_includes"
+
 POSTGRES_CONN_INFO = "postgres_conn_info"
 NEED_INIT_GITHUB_ISSUES_COMMENT_REACTION_REPOS = "need_init_github_issues_comments_reactions"
 NEED_INIT_GITHUB_COMMITS_REPOS = "need_init_github_commits_repos"
