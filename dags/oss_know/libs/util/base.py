@@ -1,6 +1,7 @@
 import json
 import re
 from datetime import datetime
+from string import ascii_lowercase
 from threading import Thread
 from urllib.parse import urlparse
 
@@ -18,7 +19,6 @@ from oss_know.libs.exceptions import GithubResourceNotFoundError, GithubInternal
 from oss_know.libs.util.clickhouse_driver import CKServer
 from oss_know.libs.util.proxy import GithubTokenProxyAccommodator
 from ..util.log import logger
-from string import ascii_lowercase
 
 
 class HttpGetException(Exception):
@@ -366,7 +366,7 @@ def arrange_owner_repo_into_letter_groups(owner_repos):
         groups[letter] = []
     owner = ''
     for item in owner_repos:
-        if type(item) == tuple:
+        if type(item) == tuple or type(item) == list:
             owner, _ = item
         elif type(item) == dict:
             owner = item['owner']
@@ -383,5 +383,3 @@ def unify_gits_origin(origin):
     if str(origin).endswith('.git'):
         return origin[:-4]
     return origin
-
-
