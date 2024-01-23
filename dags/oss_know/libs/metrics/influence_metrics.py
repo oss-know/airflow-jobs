@@ -99,7 +99,7 @@ class TotalFixIndensityMetricRoutineCalculation(MetricRoutineCalculation):
         from (select search_key__owner, search_key__repo, author_email, authored_date, b.*
               from (select *
                     from gits
-                    where search_key__owner = 'rust-lang'
+                    where search_key__owner = '{self.owner}'
                       and length(parents) == 1
                       and author_email != '') as a global ASOF
                        INNER JOIN (select author_email, min(authored_date) as start_at, subtractYears(start_at, -1) as end_at
@@ -173,7 +173,7 @@ class DeveloperRoleMetricRoutineCalculation(MetricRoutineCalculation):
               from (select search_key__owner, search_key__repo, author_email, authored_date, b.*
                     from (select *
                           from gits
-                          where search_key__owner = 'rust-lang'
+                          where search_key__owner = '{self.owner}'
                             and length(parents) == 1
                             and author_email != '') as a global ASOF
                              INNER JOIN (select author_email,
