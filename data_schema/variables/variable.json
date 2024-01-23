@@ -3326,8 +3326,13 @@
     },
     {
       "table_name": "code_owners",
-      "local_table": "create table if not default.code_owners_local on cluster replicated \n ( \n     search_key__owner  String, \n     search_key__repo   String, \n     search_key__origin String, \n     hexsha             String, \n     authored_date      DateTime64(3), \n     filepath           String, \n     module             String, \n     name               String, \n     email              String, \n     github_login       String, \n     misc               String \n ) \n     engine = ReplicatedReplacingMergeTree('/clickhouse/tables/{shard}/code_owners', '{replica}', authored_date) \n         PARTITION BY search_key__owner \n         ORDER BY (search_key__owner, search_key__repo, hexsha) \n         SETTINGS index_granularity = 8192; \n ",
+      "local_table": "create table if not exists default.code_owners_local on cluster replicated \n ( \n     search_key__owner  String, \n     search_key__repo   String, \n     search_key__origin String, \n     hexsha             String, \n     authored_date      DateTime64(3), \n     filepath           String, \n     module             String, \n     name               String, \n     email              String, \n     github_login       String, \n     misc               String \n ) \n     engine = ReplicatedReplacingMergeTree('/clickhouse/tables/{shard}/code_owners', '{replica}', authored_date) \n         PARTITION BY search_key__owner \n         ORDER BY (search_key__owner, search_key__repo, hexsha) \n         SETTINGS index_granularity = 8192; \n ",
       "distributed_table": "create table if not exists default.code_owners on cluster replicated \n ( \n     search_key__owner  String, \n     search_key__repo   String, \n     search_key__origin String, \n     hexsha             String, \n     authored_date      DateTime64(3), \n     filepath           String, \n     module             String, \n     name               String, \n     email              String, \n     github_login       String, \n     misc               String \n ) \n     engine = Distributed('replicated', 'default', 'code_owners_local', halfMD5(hexsha)); \n  \n "
+    },
+    {
+      "table_name": "pr_social_events",
+      "local_table": "create table if not exists pr_social_events_local on cluster replicated \n( \n    owner      String, \n    repo       String, \n    from_id    Int64, \n    from_login String, \n    to_id      Int64, \n    to_login   String, \n    event_date Date, \n    event_type String, \n    content    String, \n    misc String \n) \n    engine = ReplicatedMergeTree('/clickhouse/tables/{shard}/pr_social_events', '{replica}') \n        PARTITION BY owner \n        ORDER BY (owner, repo, from_id) \n        SETTINGS index_granularity = 8192;",
+      "distributed_table": "create table if not exists pr_social_events on cluster replicated \n( \n    owner      String, \n    repo       String, \n    from_id    Int64, \n    from_login String, \n    to_id      Int64, \n    to_login   String, \n    event_date Date, \n    event_type String, \n    content    String, \n    misc String \n) \n    engine = Distributed('replicated', 'default', 'pr_social_events_local', from_id); \n"
     }
   ],
   "need_init_discourse":
@@ -4996,15 +5001,15 @@
   "mysql_create_table_ddl": [
     {
       "table_name": "peers_average_fix_intensity_role",
-      "ddl": "CREATE TABLE IF NOT EXISTS peers_average_fix_intensity_role (\nid INT PRIMARY KEY AUTO_INCREMENT,\nrepo VARCHAR(100),\nauthor_email VARCHAR(100),\naverage_fix_intensity FLOAT)"
+      "ddl": "CREATE TABLE IF NOT EXISTS peers_average_fix_intensity_role (\nid INT PRIMARY KEY AUTO_INCREMENT,\nowner VARCHAR(100),\nrepo VARCHAR(100),\nauthor_email VARCHAR(100),\naverage_fix_intensity FLOAT)"
     },
     {
       "table_name": "contributed_repos_role",
-      "ddl": "CREATE TABLE IF NOT EXISTS contributed_repos_role (\nid INT PRIMARY KEY AUTO_INCREMENT,\nauthor_email VARCHAR(100),\nrepo_count INT)"
+      "ddl": "CREATE TABLE IF NOT EXISTS contributed_repos_role (\nid INT PRIMARY KEY AUTO_INCREMENT,\nowner VARCHAR(100),\nauthor_email VARCHAR(100),\nrepo_count INT)"
     },
     {
       "table_name": "contribution_graph_data",
-      "ddl": "CREATE TABLE IF NOT EXISTS contribution_graph_data(\nid INT PRIMARY KEY AUTO_INCREMENT,\ncntrb_login VARCHAR(100),\nrepo_name VARCHAR(100),\npr_count INT,\nissue_count INT,\ncommit_count INT ,\ntotal_contributions INT)"
+      "ddl": "CREATE TABLE IF NOT EXISTS contribution_graph_data(\nid INT PRIMARY KEY AUTO_INCREMENT,\nowner VARCHAR(100),\nrepo VARCHAR(100),\ncntrb_login VARCHAR(100),\npr_count INT,\nissue_count INT,\ncommit_count INT ,\ntotal_contributions INT)"
     },
     {
       "table_name": "developer_roles_metrics",
@@ -5012,7 +5017,7 @@
     },
     {
       "table_name": "total_fix_intensity",
-      "ddl": " CREATE TABLE IF NOT EXISTS total_fix_intensity (\nid INT PRIMARY KEY AUTO_INCREMENT,\nauthor_email VARCHAR(100),\ntotal_fix_intensity FLOAT)"
+      "ddl": " CREATE TABLE IF NOT EXISTS total_fix_intensity (\nid INT PRIMARY KEY AUTO_INCREMENT,\nowner VARCHAR(100),\nrepo VARCHAR(100),\nauthor_email VARCHAR(100),\ncommit_count INT,\ntotal_fix_intensity FLOAT)"
     },
     {
       "table_name": "repo_code_metric",
