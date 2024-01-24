@@ -114,7 +114,9 @@ class TotalFixIndensityMetricRoutineCalculation(MetricRoutineCalculation):
         results = self.clickhouse_client.execute_no_params(sql_)
         response = []
         for result in results:
-            response.append((result[0], result[1]))
+            # result: (email, commit_count, intensity)
+            # intensity = ln(commit_count + 1)
+            response.append((self.owner,) + result)
 
         logger.info('calculating  Influence Metrics')
         return response
@@ -123,8 +125,8 @@ class TotalFixIndensityMetricRoutineCalculation(MetricRoutineCalculation):
     def save_metrics(self):
         logger.info('saving  Influence Metrics')
         total_fix_intensity_insert_query = '''
-            INSERT INTO total_fix_intensity (author_email, total_fix_intensity)
-            VALUES (%s, %s)'''
+            INSERT INTO total_fix_intensity (owner, author_email, commit_count, total_fix_intensity)
+            VALUES (%s, %s, %s, %s)'''
         self.batch_insertion(insert_query=total_fix_intensity_insert_query, batch=self.batch)
 
 
@@ -192,7 +194,7 @@ class DeveloperRoleMetricRoutineCalculation(MetricRoutineCalculation):
 
         response = []
         for result in results:
-            response.append((result[0], result[1], result[2], result[3]))
+            response.append((self.owner,) + result)
 
         logger.info('calculating  Influence Metrics')
         return response
@@ -201,8 +203,8 @@ class DeveloperRoleMetricRoutineCalculation(MetricRoutineCalculation):
     def save_metrics(self):
         logger.info('saving  Influence Metrics')
         insert_query = '''
-            INSERT INTO developer_roles_metrics (author_email,total_fix_commit_count,maximum_fix_commit_count,repo_count)
-            VALUES (%s, %s,%s, %s)'''
+            INSERT INTO developer_roles_metrics (owner,author_email,total_fix_commit_count,maximum_fix_commit_count,repo_count)
+            VALUES (%s, %s, %s, %s, %s)'''
         self.batch_insertion(insert_query=insert_query, batch=self.batch)
 
 
@@ -236,17 +238,17 @@ class ContributedRepoFirstYearMetricRoutineCalculation(MetricRoutineCalculation)
 
         response = []
         for result in results:
-            response.append(result)
+            response.append((self.owner,) + result)
 
-        logger.info('calculating  Influence Metrics')
+        logger.info(f'Calculating contrib metrics {self.table_name}')
         return response
         # super().calculate_metrics()
 
     def save_metrics(self):
-        logger.info('saving  Influence Metrics')
+        logger.info(f'Saving contrib metrics {self.table_name}')
         insert_query = '''
-            INSERT INTO contributed_repos_role (author_email,repo_count)
-            VALUES (%s, %s)'''
+            INSERT INTO contributed_repos_role (owner, author_email,repo_count)
+            VALUES (%s, %s, %s)'''
         self.batch_insertion(insert_query=insert_query, batch=self.batch)
 
 
@@ -391,7 +393,8 @@ group by search_key__owner, search_key__repo, dep_author_email, start_at)
 
         response = []
         for result in results:
-            response.append(result)
+            owner, repo = result[0].split('__')
+            response.append((owner, repo, result[1], result[2]))
 
         logger.info('calculating Influence Metrics')
         return response
@@ -399,8 +402,8 @@ group by search_key__owner, search_key__repo, dep_author_email, start_at)
     def save_metrics(self):
         logger.info('saving  Influence Metrics')
         insert_query = '''
-            INSERT INTO peers_average_fix_intensity_role (repo,author_email,average_fix_intensity)
-            VALUES (%s, %s, %s)'''
+            INSERT INTO peers_average_fix_intensity_role (owner, repo, author_email, average_fix_intensity)
+            VALUES (%s, %s, %s, %s)'''
         self.batch_insertion(insert_query=insert_query, batch=self.batch)
 
 
@@ -419,8 +422,16 @@ class MetricGroupRoutineCalculation:
 
     def routine(self, force_update=False):
         for item in self.owner_repos:
+            # owner is essential
+            # While repo might be empty since some contribution metrics are calculated on community scale, which are
+            # currently a group of repos under the same owner
             owner = item['owner']
-            repo = item['repo']
+            repo = item.get('repo', '')
             calc = self.calc_class(self.clickhouse_conn_info, self.mysql_conn_info,
                                    owner, repo, self.table_name, self.batch_size)
             calc.routine_calculate_metrics_once()
+
+            if not repo:
+                logger.info(
+                    f'Calculating metrics {self.table_name} by community scale with {owner}/{repo}, skip other repos')
+                break

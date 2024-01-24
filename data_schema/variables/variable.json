@@ -5013,11 +5013,11 @@
     },
     {
       "table_name": "developer_roles_metrics",
-      "ddl": "CREATE TABLE IF NOT EXISTS developer_roles_metrics(\nid INT PRIMARY KEY AUTO_INCREMENT,\nauthor_email VARCHAR(100),\ntotal_fix_commit_count INT,\nmaximum_fix_commit_count INT,\nrepo_count INT)"
+      "ddl": "CREATE TABLE IF NOT EXISTS developer_roles_metrics(\nid INT PRIMARY KEY AUTO_INCREMENT,\nowner VARCHAR(100),\nowner VARCHAR(100),\nauthor_email VARCHAR(100),\ntotal_fix_commit_count INT,\nmaximum_fix_commit_count INT,\nrepo_count INT)"
     },
     {
       "table_name": "total_fix_intensity",
-      "ddl": " CREATE TABLE IF NOT EXISTS total_fix_intensity (\nid INT PRIMARY KEY AUTO_INCREMENT,\nowner VARCHAR(100),\nrepo VARCHAR(100),\nauthor_email VARCHAR(100),\ncommit_count INT,\ntotal_fix_intensity FLOAT)"
+      "ddl": " CREATE TABLE IF NOT EXISTS total_fix_intensity (\nid INT PRIMARY KEY AUTO_INCREMENT,\nowner VARCHAR(100),\nauthor_email VARCHAR(100),\ncommit_count INT,\ntotal_fix_intensity FLOAT)"
     },
     {
       "table_name": "repo_code_metric",
