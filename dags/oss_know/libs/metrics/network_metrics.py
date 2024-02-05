@@ -34,6 +34,7 @@ u2u_types = {
     'reviewed': True,
     'line-commented': True,
     'commit-commented': True,
+    'merged': True,
 }
 
 
@@ -95,12 +96,15 @@ def extract_graph_from_ck(ck_client, owner, repo):
 
         pr_num, event_type, timeline = result[0], result[1], json.loads(result[2])
         # TODO Is it better to parse data with dateutil for robustness?
-        try:
+
+        dt_str = ''
+        if event_type != 'line-commented' and event_type != 'commit-commented':
             date_key = 'submitted_at' if event_type == 'reviewed' else 'created_at'
-            created_at = timeline[date_key].replace('T', ' ').replace('Z', '')
-        except KeyError as e:
-            print(e)
-        dt_str = created_at[:4] + created_at[5:7] + created_at[8:10]
+            try:
+                created_at = timeline[date_key].replace('T', ' ').replace('Z', '')
+                dt_str = created_at[:4] + created_at[5:7] + created_at[8:10]
+            except KeyError as e:
+                print(e)
         if event_type == 'mentioned':
             if not timeline.get('actor'):
                 continue
@@ -152,10 +156,7 @@ def extract_graph_from_ck(ck_client, owner, repo):
                 user_list.append(['u' + str(commenter_id), commenter_login, commenter_id])
             properties_dict[commenter_id][author_id]['dt'].append(dt_str)
             properties_dict[commenter_id][author_id]['event_types'].append('commented')
-            try:
-                properties_dict[commenter_id][author_id]['pr_numbers'].append(pr_num)
-            except KeyError as e:
-                print(e)
+            properties_dict[commenter_id][author_id]['pr_numbers'].append(pr_num)
             properties_dict[commenter_id][author_id]['html_urls'].append(timeline['html_url'])
             properties_dict[commenter_id][author_id]['weight'] += 1
         elif event_type == 'assigned':
@@ -191,11 +192,9 @@ def extract_graph_from_ck(ck_client, owner, repo):
             if 'user' not in timeline or not timeline.get('user'):
                 logger.warning(f'Skip the reviewed event since reviewer info is empty, {timeline}')
                 continue
-            try:
-                reviewer_id = timeline['user']['id']
-                reviewer_login = timeline['user']['login']
-            except (TypeError, KeyError) as e:
-                print(e)
+
+            reviewer_id = timeline['user']['id']
+            reviewer_login = timeline['user']['login']
 
             if properties_dict[reviewer_id].get(author_id) is None:
                 properties_dict[reviewer_id][author_id] = dict()
@@ -245,6 +244,30 @@ def extract_graph_from_ck(ck_client, owner, repo):
                 properties_dict[commenter_id][author_id]['pr_numbers'].append(pr_num)
                 properties_dict[commenter_id][author_id]['html_urls'].append(comment['html_url'])
                 properties_dict[commenter_id][author_id]['weight'] += 1
+        elif event_type == 'merged':
+            author_id = pr2author[pr_num]['id']
+            author_login = pr2author[pr_num]['login']
+
+            merger_id = timeline['actor']['id']
+            merger_login = timeline['actor']['login']
+            if properties_dict[merger_id].get(author_id) is None:
+                properties_dict[merger_id][author_id] = dict()
+                properties_dict[merger_id][author_id]['from_developer_id'] = merger_id
+                properties_dict[merger_id][author_id]['from_developer_login'] = merger_login
+                properties_dict[merger_id][author_id]['to_developer_id'] = author_id
+                properties_dict[merger_id][author_id]['to_developer_login'] = author_login
+                properties_dict[merger_id][author_id]['dt'] = list()
+                properties_dict[merger_id][author_id]['event_types'] = list()
+                properties_dict[merger_id][author_id]['pr_numbers'] = list()
+                properties_dict[merger_id][author_id]['html_urls'] = list()
+                properties_dict[merger_id][author_id]['weight'] = 0
+
+            properties_dict[merger_id][author_id]['dt'].append(dt_str)
+            properties_dict[merger_id][author_id]['event_types'].append('merged')
+            properties_dict[merger_id][author_id]['pr_numbers'].append(pr_num)
+            properties_dict[merger_id][author_id]['html_urls'].append(
+                f'https://github.com/{owner}/{repo}/pull/{pr_num}')
+            properties_dict[merger_id][author_id]['weight'] += 1
 
     # Finally the properties_dict is in the format:
     # {
