@@ -54,7 +54,7 @@ class PrivilegeEventsMetricRoutineCalculation(MetricRoutineCalculation):
             privilege_map[dev_name][index] = 1
 
         for dev, events in privilege_map.items():
-            row = [dev]
+            row = [self.owner, self.repo, dev]
             row.extend(events)
             response.append(row)
 
@@ -65,13 +65,10 @@ class PrivilegeEventsMetricRoutineCalculation(MetricRoutineCalculation):
         logger.info(f'Saving Privilege Events Metrics of {self.owner}/{self.repo}')
         # TODO The string literal can be stored as static class property
         privilege_events_insert_query = f'''
-            INSERT INTO {self.table_name} (actor_login, added_to_project, converted_note_to_issue,
-                                  deployed, deployment_environment_changed,
-                                  locked, merged, moved_columns_in_project,
-                                  pinned, removed_from_project,
-                                  review_dismissed, transferred,
-                                  unlocked, unpinned, user_blocked)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s)'''
+            INSERT INTO {self.table_name} (search_key__owner, search_key__repo, actor_login, added_to_project, 
+            converted_note_to_issue, deployed, deployment_environment_changed, locked, merged, moved_columns_in_project,
+            pinned, removed_from_project, review_dismissed, transferred, unlocked, unpinned, user_blocked)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s)'''
         self.batch_insertion(insert_query=privilege_events_insert_query, batch=self.batch)
 
 

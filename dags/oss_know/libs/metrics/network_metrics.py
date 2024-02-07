@@ -9,10 +9,38 @@ import networkx as nx
 from oss_know.libs.metrics.influence_metrics import MetricRoutineCalculation
 from oss_know.libs.util.log import logger
 
+# TODO Possible social event types to handle:
+# merged, reviewed, line-commented, commit-commented
+
+# merged: might be done by bots, need to be filtered
+
+# reviewed: the review comments on code, not the PR itself, strong social connection, from reviewer to pr creator
+#   example: https://github.com/rust-lang/rust/pull/35704#pullrequestreview-1636209
+
+# line-commented: the review comments on specific lines of code, according to the latest API ref @:
+# https://docs.github.com/en/rest/using-the-rest-api/issue-event-types, it seems like line-commented is no longer used,
+# from a long-run project(rust), the latest line-commented event was created around 2016-9, GUESS that it's equivalent
+# to event 'reviewed'.
+#   example: https://github.com/rust-lang/cargo/pull/22#discussion_r13982625
+
+# commit-commented: the reviewer comments on a specific commit, strong social connection, the granularity is larger than
+# reviewed and line-commented.
+#   example: https://github.com/rust-lang/rust/commit/7c3038f82477491e20c6f80c0139ddb1f1b912ca#commitcomment-69276051
+
+u2u_types = {
+    'commented': True,
+    'mentioned': True,
+    'assigned': True,
+    'reviewed': True,
+    'line-commented': True,
+    'commit-commented': True,
+    'merged': True,
+}
+
 
 def extract_graph_from_ck(ck_client, owner, repo):
     properties_dict = defaultdict(dict)
-    u2u_types = ['commented', 'mentioned', 'assigned', 'unassigned']
+
     user_set = set()
     curtime = datetime.datetime.now()
     sql = f'''
@@ -24,6 +52,7 @@ def extract_graph_from_ck(ck_client, owner, repo):
                                           AND search_key__repo = '{repo}')
       AND search_key__owner = '{owner}'
       AND search_key__repo = '{repo}'
+      AND search_key__event in {list(u2u_types.keys())}
     '''
     timeline_results, user_list = [], []
     timeline_results = ck_client.execute_no_params(sql)
@@ -42,15 +71,19 @@ def extract_graph_from_ck(ck_client, owner, repo):
 
     count = 0
     sql_pr = f'''
-    SELECT user__id AS id, number
+    SELECT user__id AS id, user__login as login, number
     FROM github_pull_requests
     WHERE search_key__owner = '{owner}'
       AND search_key__repo = '{repo}'
     '''
     pr_list = ck_client.execute_no_params(sql_pr)
     pr2author = dict()
-    for [uid, number] in pr_list:
-        pr2author[number] = uid
+    for [uid, ulogin, number] in pr_list:
+        # pr2author[number] = uid
+        pr2author[number] = {
+            'id': uid,
+            'login': ulogin,
+        }
     if not timeline_results:
         return []
     for result in timeline_results:
@@ -62,61 +95,227 @@ def extract_graph_from_ck(ck_client, owner, repo):
         count += 1
 
         pr_num, event_type, timeline = result[0], result[1], json.loads(result[2])
-        created_at = timeline['created_at'].replace('T', ' ').replace('Z', '')
-        dt_str = created_at[:4] + created_at[5:7] + created_at[8:10]
+        # TODO Is it better to parse data with dateutil for robustness?
+
+        dt_str = ''
+        if event_type != 'line-commented' and event_type != 'commit-commented':
+            date_key = 'submitted_at' if event_type == 'reviewed' else 'created_at'
+            try:
+                created_at = timeline[date_key].replace('T', ' ').replace('Z', '')
+                dt_str = created_at[:4] + created_at[5:7] + created_at[8:10]
+            except KeyError as e:
+                print(e)
         if event_type == 'mentioned':
-            if not timeline['actor']:
+            if not timeline.get('actor'):
                 continue
-            mentionee = timeline['actor']['id']
+            mentionee_id = timeline['actor']['id']
+            mentionee_login = timeline['actor']['login']
             if not mentioners.get(f'{pr_num}_{created_at}'):
                 continue
             mentioner, mlogin = mentioners[f'{pr_num}_{created_at}']
-            if properties_dict[mentioner].get(mentionee) is None:
-                properties_dict[mentioner][mentionee] = dict()
-                properties_dict[mentioner][mentionee]['dt'] = list()
-                properties_dict[mentioner][mentionee]['weight'] = 0
+            if properties_dict[mentioner].get(mentionee_id) is None:
+                properties_dict[mentioner][mentionee_id] = dict()
+                properties_dict[mentioner][mentionee_id]['from_developer_id'] = mentioner
+                properties_dict[mentioner][mentionee_id]['from_developer_login'] = mlogin
+                properties_dict[mentioner][mentionee_id]['to_developer_id'] = mentionee_id
+                properties_dict[mentioner][mentionee_id]['to_developer_login'] = mentionee_login
+                properties_dict[mentioner][mentionee_id]['dt'] = list()
+                properties_dict[mentioner][mentionee_id]['event_types'] = list()
+                properties_dict[mentioner][mentionee_id]['pr_numbers'] = list()
+                properties_dict[mentioner][mentionee_id]['html_urls'] = list()
+                properties_dict[mentioner][mentionee_id]['weight'] = 0
             if mentioner not in user_set:
                 user_set.add(mentioner)
                 user_list.append(['u' + str(mentioner), mlogin, mentioner])
-            properties_dict[mentioner][mentionee]['dt'].append(dt_str)
-            properties_dict[mentioner][mentionee]['weight'] += 1
-        if event_type == 'commented':
+            properties_dict[mentioner][mentionee_id]['dt'].append(dt_str)
+            properties_dict[mentioner][mentionee_id]['event_types'].append('mentioned')
+            properties_dict[mentioner][mentionee_id]['pr_numbers'].append(pr_num)
+            properties_dict[mentioner][mentionee_id]['html_urls'].append('')
+
+            properties_dict[mentioner][mentionee_id]['weight'] += 1
+        elif event_type == 'commented':
             if not pr2author.get(pr_num):
                 continue
-            author = pr2author[pr_num]
-            commenter = timeline['user']['id']
-            clogin = timeline['user']['login']
-            if properties_dict[commenter].get(author) is None:
-                properties_dict[commenter][author] = dict()
-                properties_dict[commenter][author]['dt'] = list()
-                properties_dict[commenter][author]['weight'] = 0
-            if commenter not in user_set:
-                user_set.add(commenter)
-                user_list.append(['u' + str(commenter), clogin, commenter])
-            properties_dict[commenter][author]['dt'].append(dt_str)
-            properties_dict[commenter][author]['weight'] += 1
-        else:
+            author_id = pr2author[pr_num]['id']
+            author_login = pr2author[pr_num]['login']
+            commenter_id = timeline['user']['id']
+            commenter_login = timeline['user']['login']
+            if not properties_dict[commenter_id].get(author_id):
+                properties_dict[commenter_id][author_id] = dict()
+                properties_dict[commenter_id][author_id]['from_developer_id'] = commenter_id
+                properties_dict[commenter_id][author_id]['from_developer_login'] = commenter_login
+                properties_dict[commenter_id][author_id]['to_developer_id'] = author_id
+                properties_dict[commenter_id][author_id]['to_developer_login'] = author_login
+                properties_dict[commenter_id][author_id]['dt'] = list()
+                properties_dict[commenter_id][author_id]['event_types'] = list()
+                properties_dict[commenter_id][author_id]['pr_numbers'] = list()
+                properties_dict[commenter_id][author_id]['html_urls'] = list()
+                properties_dict[commenter_id][author_id]['weight'] = 0
+            if commenter_id not in user_set:
+                user_set.add(commenter_id)
+                user_list.append(['u' + str(commenter_id), commenter_login, commenter_id])
+            properties_dict[commenter_id][author_id]['dt'].append(dt_str)
+            properties_dict[commenter_id][author_id]['event_types'].append('commented')
+            properties_dict[commenter_id][author_id]['pr_numbers'].append(pr_num)
+            properties_dict[commenter_id][author_id]['html_urls'].append(timeline['html_url'])
+            properties_dict[commenter_id][author_id]['weight'] += 1
+        elif event_type == 'assigned':
             if timeline.get('assignee') is None:
                 continue
-            assigner = timeline['actor']['id']
-            assignee = timeline['assignee']['id']
-            alogin = timeline['assignee']['login']
-            if properties_dict[assigner].get(assignee) is None:
-                properties_dict[assigner][assignee] = dict()
-                properties_dict[assigner][assignee]['dt'] = list()
-                properties_dict[assigner][assignee]['weight'] = 0
-            if assignee not in user_set:
-                user_set.add(assignee)
-                user_list.append(['u' + str(assignee), alogin, assignee])
-            properties_dict[assigner][assignee]['dt'].append(dt_str)
-            properties_dict[assigner][assignee]['weight'] += 1
+            assigner_id = timeline['actor']['id']
+            assigner_login = timeline['actor']['login']
+            assignee_id = timeline['assignee']['id']
+            assignee_login = timeline['assignee']['login']
+            if properties_dict[assigner_id].get(assignee_id) is None:
+                properties_dict[assigner_id][assignee_id] = dict()
+                properties_dict[assigner_id][assignee_id]['from_developer_id'] = assigner_id
+                properties_dict[assigner_id][assignee_id]['from_developer_login'] = assigner_login
+                properties_dict[assigner_id][assignee_id]['to_developer_id'] = assignee_id
+                properties_dict[assigner_id][assignee_id]['to_developer_login'] = assignee_login
+                properties_dict[assigner_id][assignee_id]['dt'] = list()
+                properties_dict[assigner_id][assignee_id]['event_types'] = list()
+                properties_dict[assigner_id][assignee_id]['pr_numbers'] = list()
+                properties_dict[assigner_id][assignee_id]['html_urls'] = list()
+                properties_dict[assigner_id][assignee_id]['weight'] = 0
+            if assignee_id not in user_set:
+                user_set.add(assignee_id)
+                user_list.append(['u' + str(assignee_id), assignee_login, assignee_id])
+            properties_dict[assigner_id][assignee_id]['dt'].append(dt_str)
+            properties_dict[assigner_id][assignee_id]['event_types'].append('assign')
+            properties_dict[assigner_id][assignee_id]['pr_numbers'].append(pr_num)
+            properties_dict[assigner_id][assignee_id]['html_urls'].append('')
+            properties_dict[assigner_id][assignee_id]['weight'] += 1
+        # reviewed, line-commented, commit-commented
+        elif event_type == 'reviewed':
+            author_id = pr2author[pr_num]['id']
+            author_login = pr2author[pr_num]['login']
+            if 'user' not in timeline or not timeline.get('user'):
+                logger.warning(f'Skip the reviewed event since reviewer info is empty, {timeline}')
+                continue
 
+            reviewer_id = timeline['user']['id']
+            reviewer_login = timeline['user']['login']
+
+            if properties_dict[reviewer_id].get(author_id) is None:
+                properties_dict[reviewer_id][author_id] = dict()
+                properties_dict[reviewer_id][author_id]['from_developer_id'] = reviewer_id
+                properties_dict[reviewer_id][author_id]['from_developer_login'] = reviewer_login
+                properties_dict[reviewer_id][author_id]['to_developer_id'] = author_id
+                properties_dict[reviewer_id][author_id]['to_developer_login'] = author_login
+                properties_dict[reviewer_id][author_id]['dt'] = list()
+                properties_dict[reviewer_id][author_id]['event_types'] = list()
+                properties_dict[reviewer_id][author_id]['pr_numbers'] = list()
+                properties_dict[reviewer_id][author_id]['html_urls'] = list()
+                properties_dict[reviewer_id][author_id]['weight'] = 0
+
+            properties_dict[reviewer_id][author_id]['dt'].append(dt_str)
+            properties_dict[reviewer_id][author_id]['event_types'].append('reviewed')
+            properties_dict[reviewer_id][author_id]['pr_numbers'].append(pr_num)
+            properties_dict[reviewer_id][author_id]['html_urls'].append(timeline['html_url'])
+            properties_dict[reviewer_id][author_id]['weight'] += 1
+
+        elif event_type == 'commit-commented' or event_type == 'line-commented':
+            author_id = pr2author[pr_num]['id']
+            author_login = pr2author[pr_num]['login']
+            for comment in timeline['comments']:
+                if 'user' not in comment or not comment.get('user'):
+                    logger.warning(f'Skip the reviewed event since reviewer info is empty, {timeline}')
+                    continue
+
+                commenter = comment['user']
+                commenter_id = commenter['id']
+                commenter_login = commenter['login']
+                created_at = comment['created_at'].replace('T', ' ').replace('Z', '')
+                dt_str = created_at[:4] + created_at[5:7] + created_at[8:10]
+                if properties_dict[commenter_id].get(author_id) is None:
+                    properties_dict[commenter_id][author_id] = dict()
+                    properties_dict[commenter_id][author_id]['from_developer_id'] = commenter_id
+                    properties_dict[commenter_id][author_id]['from_developer_login'] = commenter_login
+                    properties_dict[commenter_id][author_id]['to_developer_id'] = author_id
+                    properties_dict[commenter_id][author_id]['to_developer_login'] = author_login
+                    properties_dict[commenter_id][author_id]['dt'] = list()
+                    properties_dict[commenter_id][author_id]['event_types'] = list()
+                    properties_dict[commenter_id][author_id]['pr_numbers'] = list()
+                    properties_dict[commenter_id][author_id]['html_urls'] = list()
+                    properties_dict[commenter_id][author_id]['weight'] = 0
+
+                properties_dict[commenter_id][author_id]['dt'].append(dt_str)
+                properties_dict[commenter_id][author_id]['event_types'].append(event_type)
+                properties_dict[commenter_id][author_id]['pr_numbers'].append(pr_num)
+                properties_dict[commenter_id][author_id]['html_urls'].append(comment['html_url'])
+                properties_dict[commenter_id][author_id]['weight'] += 1
+        elif event_type == 'merged':
+            author_id = pr2author[pr_num]['id']
+            author_login = pr2author[pr_num]['login']
+
+            merger_id = timeline['actor']['id']
+            merger_login = timeline['actor']['login']
+            if properties_dict[merger_id].get(author_id) is None:
+                properties_dict[merger_id][author_id] = dict()
+                properties_dict[merger_id][author_id]['from_developer_id'] = merger_id
+                properties_dict[merger_id][author_id]['from_developer_login'] = merger_login
+                properties_dict[merger_id][author_id]['to_developer_id'] = author_id
+                properties_dict[merger_id][author_id]['to_developer_login'] = author_login
+                properties_dict[merger_id][author_id]['dt'] = list()
+                properties_dict[merger_id][author_id]['event_types'] = list()
+                properties_dict[merger_id][author_id]['pr_numbers'] = list()
+                properties_dict[merger_id][author_id]['html_urls'] = list()
+                properties_dict[merger_id][author_id]['weight'] = 0
+
+            properties_dict[merger_id][author_id]['dt'].append(dt_str)
+            properties_dict[merger_id][author_id]['event_types'].append('merged')
+            properties_dict[merger_id][author_id]['pr_numbers'].append(pr_num)
+            properties_dict[merger_id][author_id]['html_urls'].append(
+                f'https://github.com/{owner}/{repo}/pull/{pr_num}')
+            properties_dict[merger_id][author_id]['weight'] += 1
+
+    # Finally the properties_dict is in the format:
+    # {
+    # 	"FROM_ID": {
+    # 		"TO_ID": {
+    # 			"dt": [date1, date2, ...],
+    # 			"event_typs": [type1, type2, ...],
+    # 			"weight": len(dt_array)
+    # 		}
+    # 	}
+    # }
+
+    # TODO Returning a large list might not be the best option
+    #  Currently the POSSIBLY large list is then passed to networkx for graph calculation.
+    #  It's better to calculate & save the relations list into a graph db, and then calculate the network metrics.
     relations_list = []
-    for a, v in properties_dict.items():
-        for b, p_dict in v.items():
-            for j in range(len(p_dict['dt'])):
-                relations_list.append(
-                    ['u' + str(a), 'u' + str(b), j, p_dict['dt'][j]])
+    pr_social_events_batch = []
+    pr_social_events_batch_size = 10000
+    for from_developer_id, v in properties_dict.items():
+        for to_developer_id, p_dict in v.items():
+            # for j in range(len(p_dict['dt'])):
+            for j, dt in enumerate(p_dict['dt']):
+                relations_list.append(['u' + str(from_developer_id), 'u' + str(to_developer_id), j, dt])
+                try:
+                    pr_social_events_batch.append({
+                        'owner': owner,
+                        'repo': repo,
+                        'from_id': from_developer_id,
+                        'from_login': p_dict['from_developer_login'],
+                        'to_id': to_developer_id,
+                        'to_login': p_dict['to_developer_login'],
+                        'event_type': p_dict['event_types'][j],
+                        'event_date': datetime.datetime.strptime(dt, '%Y%m%d'),
+                        'content': '',
+                        'misc': '',
+                        'pr_number': p_dict['pr_numbers'][j],
+                        'html_url': p_dict['html_urls'][j],
+                    })
+                except ValueError as e:
+                    print(e)
+                # TODO This is definitely a nasty approach, need changes here!!!
+                if len(pr_social_events_batch) >= pr_social_events_batch_size:
+                    ck_client.execute('insert into table pr_social_events values', pr_social_events_batch)
+                    pr_social_events_batch = []
+    # TODO user_set, user_list are not actually used, remove if not necessary
+    #  Store the node-edge-node relations to database
+    if pr_social_events_batch:
+        ck_client.execute('insert into table pr_social_events values', pr_social_events_batch)
     return relations_list
 
 

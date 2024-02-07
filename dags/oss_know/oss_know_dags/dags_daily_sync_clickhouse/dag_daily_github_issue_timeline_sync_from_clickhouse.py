@@ -21,8 +21,8 @@ sync_combination_type = Variable.get(CLICKHOUSE_SYNC_COMBINATION_TYPE, default_v
 with DAG(dag_id='daily_github_issues_timeline_sync_from_clickhouse',  # schedule_interval='*/5 * * * *',
          schedule_interval=sync_interval, start_date=datetime(2021, 1, 1), catchup=False,
          tags=['github', 'daily sync clickhouse'], ) as dag:
-    all_owner_repos = Variable.get(DAILY_SYNC_CLICKHOUSE_GITHUB_ISSUES_INCLUDES, deserialize_json=True,
-                                   default_var=None)
+    all_owner_repos = Variable.get(DAILY_SYNC_CLICKHOUSE_GITHUB_ISSUES_INCLUDES,
+                                   deserialize_json=True, default_var=None)
     if not all_owner_repos:
         all_owner_repos = combine_remote_owner_repos(clickhouse_conn_info, sync_from_clickhouse_conn_info,
                                                      "github_issues_timeline",
