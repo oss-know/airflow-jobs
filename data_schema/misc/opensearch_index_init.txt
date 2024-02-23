@@ -17,6 +17,7 @@ PUT github_pull_requests
 PUT github_issues_comments
 PUT github_issues_timeline
 PUT github_profile
+PUT github_releases
 PUT check_sync_data
 #--------------------------------------------------------------------
 
