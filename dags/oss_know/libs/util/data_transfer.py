@@ -10,8 +10,9 @@ import pandas as pd
 from dateutil.parser import parse
 from opensearchpy import helpers
 
-from oss_know.libs.base_dict.clickhouse import GITHUB_ISSUES_TIMELINE_TEMPLATE, CLICKHOUSE_RAW_DATA
-from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE
+from oss_know.libs.base_dict.clickhouse import CLICKHOUSE_RAW_DATA
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE, \
+    OPENSEARCH_INDEX_GITHUB_RELEASES
 from oss_know.libs.util.base import get_opensearch_client, now_timestamp
 from oss_know.libs.util.clickhouse_driver import CKServer
 from oss_know.libs.util.log import logger
@@ -195,6 +196,76 @@ def get_opensearch_query_body(query_type, owner_or_project_name, repo_or_mail_li
     return query_body
 
 
+def timeline_doc_to_ck_row(timeline_doc, ck_data_insert_at):
+    row = {
+        'search_key__owner': timeline_doc["_source"]["search_key"]['owner'],
+        'search_key__repo': timeline_doc["_source"]["search_key"]['repo'],
+        'search_key__number': timeline_doc["_source"]["search_key"]['number'],
+        'search_key__event': timeline_doc["_source"]["search_key"]['event'],
+        'search_key__updated_at': timeline_doc["_source"]["search_key"]['updated_at'],
+        'ck_data_insert_at': ck_data_insert_at
+    }
+    raw_data = timeline_doc["_source"]["raw_data"]
+    standard_data = json.dumps(raw_data, separators=(',', ':'), ensure_ascii=False)
+    row['timeline_raw'] = standard_data
+    attach_timeline_raw_data_keys(row, raw_data)
+
+    return row
+
+
+def release_doc_to_ck_row(release_doc, ck_data_insert_at):
+    row = {
+        'search_key__owner': release_doc["_source"]["search_key"]['owner'],
+        'search_key__repo': release_doc["_source"]["search_key"]['repo'],
+        'search_key__updated_at': release_doc["_source"]["search_key"]['updated_at'],
+        'ck_data_insert_at': ck_data_insert_at
+    }
+
+    raw_data = release_doc["_source"]["raw_data"]
+    row['html_url'] = raw_data["html_url"]
+    row['id'] = raw_data["id"]
+    row["tag_name"] = raw_data["tag_name"]
+    row["target_commitish"] = raw_data["target_commitish"]
+    row["name"] = raw_data["name"]
+    row["draft"] = raw_data["draft"]
+
+    row["prerelease"] = raw_data["prerelease"]
+    row["created_at"] = parse(raw_data["created_at"])
+    row["published_at"] = parse(raw_data["published_at"])
+    row["body"] = raw_data["body"]
+
+    author_data = raw_data["author"]
+    row["author__id"] = author_data["id"]
+    row["author__login"] = author_data["login"]
+    row["author__type"] = author_data["type"]
+
+    # reactions are stored as:
+    # {
+    #     "url": "",
+    #     "+1": 2,
+    #     "-1": 3,
+    #     ...
+    # }
+    row["reactions_url"] = ""
+    row["reactions_counts"] = {}
+
+    if 'reactions' in raw_data:
+        reactions_data = raw_data["reactions"]
+        row["reactions_url"] = reactions_data["url"]
+
+        for reaction_type, count in reactions_data.items():
+            if reaction_type != "url" and type(count) is int:
+                row["reactions_counts"][reaction_type] = count
+
+    return row
+
+
+row_handlers = {
+    OPENSEARCH_INDEX_GITHUB_RELEASES: release_doc_to_ck_row,
+    OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE: timeline_doc_to_ck_row,
+}
+
+
 def opensearch_to_clickhouse(os_client, index_name, query_body, ck_client, table_template, table_name):
     os_result = helpers.scan(os_client, index=index_name, query=query_body, size=5000, scroll="20m",
                              request_timeout=120, preserve_order=True)
@@ -209,8 +280,8 @@ def opensearch_to_clickhouse(os_client, index_name, query_body, ck_client, table
     fields = get_table_structure(table_name=table_name, ck=ck_client)
     ck_data_insert_at = now_timestamp()
     for os_data in os_result:
-        row = timeline_doc_to_ck_row(os_data, ck_data_insert_at) \
-            if index_name == OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE \
+        row = row_handlers[index_name](os_data, ck_data_insert_at) \
+            if index_name in row_handlers \
             else os_doc_to_ck_row(os_data, table_template, fields)
         bulk_data.append(row)
 
@@ -257,6 +328,10 @@ def os_doc_to_ck_row(os_doc, table_template, fields):
                 row[field].encode('utf-8')
             except UnicodeEncodeError:
                 row[field] = row[field].encode('unicode-escape').decode('utf-8')
+            except AttributeError as e:
+                print(e)
+            except KeyError as e:
+                print(e)
 
     return row
 
@@ -288,22 +363,6 @@ def attach_timeline_raw_data_keys(data_to_insert, timeline_raw_dict):
             if key == 'id' or key == 'source_issue_number' or key == 'actor_id':
                 default_val = 0
             data_to_insert[key] = timeline_raw_dict.get(key, default_val) or default_val
-
-
-def timeline_doc_to_ck_row(timeline_doc, ck_data_insert_at):
-    row = copy.deepcopy(GITHUB_ISSUES_TIMELINE_TEMPLATE)
-    row['search_key__owner'] = timeline_doc["_source"]["search_key"]['owner']
-    row['search_key__repo'] = timeline_doc["_source"]["search_key"]['repo']
-    row['search_key__number'] = timeline_doc["_source"]["search_key"]['number']
-    row['search_key__event'] = timeline_doc["_source"]["search_key"]['event']
-    row['search_key__updated_at'] = timeline_doc["_source"]["search_key"]['updated_at']
-    row['ck_data_insert_at'] = ck_data_insert_at
-    raw_data = timeline_doc["_source"]["raw_data"]
-    standard_data = json.dumps(raw_data, separators=(',', ':'), ensure_ascii=False)
-    row['timeline_raw'] = standard_data
-    attach_timeline_raw_data_keys(row, raw_data)
-
-    return row
 
 
 def try_parsing_date(text):

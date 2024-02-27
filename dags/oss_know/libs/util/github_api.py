@@ -128,3 +128,17 @@ class GithubAPI:
         except GithubInternalServerError as gise:
             logger.warning(f'Failed to get pull request {url}, the Github Internal Server Error: {gise}')
         return res
+
+    def get_github_releases(self, http_session, token_proxy_accommodator, owner, repo, page, since=None):
+        url = f"https://api.github.com/repos/{owner}/{repo}/releases"
+        headers = copy.deepcopy(self.github_headers)
+        params = {'per_page': 100, 'page': page}
+        res = EmptyObjectResponse()
+
+        try:
+            res = do_get_github_result(http_session, url, headers, params, token_proxy_accommodator)
+        except GithubResourceNotFoundError as e:
+            logger.warning(f'Failed to get releases {url}, the resource does not exist: {e}')
+        except GithubInternalServerError as gise:
+            logger.warning(f'Failed to get releases {url}, the Github Internal Server Error: {gise}')
+        return res

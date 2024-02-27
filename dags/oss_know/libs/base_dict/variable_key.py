@@ -33,6 +33,8 @@ NEED_SYNC_GITHUB_PROFILES_REPOS = "need_sync_github_profiles_repos"
 NEED_SYNC_GITHUB_ISSUES_REPOS = "need_sync_github_issues_repos"
 NEED_SYNC_GITHUB_PULL_REQUESTS_REPOS = "need_sync_github_pull_requests_repos"
 NEED_SYNC_GITHUB_COMMITS_REPOS = "need_sync_github_commits_repos"
+SYNC_GITHUB_RELEASE_REPOS = "sync_github_release_repos"
+
 DURATION_OF_SYNC_GITHUB_PROFILES = "duration_of_sync_github_profiles"
 SYNC_PROFILES_TASK_NUM = "sync_profiles_task_num"
 
