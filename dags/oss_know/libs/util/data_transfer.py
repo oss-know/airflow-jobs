@@ -11,7 +11,8 @@ from dateutil.parser import parse
 from opensearchpy import helpers
 
 from oss_know.libs.base_dict.clickhouse import CLICKHOUSE_RAW_DATA
-from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE, OPENSEARCH_INDEX_RELEASES
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE, \
+    OPENSEARCH_INDEX_GITHUB_RELEASES
 from oss_know.libs.util.base import get_opensearch_client, now_timestamp
 from oss_know.libs.util.clickhouse_driver import CKServer
 from oss_know.libs.util.log import logger
@@ -260,7 +261,7 @@ def release_doc_to_ck_row(release_doc, ck_data_insert_at):
 
 
 row_handlers = {
-    OPENSEARCH_INDEX_RELEASES: release_doc_to_ck_row,
+    OPENSEARCH_INDEX_GITHUB_RELEASES: release_doc_to_ck_row,
     OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE: timeline_doc_to_ck_row,
 }
 

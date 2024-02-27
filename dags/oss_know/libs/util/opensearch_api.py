@@ -19,7 +19,7 @@ from tenacity import *
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_INDEX_GITHUB_COMMITS, OPENSEARCH_INDEX_GITHUB_ISSUES, \
     OPENSEARCH_INDEX_GITHUB_ISSUES_TIMELINE, OPENSEARCH_INDEX_GITHUB_ISSUES_COMMENTS, \
     OPENSEARCH_INDEX_CHECK_SYNC_DATA, OPENSEARCH_INDEX_GITHUB_PROFILE, OPENSEARCH_INDEX_GITHUB_PULL_REQUESTS, \
-    OPENSEARCH_GIT_RAW, OPENSEARCH_INDEX_RELEASES
+    OPENSEARCH_GIT_RAW, OPENSEARCH_INDEX_GITHUB_RELEASES
 from oss_know.libs.util.airflow import get_postgres_conn
 from oss_know.libs.util.base import infer_country_company_geo_insert_into_profile, inferrers, now_timestamp
 from oss_know.libs.util.github_api import GithubAPI
@@ -138,7 +138,7 @@ class OpensearchAPI:
 
     def bulk_github_releases(self, opensearch_client, github_releases, owner, repo):
         template = {
-            "_index": OPENSEARCH_INDEX_RELEASES,
+            "_index": OPENSEARCH_INDEX_GITHUB_RELEASES,
             "_source": {
                 "search_key": {
                     "owner": owner,
