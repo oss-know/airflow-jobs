@@ -105,6 +105,22 @@ class EmptyObjectResponse:
         return {}
 
 
+def loop_token_proxy(req_session,url, accommodator: GithubTokenProxyAccommodator):
+    github_token, proxy_url = accommodator.next()
+    logger.debug(f'GitHub request {url} with token {github_token}')
+    req_session.headers.update({'Authorization': 'token %s' % github_token})
+
+    url_scheme, proxy_scheme = urlparse(url), urlparse(proxy_url)
+    if not proxy_scheme or not url_scheme:
+        logger.error(f'At least one scheme not found in urls: {url}, {proxy_url}')
+    # This elif branch is commented because http(s) proxy and request scheme don't have to be the same
+    # elif url_scheme != proxy_scheme:
+    #     logger.warning(f'URL scheme {url_scheme} does not match proxy scheme{proxy_scheme}, skipping')
+    else:
+        req_session.proxies[url_scheme] = proxy_url
+        logger.debug(f'Request url {url} with proxy {proxy_url}')
+
+
 # # retry 防止SSL解密错误，请正确处理是否忽略证书有效性
 @retry(stop=stop_after_attempt(10),
        wait=wait_fixed(1),
@@ -120,19 +136,7 @@ class EmptyObjectResponse:
               retry_if_exception_type(HttpGetException) |
               retry_if_exception_type(GithubInternalServerError)))
 def do_get_github_result(req_session, url, headers, params, accommodator: GithubTokenProxyAccommodator):
-    github_token, proxy_url = accommodator.next()
-    logger.debug(f'GitHub request {url} with token {github_token}')
-    req_session.headers.update({'Authorization': 'token %s' % github_token})
-
-    url_scheme, proxy_scheme = urlparse(url), urlparse(proxy_url)
-    if not proxy_scheme or not url_scheme:
-        logger.error(f'At least one scheme not found in urls: {url}, {proxy_url}')
-    # This elif branch is commented because http(s) proxy and request scheme don't have to be the same
-    # elif url_scheme != proxy_scheme:
-    #     logger.warning(f'URL scheme {url_scheme} does not match proxy scheme{proxy_scheme}, skipping')
-    else:
-        req_session.proxies[url_scheme] = proxy_url
-        logger.debug(f'Request url {url} with proxy {proxy_url}')
+    loop_token_proxy(req_session, url, accommodator)
 
     res = req_session.get(url, headers=headers, params=params, verify=False)
     if res.status_code >= 300:
