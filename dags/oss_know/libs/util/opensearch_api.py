@@ -162,6 +162,38 @@ class OpensearchAPI:
 
         return success, failed
 
+    def bulk_graphql_github_issues_and_timeline(self, opensearch_client, bulk_data, owner, repo, api_type):
+        success, failed = self.do_opensearch_bulk(opensearch_client, bulk_data, owner, repo)
+        logger.info(f"now page:{len(bulk_data)} sync {api_type} success:{success} & failed:{failed}")
+
+    def bulk_github_languages_tags_releases(self, opensearch_client, datas, owner, repo, api_type):
+        bulk_data = []
+
+        def parse_data(data):
+            template = {
+                "_index": api_type,
+                "_source": {
+                    "search_key": {
+                        "owner": owner, "repo": repo,
+                        'updated_at': now_timestamp()
+                    },
+                    "raw_data": None
+                }
+            }
+            commit_item = copy.deepcopy(template)
+            commit_item["_source"]["raw_data"] = data
+            bulk_data.append(commit_item)
+            logger.info(f"add sync {api_type}")
+
+        if api_type == 'github_languages':
+            parse_data(datas)
+        else:
+            for data in datas:
+                parse_data(data)
+
+        success, failed = self.do_opensearch_bulk(opensearch_client, bulk_data, owner, repo)
+        logger.info(f"now page:{len(bulk_data)} sync {api_type} success:{success} & failed:{failed}")
+
     def put_profile_into_opensearch(self, github_ids, token_proxy_accommodator, opensearch_client, if_sync,
                                     if_new_person):
         """Put GitHub user profile into opensearch if it is not in opensearch."""
