@@ -4,8 +4,10 @@ from airflow import DAG
 from airflow.models import Variable
 from airflow.operators.python import PythonOperator
 
+from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_GIT_RAW
 from oss_know.libs.base_dict.variable_key import NEED_INIT_GITS, OPENSEARCH_CONN_DATA, \
-    GIT_SAVE_LOCAL_PATH
+    GIT_SAVE_LOCAL_PATH, CK_TABLE_DEFAULT_VAL_TPLT, CLICKHOUSE_DRIVER_INFO
+from oss_know.libs.clickhouse import init_ck_transfer_data
 from oss_know.libs.github.init_gits import init_gits_repo
 from oss_know.libs.util.base import unify_gits_origin
 
@@ -17,8 +19,11 @@ with DAG(
         catchup=False,
         tags=['github'],
 ) as dag:
+    opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
+    clickhouse_server_info = Variable.get(CLICKHOUSE_DRIVER_INFO, deserialize_json=True)
+
+
     def do_init_gits_repo(owner, repo, origin):
-        opensearch_conn_info = Variable.get(OPENSEARCH_CONN_DATA, deserialize_json=True)
         git_save_local_path = Variable.get(GIT_SAVE_LOCAL_PATH, deserialize_json=True)
         init_gits_repo(git_url=origin,
                        owner=owner,
@@ -27,6 +32,20 @@ with DAG(
                        opensearch_conn_datas=opensearch_conn_info,
                        git_save_local_path=git_save_local_path)
         return 'do_init_gits:::end'
+
+
+    def do_ck_transfer(owner, repo):
+        search_key = {"owner": owner, "repo": repo}
+        table_templates = Variable.get(CK_TABLE_DEFAULT_VAL_TPLT, deserialize_json=True)
+
+        template = table_templates.get(OPENSEARCH_GIT_RAW)
+        init_ck_transfer_data.transfer_data_by_repo(
+            clickhouse_server_info=clickhouse_server_info,
+            opensearch_index=OPENSEARCH_GIT_RAW,
+            table_name=OPENSEARCH_GIT_RAW,
+            opensearch_conn_datas=opensearch_conn_info,
+            template=template, owner_repo_or_project_maillist_name=search_key,
+            transfer_type='github_git_init_by_repo')
 
 
     git_info_list = Variable.get(NEED_INIT_GITS, deserialize_json=True)
@@ -43,3 +62,14 @@ with DAG(
                 'origin': unify_gits_origin(url)
             },
         )
+
+        op_transfer_data_to_ck = PythonOperator(
+            task_id=f'do_transfer_data_to_ck_{owner}_{repo}',
+            python_callable=do_ck_transfer,
+            op_kwargs={
+                'owner': owner,
+                'repo': repo,
+            },
+        )
+
+        op_init_gits_repo >> op_transfer_data_to_ck
