@@ -808,57 +808,55 @@ class OpensearchAPI:
         syncer = OpenSearchBatchSyncer(remote_os_client, local_os_client, owner, repo, index=index)
         syncer.start()
 
+    def sync_delete(self, opensearch_client, index, search_body, retries=20, interval=0.5):
+        opensearch_client.delete_by_query(index, search_body)
+        logger.debug(f"Deleting sync with search body: {search_body}")
 
-def sync_delete(self, opensearch_client, index, search_body, retries=20, interval=0.5):
-    opensearch_client.delete_by_query(index, search_body)
-    logger.debug(f"Deleting sync with search body: {search_body}")
+        for i in range(retries):
+            sleep(interval)
+            res = opensearch_client.search(index=index, body=search_body)
+            if res['hits']['total']['value'] == 0:
+                break
 
-    for i in range(retries):
-        sleep(interval)
-        res = opensearch_client.search(index=index, body=search_body)
-        if res['hits']['total']['value'] == 0:
-            break
+        # Get the latest update_timestamp from check_sync_data
 
-    # Get the latest update_timestamp from check_sync_data
-
-
-def get_checkpoint(self, opensearch_client, index_type, owner, repo):
-    query_body = {
-        "size": 1,
-        "query": {
-            "bool": {
-                "must": [
-                    {
-                        "term": {
-                            "search_key.type.keyword": {
-                                "value": index_type
+    def get_checkpoint(self, opensearch_client, index_type, owner, repo):
+        query_body = {
+            "size": 1,
+            "query": {
+                "bool": {
+                    "must": [
+                        {
+                            "term": {
+                                "search_key.type.keyword": {
+                                    "value": index_type
+                                }
+                            }
+                        },
+                        {
+                            "term": {
+                                "search_key.owner.keyword": {
+                                    "value": owner
+                                }
+                            }
+                        },
+                        {
+                            "term": {
+                                "search_key.repo.keyword": {
+                                    "value": repo
+                                }
                             }
                         }
-                    },
-                    {
-                        "term": {
-                            "search_key.owner.keyword": {
-                                "value": owner
-                            }
-                        }
-                    },
-                    {
-                        "term": {
-                            "search_key.repo.keyword": {
-                                "value": repo
-                            }
-                        }
-                    }
-                ]
-            }
-        },
-        "sort": [
-            {
-                "search_key.update_timestamp": {
-                    "order": "desc"
+                    ]
                 }
-            }
-        ]
-    }
+            },
+            "sort": [
+                {
+                    "search_key.update_timestamp": {
+                        "order": "desc"
+                    }
+                }
+            ]
+        }
 
-    return opensearch_client.search(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA, body=query_body)
+        return opensearch_client.search(index=OPENSEARCH_INDEX_CHECK_SYNC_DATA, body=query_body)
