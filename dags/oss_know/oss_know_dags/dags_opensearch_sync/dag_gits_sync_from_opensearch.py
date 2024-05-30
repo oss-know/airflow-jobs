@@ -7,7 +7,6 @@ from airflow.operators.python import PythonOperator
 from oss_know.libs.base_dict.opensearch_index import OPENSEARCH_GIT_RAW
 from oss_know.libs.base_dict.variable_key import CLICKHOUSE_SYNC_INTERVAL, OPENSEARCH_SYNC_COMBINATION_TYPE, \
     SYNC_FROM_OPENSEARCH_CONN_INFO, OPENSEARCH_CONN_DATA, SYNC_OPENSEARCH_GITS_INCLUDES
-from oss_know.libs.clickhouse.sync_clickhouse_data import sync_from_remote_by_repos
 from oss_know.libs.util.base import arrange_owner_repo_into_letter_groups
 from oss_know.libs.util.opensearch_api import OpensearchAPI
 
@@ -28,10 +27,9 @@ if not all_owner_repos:
 with DAG(dag_id='gits_sync_from_opensearch',  # schedule_interval='*/5 * * * *',
          schedule_interval=sync_interval, start_date=datetime(2021, 1, 1), catchup=False,
          tags=['github', 'sync opensearch'], ) as dag:
-    def do_sync_gits_from_opensearch_by_group(params):
-        sync_from_remote_by_repos(opensearch_conn_info, sync_from_opensearch_conn_info,
-                                  "gits",
-                                  params.get('owner_repos'))
+    def do_sync_gits_from_opensearch_by_group(owner_repos_pairs):
+        opensearch_api.sync_from_remote_by_repos(opensearch_conn_info, sync_from_opensearch_conn_info,
+                                                 owner_repos_pairs, index=OPENSEARCH_GIT_RAW)
 
 
     # Init 26 sub groups by letter(to make the task DAG static)
@@ -45,9 +43,7 @@ with DAG(dag_id='gits_sync_from_opensearch',  # schedule_interval='*/5 * * * *',
             python_callable=do_sync_gits_from_opensearch_by_group,
             trigger_rule='all_done',
             op_kwargs={
-                "params": {
-                    "owner_repos": owner_repos
-                }
+                "owner_repos_pairs": owner_repos
             }
         )
         if prev_group:
