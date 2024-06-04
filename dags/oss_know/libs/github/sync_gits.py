@@ -16,6 +16,7 @@ def timestamp_to_utc(timestamp):
 
 
 def sync_gits_opensearch_repo(git_url, owner, repo, proxy_config, opensearch_conn_datas, git_save_local_path=None):
+    logger.info(f'Sync gits {owner}/{repo} into Opensearch')
     repo_path = f'{git_save_local_path["PATH"]}/{owner}/{repo}'
     check_point_timestamp = int(datetime.datetime.now().timestamp() * 1000)
 
@@ -34,9 +35,11 @@ def sync_gits_opensearch_repo(git_url, owner, repo, proxy_config, opensearch_con
         return
 
     if os.path.exists(repo_path):
+        logger.info(f'{owner}/{repo} git repo exists, fetch the origin')
         git_repo = Repo(repo_path)
         git_repo.remote('origin').fetch()
     else:
+        logger.warning(f"{owner}/{repo} git repo doesn't exist, re-clone it")
         git_repo = Repo.clone_from(url=git_url, to_path=repo_path, config=proxy_config)
 
     head_in_os = os_repo_commits['hits']['hits'][0]['_source']['raw_data']['hexsha']
