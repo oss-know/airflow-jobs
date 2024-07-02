@@ -59,7 +59,8 @@ with DAG(dag_id='dag_makeup_code_owners_of_empty_periods',  # schedule_interval=
 
 
     def do_makeup_project_periods(owner, repo, id_type):
-        makeup_periods(owner, repo, id_type, ck_client)
+        rows = makeup_periods(owner, repo, id_type, ck_client)
+        ck_client.execute('insert into table code_owner_history_by_year_month values', rows)
 
 
     op_prepare_memory_table = PythonOperator(
