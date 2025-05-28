@@ -127,3 +127,4 @@ REPO_CLONE_DIR = "/tmp/gits"
 
 # Middle tables vars
 COMPANY_EMAIL_DOMAIN_MAP = 'company_email_domain_map'
+LOCATION_COMPANY_RUN_CONFIG ='location_company_run_config'

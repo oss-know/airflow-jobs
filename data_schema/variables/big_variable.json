@@ -3488,5 +3488,26 @@
             "project_name": "",
             "mail_list_name": ""
         }
-    ]
+    ],
+    "location_company_run_config": {
+            "description": "所有task都运行 将boolean 改为true 所有中间表数据完全更新,某些task运行时间较长且不需要频繁执行 默认为false",
+            "force_run_do_get_github_id_tz_region_map": false,
+            "force_run_do_get_github_login_location": false,
+            "force_run_do_code_owner_location": true,
+            "force_run_do_get_login_company_time_range": false,
+            "force_run_do_company_email_domain_map": false,
+            "force_run_do_code_owner_company": true,
+            "need_infer_team_member_location_repos": [
+              {
+                "owner": "kubernetes",
+                "repo": "kubernetes"
+              }
+            ],
+            "need_infer_team_member_company_repos": [
+              {
+                "owner": "kubernetes",
+                "repo": "kubernetes"
+              }
+            ]
+        }
 }
